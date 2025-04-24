@@ -1,6 +1,6 @@
 {
   "role": {
-    "name": "hmpps-template-kotlin"
+    "name": "hmpps-electronic-monitoring-crime-matching-api"
   },
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"
