@@ -5,5 +5,22 @@ management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
 
-hmpps-auth:
-  url: "http://localhost:8090/auth"
+hmpps:
+  test:
+    jwt-helper-enabled: false
+  sqs:
+    provider: localstack
+    useWebToken: false
+    queues:
+      audit:
+        queueName: "audit"
+
+services:
+  hmpps-auth:
+    url: "http://localhost:8090/auth"
+    mfa: true
+  athena:
+    database: test-database
+    output: test-output-bucket
+  athena-roles:
+    general: testIAM

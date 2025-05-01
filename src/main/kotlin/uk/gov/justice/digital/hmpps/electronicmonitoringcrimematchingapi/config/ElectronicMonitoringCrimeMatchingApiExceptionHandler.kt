@@ -59,7 +59,20 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
       ),
     ).also { log.error("Unexpected exception", e) }
 
+  @ExceptionHandler(AthenaClientException::class)
+  fun handleException(e: AthenaClientException): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(INTERNAL_SERVER_ERROR)
+    .body(
+      ErrorResponse(
+        status = INTERNAL_SERVER_ERROR,
+        userMessage = "Athena service error: ${e.message}",
+        developerMessage = e.message,
+      ),
+    ).also { log.error("Unexpected exception", e) }
+
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
+
+class AthenaClientException(message: String) : Exception(message)
