@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 import io.zeko.db.sql.Query
 import io.zeko.db.sql.QueryBlock
 import org.apache.commons.lang3.StringUtils.isAlphanumeric
-import org.apache.commons.lang3.StringUtils.isAlphanumericSpace
 
 open class SqlQueryBuilder(
   open val databaseName: String,

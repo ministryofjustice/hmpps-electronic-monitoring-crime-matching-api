@@ -29,5 +29,4 @@ class SearchRepository(
 
     return result.map { it.legacySubjectId }
   }
-
 }

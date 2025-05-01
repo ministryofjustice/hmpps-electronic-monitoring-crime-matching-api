@@ -65,5 +65,4 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
 
     return AthenaHelper.resultSetFromJson(athenaResponse!!)
   }
-
 }

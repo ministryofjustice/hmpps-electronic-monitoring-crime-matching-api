@@ -5,7 +5,6 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.AthenaRole
 
-
 @Service
 class AthenaRoleService(
   @Value("\${services.athena-roles.general:uninitialised}") private val generalRole: String,
@@ -34,5 +33,4 @@ class AthenaRoleService(
     "ROLE_EM_CRIME_MATCHING_GENERAL_RO" -> generalRole
     else -> ""
   }
-
 }

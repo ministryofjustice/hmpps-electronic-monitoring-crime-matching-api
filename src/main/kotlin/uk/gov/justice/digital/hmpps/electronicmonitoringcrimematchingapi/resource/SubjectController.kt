@@ -20,15 +20,15 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CRIME_MATCHING_GENERAL_RO', 'ROLE_TEMPLATE_KOTLIN__UI')")
 @RequestMapping("/subjects", produces = ["application/json"])
-class SubjectController (
+class SubjectController(
   @Autowired val subjectService: SubjectService,
   val athenaRoleService: AthenaRoleService,
   @Autowired val auditService: AuditService,
 ) {
 
   @Operation(
-  tags = ["Subjects"],
-  summary = "Get the summary for a subject",
+    tags = ["Subjects"],
+    summary = "Get the summary for a subject",
   )
   @RequestMapping(
     method = [RequestMethod.GET],

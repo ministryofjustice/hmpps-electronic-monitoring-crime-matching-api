@@ -5,10 +5,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.a
 class ListSubjectInformationQueryBuilder(
   override val databaseName: String,
 ) : SqlQueryBuilder(
-    databaseName,
-    "order_details",
-    arrayOf(
-      "legacy_subject_id",
+  databaseName,
+  "order_details",
+  arrayOf(
+    "legacy_subject_id",
   ),
 ) {
   fun build(): AthenaSubjectSearchQuery = AthenaSubjectSearchQuery(getSQL(), values.toTypedArray())

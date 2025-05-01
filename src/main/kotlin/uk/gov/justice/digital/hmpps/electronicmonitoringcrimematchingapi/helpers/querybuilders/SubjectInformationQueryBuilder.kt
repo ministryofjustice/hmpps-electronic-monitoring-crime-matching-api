@@ -12,7 +12,7 @@ class SubjectInformationQueryBuilder(
     "legacy_subject_id",
     "full_name",
   ),
-)  {
+) {
 
   fun withLegacySubjectId(legacySubjectId: String): SubjectInformationQueryBuilder {
     validateAlphanumeric(legacySubjectId, "legacy_subject_id")

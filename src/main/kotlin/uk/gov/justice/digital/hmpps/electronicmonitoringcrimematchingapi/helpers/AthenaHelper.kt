@@ -4,7 +4,12 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.json.JSONObject
-import software.amazon.awssdk.services.athena.model.*
+import software.amazon.awssdk.services.athena.model.ColumnInfo
+import software.amazon.awssdk.services.athena.model.ColumnNullable
+import software.amazon.awssdk.services.athena.model.Datum
+import software.amazon.awssdk.services.athena.model.ResultSet
+import software.amazon.awssdk.services.athena.model.ResultSetMetadata
+import software.amazon.awssdk.services.athena.model.Row
 
 class AthenaHelper {
   companion object {

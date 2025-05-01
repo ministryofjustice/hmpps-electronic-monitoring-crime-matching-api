@@ -11,8 +11,8 @@ import uk.gov.justice.hmpps.sqs.HmppsQueueService
 @Service
 @Component
 class AuditService(
-    private val hmppsQueueService: HmppsQueueService,
-    private val objectMapper: ObjectMapper,
+  private val hmppsQueueService: HmppsQueueService,
+  private val objectMapper: ObjectMapper,
 ) {
   private val auditQueue by lazy { hmppsQueueService.findByQueueId("audit") as HmppsQueue }
   private val auditSqsClient by lazy { auditQueue.sqsClient }
@@ -28,11 +28,11 @@ class AuditService(
         .queueUrl(auditQueueUrl)
         .messageBody(
           objectMapper.writeValueAsString(
-              HmppsAuditEvent(
-                  what = what,
-                  details = objectMapper.writeValueAsString(detail),
-                  who = principal,
-              ),
+            HmppsAuditEvent(
+              what = what,
+              details = objectMapper.writeValueAsString(detail),
+              who = principal,
+            ),
           ),
         )
         .build(),
