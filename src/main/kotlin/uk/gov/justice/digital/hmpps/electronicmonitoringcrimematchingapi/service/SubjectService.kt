@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.AthenaRole
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SubjectInformation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SearchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SubjectInformationRepository
@@ -12,9 +11,9 @@ class SubjectService(
   @Autowired val searchRepository: SearchRepository,
   @Autowired val subjectInformationRepository: SubjectInformationRepository,
 ) {
-  fun checkAvailability(role: AthenaRole): Boolean {
+  fun checkAvailability(): Boolean {
     try {
-      searchRepository.listLegacyIds(role)
+      searchRepository.listLegacyIds()
     } catch (_: Exception) {
       return false
     }
@@ -22,8 +21,8 @@ class SubjectService(
     return true
   }
 
-  fun getSubjectInformation(legacySubjectId: String, role: AthenaRole): SubjectInformation {
-    val subjectInformation = subjectInformationRepository.getSubjectInformation(legacySubjectId, role)
+  fun getSubjectInformation(legacySubjectId: String): SubjectInformation {
+    val subjectInformation = subjectInformationRepository.getSubjectInformation(legacySubjectId)
 
     return SubjectInformation(subjectInformation.legacySubjectId, subjectInformation.name)
   }

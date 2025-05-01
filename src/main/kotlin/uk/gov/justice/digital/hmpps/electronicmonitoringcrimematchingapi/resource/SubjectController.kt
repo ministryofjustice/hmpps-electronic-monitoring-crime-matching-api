@@ -13,16 +13,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SubjectInformation
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.AthenaRoleService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.SubjectService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.AuditService
 
 @RestController
-@PreAuthorize("hasRole('ROLE_EM_CRIME_MATCHING_GENERAL_RO', 'ROLE_TEMPLATE_KOTLIN__UI')")
+@PreAuthorize("hasRole('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
 @RequestMapping("/subjects", produces = ["application/json"])
 class SubjectController(
   @Autowired val subjectService: SubjectService,
-  val athenaRoleService: AthenaRoleService,
   @Autowired val auditService: AuditService,
 ) {
 
@@ -43,9 +41,7 @@ class SubjectController(
     @Pattern(regexp = "^[0-9]+$", message = "Input contains illegal characters - legacy subject ID must be a number")
     @PathVariable legacySubjectId: String,
   ): ResponseEntity<SubjectInformation> {
-    val validatedRole = athenaRoleService.getRoleFromAuthentication(authentication)
-
-    val result = subjectService.getSubjectInformation(legacySubjectId, validatedRole)
+    val result = subjectService.getSubjectInformation(legacySubjectId)
 
     auditService.createEvent(
       authentication.name,

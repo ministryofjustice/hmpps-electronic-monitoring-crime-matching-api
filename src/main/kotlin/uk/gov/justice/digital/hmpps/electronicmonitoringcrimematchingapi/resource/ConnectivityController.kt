@@ -10,14 +10,12 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.AthenaRoleService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.SubjectService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.AuditService
 
 @RestController
 class ConnectivityController(
   @Autowired val subjectService: SubjectService,
-  val athenaRoleService: AthenaRoleService,
   @Autowired val auditService: AuditService,
 ) {
 
@@ -32,7 +30,7 @@ class ConnectivityController(
     ],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO', 'ROLE_TEMPLATE_KOTLIN__UI')")
+  @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
   fun test(authentication: Authentication): ResponseEntity<Map<String, String>> {
     auditService.createEvent(
       authentication.principal.toString(),
@@ -42,9 +40,7 @@ class ConnectivityController(
 
     var message = "API Connection successful"
     try {
-      val validatedRole = athenaRoleService.getRoleFromAuthentication(authentication)
-
-      if (!subjectService.checkAvailability(validatedRole)) {
+      if (!subjectService.checkAvailability()) {
         message = "API Connection successful, but no access to Athena"
       }
     } catch (_: Exception) {

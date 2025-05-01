@@ -40,7 +40,7 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
       .trimIndent()
   }
 
-  override fun getQueryResult(athenaQuery: AthenaQuery, role: AthenaRole?): ResultSet {
+  override fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
     if (athenaQuery.queryString == "THROW ERROR") {
       throw IllegalArgumentException("I threw an error")
     }

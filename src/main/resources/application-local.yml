@@ -15,3 +15,13 @@ services:
     output: s3://emds-test-athena-query-results-20240923095933297100000013
   athena-roles:
     general: fakeIAM
+
+spring:
+  cloud:
+    aws:
+      region:
+        static: eu-west-2
+      endpoint: http://127.0.0.1:4566
+      credentials:
+        sts:
+          role-arn: testIAM

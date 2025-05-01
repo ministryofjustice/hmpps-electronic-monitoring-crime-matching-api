@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.athena.AthenaClient
 import software.amazon.awssdk.services.athena.model.AthenaException
 import software.amazon.awssdk.services.athena.model.GetQueryExecutionRequest
@@ -18,34 +16,21 @@ import software.amazon.awssdk.services.athena.model.ResultSet
 import software.amazon.awssdk.services.athena.model.StartQueryExecutionRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.AthenaClientException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.AthenaRoleService
 
 @Component
 @Profile("!mocking")
-class EmDatastoreClient(
-  private val athenaRoleService: AthenaRoleService,
-) : EmDatastoreClientInterface {
+class EmDatastoreClient : EmDatastoreClientInterface {
   @Value("\${services.athena.output}")
   private val output: String = "s3://emds-dev-athena-query-results-20240917144028307600000004"
   private val sleepLength: Long = 1000
 
   @Value("\${services.athena.database}")
   private val databaseName: String = "test_database"
-  private val defaultRole: AthenaRole = AthenaRole.NONE
 
-  private fun startClient(iamRole: String): AthenaClient {
-    val credentialsProvider: AwsCredentialsProvider = EmDatastoreCredentialsProvider.Companion.getCredentials(iamRole)
+  private fun startClient(): AthenaClient = AthenaClient.builder().build()
 
-    return AthenaClient.builder()
-      .region(Region.EU_WEST_2)
-      .credentialsProvider(credentialsProvider)
-      .build()
-  }
-
-  override fun getQueryResult(athenaQuery: AthenaQuery, role: AthenaRole?): ResultSet {
-    val iamRole: String = athenaRoleService.getIamRole(role ?: defaultRole)
-
-    val athenaClient = startClient(iamRole)
+  override fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
+    val athenaClient = startClient()
 
     val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
 
