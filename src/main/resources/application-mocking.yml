@@ -1,0 +1,29 @@
+hmpps.sqs:
+  provider: localstack
+  useWebToken: false
+  queues:
+    audit:
+      queueName: "audit"
+
+services:
+  hmpps-auth:
+    url: "http://localhost:8090/auth"
+    mfa: false
+  athena:
+    # Values for connecting to TEST Athena instance
+    database: historic_api_mart
+    output: s3://emds-test-athena-query-results-20240923095933297100000013
+  athena-roles:
+    general: testIAM
+
+CLIENT_ID: CLIENT_ID
+CLIENT_SECRET: CLIENT_SECRET
+
+spring:
+  cloud:
+    aws:
+      region:
+        static: eu-west-2
+      credentials:
+        sts:
+          role-arn: ${ATHENA_GENERAL_IAM_ROLE}

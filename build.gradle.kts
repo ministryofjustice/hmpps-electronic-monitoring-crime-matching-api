@@ -1,6 +1,6 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "7.1.1"
-  kotlin("plugin.spring") version "2.1.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.0.0"
+  kotlin("plugin.spring") version "2.1.20"
 }
 
 configurations {
@@ -8,12 +8,16 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.2.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.4")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+  implementation("software.amazon.awssdk:athena:2.31.22")
+  implementation("org.json:json:20250107")
+  implementation("io.zeko:zeko-sql-builder:1.5.6")
 
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.2.0")
-  testImplementation("org.wiremock:wiremock-standalone:3.11.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.4.3")
+  testImplementation("org.wiremock:wiremock-standalone:3.12.1")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.25") {
     exclude(group = "io.swagger.core.v3")
   }
