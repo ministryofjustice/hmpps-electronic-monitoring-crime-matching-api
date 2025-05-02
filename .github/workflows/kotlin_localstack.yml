@@ -29,7 +29,7 @@ on:
 permissions:
   contents: read
 jobs:
-  template_job:
+  validate_kotlin_localstack:
     runs-on: ubuntu-latest
     # Label used to access the service container
     services:
@@ -64,7 +64,7 @@ jobs:
           cache-dependency-path: |
             *.gradle*
             **/gradle-wrapper.properties
-      ## INSERT COMMANDS HERE
+      - run: ./gradlew check
       - name: upload the artifacts
         if: always()
         uses: actions/upload-artifact@v4
