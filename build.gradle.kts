@@ -1,6 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.0.0"
   kotlin("plugin.spring") version "2.1.20"
+  jacoco
 }
 
 configurations {
@@ -30,5 +31,19 @@ kotlin {
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+  }
+
+  withType<Test> {
+    finalizedBy("jacocoTestReport") // report is always generated after tests run
+  }
+
+  named<JacocoReport>("jacocoTestReport") {
+    dependsOn("test")
+
+    reports { html.required.set(true) }
+
+    classDirectories.setFrom(fileTree(projectDir) { include("build/classes/kotlin/main/**") })
+    sourceDirectories.setFrom(files("src/main/kotlin"))
+    executionData.setFrom(files("build/jacoco/test.exec"))
   }
 }
