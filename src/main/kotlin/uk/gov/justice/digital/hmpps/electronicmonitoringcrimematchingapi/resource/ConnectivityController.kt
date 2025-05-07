@@ -71,5 +71,4 @@ class ConnectivityController(
     val identity = stsClient.callerIdentity
     return "Assumed Role: ${identity.arn()}"
   }
-
 }
