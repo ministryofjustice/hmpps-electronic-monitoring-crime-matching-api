@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.athena.AthenaClient
 import software.amazon.awssdk.services.athena.model.AthenaException
 import software.amazon.awssdk.services.athena.model.GetQueryExecutionRequest
@@ -15,6 +17,7 @@ import software.amazon.awssdk.services.athena.model.ResultConfiguration
 import software.amazon.awssdk.services.athena.model.ResultSet
 import software.amazon.awssdk.services.athena.model.StartQueryExecutionRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.AthenaClientException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.EmDatastoreCredentialsProvider
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 
 @Component
@@ -27,7 +30,17 @@ class EmDatastoreClient : EmDatastoreClientInterface {
   @Value("\${services.athena.database}")
   private val databaseName: String = "test_database"
 
-  private fun startClient(): AthenaClient = AthenaClient.builder().build()
+  @Value("\${services.athena-roles.general}")
+  private val iamRole: String = ""
+
+  private fun startClient(): AthenaClient {
+    val credentialsProvider: AwsCredentialsProvider = EmDatastoreCredentialsProvider.Companion.getCredentials(iamRole)
+
+    return AthenaClient.builder()
+      .region(Region.EU_WEST_2)
+      .credentialsProvider(credentialsProvider)
+      .build()
+  }
 
   override fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
     val athenaClient = startClient()

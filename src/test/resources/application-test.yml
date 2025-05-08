@@ -24,13 +24,3 @@ services:
     output: test-output-bucket
   athena-roles:
     general: testIAM
-
-spring:
-  cloud:
-    aws:
-      region:
-        static: eu-west-2
-      endpoint: http://127.0.0.1:4566
-      credentials:
-        sts:
-          role-arn: testIAM
