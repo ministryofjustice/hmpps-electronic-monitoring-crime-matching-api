@@ -7,13 +7,6 @@ spring:
     name: hmpps-electronic-monitoring-crime-matching-api
   codec:
     max-in-memory-size: 10MB
-  cloud:
-    aws:
-      region:
-        static: eu-west-2
-      credentials:
-        sts:
-          role-arn: ${ATHENA_GENERAL_IAM_ROLE}
 
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
