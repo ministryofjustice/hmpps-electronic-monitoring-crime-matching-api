@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SubjectInformation
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectInformation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SearchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SubjectInformationRepository
 
