@@ -18,6 +18,7 @@ dependencies {
   implementation("io.zeko:zeko-sql-builder:1.5.6")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.4.3")
+  testImplementation("org.mockito:mockito-core:5.17.0")
   testImplementation("org.wiremock:wiremock-standalone:3.12.1")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.25") {
     exclude(group = "io.swagger.core.v3")
