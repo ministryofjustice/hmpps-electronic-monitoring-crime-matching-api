@@ -13,9 +13,10 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.4")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
-  implementation("software.amazon.awssdk:athena:2.31.45")
+  implementation("software.amazon.awssdk:athena:2.31.46")
   implementation("org.json:json:20250517")
   implementation("io.zeko:zeko-sql-builder:1.5.6")
+  implementation("io.vertx:vertx-core:4.5.10")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.4.3")
   testImplementation("org.mockito:mockito-core:5.17.0")
