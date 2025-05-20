@@ -1,0 +1,77 @@
+{
+  "ResultSet": {
+    "ColumnInfos": [],
+    "ResultRows": [],
+    "ResultSetMetadata": {
+      "ColumnInfo": [
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "legacy_subject_id",
+          "Name": "legacy_subject_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": true,
+          "CatalogName": "hive",
+          "Label": "full_name",
+          "Name": "full_name",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        }
+      ]
+    },
+    "Rows": [
+      {
+        "Data": [
+          {
+            "VarCharValue": "legacy_subject_id"
+          },
+          {
+            "VarCharValue": "full_name"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "1401253"
+          },
+          {
+            "VarCharValue": "TEST1 TEST - ITP telephony"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "1449479"
+          },
+          {
+            "VarCharValue": "JIMINEY CRICKET"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "998050"
+          },
+          {
+            "VarCharValue": "EILEEN TEST 3"
+          }
+        ]
+      }
+    ]
+  },
+  "UpdateCount": 0
+}
