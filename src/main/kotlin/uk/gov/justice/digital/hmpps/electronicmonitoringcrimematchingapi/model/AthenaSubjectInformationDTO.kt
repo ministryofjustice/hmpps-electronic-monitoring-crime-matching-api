@@ -3,7 +3,15 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class AthenaSubjectInformationDTO(
-  val legacySubjectId: String,
+  //TODO Correct datatypes and nullables
+  val nomisId: String,
   @JsonProperty("full_name")
   val name: String?,
+  val dateOfBirth: String?,
+  val address: String?,
+  val orderStartDate: String?,
+  val orderEndDate: String?,
+  val deviceId: String?,
+  val tagPeriodStartDate: String?,
+  val tagPeriodEndDate: String?
 )

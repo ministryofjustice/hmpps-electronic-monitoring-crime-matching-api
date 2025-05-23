@@ -5,19 +5,28 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.A
 import java.util.Date
 
 data class SubjectInformation(
-  var subjectId: String,
+  //TODO correct datatypes
+  var nomisId: String,
   var name: String?,
-//  var address: String?,
-//  var dateOfBirth: Date?,
-//  var deviceId: String,
-//  var orderStartDate: Date,
-//  var orderEndDate: Date?,
-//  var nomisId: String?,
-//  var tagPeriodStart: DateTime,
-//  var tagPeriodEnd: DateTime?
+  var dateOfBirth: String?,
+  var address: String?,
+  var orderStartDate: String?,
+  var orderEndDate: String?,
+  var deviceId: String?,
+  var tagPeriodStartDate: String?,
+  var tagPeriodEndDate: String?
 ) {
+  //TODO correct namings need to be set for actual fields in datastore
+  //TODO Set vars to vals where possible
   constructor(dto: AthenaSubjectInformationDTO) : this(
-    subjectId = dto.legacySubjectId,
-    name = dto.name
+    nomisId = dto.nomisId,
+    name = dto.name,
+    dateOfBirth = dto.dateOfBirth,
+    address = dto.address,
+    orderStartDate = dto.orderStartDate,
+    orderEndDate = dto.orderEndDate,
+    deviceId = dto.deviceId,
+    tagPeriodStartDate = dto.tagPeriodStartDate,
+    tagPeriodEndDate = dto.tagPeriodEndDate
   )
 }

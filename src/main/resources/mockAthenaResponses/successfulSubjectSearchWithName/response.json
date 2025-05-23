@@ -179,37 +179,6 @@
       {
         "Data": [
           {
-            "VarCharValue": "1449479"
-          },
-          {
-            "VarCharValue": "JIMINEY CRICKET"
-          },
-          {
-            "VarCharValue": "date_of_birth"
-          },
-          {
-            "VarCharValue": "address"
-          },
-          {
-            "VarCharValue": "order_start_date"
-          },
-          {
-            "VarCharValue": "order_end_date"
-          },
-          {
-            "VarCharValue": "device_id"
-          },
-          {
-            "VarCharValue": "tag_period_start_date"
-          },
-          {
-            "VarCharValue": "tag_period_end_date"
-          }
-        ]
-      },
-      {
-        "Data": [
-          {
             "VarCharValue": "998050"
           },
           {

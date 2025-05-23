@@ -1,0 +1,1 @@
+SELECT nomis_id, full_name, date_of_birth, address, order_start_date, order_end_date, device_id, tag_period_start_date, tag_period_end_date FROM historic_api_mart.order_details WHERE full_name LIKE ?UPPER('%any%')

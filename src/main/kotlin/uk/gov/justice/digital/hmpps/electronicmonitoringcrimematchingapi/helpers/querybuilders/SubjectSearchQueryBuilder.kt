@@ -7,10 +7,18 @@ class SubjectSearchQueryBuilder(
   override val databaseName: String,
 ) : SqlQueryBuilder(
   databaseName,
+  //TODO update table when we have correct setup
   "order_details",
   arrayOf(
-    "legacy_subject_id",
+    "nomis_id",
     "full_name",
+    "date_of_birth",
+    "address",
+    "order_start_date",
+    "order_end_date",
+    "device_id",
+    "tag_period_start_date",
+    "tag_period_end_date",
   ),
 ) {
 

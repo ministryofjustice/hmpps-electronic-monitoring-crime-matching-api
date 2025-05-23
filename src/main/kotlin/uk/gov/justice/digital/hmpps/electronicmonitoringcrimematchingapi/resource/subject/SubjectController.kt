@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.AuditService
 
 @RestController
-@PreAuthorize("hasRole('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
+//@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO', 'ROLE_TEMPLATE_KOTLIN__UI', 'EM_DATASTORE_GENERAL_RO')")
 @RequestMapping("/subjects", produces = ["application/json"])
 class SubjectController(
     @Autowired val subjectService: SubjectService,
@@ -27,18 +27,19 @@ class SubjectController(
 ) {
 
   @Operation(
-    tags = ["Subjects"],
-    summary = "Search for subjects",
+  tags = ["Subjects"],
+  summary = "Search for subjects",
   )
   @RequestMapping(
-    method = [RequestMethod.GET],
+    method = [RequestMethod.POST],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  fun searchSubjects(
+  fun searchSubjectsAlt(
     authentication: Authentication,
-    @Parameter(description = "The search criteria for the query", required = true)
+    @Parameter(description = "The search criteria for the query", required = false)
     @RequestBody subjectSearchCriteria: SubjectSearchCriteria,
   ): ResponseEntity<List<SubjectInformation>> {
+    val subjectSearchCriteria = SubjectSearchCriteria(subjectSearchCriteria.name, subjectSearchCriteria.nomisId)
     val result = subjectService.searchSubjects(subjectSearchCriteria)
 
     auditService.createEvent(
@@ -50,15 +51,6 @@ class SubjectController(
     )
 
     return ResponseEntity.ok(result)
-
-    //Searchby nomisId, nameId (separate fields and like/wildcard search) - accept as search criteria object?
-    //create audit event
-    //Return list of subjectIds
-    //Mock response
-    //Tests
-    //Test data in athena to use?
-    //Add rest of fields and correct mapping
-    //Add correct search criteria
   }
 
   @Operation(

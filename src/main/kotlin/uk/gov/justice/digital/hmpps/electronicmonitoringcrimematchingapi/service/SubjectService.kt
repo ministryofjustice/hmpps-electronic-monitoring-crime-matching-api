@@ -23,10 +23,21 @@ class SubjectService(
     return true
   }
 
+  //TODO Remove?
   fun getSubjectInformation(legacySubjectId: String): SubjectInformation {
     val subjectInformation = subjectInformationRepository.getSubjectInformation(legacySubjectId)
 
-    return SubjectInformation(subjectInformation.legacySubjectId, subjectInformation.name)
+    return SubjectInformation(
+      subjectInformation.nomisId,
+      subjectInformation.name,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    )
   }
 
   fun searchSubjects(subjectSearchCriteria: SubjectSearchCriteria): List<SubjectInformation> {
