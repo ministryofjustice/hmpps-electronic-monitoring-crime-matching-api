@@ -1,9 +1,8 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class AthenaSubjectInformationDTO(
-  //TODO Correct datatypes and nullables
   val nomisId: String,
   @JsonProperty("full_name")
   val name: String?,

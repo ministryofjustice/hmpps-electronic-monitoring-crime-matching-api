@@ -7,8 +7,7 @@ class SubjectSearchQueryBuilder(
   override val databaseName: String,
 ) : SqlQueryBuilder(
   databaseName,
-  //TODO update table when we have correct setup
-  "order_details",
+  "subject",
   arrayOf(
     "nomis_id",
     "full_name",
@@ -27,19 +26,18 @@ class SubjectSearchQueryBuilder(
       return this
     }
 
-    values.add("UPPER('%$value%')")
-    whereClauses.put("full_name", "full_name" like "UPPER('%$value%')")
+    values.add("'%$value%'")
+    whereClauses.put("full_name", "full_name" like "'%$value%'")
     return this
   }
 
-  //Using legacySubjectId for now
   fun withNomisId(value: String?): SubjectSearchQueryBuilder {
     if (value.isNullOrBlank()) {
       return this
     }
 
-    values.add("UPPER('%$value%')")
-    whereClauses.put("legacy_subject_id", "legacy_subject_id" like "UPPER('%$value%')")
+    values.add("'%$value%'")
+    whereClauses.put("nomis_id", "nomis_id" like "'%$value%'")
     return this
   }
 

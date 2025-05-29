@@ -29,16 +29,16 @@
           "Type": "varchar"
         },
         {
-          "CaseSensitive": true,
+          "CaseSensitive": false,
           "CatalogName": "hive",
           "Label": "date_of_birth",
           "Name": "date_of_birth",
           "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
+          "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "varchar"
+          "Type": "date"
         },
         {
           "CaseSensitive": true,
@@ -46,38 +46,38 @@
           "Label": "address",
           "Name": "address",
           "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
+          "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
           "Type": "varchar"
         },
         {
-          "CaseSensitive": true,
+          "CaseSensitive": false,
           "CatalogName": "hive",
           "Label": "order_start_date",
           "Name": "order_start_date",
           "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
+          "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "varchar"
+          "Type": "date"
         },
         {
-          "CaseSensitive": true,
+          "CaseSensitive": false,
           "CatalogName": "hive",
           "Label": "order_end_date",
           "Name": "order_end_date",
           "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
+          "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "varchar"
+          "Type": "date"
         },
         {
-          "CaseSensitive": true,
+          "CaseSensitive": false,
           "CatalogName": "hive",
           "Label": "device_id",
           "Name": "device_id",
@@ -89,28 +89,28 @@
           "Type": "varchar"
         },
         {
-          "CaseSensitive": true,
+          "CaseSensitive": false,
           "CatalogName": "hive",
           "Label": "tag_period_start_date",
           "Name": "tag_period_start_date",
           "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
+          "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "varchar"
+          "Type": "date"
         },
         {
-          "CaseSensitive": true,
+          "CaseSensitive": false,
           "CatalogName": "hive",
           "Label": "tag_period_end_date",
           "Name": "tag_period_end_date",
           "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
+          "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "varchar"
+          "Type": "date"
         }
       ]
     },
@@ -154,25 +154,25 @@
             "VarCharValue": "JIMINEY CRICKET"
           },
           {
-            "VarCharValue": "date_of_birth"
+            "VarCharValue": "2000-05-29T10:57:06.932277"
           },
           {
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "order_start_date"
+            "VarCharValue": "2024-05-29T10:57:06.932277"
           },
           {
-            "VarCharValue": "order_end_date"
+            "VarCharValue": ""
           },
           {
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "tag_period_start_date"
+            "VarCharValue": "2024-05-29T10:57:06.932277"
           },
           {
-            "VarCharValue": "tag_period_end_date"
+            "VarCharValue": "2026-05-29T10:57:06.932277"
           }
         ]
       },
@@ -185,25 +185,25 @@
             "VarCharValue": "JIMINEY CRICKET"
           },
           {
-            "VarCharValue": "date_of_birth"
+            "VarCharValue": "2000-05-29T10:57:06.932277"
           },
           {
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "order_start_date"
+            "VarCharValue": "2024-05-29T10:57:06.932277"
           },
           {
-            "VarCharValue": "order_end_date"
+            "VarCharValue": ""
           },
           {
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "tag_period_start_date"
+            "VarCharValue": "2024-05-29T10:57:06.932277"
           },
           {
-            "VarCharValue": "tag_period_end_date"
+            "VarCharValue": "2026-05-29T10:57:06.932277"
           }
         ]
       },
@@ -216,25 +216,87 @@
             "VarCharValue": "EILEEN TEST 3"
           },
           {
-            "VarCharValue": "date_of_birth"
+            "VarCharValue": "2000-05-29T10:57:06.932277"
           },
           {
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "order_start_date"
+            "VarCharValue": "2024-05-29T10:57:06.932277"
           },
           {
-            "VarCharValue": "order_end_date"
+            "VarCharValue": ""
           },
           {
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "tag_period_start_date"
+            "VarCharValue": "2024-05-29T10:57:06.932277"
           },
           {
-            "VarCharValue": "tag_period_end_date"
+            "VarCharValue": "2026-05-29T10:57:06.932277"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "998050"
+          },
+          {
+            "VarCharValue": "EILEEN TEST 3"
+          },
+          {
+            "VarCharValue": "2000-05-29T10:57:06.932277"
+          },
+          {
+            "VarCharValue": "address"
+          },
+          {
+            "VarCharValue": "2024-05-29T10:57:06.932277"
+          },
+          {
+            "VarCharValue": ""
+          },
+          {
+            "VarCharValue": "device_id"
+          },
+          {
+            "VarCharValue": "2024-05-29T10:57:06.932277"
+          },
+          {
+            "VarCharValue": "2026-05-29T10:57:06.932277"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "998050"
+          },
+          {
+            "VarCharValue": "EILEEN TEST 3"
+          },
+          {
+            "VarCharValue": "2000-05-29T10:57:06.932277"
+          },
+          {
+            "VarCharValue": "address"
+          },
+          {
+            "VarCharValue": "2024-05-29T10:57:06.932277"
+          },
+          {
+            "VarCharValue": ""
+          },
+          {
+            "VarCharValue": "device_id"
+          },
+          {
+            "VarCharValue": "2024-05-29T10:57:06.932277"
+          },
+          {
+            "VarCharValue": "2026-05-29T10:57:06.932277"
           }
         ]
       }

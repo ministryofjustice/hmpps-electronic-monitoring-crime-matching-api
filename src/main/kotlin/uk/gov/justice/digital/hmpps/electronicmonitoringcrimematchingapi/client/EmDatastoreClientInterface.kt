@@ -5,4 +5,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.a
 
 interface EmDatastoreClientInterface {
   fun getQueryResult(athenaQuery: AthenaQuery): ResultSet
+
+  fun getQueryResult(queryExecutionId: String): ResultSet
+
+  fun getQueryExecutionId(athenaQuery: AthenaQuery): String
 }

@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ListSubjectInformationQueryBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SubjectSearchQueryBuilder
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.AthenaSubjectInformationDTO
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectInformationDTO
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectSearchCriteria
 
 @Service
@@ -32,14 +32,17 @@ class SubjectSearchRepository(
     return result.map { it.legacySubjectId }
   }
 
-  fun searchSubjects(subjectSearchCriteria: SubjectSearchCriteria): List<AthenaSubjectInformationDTO> {
+  fun submitSubjectSearchQuery(queryExecutionId: String): List<AthenaSubjectInformationDTO> {
+    val athenaResponse = athenaClient.getQueryResult(queryExecutionId)
+    return AthenaHelper.mapTo<AthenaSubjectInformationDTO>(athenaResponse)
+  }
+
+  fun getSubjectSearchResults(subjectSearchCriteria: SubjectSearchCriteria): String {
     val subjectSearchQuery = SubjectSearchQueryBuilder(athenaDatabase)
       .withNomisId(subjectSearchCriteria.nomisId)
       .withName(subjectSearchCriteria.name)
       .build()
 
-    val athenaResponse = athenaClient.getQueryResult(subjectSearchQuery)
-
-    return AthenaHelper.mapTo<AthenaSubjectInformationDTO>(athenaResponse)
+    return athenaClient.getQueryExecutionId(subjectSearchQuery)
   }
 }

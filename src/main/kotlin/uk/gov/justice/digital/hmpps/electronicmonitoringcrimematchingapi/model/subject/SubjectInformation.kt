@@ -1,23 +1,19 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject
 
-import org.joda.time.DateTime
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.AthenaSubjectInformationDTO
-import java.util.Date
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectInformationDTO
+import java.time.ZonedDateTime
 
 data class SubjectInformation(
-  //TODO correct datatypes
-  var nomisId: String,
-  var name: String?,
-  var dateOfBirth: String?,
-  var address: String?,
-  var orderStartDate: String?,
-  var orderEndDate: String?,
-  var deviceId: String?,
-  var tagPeriodStartDate: String?,
-  var tagPeriodEndDate: String?
+  val nomisId: String,
+  val name: String?,
+  val dateOfBirth: String?,
+  val address: String?,
+  val orderStartDate: String?,
+  val orderEndDate: String?,
+  val deviceId: String?,
+  val tagPeriodStartDate: String?,
+  val tagPeriodEndDate: String?
 ) {
-  //TODO correct namings need to be set for actual fields in datastore
-  //TODO Set vars to vals where possible
   constructor(dto: AthenaSubjectInformationDTO) : this(
     nomisId = dto.nomisId,
     name = dto.name,

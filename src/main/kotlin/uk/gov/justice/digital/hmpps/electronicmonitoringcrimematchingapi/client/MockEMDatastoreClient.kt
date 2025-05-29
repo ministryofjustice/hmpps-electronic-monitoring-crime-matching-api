@@ -14,6 +14,8 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
   private companion object {
     private const val MOCKS_RESOURCE_PATH = "./src/main/resources/mockAthenaResponses"
 
+    private const val MOCK_QUERY_EXECUTION_ID = "mock-query-execution-id"
+
     private val log = LoggerFactory.getLogger(this::class.java)
 
     private var responses: MutableMap<String, String> = mutableMapOf<String, String>()
@@ -40,6 +42,23 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
       .trimIndent()
   }
 
+  override fun getQueryResult(queryExecutionId: String): ResultSet {
+    if (queryExecutionId == "THROW ERROR") {
+      throw IllegalArgumentException("I threw an error")
+    }
+
+    if (queryExecutionId != MOCK_QUERY_EXECUTION_ID) {
+      log.info("""
+          No response defined for query execution ID $queryExecutionId
+        """.trimIndent(),
+        )
+    }
+
+    val athenaResponse = File("$MOCKS_RESOURCE_PATH/successfulSubjectSearch/response.json").readText(Charsets.UTF_8).trimIndent()
+
+    return AthenaHelper.resultSetFromJson(athenaResponse)
+  }
+
   override fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
     if (athenaQuery.queryString == "THROW ERROR") {
       throw IllegalArgumentException("I threw an error")
@@ -64,5 +83,30 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
     }
 
     return AthenaHelper.resultSetFromJson(athenaResponse!!)
+  }
+
+
+  override fun getQueryExecutionId(athenaQuery: AthenaQuery): String {
+    if (athenaQuery.queryString == "THROW ERROR") {
+      throw IllegalArgumentException("I threw an error")
+    }
+    if (responses.isEmpty()) {
+      loadResponses()
+    }
+
+    val query = stripWhitespace(athenaQuery.queryString)
+
+    val athenaResponse = responses[query]?.trimIndent()
+    if (athenaResponse == null) {
+      log.info(
+        """
+          No response defined for query
+          -------------
+          ${athenaQuery.queryString}
+          -------------
+        """.trimIndent(),
+      )
+    }
+    return MOCK_QUERY_EXECUTION_ID
   }
 }
