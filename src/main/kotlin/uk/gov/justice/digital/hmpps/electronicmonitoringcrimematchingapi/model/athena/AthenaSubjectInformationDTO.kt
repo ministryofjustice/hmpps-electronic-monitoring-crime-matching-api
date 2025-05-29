@@ -12,5 +12,5 @@ data class AthenaSubjectInformationDTO(
   val orderEndDate: String?,
   val deviceId: String?,
   val tagPeriodStartDate: String?,
-  val tagPeriodEndDate: String?
+  val tagPeriodEndDate: String?,
 )

@@ -2,5 +2,5 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 
 data class SubjectSearchCriteria(
   val name: String? = null,
-  val nomisId: String? = null
+  val nomisId: String? = null,
 )

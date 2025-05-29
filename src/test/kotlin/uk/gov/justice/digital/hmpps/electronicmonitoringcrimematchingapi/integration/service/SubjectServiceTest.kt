@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -11,7 +12,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.s
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectSearchCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SubjectSearchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.SubjectService
-
 
 class SubjectServiceTest {
   private lateinit var subjectSearchRepository: SubjectSearchRepository
@@ -24,9 +24,10 @@ class SubjectServiceTest {
   }
 
   @Nested
+  @DisplayName("CheckAvailability")
   inner class CheckAvailability {
     @Test
-    fun `returns true if athena is available`() {
+    fun `it should return true if athena is available`() {
       whenever(subjectSearchRepository.listLegacyIds()).thenReturn(listOf())
 
       val result = service.checkAvailability()
@@ -35,7 +36,7 @@ class SubjectServiceTest {
     }
 
     @Test
-    fun `returns false if athena is unavailable`() {
+    fun `it should return false if athena is unavailable`() {
       whenever(subjectSearchRepository.listLegacyIds()).thenThrow(NullPointerException())
 
       val result = service.checkAvailability()
@@ -45,9 +46,10 @@ class SubjectServiceTest {
   }
 
   @Nested
+  @DisplayName("GetQueryExecutionId")
   inner class GetQueryExecutionId {
     @Test
-    fun `returns query execution Id when submitting search criteria`() {
+    fun `it should return query execution Id when submitting search criteria`() {
       val subjectSearchCriteria = SubjectSearchCriteria(name = "John", nomisId = "12345")
       val queryExecutionId = "query-execution-id"
       whenever(subjectSearchRepository.searchSubjects(subjectSearchCriteria)).thenReturn(queryExecutionId)
@@ -59,21 +61,24 @@ class SubjectServiceTest {
   }
 
   @Nested
+  @DisplayName("GetSubjectSearchResults")
   inner class GetSubjectSearchResults {
     @Test
-    fun `returns list of subjects when submitting a query execution Id`() {
+    fun `it should return list of subjects when submitting a query execution Id`() {
       val queryExecutionId = "query-execution-id"
-      val expectedResult = listOf(AthenaSubjectInformationDTO(
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-      ))
+      val expectedResult = listOf(
+        AthenaSubjectInformationDTO(
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ),
+      )
 
       whenever(subjectSearchRepository.getSubjectSearchResults(queryExecutionId)).thenReturn(expectedResult)
 

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -30,9 +31,10 @@ class ConnectivityControllerTest {
   }
 
   @Nested
+  @DisplayName("TestAthenaConnection")
   inner class TestAthenaConnection {
     @Test
-    fun `calls SubjectService for checkAvailability`() {
+    fun `it should return success message when checkAvailability true`() {
       whenever(subjectService.checkAvailability()).thenReturn(true)
       whenever(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
 
@@ -43,7 +45,7 @@ class ConnectivityControllerTest {
     }
 
     @Test
-    fun `calls SubjectService for checkAvailability connection unavailable`() {
+    fun `it should return connection unavailable message when checkAvailability false`() {
       whenever(subjectService.checkAvailability()).thenReturn(false)
       whenever(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
 
@@ -54,7 +56,7 @@ class ConnectivityControllerTest {
     }
 
     @Test
-    fun `calls SubjectService for checkAvailability exception thrown`() {
+    fun `it should return error message for checkAvailability when exception thrown`() {
       whenever(subjectService.checkAvailability()).thenThrow(NullPointerException("Failed"))
       whenever(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
 

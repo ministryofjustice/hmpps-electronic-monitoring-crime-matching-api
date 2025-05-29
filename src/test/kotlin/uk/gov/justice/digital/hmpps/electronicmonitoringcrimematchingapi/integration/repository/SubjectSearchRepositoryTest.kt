@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -38,6 +39,7 @@ class SubjectSearchRepositoryTest {
   }
 
   @Nested
+  @DisplayName("GetSubjectSearchResults")
   inner class GetSubjectSearchResults {
 
     val simpleResultTest: String = """
@@ -81,7 +83,7 @@ class SubjectSearchRepositoryTest {
     """.trimIndent()
 
     @Test
-    fun `getSubjectSearchResults returns list of subject results`() {
+    fun `it should return list of subject results`() {
       val queryExecutionId = "query-execution-id"
       val expectedResult = AthenaHelper.resultSetFromJson(simpleResultTest)
       whenever(athenaClient.getQueryResult(queryExecutionId)).thenReturn(expectedResult)

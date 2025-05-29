@@ -2,10 +2,10 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
@@ -33,9 +33,10 @@ class SubjectControllerTest {
   }
 
   @Nested
+  @DisplayName("SearchSubjects")
   inner class SearchSubjects {
     @Test
-    fun `calls SubjectService for getQueryExecutionId`() {
+    fun `it should return queryExecutionId`() {
       val subjectSearchCriteria = SubjectSearchCriteria(name = "John", nomisId = "12345")
       val queryExecutionId = "query-execution-id"
 
@@ -52,22 +53,25 @@ class SubjectControllerTest {
   }
 
   @Nested
+  @DisplayName("GetSubjectSearchResult")
   inner class GetSubjectSearchResult {
     @Test
-    fun `calls SubjectService for getSubjectSearchResults`() {
+    fun `it should return subject search results`() {
       val queryExecutionId = "query-execution-id"
 
-      val expectedResult = listOf(SubjectInformation(
-        "12345",
-        "John",
-        "2000-05-29T10:57:06.932277",
-        "2 Green Grove",
-        "2024-05-29T10:57:06.932277",
-        "2026-05-29T10:57:06.932277",
-        "87654",
-        "2024-05-29T10:57:06.932277",
-        "2026-05-29T10:57:06.932277",
-      ))
+      val expectedResult = listOf(
+        SubjectInformation(
+          "12345",
+          "John",
+          "2000-05-29T10:57:06.932277",
+          "2 Green Grove",
+          "2024-05-29T10:57:06.932277",
+          "2026-05-29T10:57:06.932277",
+          "87654",
+          "2024-05-29T10:57:06.932277",
+          "2026-05-29T10:57:06.932277",
+        ),
+      )
 
       whenever(subjectService.getSubjectSearchResults(queryExecutionId)).thenReturn(expectedResult)
 

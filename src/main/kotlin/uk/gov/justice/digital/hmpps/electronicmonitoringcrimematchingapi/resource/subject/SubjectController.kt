@@ -22,8 +22,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
 @RequestMapping("/subjects", produces = ["application/json"])
 class SubjectController(
-    @Autowired val subjectService: SubjectService,
-    @Autowired val auditService: AuditService,
+  @Autowired val subjectService: SubjectService,
+  @Autowired val auditService: AuditService,
 ) {
 
   @Operation(
@@ -52,10 +52,9 @@ class SubjectController(
     return ResponseEntity.ok(QueryExecutionResponse(queryExecutionId))
   }
 
-
   @Operation(
-  tags = ["Subjects"],
-  summary = "Retrieve search results for subjects using query execution id",
+    tags = ["Subjects"],
+    summary = "Retrieve search results for subjects using query execution id",
   )
   @RequestMapping(
     method = [RequestMethod.GET],

@@ -48,10 +48,11 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
     }
 
     if (queryExecutionId != MOCK_QUERY_EXECUTION_ID) {
-      log.info("""
+      log.info(
+        """
           No response defined for query execution ID $queryExecutionId
         """.trimIndent(),
-        )
+      )
     }
 
     val athenaResponse = File("$MOCKS_RESOURCE_PATH/successfulSubjectSearch/response.json").readText(Charsets.UTF_8).trimIndent()
@@ -84,7 +85,6 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
 
     return AthenaHelper.resultSetFromJson(athenaResponse!!)
   }
-
 
   override fun getQueryExecutionId(athenaQuery: AthenaQuery): String {
     if (athenaQuery.queryString == "THROW ERROR") {

@@ -11,7 +11,7 @@ data class SubjectInformation(
   val orderEndDate: String?,
   val deviceId: String?,
   val tagPeriodStartDate: String?,
-  val tagPeriodEndDate: String?
+  val tagPeriodEndDate: String?,
 ) {
   constructor(dto: AthenaSubjectInformationDTO) : this(
     nomisId = dto.nomisId,
@@ -22,6 +22,6 @@ data class SubjectInformation(
     orderEndDate = dto.orderEndDate,
     deviceId = dto.deviceId,
     tagPeriodStartDate = dto.tagPeriodStartDate,
-    tagPeriodEndDate = dto.tagPeriodEndDate
+    tagPeriodEndDate = dto.tagPeriodEndDate,
   )
 }
