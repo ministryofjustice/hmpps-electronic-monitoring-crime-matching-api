@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,8 +19,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.AuditService
 
 @RestController
-//TODO Resolve after testing
-//@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
+@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
 @RequestMapping("/subjects", produces = ["application/json"])
 class SubjectController(
     @Autowired val subjectService: SubjectService,
@@ -39,7 +39,7 @@ class SubjectController(
     @Parameter(description = "The search criteria for the query", required = true)
     @RequestBody subjectSearchCriteria: SubjectSearchCriteria,
   ): ResponseEntity<QueryExecutionResponse> {
-    val queryExecutionId = subjectService.getSubjectSearchResults(subjectSearchCriteria)
+    val queryExecutionId = subjectService.getQueryExecutionId(subjectSearchCriteria)
 
     auditService.createEvent(
       authentication.name,
@@ -65,7 +65,7 @@ class SubjectController(
     @Parameter(description = "The query execution id of search", required = true)
     @RequestParam(name = "id") queryExecutionId: String,
   ): ResponseEntity<List<SubjectInformation>> {
-    val result = subjectService.submitSubjectSearchQuery(queryExecutionId)
+    val result = subjectService.getSubjectSearchResults(queryExecutionId)
 
     return ResponseEntity.ok(result)
   }

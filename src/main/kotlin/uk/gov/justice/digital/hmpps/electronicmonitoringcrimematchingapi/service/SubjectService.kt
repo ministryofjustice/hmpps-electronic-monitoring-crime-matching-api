@@ -20,11 +20,10 @@ class SubjectService(
     return true
   }
 
-  fun submitSubjectSearchQuery(queryExecutionId: String): List<SubjectInformation> {
-    val results = subjectSearchRepository.submitSubjectSearchQuery(queryExecutionId)
+  fun getQueryExecutionId(subjectSearchCriteria: SubjectSearchCriteria): String = subjectSearchRepository.searchSubjects(subjectSearchCriteria)
+
+  fun getSubjectSearchResults(queryExecutionId: String): List<SubjectInformation> {
+    val results = subjectSearchRepository.getSubjectSearchResults(queryExecutionId)
     return results.map { result -> SubjectInformation(result) }
   }
-
-  fun getSubjectSearchResults(subjectSearchCriteria: SubjectSearchCriteria): String = subjectSearchRepository.getSubjectSearchResults(subjectSearchCriteria)
-
 }
