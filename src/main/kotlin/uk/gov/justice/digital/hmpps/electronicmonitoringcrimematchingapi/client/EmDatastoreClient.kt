@@ -56,6 +56,23 @@ class EmDatastoreClient : EmDatastoreClientInterface {
     return resultSet
   }
 
+  override fun getQueryResult(queryExecutionId: String): ResultSet {
+    val athenaClient = startClient()
+
+    waitForQueryToComplete(athenaClient, queryExecutionId)
+    val resultSet: ResultSet = retrieveResults(athenaClient, queryExecutionId)
+
+    athenaClient.close()
+    return resultSet
+  }
+
+  override fun getQueryExecutionId(athenaQuery: AthenaQuery): String {
+    val athenaClient = startClient()
+    val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
+    athenaClient.close()
+    return queryExecutionId
+  }
+
   @Throws(AthenaClientException::class)
   private fun submitAthenaQuery(athenaClient: AthenaClient, query: AthenaQuery): String {
     return try {

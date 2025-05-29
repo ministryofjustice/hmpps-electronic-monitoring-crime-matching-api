@@ -2,10 +2,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
@@ -23,18 +24,19 @@ class ConnectivityControllerTest {
   @BeforeEach
   fun setup() {
     authentication = mock(Authentication::class.java)
-    `when`(authentication.name).thenReturn("MOCK_AUTH_USER")
+    whenever(authentication.name).thenReturn("MOCK_AUTH_USER")
     subjectService = mock(SubjectService::class.java)
     auditService = mock(AuditService::class.java)
     controller = ConnectivityController(subjectService, auditService)
   }
 
   @Nested
+  @DisplayName("TestAthenaConnection")
   inner class TestAthenaConnection {
     @Test
-    fun `calls SubjectService for checkAvailability`() {
-      `when`(subjectService.checkAvailability()).thenReturn(true)
-      `when`(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
+    fun `it should return success message when checkAvailability true`() {
+      whenever(subjectService.checkAvailability()).thenReturn(true)
+      whenever(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
 
       val result = controller.test(authentication)
 
@@ -43,9 +45,9 @@ class ConnectivityControllerTest {
     }
 
     @Test
-    fun `calls SubjectService for checkAvailability connection unavailable`() {
-      `when`(subjectService.checkAvailability()).thenReturn(false)
-      `when`(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
+    fun `it should return connection unavailable message when checkAvailability false`() {
+      whenever(subjectService.checkAvailability()).thenReturn(false)
+      whenever(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
 
       val result = controller.test(authentication)
 
@@ -54,9 +56,9 @@ class ConnectivityControllerTest {
     }
 
     @Test
-    fun `calls SubjectService for checkAvailability exception thrown`() {
-      `when`(subjectService.checkAvailability()).thenThrow(NullPointerException("Failed"))
-      `when`(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
+    fun `it should return error message for checkAvailability when exception thrown`() {
+      whenever(subjectService.checkAvailability()).thenThrow(NullPointerException("Failed"))
+      whenever(authentication.principal).thenReturn("EXPECTED_PRINCIPAL")
 
       val result = controller.test(authentication)
 
