@@ -24,7 +24,7 @@ class SubjectService(
   fun getQueryExecutionId(subjectSearchCriteria: SubjectSearchCriteria): String = subjectSearchRepository.searchSubjects(subjectSearchCriteria)
 
   fun getSubjectSearchResults(queryExecutionId: String, page: Int, pageSize: Int): PageResult<SubjectInformation> {
-    val results = subjectSearchRepository.getSubjectSearchResults(queryExecutionId, page, pageSize)
+    val results = subjectSearchRepository.getSubjectSearchResults(queryExecutionId)
 
     if (results.isEmpty()) {
       return PageResult(page, 0, emptyList())
