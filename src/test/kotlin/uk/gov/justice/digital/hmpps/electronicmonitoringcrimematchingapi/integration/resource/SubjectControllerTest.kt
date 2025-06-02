@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.s
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.resource.subject.SubjectController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.SubjectService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.AuditService
+import java.time.LocalDateTime
 
 @ActiveProfiles("test")
 class SubjectControllerTest {
@@ -63,13 +64,13 @@ class SubjectControllerTest {
         SubjectInformation(
           "12345",
           "John",
-          "2000-05-29T10:57:06.932277",
+          LocalDateTime.parse("2000-05-29T10:57:06.932277"),
           "2 Green Grove",
-          "2024-05-29T10:57:06.932277",
-          "2026-05-29T10:57:06.932277",
+          LocalDateTime.parse("2024-05-29T10:57:06.932277"),
+          LocalDateTime.parse("2026-05-29T10:57:06.932277"),
           "87654",
-          "2024-05-29T10:57:06.932277",
-          "2026-05-29T10:57:06.932277",
+          LocalDateTime.parse("2024-05-29T10:57:06.932277"),
+          LocalDateTime.parse("2026-05-29T10:57:06.932277"),
         ),
       )
 
