@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.PageResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.QueryExecutionResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectInformation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectSearchCriteria
@@ -63,9 +64,14 @@ class SubjectController(
   fun getSubjectSearchResults(
     @Parameter(description = "The query execution id of search", required = true)
     @RequestParam(name = "id") queryExecutionId: String,
-  ): ResponseEntity<List<SubjectInformation>> {
-    val result = subjectService.getSubjectSearchResults(queryExecutionId)
-
+    @Parameter(description = "The requested page number", required = true)
+    @RequestParam(name = "page")
+    page: Int = 1,
+    @Parameter(description = "The requested page size", required = true)
+    @RequestParam(name = "pageSize")
+    pageSize: Int = 1
+  ): ResponseEntity<PageResult<SubjectInformation>> {
+    val result = subjectService.getSubjectSearchResults(queryExecutionId, page, pageSize)
     return ResponseEntity.ok(result)
   }
 }
