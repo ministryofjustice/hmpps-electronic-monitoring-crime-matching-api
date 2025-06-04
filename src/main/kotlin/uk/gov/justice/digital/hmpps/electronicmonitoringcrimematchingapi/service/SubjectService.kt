@@ -2,18 +2,17 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SubjectInformation
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SearchRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SubjectInformationRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectInformation
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectSearchCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SubjectSearchRepository
 
 @Service
 class SubjectService(
-  @Autowired val searchRepository: SearchRepository,
-  @Autowired val subjectInformationRepository: SubjectInformationRepository,
+  @Autowired val subjectSearchRepository: SubjectSearchRepository,
 ) {
   fun checkAvailability(): Boolean {
     try {
-      searchRepository.listLegacyIds()
+      subjectSearchRepository.listLegacyIds()
     } catch (_: Exception) {
       return false
     }
@@ -21,9 +20,10 @@ class SubjectService(
     return true
   }
 
-  fun getSubjectInformation(legacySubjectId: String): SubjectInformation {
-    val subjectInformation = subjectInformationRepository.getSubjectInformation(legacySubjectId)
+  fun getQueryExecutionId(subjectSearchCriteria: SubjectSearchCriteria): String = subjectSearchRepository.searchSubjects(subjectSearchCriteria)
 
-    return SubjectInformation(subjectInformation.legacySubjectId, subjectInformation.name)
+  fun getSubjectSearchResults(queryExecutionId: String): List<SubjectInformation> {
+    val results = subjectSearchRepository.getSubjectSearchResults(queryExecutionId)
+    return results.map { result -> SubjectInformation(result) }
   }
 }

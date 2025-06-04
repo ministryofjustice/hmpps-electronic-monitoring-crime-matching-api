@@ -1,1 +1,0 @@
-SELECT legacy_subject_id, full_name FROM historic_api_mart.order_details WHERE legacy_subject_id = ?1401253
