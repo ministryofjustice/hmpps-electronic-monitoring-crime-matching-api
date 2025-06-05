@@ -43,7 +43,7 @@ class SubjectService(
     val toIndex = minOf(fromIndex + pageSize, totalResults)
 
     return PageResult(
-      pageNumber = page,
+      page = page,
       totalPages = totalPages,
       results = mappedResults.subList(fromIndex, toIndex)
     )
