@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
-@RequestMapping("/subjects", produces = ["application/json"])
+@RequestMapping("/subjects-query", produces = ["application/json"])
 class SubjectController(
   @Autowired val subjectService: SubjectService,
   @Autowired val auditService: AuditService,
