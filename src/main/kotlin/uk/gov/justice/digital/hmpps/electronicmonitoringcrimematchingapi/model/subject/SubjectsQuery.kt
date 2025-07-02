@@ -6,14 +6,12 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.CreationTimestamp
 import java.time.ZonedDateTime
 
 @Entity
 @Table(
-  name = "subject_query_cache",
-  uniqueConstraints = [UniqueConstraint(columnNames = ["nomisId", "subjectName"])]
+  name = "subject_query_cache"
 )
 data class SubjectsQuery(
   @Id
@@ -23,12 +21,13 @@ data class SubjectsQuery(
   val nomisId: String?,
   val subjectName: String?,
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   val queryExecutionId: String,
 
   @Column(nullable = false)
   val queryOwner: String,
 
   @CreationTimestamp
+  @Column(nullable = false)
   val createdAt: ZonedDateTime = ZonedDateTime.now()
 )

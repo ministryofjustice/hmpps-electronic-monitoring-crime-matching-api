@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.s
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectsQueryCacheRepository
+import java.time.ZonedDateTime
 
 @Service
 class SubjectService(
@@ -18,9 +19,10 @@ class SubjectService(
   @Transactional
   fun getSubjectsQueryResults(subjectsQueryCriteria: SubjectsQueryCriteria, user: String): List<Subject> {
     //Check cache for existing query
-    var queryExecutionId = subjectsQueryCacheRepository.findByNomisIdAndSubjectName(
+    var queryExecutionId = subjectsQueryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
       subjectsQueryCriteria.nomisId,
-      subjectsQueryCriteria.name
+      subjectsQueryCriteria.name,
+      ZonedDateTime.now().minusDays(1)
     )?.queryExecutionId
 
     if (queryExecutionId == null) {

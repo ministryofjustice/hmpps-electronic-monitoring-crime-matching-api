@@ -7,7 +7,5 @@ import java.time.ZonedDateTime
 
 @Repository
 interface SubjectsQueryCacheRepository: JpaRepository<SubjectsQuery, Long> {
-  fun findByNomisIdAndSubjectName(nomisId: String?, name: String?): SubjectsQuery?
-
-  fun deleteAllByCreatedAtBefore(date: ZonedDateTime): Long
+  fun findByNomisIdAndSubjectNameAndCreatedAtAfter(nomisId: String?, name: String?, retentionDate: ZonedDateTime): SubjectsQuery?
 }

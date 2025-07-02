@@ -25,6 +25,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
     username: postgres
     password: postgres
+  flyway:
+    enabled: false
 
 CLIENT_ID: CLIENT_ID
 CLIENT_SECRET: CLIENT_SECRET

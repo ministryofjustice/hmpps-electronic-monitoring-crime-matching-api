@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectDTO
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.Subject
@@ -72,7 +74,11 @@ class SubjectsServiceTest {
 
       val subjectsQuery = SubjectsQuery(1, "", "", queryExecutionId, "")
 
-      whenever(queryCacheRepository.findByNomisIdAndSubjectName("12345", "John")).thenReturn(subjectsQuery)
+      whenever(queryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
+        eq("12345"),
+        eq("John"),
+        any()))
+        .thenReturn(subjectsQuery)
       whenever(subjectRepository.getSubjectsQueryResults(queryExecutionId)).thenReturn(expectedResult)
 
       val result = service.getSubjectsQueryResults(subjectsQueryCriteria, "")
@@ -101,7 +107,11 @@ fun `it should return list of subjects when submitting a new query`() {
       ),
   )
 
-  whenever(queryCacheRepository.findByNomisIdAndSubjectName("12345", "John")).thenReturn(null)
+  whenever(queryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
+    eq("12345"),
+    eq("John"),
+    any()))
+    .thenReturn(null)
   whenever(subjectRepository.getSubjectsQueryId(subjectsQueryCriteria)).thenReturn(queryExecutionId)
   whenever(subjectRepository.getSubjectsQueryResults(queryExecutionId)).thenReturn(expectedResult)
 
