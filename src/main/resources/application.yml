@@ -23,6 +23,15 @@ spring:
         provider:
           hmpps-auth:
             token-uri: ${services.hmpps-auth.url}/oauth/token
+  datasource:
+    url: 'jdbc:postgresql://${DB_SERVER}/${DB_NAME}?sslmode=prefer'
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: false
 
 server:
   port: 8080
@@ -65,3 +74,8 @@ services:
     output: ${ATHENA_OUTPUT_BUCKET}
   athena-roles:
     general: ${ATHENA_GENERAL_IAM_ROLE}
+
+query-cache:
+  subjects:
+    ttl-hours: 24
+    schedule: "0 0 8 * * *"

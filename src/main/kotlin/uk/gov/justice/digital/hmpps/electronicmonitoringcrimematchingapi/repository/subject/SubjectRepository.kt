@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -7,14 +7,14 @@ import software.amazon.awssdk.services.athena.model.ResultSet
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClientInterface
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ListSubjectInformationQueryBuilder
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SubjectSearchQueryBuilder
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectInformationDTO
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectSearchCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SubjectsQueryBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectDTO
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
 
 @Service
-class SubjectSearchRepository(
-  @Autowired val athenaClient: EmDatastoreClientInterface,
-  @Value("\${services.athena.database}")
+class SubjectRepository(
+    @Autowired val athenaClient: EmDatastoreClientInterface,
+    @Value("\${services.athena.database}")
   var athenaDatabase: String = "unknown_database",
 ) {
 
@@ -27,20 +27,20 @@ class SubjectSearchRepository(
       val legacySubjectId: String,
     )
 
-    val result = AthenaHelper.mapTo<SubjectId>(athenaResponse)
+    val result = AthenaHelper.Companion.mapTo<SubjectId>(athenaResponse)
 
     return result.map { it.legacySubjectId }
   }
 
-  fun getSubjectSearchResults(queryExecutionId: String): List<AthenaSubjectInformationDTO> {
+  fun getSubjectsQueryResults(queryExecutionId: String): List<AthenaSubjectDTO> {
     val athenaResponse = athenaClient.getQueryResult(queryExecutionId)
-    return AthenaHelper.mapTo<AthenaSubjectInformationDTO>(athenaResponse)
+    return AthenaHelper.Companion.mapTo<AthenaSubjectDTO>(athenaResponse)
   }
 
-  fun searchSubjects(subjectSearchCriteria: SubjectSearchCriteria): String {
-    val subjectSearchQuery = SubjectSearchQueryBuilder(athenaDatabase)
-      .withNomisId(subjectSearchCriteria.nomisId)
-      .withName(subjectSearchCriteria.name)
+  fun getSubjectsQueryId(subjectsQueryCriteria: SubjectsQueryCriteria): String {
+    val subjectSearchQuery = SubjectsQueryBuilder(athenaDatabase)
+      .withNomisId(subjectsQueryCriteria.nomisId)
+      .withName(subjectsQueryCriteria.name)
       .build()
 
     return athenaClient.getQueryExecutionId(subjectSearchQuery)

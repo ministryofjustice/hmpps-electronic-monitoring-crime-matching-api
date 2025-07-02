@@ -1,6 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.1.0"
   kotlin("plugin.spring") version "2.1.21"
+  kotlin("plugin.jpa") version "1.9.0"
   jacoco
 }
 
@@ -12,11 +13,16 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.3")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.4")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
+  implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
   implementation("software.amazon.awssdk:athena:2.31.45")
   implementation("org.json:json:20250517")
   implementation("io.zeko:zeko-sql-builder:1.5.6")
 
+  runtimeOnly("org.postgresql:postgresql")
+  runtimeOnly("org.flywaydb:flyway-database-postgresql")
+
+  testImplementation("com.h2database:h2:2.3.232")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.4.3")
   testImplementation("org.mockito:mockito-core:5.17.0")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")

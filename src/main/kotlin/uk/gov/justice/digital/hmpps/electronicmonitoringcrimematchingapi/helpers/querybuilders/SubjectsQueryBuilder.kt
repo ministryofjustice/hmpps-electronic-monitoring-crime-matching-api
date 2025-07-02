@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 import io.zeko.db.sql.dsl.like
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectQuery
 
-class SubjectSearchQueryBuilder(
+class SubjectsQueryBuilder(
   override val databaseName: String,
 ) : SqlQueryBuilder(
   databaseName,
@@ -21,7 +21,7 @@ class SubjectSearchQueryBuilder(
   ),
 ) {
 
-  fun withName(value: String?): SubjectSearchQueryBuilder {
+  fun withName(value: String?): SubjectsQueryBuilder {
     if (value.isNullOrBlank()) {
       return this
     }
@@ -31,7 +31,7 @@ class SubjectSearchQueryBuilder(
     return this
   }
 
-  fun withNomisId(value: String?): SubjectSearchQueryBuilder {
+  fun withNomisId(value: String?): SubjectsQueryBuilder {
     if (value.isNullOrBlank()) {
       return this
     }

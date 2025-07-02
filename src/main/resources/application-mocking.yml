@@ -11,10 +11,20 @@ services:
     mfa: false
   athena:
     # Values for connecting to TEST Athena instance
-    database: historic_api_mart
+    database: crime_matching_test_db
     output: s3://emds-test-athena-query-results-20240923095933297100000013
   athena-roles:
     general: testIAM
+
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
+    username: postgres
+    password: postgres
 
 CLIENT_ID: CLIENT_ID
 CLIENT_SECRET: CLIENT_SECRET
