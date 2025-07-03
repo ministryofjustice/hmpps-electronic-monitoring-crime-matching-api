@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.a
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectRepository
 
-class SubjectSearchRepositoryTest {
+class SubjectRepositoryTest {
   private lateinit var athenaClient: EmDatastoreClient
   private lateinit var repository: SubjectRepository
 
