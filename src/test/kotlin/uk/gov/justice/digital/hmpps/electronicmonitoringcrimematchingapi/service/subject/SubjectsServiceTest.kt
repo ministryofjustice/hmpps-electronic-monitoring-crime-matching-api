@@ -6,15 +6,15 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectDTO
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.Subject
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectsQueryCacheRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectsQueryCacheRepository
 
 class SubjectsServiceTest {
   private lateinit var queryCacheRepository: SubjectsQueryCacheRepository
@@ -58,26 +58,29 @@ class SubjectsServiceTest {
       val subjectsQueryCriteria = SubjectsQueryCriteria(name = "John", nomisId = "12345")
       val queryExecutionId = "query-execution-id"
       val expectedResult = listOf(
-          AthenaSubjectDTO(
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-              "",
-          ),
+        AthenaSubjectDTO(
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ),
       )
 
       val subjectsQuery = SubjectsQuery(1, "", "", queryExecutionId, "")
 
-      whenever(queryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
-        eq("12345"),
-        eq("John"),
-        any()))
+      whenever(
+        queryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
+          eq("12345"),
+          eq("John"),
+          any(),
+        ),
+      )
         .thenReturn(subjectsQuery)
       whenever(subjectRepository.getSubjectsQueryResults(queryExecutionId)).thenReturn(expectedResult)
 
@@ -88,12 +91,12 @@ class SubjectsServiceTest {
       Assertions.assertThat(result.first()).isInstanceOf(Subject::class.java)
     }
 
-@Test
-fun `it should return list of subjects when submitting a new query`() {
-  val subjectsQueryCriteria = SubjectsQueryCriteria(name = "John", nomisId = "12345")
-  val queryExecutionId = "query-execution-id"
-  val expectedResult = listOf(
-      AthenaSubjectDTO(
+    @Test
+    fun `it should return list of subjects when submitting a new query`() {
+      val subjectsQueryCriteria = SubjectsQueryCriteria(name = "John", nomisId = "12345")
+      val queryExecutionId = "query-execution-id"
+      val expectedResult = listOf(
+        AthenaSubjectDTO(
           "",
           "",
           "",
@@ -104,22 +107,24 @@ fun `it should return list of subjects when submitting a new query`() {
           "",
           "",
           "",
-      ),
-  )
+        ),
+      )
 
-  whenever(queryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
-    eq("12345"),
-    eq("John"),
-    any()))
-    .thenReturn(null)
-  whenever(subjectRepository.getSubjectsQueryId(subjectsQueryCriteria)).thenReturn(queryExecutionId)
-  whenever(subjectRepository.getSubjectsQueryResults(queryExecutionId)).thenReturn(expectedResult)
+      whenever(
+        queryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
+          eq("12345"),
+          eq("John"),
+          any(),
+        ),
+      ).thenReturn(null)
+      whenever(subjectRepository.getSubjectsQueryId(subjectsQueryCriteria)).thenReturn(queryExecutionId)
+      whenever(subjectRepository.getSubjectsQueryResults(queryExecutionId)).thenReturn(expectedResult)
 
-  val result = service.getSubjectsQueryResults(subjectsQueryCriteria, "")
+      val result = service.getSubjectsQueryResults(subjectsQueryCriteria, "")
 
-  Assertions.assertThat(result).isInstanceOf(List::class.java)
-  Assertions.assertThat(result.count()).isEqualTo(1)
-  Assertions.assertThat(result.first()).isInstanceOf(Subject::class.java)
-}
+      Assertions.assertThat(result).isInstanceOf(List::class.java)
+      Assertions.assertThat(result.count()).isEqualTo(1)
+      Assertions.assertThat(result.first()).isInstanceOf(Subject::class.java)
+    }
   }
 }

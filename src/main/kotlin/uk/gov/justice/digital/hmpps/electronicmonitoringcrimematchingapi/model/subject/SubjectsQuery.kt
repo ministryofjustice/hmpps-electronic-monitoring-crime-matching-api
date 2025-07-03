@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 
 @Entity
 @Table(
-  name = "subject_query_cache"
+  name = "subject_query_cache",
 )
 data class SubjectsQuery(
   @Id
@@ -29,5 +29,5 @@ data class SubjectsQuery(
 
   @CreationTimestamp
   @Column(nullable = false)
-  val createdAt: ZonedDateTime = ZonedDateTime.now()
+  val createdAt: ZonedDateTime = ZonedDateTime.now(),
 )

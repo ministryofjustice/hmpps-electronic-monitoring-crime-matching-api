@@ -33,7 +33,7 @@ class SubjectController(
   fun getSubjects(
     authentication: Authentication,
     @Parameter(description = "The search criteria for the query", required = true)
-    @ModelAttribute subjectsQueryCriteria: SubjectsQueryCriteria
+    @ModelAttribute subjectsQueryCriteria: SubjectsQueryCriteria,
   ): ResponseEntity<List<Subject>> {
     val result = subjectService.getSubjectsQueryResults(subjectsQueryCriteria, authentication.name)
     return ResponseEntity.ok(result)

@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.s
 
 @Service
 class SubjectRepository(
-    @Autowired val athenaClient: EmDatastoreClientInterface,
-    @Value("\${services.athena.database}")
+  @Autowired val athenaClient: EmDatastoreClientInterface,
+  @Value("\${services.athena.database}")
   var athenaDatabase: String = "unknown_database",
 ) {
 

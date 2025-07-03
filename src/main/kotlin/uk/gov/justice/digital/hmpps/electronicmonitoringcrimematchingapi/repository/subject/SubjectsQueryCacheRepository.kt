@@ -6,6 +6,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.s
 import java.time.ZonedDateTime
 
 @Repository
-interface SubjectsQueryCacheRepository: JpaRepository<SubjectsQuery, Long> {
+interface SubjectsQueryCacheRepository : JpaRepository<SubjectsQuery, Long> {
   fun findByNomisIdAndSubjectNameAndCreatedAtAfter(nomisId: String?, name: String?, retentionDate: ZonedDateTime): SubjectsQuery?
 }
