@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 
 @Component
-@Profile("!mocking")
+@Profile("!mocking & !integration")
 class EmDatastoreClient : EmDatastoreClientInterface {
   @Value("\${services.athena.output}")
   private val output: String = "s3://emds-dev-athena-query-results-20240917144028307600000004"

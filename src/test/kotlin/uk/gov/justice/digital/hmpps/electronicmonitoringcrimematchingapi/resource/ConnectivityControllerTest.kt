@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.resource
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -11,8 +11,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.resource.ConnectivityController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.SubjectService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.AuditService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.subject.SubjectService
 
 @ActiveProfiles("test")
 class ConnectivityControllerTest {

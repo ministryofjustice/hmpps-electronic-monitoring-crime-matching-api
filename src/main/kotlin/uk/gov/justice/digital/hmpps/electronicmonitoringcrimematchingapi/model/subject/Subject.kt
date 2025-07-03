@@ -1,10 +1,11 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.nullableLocalDateTime
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectInformationDTO
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectDTO
 import java.time.LocalDateTime
 
-data class SubjectInformation(
+data class Subject(
+  val personId: String,
   val nomisId: String,
   val name: String?,
   val dateOfBirth: LocalDateTime?,
@@ -15,7 +16,8 @@ data class SubjectInformation(
   val tagPeriodStartDate: LocalDateTime?,
   val tagPeriodEndDate: LocalDateTime?,
 ) {
-  constructor(dto: AthenaSubjectInformationDTO) : this(
+  constructor(dto: AthenaSubjectDTO) : this(
+    personId = dto.personId,
     nomisId = dto.nomisId,
     name = dto.name,
     dateOfBirth = nullableLocalDateTime(dto.dateOfBirth),

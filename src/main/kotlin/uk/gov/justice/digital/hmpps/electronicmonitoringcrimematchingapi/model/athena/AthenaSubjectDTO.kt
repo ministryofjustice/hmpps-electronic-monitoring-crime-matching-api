@@ -2,7 +2,8 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class AthenaSubjectInformationDTO(
+data class AthenaSubjectDTO(
+  val personId: String,
   val nomisId: String,
   @JsonProperty("full_name")
   val name: String?,
