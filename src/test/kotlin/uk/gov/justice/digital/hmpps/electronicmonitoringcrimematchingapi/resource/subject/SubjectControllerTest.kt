@@ -5,10 +5,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.web.server.ResponseStatusException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.Subject
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.subject.SubjectService
@@ -55,6 +57,15 @@ class SubjectControllerTest {
       val result = controller.getSubjects(authentication, subjectsQueryCriteria)
       Assertions.assertThat(result.body).isNotNull
       Assertions.assertThat(result.body).isEqualTo(expectedResult)
+    }
+
+    @Test
+    fun `it should throw exception when invalid criteria passed`() {
+      val subjectsQueryCriteria = SubjectsQueryCriteria(name = null, nomisId = null)
+
+      assertThrows<ResponseStatusException> {
+        controller.getSubjects(authentication, subjectsQueryCriteria)
+      }
     }
   }
 }

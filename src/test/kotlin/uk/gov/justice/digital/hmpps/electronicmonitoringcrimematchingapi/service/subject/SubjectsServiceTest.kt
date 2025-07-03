@@ -80,8 +80,7 @@ class SubjectsServiceTest {
           eq("John"),
           any(),
         ),
-      )
-        .thenReturn(subjectsQuery)
+      ).thenReturn(subjectsQuery)
       whenever(subjectRepository.getSubjectsQueryResults(queryExecutionId)).thenReturn(expectedResult)
 
       val result = service.getSubjectsQueryResults(subjectsQueryCriteria, "")

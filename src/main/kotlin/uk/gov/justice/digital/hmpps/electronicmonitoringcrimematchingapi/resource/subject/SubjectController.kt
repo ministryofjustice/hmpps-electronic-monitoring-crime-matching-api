@@ -3,14 +3,15 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.resour
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.Subject
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.subject.SubjectService
@@ -33,8 +34,16 @@ class SubjectController(
   fun getSubjects(
     authentication: Authentication,
     @Parameter(description = "The search criteria for the query", required = true)
-    @ModelAttribute subjectsQueryCriteria: SubjectsQueryCriteria,
+    subjectsQueryCriteria: SubjectsQueryCriteria,
   ): ResponseEntity<List<Subject>> {
+
+    if (!subjectsQueryCriteria.isValid()) {
+      throw ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Query must have at least one parameter specified: $subjectsQueryCriteria"
+      )
+    }
+
     val result = subjectService.getSubjectsQueryResults(subjectsQueryCriteria, authentication.name)
     return ResponseEntity.ok(result)
   }
