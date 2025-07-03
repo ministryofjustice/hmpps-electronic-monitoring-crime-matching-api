@@ -36,11 +36,10 @@ class SubjectController(
     @Parameter(description = "The search criteria for the query", required = true)
     subjectsQueryCriteria: SubjectsQueryCriteria,
   ): ResponseEntity<List<Subject>> {
-
     if (!subjectsQueryCriteria.isValid()) {
       throw ResponseStatusException(
         HttpStatus.BAD_REQUEST,
-        "Query must have at least one parameter specified: $subjectsQueryCriteria"
+        "Query must have at least one parameter specified: $subjectsQueryCriteria",
       )
     }
 

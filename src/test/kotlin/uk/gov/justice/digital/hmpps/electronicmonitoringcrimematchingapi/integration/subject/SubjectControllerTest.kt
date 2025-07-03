@@ -16,7 +16,6 @@ class SubjectControllerTest : IntegrationTestBase() {
   inner class GetSubjects {
     @Test
     fun `it should return subjects when valid search criteria is provided`() {
-
       MockEmDatastoreClient.addResponseFile("successfulSubjectSearchResponse")
       MockEmDatastoreClient.addResponseFile("successfulGetQueryExecutionIdResponse")
 
