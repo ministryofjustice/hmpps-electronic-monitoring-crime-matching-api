@@ -52,11 +52,13 @@ class SubjectControllerTest : IntegrationTestBase() {
     MockEmDatastoreClient.addResponseFile("successfulSubjectSearchResponse")
     MockEmDatastoreClient.addResponseFile("successfulGetQueryExecutionIdResponse")
 
-    subjectsQueryCacheRepository.save(SubjectsQuery(
-      nomisId = "12345",
-      subjectName = "John",
-      queryExecutionId = "queryId",
-      queryOwner = "user1")
+    subjectsQueryCacheRepository.save(
+      SubjectsQuery(
+        nomisId = "12345",
+        subjectName = "John",
+        queryExecutionId = "queryId",
+        queryOwner = "user1",
+      ),
     )
 
     webTestClient.get()
