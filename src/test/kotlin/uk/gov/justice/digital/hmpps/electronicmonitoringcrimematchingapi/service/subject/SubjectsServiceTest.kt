@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectDTO
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.Subject
@@ -88,6 +90,10 @@ class SubjectsServiceTest {
       Assertions.assertThat(result).isInstanceOf(List::class.java)
       Assertions.assertThat(result.count()).isEqualTo(1)
       Assertions.assertThat(result.first()).isInstanceOf(Subject::class.java)
+      verify(queryCacheRepository, times(0))
+        .save(any())
+      verify(subjectRepository, times(0))
+        .getSubjectsQueryId(any())
     }
 
     @Test
@@ -124,6 +130,10 @@ class SubjectsServiceTest {
       Assertions.assertThat(result).isInstanceOf(List::class.java)
       Assertions.assertThat(result.count()).isEqualTo(1)
       Assertions.assertThat(result.first()).isInstanceOf(Subject::class.java)
+      verify(queryCacheRepository, times(1))
+        .save(any())
+      verify(subjectRepository, times(1))
+        .getSubjectsQueryId(any())
     }
   }
 }
