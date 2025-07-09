@@ -15,6 +15,7 @@ generic-service:
     ATHENA_DATABASE_NAME: "crime_matching_test_db"
     ATHENA_OUTPUT_BUCKET: "s3://emds-test-athena-query-results-20240923095933297100000013"
     MFA_REQUIRED: "false"
+    SPRING_PROFILES_ACTIVE: "mocking"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
