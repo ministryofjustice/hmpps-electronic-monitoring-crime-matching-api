@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.repository
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -11,29 +11,29 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClient
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectInformationDTO
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectSearchCriteria
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.SubjectSearchRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaSubjectDTO
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectRepository
 
-class SubjectSearchRepositoryTest {
+class SubjectRepositoryTest {
   private lateinit var athenaClient: EmDatastoreClient
-  private lateinit var repository: SubjectSearchRepository
+  private lateinit var repository: SubjectRepository
 
   @BeforeEach
   fun setup() {
     athenaClient = mock(EmDatastoreClient::class.java)
-    repository = SubjectSearchRepository(athenaClient)
+    repository = SubjectRepository(athenaClient)
   }
 
   @Nested
   inner class SearchSubjects {
     @Test
     fun `searchSubjects returns queryExecutionId`() {
-      val subjectSearchCriteria = SubjectSearchCriteria(name = "John", nomisId = "12345")
+      val subjectsQueryCriteria = SubjectsQueryCriteria(name = "John", nomisId = "12345")
       val queryExecutionId = "query-execution-id"
       whenever(athenaClient.getQueryExecutionId(any<AthenaQuery>())).thenReturn(queryExecutionId)
 
-      val result = repository.searchSubjects(subjectSearchCriteria)
+      val result = repository.getSubjectsQueryId(subjectsQueryCriteria)
       assertThat(result).isEqualTo(queryExecutionId)
     }
   }
@@ -49,6 +49,9 @@ class SubjectSearchRepositoryTest {
             {
               "Data": [
                 {
+                  "VarCharValue": "person_id"
+                },
+                {
                   "VarCharValue": "nomis_id"
                 }
               ]
@@ -56,13 +59,28 @@ class SubjectSearchRepositoryTest {
             {
               "Data": [
                 {
-                  "VarCharValue": "1253587"
-                }
+                  "VarCharValue": "1"
+                },
+                {
+                  "VarCharValue": "2"
+                },
               ]
             }
           ],
           "ResultSetMetadata": {
             "ColumnInfo": [
+              {
+                "CatalogName": "hive",
+                "SchemaName": "",
+                "TableName": "",
+                "Name": "person_id",
+                "Label": "person_id",
+                "Type": "varchar",
+                "Precision": 19,
+                "Scale": 0,
+                "Nullable": "UNKNOWN",
+                "CaseSensitive": false
+              },
               {
                 "CatalogName": "hive",
                 "SchemaName": "",
@@ -88,9 +106,9 @@ class SubjectSearchRepositoryTest {
       val expectedResult = AthenaHelper.resultSetFromJson(simpleResultTest)
       whenever(athenaClient.getQueryResult(queryExecutionId)).thenReturn(expectedResult)
 
-      val result = repository.getSubjectSearchResults(queryExecutionId)
+      val result = repository.getSubjectsQueryResults(queryExecutionId)
       assertThat(result).isNotEmpty
-      assertThat(result[0]).isInstanceOf(AthenaSubjectInformationDTO::class.java)
+      assertThat(result[0]).isInstanceOf(AthenaSubjectDTO::class.java)
     }
   }
 }

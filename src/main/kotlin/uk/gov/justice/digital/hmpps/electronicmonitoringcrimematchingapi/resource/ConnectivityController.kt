@@ -10,8 +10,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.SubjectService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.AuditService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.subject.SubjectService
 
 @RestController
 class ConnectivityController(

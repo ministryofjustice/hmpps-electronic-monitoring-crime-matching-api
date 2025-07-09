@@ -36,6 +36,11 @@ generic-service:
       HMPPS_SQS_QUEUES_AUDIT_QUEUENAME: "sqs_queue_name"
     athena-roles:
       ATHENA_GENERAL_IAM_ROLE: "general_role_arn"
+    rds-postgresql-instance-output:
+      DB_SERVER: "rds_instance_address"
+      DB_NAME: "database_name"
+      DB_USER: "database_username"
+      DB_PASS: "database_password"
 
   allowlist:
     groups:
