@@ -1,14 +1,14 @@
-hmpps.sqs:
-  provider: localstack
-  useWebToken: false
-  queues:
-    audit:
-      queueName: "audit"
+#hmpps.sqs:
+#  provider: localstack
+#  useWebToken: false
+#  queues:
+#    audit:
+#      queueName: "audit"
 
 services:
-  hmpps-auth:
-    url: "http://localhost:8090/auth"
-    mfa: false
+#  hmpps-auth:
+#    url: "http://localhost:8090/auth"
+#    mfa: false
   athena:
     # Values for connecting to TEST Athena instance
     database: crime_matching_test_db
@@ -16,17 +16,14 @@ services:
   athena-roles:
     general: testIAM
 
-spring:
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
-    username: postgres
-    password: postgres
-  flyway:
-    enabled: false
-
-CLIENT_ID: CLIENT_ID
-CLIENT_SECRET: CLIENT_SECRET
+#spring:
+#  jpa:
+#    show-sql: true
+#    hibernate:
+#      ddl-auto: create
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
+#    username: postgres
+#    password: postgres
+#  flyway:
+#    enabled: false
