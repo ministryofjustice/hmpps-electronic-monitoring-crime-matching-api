@@ -6,13 +6,13 @@ import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.athena.model.ResultSet
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
-import java.io.File
+import java.nio.file.Paths
 
 @Component
 @Profile("mocking")
 class MockEMDatastoreClient : EmDatastoreClientInterface {
   private companion object {
-    private const val MOCKS_RESOURCE_PATH = "./src/main/resources/mockAthenaResponses"
+    private const val MOCKS_RESOURCE_PATH = "mockAthenaResponses"
 
     private const val MOCK_QUERY_EXECUTION_ID = "mock-query-execution-id"
 
@@ -21,17 +21,21 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
     private var responses: MutableMap<String, String> = mutableMapOf<String, String>()
 
     private fun loadResponses() {
-      val scenarios = File(MOCKS_RESOURCE_PATH).listFiles()?.map { it.nameWithoutExtension }
+      val classLoader = Thread.currentThread().contextClassLoader
+      val resourceUrl = classLoader.getResource(MOCKS_RESOURCE_PATH) ?: throw Exception("Resource not found: $MOCKS_RESOURCE_PATH")
+      val resourceUri = resourceUrl.toURI()
+      val baseDir = Paths.get(resourceUri).toFile()
 
-      if (scenarios!!.isEmpty()) {
-        return
-      }
+      val scenarios = baseDir.listFiles()?.map { it.nameWithoutExtension } ?: throw Exception("Files not found")
 
       scenarios.forEach { scenario ->
-        val rawQuery = File("$MOCKS_RESOURCE_PATH/$scenario/query.sql").readText(Charsets.UTF_8)
+        val queryPath = "$MOCKS_RESOURCE_PATH/$scenario/query.sql"
+        val responsePath = "$MOCKS_RESOURCE_PATH/$scenario/response.json"
+
+        val rawQuery = classLoader.getResource(queryPath)?.readText(Charsets.UTF_8) ?: return
         val query = stripWhitespace(rawQuery)
 
-        val response = File("$MOCKS_RESOURCE_PATH/$scenario/response.json").readText(Charsets.UTF_8)
+        val response = classLoader.getResource(responsePath)?.readText(Charsets.UTF_8) ?: return
 
         responses[query] = response
       }
@@ -55,7 +59,9 @@ class MockEMDatastoreClient : EmDatastoreClientInterface {
       )
     }
 
-    val athenaResponse = File("$MOCKS_RESOURCE_PATH/successfulSubjectSearch/response.json").readText(Charsets.UTF_8).trimIndent()
+    val classLoader = Thread.currentThread().contextClassLoader
+    val response = classLoader.getResource("$MOCKS_RESOURCE_PATH/successfulSubjectSearch/response.json")?.readText(Charsets.UTF_8) ?: "null"
+    val athenaResponse = response.trimIndent()
 
     return AthenaHelper.resultSetFromJson(athenaResponse)
   }
