@@ -42,7 +42,7 @@ class SubjectControllerTest {
           "1",
           "12345",
           "John",
-          LocalDateTime.parse("2000-05-29T10:57:06.932277"),
+          "2000-05-29",
           "2 Green Grove",
           LocalDateTime.parse("2024-05-29T10:57:06.932277"),
           LocalDateTime.parse("2026-05-29T10:57:06.932277"),

@@ -1,1 +1,1 @@
-SELECT nomis_id, full_name, date_of_birth, address, order_start_date, order_end_date, device_id, tag_period_start_date, tag_period_end_date FROM crime_matching_test_db.subject WHERE full_name LIKE ?
+SELECT nomis_id, person_name, date_of_birth, address, order_start_date, order_end_date, device_id, tag_start_date, tag_end_date FROM crime_matching_test_db.person WHERE person_name LIKE ?

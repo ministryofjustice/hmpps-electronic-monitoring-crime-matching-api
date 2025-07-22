@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-fun nullableLocalDateTime(date: String?, time: String? = "00:00:00"): LocalDateTime? = if (!date.isNullOrEmpty()) LocalDateTime.parse("${date}T${time ?: "00:00:00"}") else null
+val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+
+fun nullableLocalDateTime(date: String?): LocalDateTime? = if (!date.isNullOrEmpty()) LocalDateTime.parse(date, formatter) else null

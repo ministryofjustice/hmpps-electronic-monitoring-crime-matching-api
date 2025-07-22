@@ -29,8 +29,8 @@
         {
           "CaseSensitive": true,
           "CatalogName": "hive",
-          "Label": "full_name",
-          "Name": "full_name",
+          "Label": "person_name",
+          "Name": "person_name",
           "Nullable": "UNKNOWN",
           "Precision": 2147483647,
           "Scale": 0,
@@ -101,8 +101,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "tag_period_start_date",
-          "Name": "tag_period_start_date",
+          "Label": "tag_start_date",
+          "Name": "tag_start_date",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -113,8 +113,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "tag_period_end_date",
-          "Name": "tag_period_end_date",
+          "Label": "tag_end_date",
+          "Name": "tag_end_date",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -134,7 +134,7 @@
             "VarCharValue": "nomis_id"
           },
           {
-            "VarCharValue": "full_name"
+            "VarCharValue": "person_name"
           },
           {
             "VarCharValue": "date_of_birth"
@@ -152,10 +152,10 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "tag_period_start_date"
+            "VarCharValue": "tag_start_date"
           },
           {
-            "VarCharValue": "tag_period_end_date"
+            "VarCharValue": "tag_end_date"
           }
         ]
       },
@@ -177,7 +177,7 @@
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "2024-05-29"
+            "VarCharValue": "2021-05-18 00:00:00.000"
           },
           {
             "VarCharValue": ""
@@ -186,10 +186,10 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "2024-05-29"
+            "VarCharValue": "2023-05-18 00:00:00.000"
           },
           {
-            "VarCharValue": "2023-04-30"
+            "VarCharValue": "2024-05-18 00:00:00.000"
           }
         ]
       }
