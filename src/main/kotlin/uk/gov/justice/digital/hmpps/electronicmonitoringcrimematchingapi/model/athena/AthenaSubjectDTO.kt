@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class AthenaSubjectDTO(
   val personId: String,
-  val nomisId: String,
-  @JsonProperty("full_name")
+  @JsonProperty("person_name")
   val name: String?,
-  val dateOfBirth: String?,
   val address: String?,
+  val dateOfBirth: String?,
+  val deviceId: String?,
+  val nomisId: String,
   val orderStartDate: String?,
   val orderEndDate: String?,
-  val deviceId: String?,
-  val tagPeriodStartDate: String?,
-  val tagPeriodEndDate: String?,
+  val tagStartDate: String?,
+  val tagEndDate: String?,
 )

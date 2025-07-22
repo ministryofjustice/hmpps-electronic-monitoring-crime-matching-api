@@ -7,17 +7,18 @@ class SubjectsQueryBuilder(
   override val databaseName: String,
 ) : SqlQueryBuilder(
   databaseName,
-  "subject",
+  "person",
   arrayOf(
-    "nomis_id",
-    "full_name",
-    "date_of_birth",
+    "person_id",
+    "person_name",
     "address",
+    "date_of_birth",
+    "device_id",
+    "nomis_id",
     "order_start_date",
     "order_end_date",
-    "device_id",
-    "tag_period_start_date",
-    "tag_period_end_date",
+    "tag_start_date",
+    "tag_end_date",
   ),
 ) {
 
@@ -27,7 +28,7 @@ class SubjectsQueryBuilder(
     }
 
     values.add("'%$value%'")
-    whereClauses.put("full_name", "full_name" like "'%$value%'")
+    whereClauses.put("person_name", "person_name" like "'%$value%'")
     return this
   }
 
