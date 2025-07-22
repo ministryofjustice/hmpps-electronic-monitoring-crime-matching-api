@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.s
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.subject.SubjectsQueryCacheRepository
+import java.util.UUID
 
 class SubjectsServiceTest {
   private lateinit var queryCacheRepository: SubjectsQueryCacheRepository
@@ -74,7 +75,7 @@ class SubjectsServiceTest {
         ),
       )
 
-      val subjectsQuery = SubjectsQuery(1, "", "", queryExecutionId, "")
+      val subjectsQuery = SubjectsQuery(UUID.randomUUID(), "", "", queryExecutionId, "")
 
       whenever(
         queryCacheRepository.findByNomisIdAndSubjectNameAndCreatedAtAfter(
