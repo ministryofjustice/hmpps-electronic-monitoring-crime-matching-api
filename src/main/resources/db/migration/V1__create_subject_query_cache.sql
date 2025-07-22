@@ -1,6 +1,6 @@
 CREATE TABLE subject_query_cache
 (
-    id                 BIGSERIAL NOT NULL,
+    id                 UUID NOT NULL,
     nomis_id           VARCHAR(255),
     subject_name       VARCHAR(255),
     query_execution_id VARCHAR(255) NOT NULL,
