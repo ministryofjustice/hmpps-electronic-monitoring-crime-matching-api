@@ -10,6 +10,8 @@ configurations {
 }
 
 dependencies {
+  implementation(files("libs/athena-jdbc-full-3.5.1.jar"))
+
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.3")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.4")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
