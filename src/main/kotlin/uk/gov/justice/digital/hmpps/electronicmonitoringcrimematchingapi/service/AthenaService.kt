@@ -1,30 +1,37 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 
-import com.amazon.athena.jdbc.AthenaDriver
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.jdbc.datasource.SimpleDriverDataSource
 import org.springframework.stereotype.Service
-import java.util.Properties
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.Subject
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectRowMapper
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject.SubjectsQueryCriteria
+import java.sql.Driver
 
 @Service
 class AthenaService() {
+  val outputLocation = ""
+  val workGroup = ""
+  // Swap for sts assume role in other envs
+  val credentialsProvider = "DefaultChain"
 
-  val connectionDetails = Properties()
+  fun query(subjectsQueryCriteria : SubjectsQueryCriteria): List<Subject> {
+    val url = "jdbc:awsathena://Region=eu-west-2;" +
+      "OutputLocation=${outputLocation};" +
+      "WorkGroup=${workGroup};" +
+      "CredentialsProvider=${credentialsProvider};"
 
-  init {
-    connectionDetails.setProperty("Workgroup", "396913731313-default")
-    connectionDetails.setProperty("Region", "eu-west-2")
-    connectionDetails.setProperty("Catalog", "AwsDataCatalog")
-//    connectionDetails.setProperty("Database","crime_matching_test_db")
-    connectionDetails.setProperty("OutputLocation", "s3://emds-dev-athena-query-results-20240917144028307600000004")
-    connectionDetails.setProperty("CredentialsProvider", "DefaultChain")
-  }
+    val driver = Class.forName("com.amazon.athena.jdbc.AthenaDriver").getDeclaredConstructor().newInstance() as Driver
+    val dataSource = SimpleDriverDataSource(driver, url)
 
-  fun query() {
-    val query = "SELECT * FROM crime_matching_test_db.person LIMIT 10"
+    val jdbcTemplate = JdbcTemplate(dataSource)
 
-    val url = "jdbc:athena://"
-    val driver = AthenaDriver()
-    val connection = driver.connect(url, connectionDetails)
-    val statement = connection.createStatement()
-    val resultSet = statement.executeQuery(query)
+    val sql = "SELECT * FROM crime_matching_test_db.person LIMIT 10 WHERE person_name LIKE :personName OR nomis_id LIKE :nomisId"
+    val params = mapOf("personName" to "%${subjectsQueryCriteria.name}%", "nomisId" to "%${subjectsQueryCriteria.nomisId}%")
+
+    val namedTemplate = NamedParameterJdbcTemplate(jdbcTemplate)
+
+    return namedTemplate.query(sql, params, SubjectRowMapper())
   }
 }
