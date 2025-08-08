@@ -17,13 +17,24 @@ services:
     general: fakeIAM
 
 spring:
+  datasource:
+    postgresql:
+      jdbcurl: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
+      username: postgres
+      password: postgres
+      driver-class-name: org.postgresql.Driver
+    athena:
+      jdbcurl: jdbc:athena://Region=eu-west-2;OutputLocation=s3://emds-dev-athena-query-results-20240917144028307600000004;WorkGroup=396913731313-default;database=allied_mdss_test_20250714014447;CredentialsProvider=DefaultChain;
+      username: ${AWS_ACCESS_KEY_ID}
+      password: ${AWS_SECRET_ACCESS_KEY_ID}
+      token: ${AWS_SESSION_TOKEN}
+      driver-class-name: com.amazon.athena.jdbc.AthenaDriver
   jpa:
     show-sql: true
     hibernate:
       ddl-auto: create
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
-    username: postgres
-    password: postgres
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: false
