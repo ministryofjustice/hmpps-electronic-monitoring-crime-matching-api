@@ -15,7 +15,7 @@ enum class JoinType {
 data class Join(
   val table: String,
   val onClause: String,
-  val type: JoinType = JoinType.INNER
+  val type: JoinType = JoinType.INNER,
 )
 
 open class SqlQueryBuilder(
@@ -31,7 +31,7 @@ open class SqlQueryBuilder(
 //    fields.add(field)
 //  }
 
-  fun addFields(fieldList: List<String>): SqlQueryBuilder = apply{
+  fun addFields(fieldList: List<String>): SqlQueryBuilder = apply {
     fields.addAll(fieldList)
   }
 

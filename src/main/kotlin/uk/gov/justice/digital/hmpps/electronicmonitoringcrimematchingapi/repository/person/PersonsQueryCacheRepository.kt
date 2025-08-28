@@ -8,6 +8,10 @@ import java.time.ZonedDateTime
 @Repository
 interface PersonsQueryCacheRepository : JpaRepository<PersonsQuery, Long> {
   fun findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
-    nomisId: String?, name: String?, deviceId: String?, includeDeviceActivations: Boolean, retentionDate: ZonedDateTime
+    nomisId: String?,
+    name: String?,
+    deviceId: String?,
+    includeDeviceActivations: Boolean,
+    retentionDate: ZonedDateTime,
   ): PersonsQuery?
 }

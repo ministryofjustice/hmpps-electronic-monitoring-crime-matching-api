@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 data class PersonsQueryCriteria(
   val personName: String? = null,
   val nomisId: String? = null,
-  //TODO extra validation on this only being populated when includeDeviceActivations is also true
+  // TODO extra validation on this only being populated when includeDeviceActivations is also true
   val deviceId: String? = null,
   val includeDeviceActivations: Boolean = false,
 ) {

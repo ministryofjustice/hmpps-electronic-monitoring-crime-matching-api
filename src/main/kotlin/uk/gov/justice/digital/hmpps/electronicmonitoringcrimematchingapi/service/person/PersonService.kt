@@ -29,7 +29,7 @@ class PersonService(
     return if (personsQueryCriteria.includeDeviceActivations) {
       mapWithDeviceActivations(res)
     } else {
-      return res.map { PersonDto(it)}
+      return res.map { PersonDto(it) }
     }
   }
 
@@ -53,34 +53,30 @@ class PersonService(
           includeDeviceActivations = personsQueryCriteria.includeDeviceActivations,
           queryExecutionId = queryExecutionId,
           queryOwner = user,
-        )
+        ),
       )
     }
     return queryExecutionId
   }
 
-
-  private fun mapWithDeviceActivations(res: List<AthenaPersonDTO>): List<PersonDto> {
-
-    return res.groupBy { it.personId }.map { (id, rows) ->
-      val first = rows.first()
-      val deviceActivations = rows.map {
-        DeviceActivationDto(
-          deviceId = it.deviceId!!,
-          deviceActivationId = it.deviceActivationId!!,
-          deviceActivationDate = nullableLocalDateTime(it.deviceActivationDate),
-          deviceDeactivationDate = nullableLocalDateTime(it.deviceDeactivationDate)
-        )
-      }
-
-      PersonDto(
-        personId = id,
-        personName = first.personName,
-        nomisId = first.uIdNomis,
-        dateOfBirth = first.uDob,
-        address = "${first.street} ${first.city} ${first.zip}",
-        deviceActivations = deviceActivations
+  private fun mapWithDeviceActivations(res: List<AthenaPersonDTO>): List<PersonDto> = res.groupBy { it.personId }.map { (id, rows) ->
+    val first = rows.first()
+    val deviceActivations = rows.map {
+      DeviceActivationDto(
+        deviceId = it.deviceId!!,
+        deviceActivationId = it.deviceActivationId!!,
+        deviceActivationDate = nullableLocalDateTime(it.deviceActivationDate),
+        deviceDeactivationDate = nullableLocalDateTime(it.deviceDeactivationDate),
       )
     }
+
+    PersonDto(
+      personId = id,
+      personName = first.personName,
+      nomisId = first.uIdNomis,
+      dateOfBirth = first.uDob,
+      address = "${first.street} ${first.city} ${first.zip}",
+      deviceActivations = deviceActivations,
+    )
   }
 }

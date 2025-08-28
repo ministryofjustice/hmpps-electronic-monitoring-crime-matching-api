@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -16,7 +17,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.p
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
 
 @RestController
-//@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
+@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
 @RequestMapping("/persons", produces = ["application/json"])
 class PersonController(
   @Autowired val personService: PersonService,
