@@ -27,10 +27,6 @@ open class SqlQueryBuilder(
   private val whereClauses: MutableMap<String, QueryBlock> = mutableMapOf()
   private val values: MutableList<String> = mutableListOf()
 
-//  fun addField(field: String): SqlQueryBuilder = apply {
-//    fields.add(field)
-//  }
-
   fun addFields(fieldList: List<String>): SqlQueryBuilder = apply {
     fields.addAll(fieldList)
   }

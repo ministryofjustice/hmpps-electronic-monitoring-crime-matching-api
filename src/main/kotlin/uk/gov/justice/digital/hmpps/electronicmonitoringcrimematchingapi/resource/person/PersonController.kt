@@ -39,7 +39,7 @@ class PersonController(
     if (!personsQueryCriteria.isValid()) {
       throw ResponseStatusException(
         HttpStatus.BAD_REQUEST,
-        "Query must have at least one parameter specified: $personsQueryCriteria",
+        "Query parameters are invalid: $personsQueryCriteria",
       )
     }
     val result = personService.getPersonsQueryResults(personsQueryCriteria, authentication.name)
