@@ -70,7 +70,6 @@ services:
     url: ${HMPPS_AUTH_URL}
     mfa: ${MFA_REQUIRED}
   athena:
-    database: ${ATHENA_DATABASE_NAME}
     output: ${ATHENA_OUTPUT_BUCKET}
   athena-roles:
     general: ${ATHENA_GENERAL_IAM_ROLE}

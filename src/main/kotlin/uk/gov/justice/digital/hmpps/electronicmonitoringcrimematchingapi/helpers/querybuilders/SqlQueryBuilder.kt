@@ -2,36 +2,73 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 
 import io.zeko.db.sql.Query
 import io.zeko.db.sql.QueryBlock
-import org.apache.commons.lang3.StringUtils.isAlphanumeric
+import io.zeko.db.sql.dsl.like
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
+
+enum class JoinType {
+  INNER,
+  LEFT,
+  RIGHT,
+  FULL,
+}
+
+data class Join(
+  val table: String,
+  val onClause: String,
+  val type: JoinType = JoinType.INNER
+)
 
 open class SqlQueryBuilder(
-  open val databaseName: String,
-  open val tableName: String,
-  private val fields: Array<String>,
+  private val baseTable: String,
+  private val baseAlias: String = "t",
 ) {
-  protected val whereClauses: MutableMap<String, QueryBlock> = mutableMapOf<String, QueryBlock>()
-  protected val values: MutableList<String> = mutableListOf<String>()
+  private val joins: MutableList<Join> = mutableListOf()
+  private val fields: MutableList<String> = mutableListOf()
+  private val whereClauses: MutableMap<String, QueryBlock> = mutableMapOf()
+  private val values: MutableList<String> = mutableListOf()
 
-  protected fun getSQL(): String {
-    val query = Query()
-      .fields(*fields)
-      .from("$databaseName.$tableName")
+//  fun addField(field: String): SqlQueryBuilder = apply {
+//    fields.add(field)
+//  }
 
-    whereClauses.forEach {
-      query.where(it.value)
-    }
-
-    return query.toSql()
+  fun addFields(fieldList: List<String>): SqlQueryBuilder = apply{
+    fields.addAll(fieldList)
   }
 
-  @Suppress("SameParameterValue")
-  protected fun validateAlphanumeric(value: String?, field: String) {
-    if (value.isNullOrBlank()) {
-      return
+  fun addJoin(table: String, onClause: String, type: JoinType): SqlQueryBuilder = apply {
+    joins.add(Join(table, onClause, type))
+  }
+
+  fun addLikeFilter(field: String, value: String?): SqlQueryBuilder = apply {
+    if (!value.isNullOrBlank()) {
+      values.add("'%$value%'")
+      whereClauses.put(field, field like "'%$value%'")
+    }
+  }
+
+  fun addLikeFilterCast(field: String, value: String?): SqlQueryBuilder = apply {
+    if (!value.isNullOrBlank()) {
+      values.add("'%$value%'")
+      whereClauses.put(field, "CAST($field AS VARCHAR)" like "'%$value%'")
+    }
+  }
+
+  fun build(): AthenaQuery {
+    val query = Query().from("$baseTable $baseAlias")
+
+    joins.forEach { join ->
+      when (join.type) {
+        JoinType.INNER -> query.innerJoin(join.table).on(join.onClause)
+        JoinType.LEFT -> query.leftJoin(join.table).on(join.onClause)
+        JoinType.RIGHT -> query.rightJoin(join.table).on(join.onClause)
+        JoinType.FULL -> query.fullJoin(join.table).on(join.onClause)
+      }
     }
 
-    if (!isAlphanumeric(value)) {
-      throw IllegalArgumentException("$field must only contain alphanumeric characters and spaces")
-    }
+    query.fields(*fields.toTypedArray())
+
+    whereClauses.values.forEach { query.where(it) }
+
+    return AthenaQuery(query.toSql(), values.toTypedArray())
   }
 }

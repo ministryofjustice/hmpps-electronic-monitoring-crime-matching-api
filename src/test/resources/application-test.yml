@@ -17,7 +17,6 @@ services:
   hmpps-auth:
     url: "http://localhost:8090/auth"
   athena:
-    database: test-database
     output: test-output-bucket
   athena-roles:
     general: testIAM

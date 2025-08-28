@@ -14,7 +14,6 @@ services:
       - SERVER_PORT=8080
       - HMPPS_AUTH_URL=http://hmpps-auth:8080/auth
       - SPRING_PROFILES_ACTIVE=local
-      - ATHENA_DATABASE_NAME=test-database
       - ATHENA_OUTPUT_BUCKET=test-output-bucket-id
       - HMPPS_SQS_PROVIDER=localstack
       - HMPPS_SQS_LOCALSTACKURL=http://local-stack-aws:4566
