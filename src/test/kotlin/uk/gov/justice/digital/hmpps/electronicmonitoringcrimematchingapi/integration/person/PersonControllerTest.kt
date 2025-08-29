@@ -51,7 +51,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "name",
         null,
         false,
-        ZonedDateTime.now().minusDays(1)
+        ZonedDateTime.now().minusDays(1),
       )
       assertThat(databaseResult).isNotNull()
     }
@@ -88,7 +88,7 @@ class PersonControllerTest : IntegrationTestBase() {
         includeDeviceActivations = false,
         queryExecutionId = "query-execution-id",
         queryOwner = "user",
-      )
+      ),
     )
 
     webTestClient.get()
@@ -105,7 +105,7 @@ class PersonControllerTest : IntegrationTestBase() {
       "name",
       null,
       false,
-      ZonedDateTime.now().minusDays(1)
+      ZonedDateTime.now().minusDays(1),
     )
     assertThat(databaseResult).isNotNull()
     assertThat(databaseResult?.queryExecutionId).isEqualTo("query-execution-id")

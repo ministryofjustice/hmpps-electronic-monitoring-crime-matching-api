@@ -66,7 +66,7 @@ class PersonServiceTest {
           any(),
           eq(false),
           any(),
-        )
+        ),
       ).thenReturn(null)
 
       whenever(personRepository.getPersonsQueryId(personsQueryCriteria)).thenReturn(queryExecutionId)
@@ -113,7 +113,7 @@ class PersonServiceTest {
           any(),
           eq(true),
           any(),
-        )
+        ),
       ).thenReturn(null)
 
       whenever(personRepository.getPersonsQueryId(personsQueryCriteria)).thenReturn(queryExecutionId)
@@ -157,7 +157,7 @@ class PersonServiceTest {
         includeDeviceActivations = false,
         queryExecutionId = queryExecutionId,
         queryOwner = "",
-        createdAt = ZonedDateTime.now()
+        createdAt = ZonedDateTime.now(),
       )
 
       whenever(
@@ -167,7 +167,7 @@ class PersonServiceTest {
           eq(null),
           eq(false),
           any(),
-        )
+        ),
       ).thenReturn(personsQuery)
 
       whenever(personRepository.getPersonsQueryResults(queryExecutionId)).thenReturn(expectedResult)

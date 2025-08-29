@@ -112,6 +112,5 @@ class PersonRepositoryTest {
       assertThat(result).isNotEmpty()
       assertThat(result[0]).isInstanceOf(AthenaPersonDto::class.java)
     }
-
   }
 }

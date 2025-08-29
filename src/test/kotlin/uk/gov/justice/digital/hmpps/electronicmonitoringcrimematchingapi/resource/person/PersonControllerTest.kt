@@ -43,7 +43,7 @@ class PersonControllerTest {
           "nomisId",
           "1990-01-01",
           "address",
-          emptyList()
+          emptyList(),
         ),
       )
 
