@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS subject_query_cache;
 
-CREATE TABLE person_query_cache
+CREATE TABLE persons_query_cache
 (
     id                 UUID NOT NULL,
     nomis_id           VARCHAR(255),
@@ -9,5 +9,5 @@ CREATE TABLE person_query_cache
     query_execution_id VARCHAR(255) NOT NULL,
     query_owner        VARCHAR(255) NOT NULL,
     created_at         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    CONSTRAINT pk_person_query_cache PRIMARY KEY (id)
+    CONSTRAINT pk_persons_query_cache PRIMARY KEY (id)
 );
