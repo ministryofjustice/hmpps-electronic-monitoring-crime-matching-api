@@ -15,34 +15,34 @@
           "Type": "varchar"
         },
         {
-          "CaseSensitive": false,
+          "CaseSensitive": true,
           "CatalogName": "hive",
-          "Label": "nomis_id",
-          "Name": "nomis_id",
+          "Label": "person_name",
+          "Name": "person_name",
           "Nullable": "UNKNOWN",
           "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "u_id_nomis",
+          "Name": "u_id_nomis",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
           "Type": "bigint"
         },
         {
-          "CaseSensitive": true,
-          "CatalogName": "hive",
-          "Label": "person_name",
-          "Name": "person_name",
-          "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
-          "Scale": 0,
-          "SchemaName": "",
-          "TableName": "",
-          "Type": "varchar"
-        },
-        {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "date_of_birth",
-          "Name": "date_of_birth",
+          "Label": "u_dob",
+          "Name": "u_dob",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -53,8 +53,8 @@
         {
           "CaseSensitive": true,
           "CatalogName": "hive",
-          "Label": "address",
-          "Name": "address",
+          "Label": "zip",
+          "Name": "zip",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -65,26 +65,26 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "order_start_date",
-          "Name": "order_start_date",
+          "Label": "city",
+          "Name": "city",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "date"
+          "Type": "varchar"
         },
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "order_end_date",
-          "Name": "order_end_date",
+          "Label": "street",
+          "Name": "street",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "date"
+          "Type": "varchar"
         },
         {
           "CaseSensitive": false,
@@ -96,31 +96,43 @@
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "varchar"
+          "Type": "bigint"
         },
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "tag_start_date",
-          "Name": "tag_start_date",
+          "Label": "device_activation_id",
+          "Name": "device_activation_id",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "date"
+          "Type": "bigint"
         },
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "tag_end_date",
-          "Name": "tag_end_date",
+          "Label": "device_activation_date",
+          "Name": "device_activation_date",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "date"
+          "Type": "timestamp"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_deactivation_date",
+          "Name": "device_deactivation_date",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "timestamp"
         }
       ]
     },
@@ -131,31 +143,34 @@
             "VarCharValue": "person_id"
           },
           {
-            "VarCharValue": "nomis_id"
-          },
-          {
             "VarCharValue": "person_name"
           },
           {
-            "VarCharValue": "date_of_birth"
+            "VarCharValue": "u_id_nomis"
           },
           {
-            "VarCharValue": "address"
+            "VarCharValue": "u_dob"
           },
           {
-            "VarCharValue": "order_start_date"
+            "VarCharValue": "zip"
           },
           {
-            "VarCharValue": "order_end_date"
+            "VarCharValue": "city"
+          },
+          {
+            "VarCharValue": "street"
           },
           {
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "tag_start_date"
+            "VarCharValue": "device_activation_id"
           },
           {
-            "VarCharValue": "tag_end_date"
+            "VarCharValue": "device_activation_date"
+          },
+          {
+            "VarCharValue": "device_deactivation_date"
           }
         ]
       },
@@ -165,25 +180,28 @@
             "VarCharValue": "1"
           },
           {
-            "VarCharValue": "nomis_id"
+            "VarCharValue": "person_name"
           },
           {
-            "VarCharValue": "JIMINEY CRICKET"
+            "VarCharValue": "nomis_id"
           },
           {
             "VarCharValue": "2000-05-29"
           },
           {
-            "VarCharValue": "address"
+            "VarCharValue": "zip"
           },
           {
-            "VarCharValue": "2021-05-18 00:00:00.000"
+            "VarCharValue": "city"
           },
           {
-            "VarCharValue": ""
+            "VarCharValue": "street"
           },
           {
             "VarCharValue": "device_id"
+          },
+          {
+            "VarCharValue": "device_activation_id"
           },
           {
             "VarCharValue": "2023-05-18 00:00:00.000"

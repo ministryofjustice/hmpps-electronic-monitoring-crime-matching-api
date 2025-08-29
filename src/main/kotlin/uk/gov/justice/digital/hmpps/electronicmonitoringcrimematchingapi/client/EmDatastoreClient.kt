@@ -73,7 +73,6 @@ class EmDatastoreClient : EmDatastoreClientInterface {
   @Throws(AthenaClientException::class)
   private fun submitAthenaQuery(athenaClient: AthenaClient, query: AthenaQuery): String {
     return try {
-      // The QueryExecutionContext allows us to set the database.
       val queryExecutionContext = QueryExecutionContext.builder()
         .catalog("AwsDataCatalog")
         .build()

@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlQueryBuilder
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaPersonDTO
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaPersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
 
 @Service
@@ -14,9 +14,9 @@ class PersonRepository(
   @Autowired val athenaClient: EmDatastoreClientInterface,
 ) {
 
-  fun getPersonsQueryResults(queryExecutionId: String): List<AthenaPersonDTO> {
+  fun getPersonsQueryResults(queryExecutionId: String): List<AthenaPersonDto> {
     val athenaResponse = athenaClient.getQueryResult(queryExecutionId)
-    return AthenaHelper.Companion.mapTo<AthenaPersonDTO>(athenaResponse)
+    return AthenaHelper.Companion.mapTo<AthenaPersonDto>(athenaResponse)
   }
 
   fun getPersonsQueryId(personsQueryCriteria: PersonsQueryCriteria): String {

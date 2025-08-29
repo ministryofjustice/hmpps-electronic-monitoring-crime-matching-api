@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person
 
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaPersonDTO
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaPersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.deviceactivation.DeviceActivationDto
 
 data class PersonDto(
@@ -11,7 +11,7 @@ data class PersonDto(
   val address: String?,
   val deviceActivations: List<DeviceActivationDto>?,
 ) {
-  constructor(dto: AthenaPersonDTO) : this(
+  constructor(dto: AthenaPersonDto) : this(
     personId = dto.personId,
     personName = dto.personName,
     nomisId = dto.uIdNomis,

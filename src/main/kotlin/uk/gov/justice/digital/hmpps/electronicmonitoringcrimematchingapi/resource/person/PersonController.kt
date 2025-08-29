@@ -42,7 +42,7 @@ class PersonController(
         "Query parameters are invalid: $personsQueryCriteria",
       )
     }
-    val result = personService.getPersonsQueryResults(personsQueryCriteria, authentication.name)
+    val result = personService.getPersons(personsQueryCriteria, authentication.name)
     return ResponseEntity.ok(result)
   }
 }

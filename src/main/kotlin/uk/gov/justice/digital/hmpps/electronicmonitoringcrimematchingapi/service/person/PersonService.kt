@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.PersonsQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.nullableLocalDateTime
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaPersonDTO
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaPersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.deviceactivation.DeviceActivationDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
@@ -22,7 +22,7 @@ class PersonService(
 ) {
 
   @Transactional
-  fun getPersonsQueryResults(personsQueryCriteria: PersonsQueryCriteria, user: String): List<PersonDto> {
+  fun getPersons(personsQueryCriteria: PersonsQueryCriteria, user: String): List<PersonDto> {
     val queryExecutionId = getQueryExecutionId(personsQueryCriteria, user)
     val res = personRepository.getPersonsQueryResults(queryExecutionId)
 
@@ -59,7 +59,7 @@ class PersonService(
     return queryExecutionId
   }
 
-  private fun mapWithDeviceActivations(res: List<AthenaPersonDTO>): List<PersonDto> = res.groupBy { it.personId }.map { (id, rows) ->
+  private fun mapWithDeviceActivations(res: List<AthenaPersonDto>): List<PersonDto> = res.groupBy { it.personId }.map { (id, rows) ->
     val first = rows.first()
     val deviceActivations = rows.map {
       DeviceActivationDto(
