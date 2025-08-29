@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.subject
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -10,15 +10,17 @@ import java.util.UUID
 
 @Entity
 @Table(
-  name = "subject_query_cache",
+  name = "persons_query_cache",
 )
-data class SubjectsQuery(
+data class PersonsQuery(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
   val nomisId: String?,
-  val subjectName: String?,
+  val personName: String?,
+  val deviceId: String?,
+  val includeDeviceActivations: Boolean,
 
   @Column(nullable = false)
   val queryExecutionId: String,

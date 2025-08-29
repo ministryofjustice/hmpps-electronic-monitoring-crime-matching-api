@@ -27,9 +27,6 @@ class EmDatastoreClient : EmDatastoreClientInterface {
   private val output: String = "s3://emds-dev-athena-query-results-20240917144028307600000004"
   private val sleepLength: Long = 1000
 
-  @Value("\${services.athena.database}")
-  private val databaseName: String = "test_database"
-
   @Value("\${services.athena-roles.general}")
   private val iamRole: String = ""
 
@@ -76,9 +73,8 @@ class EmDatastoreClient : EmDatastoreClientInterface {
   @Throws(AthenaClientException::class)
   private fun submitAthenaQuery(athenaClient: AthenaClient, query: AthenaQuery): String {
     return try {
-      // The QueryExecutionContext allows us to set the database.
       val queryExecutionContext = QueryExecutionContext.builder()
-        .database(databaseName)
+        .catalog("AwsDataCatalog")
         .build()
 
       // The result configuration specifies where the results of the query should go.
