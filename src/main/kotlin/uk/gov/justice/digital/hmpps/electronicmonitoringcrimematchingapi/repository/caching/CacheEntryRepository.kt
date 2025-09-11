@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.caching
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository

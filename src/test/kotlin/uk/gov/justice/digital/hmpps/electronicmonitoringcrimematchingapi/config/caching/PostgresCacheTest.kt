@@ -12,7 +12,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.caching.CacheEntry
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.caching.CacheEntryRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import java.time.Duration
 import java.time.LocalDateTime
 
