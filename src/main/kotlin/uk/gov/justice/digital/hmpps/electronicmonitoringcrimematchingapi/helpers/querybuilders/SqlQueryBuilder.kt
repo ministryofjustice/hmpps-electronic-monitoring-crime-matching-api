@@ -48,6 +48,16 @@ open class SqlQueryBuilder(
     whereClauses.put(field, field eq "'$value'")
   }
 
+  fun addFilter(field: String, value: Int): SqlQueryBuilder = apply {
+    values.add("$value")
+    whereClauses.put(field, field eq "$value")
+  }
+
+  fun addFilter(field: String, value: Long): SqlQueryBuilder = apply {
+    values.add("$value")
+    whereClauses.put(field, field eq "$value")
+  }
+
   fun addLikeFilterCast(field: String, value: String?): SqlQueryBuilder = apply {
     if (!value.isNullOrBlank()) {
       values.add("'%$value%'")

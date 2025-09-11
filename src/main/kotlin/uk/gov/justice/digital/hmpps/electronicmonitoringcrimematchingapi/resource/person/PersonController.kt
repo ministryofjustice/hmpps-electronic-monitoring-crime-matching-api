@@ -60,7 +60,7 @@ class PersonController(
   )
   fun getPerson(
     authentication: Authentication,
-    @PathVariable personId: String,
+    @PathVariable personId: Long,
   ): ResponseEntity<PersonDto> {
     val person = personService.getPerson(personId, authentication.name)
 

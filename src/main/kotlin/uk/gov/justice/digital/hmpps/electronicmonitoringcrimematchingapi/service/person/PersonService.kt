@@ -33,7 +33,7 @@ class PersonService(
     }
   }
 
-  fun getPerson(id: String, user: String): PersonDto {
+  fun getPerson(id: Long, user: String): PersonDto {
     val person = this.personRepository.getPersonById(id)
     return mapToDto(person)
   }

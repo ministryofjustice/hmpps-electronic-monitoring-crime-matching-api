@@ -70,7 +70,7 @@ class PersonRepository(
     return athenaClient.getQueryExecutionId(query)
   }
 
-  fun getPersonById(id: String): AthenaPersonDto {
+  fun getPersonById(id: Long): AthenaPersonDto {
     val queryExecutionId = athenaClient.getQueryExecutionId(
       SqlQueryBuilder("allied_mdss_test_20250714014447.person", "p")
         .addFields(
