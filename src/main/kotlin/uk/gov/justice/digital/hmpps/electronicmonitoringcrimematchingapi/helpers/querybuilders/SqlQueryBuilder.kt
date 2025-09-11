@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 
 import io.zeko.db.sql.Query
 import io.zeko.db.sql.QueryBlock
+import io.zeko.db.sql.dsl.eq
 import io.zeko.db.sql.dsl.like
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 
@@ -40,6 +41,11 @@ open class SqlQueryBuilder(
       values.add("'%$value%'")
       whereClauses.put(field, field like "'%$value%'")
     }
+  }
+
+  fun addFilter(field: String, value: String): SqlQueryBuilder = apply {
+    values.add("'$value'")
+    whereClauses.put(field, field eq "'$value'")
   }
 
   fun addLikeFilterCast(field: String, value: String?): SqlQueryBuilder = apply {

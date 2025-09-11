@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClientInterface
@@ -67,5 +68,47 @@ class PersonRepository(
     val query = personQuery.build()
 
     return athenaClient.getQueryExecutionId(query)
+  }
+
+  fun getPersonById(id: String): AthenaPersonDto {
+    val queryExecutionId = athenaClient.getQueryExecutionId(
+      SqlQueryBuilder("allied_mdss_test_20250714014447.person", "p")
+        .addFields(
+          listOf(
+            "p.person_id",
+            "p.person_name",
+            "pdw.u_id_nomis",
+            "pdws.u_dob",
+            "csm.zip",
+            "csm.city",
+            "csm.street",
+          ),
+        )
+        .addJoin(
+          "serco_servicenow_test.x_serg2_ems_csm_profile_device_wearer pdw",
+          "p.person_name = pdw.u_id_device_wearer",
+          JoinType.INNER,
+        )
+        .addJoin(
+          "serco_servicenow_test.csm_consumer csm",
+          "pdw.consumer__value = csm.sys_id",
+          JoinType.INNER,
+        )
+        .addJoin(
+          "serco_servicenow_test.x_serg2_ems_csm_profile_sensitive pdws",
+          "csm.sys_id = pdws.consumer__value",
+          JoinType.INNER,
+        )
+        .addFilter("p.person_id", id)
+        .build(),
+    )
+    val queryResult = athenaClient.getQueryResult(queryExecutionId)
+    val persons = AthenaHelper.Companion.mapTo<AthenaPersonDto>(queryResult)
+
+    if (persons.isEmpty()) {
+      throw EntityNotFoundException("No person found with id: $id")
+    }
+
+    return persons.first()
   }
 }
