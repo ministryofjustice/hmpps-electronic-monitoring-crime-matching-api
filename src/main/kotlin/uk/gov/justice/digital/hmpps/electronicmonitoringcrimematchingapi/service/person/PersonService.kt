@@ -33,6 +33,11 @@ class PersonService(
     }
   }
 
+  fun getPerson(id: Long, user: String): PersonDto {
+    val person = this.personRepository.getPersonById(id)
+    return mapToDto(person)
+  }
+
   private fun getQueryExecutionId(personsQueryCriteria: PersonsQueryCriteria, user: String): String {
     var queryExecutionId = personsQueryCacheRepository.findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
       personsQueryCriteria.nomisId,
@@ -74,9 +79,20 @@ class PersonService(
       personId = id,
       personName = first.personName,
       nomisId = first.uIdNomis,
+      pncRef = "",
       dateOfBirth = first.uDob,
       address = "${first.street} ${first.city} ${first.zip}",
       deviceActivations = deviceActivations,
     )
   }
+
+  private fun mapToDto(athenaPerson: AthenaPersonDto): PersonDto = PersonDto(
+    personId = athenaPerson.personId,
+    personName = athenaPerson.personName,
+    nomisId = athenaPerson.uIdNomis,
+    pncRef = "",
+    dateOfBirth = athenaPerson.uDob,
+    address = "${athenaPerson.street} ${athenaPerson.city} ${athenaPerson.zip}",
+    deviceActivations = listOf(),
+  )
 }

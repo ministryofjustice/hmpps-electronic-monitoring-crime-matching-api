@@ -46,78 +46,118 @@ class PersonControllerTest : IntegrationTestBase() {
 
       assertThat(result[0].deviceActivations).isNull()
 
-      val databaseResult = personsQueryCacheRepository.findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
-        null,
-        "name",
-        null,
-        false,
-        ZonedDateTime.now().minusDays(1),
-      )
+      val databaseResult =
+        personsQueryCacheRepository.findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
+          null,
+          "name",
+          null,
+          false,
+          ZonedDateTime.now().minusDays(1),
+        )
       assertThat(databaseResult).isNotNull()
+    }
+
+    @Test
+    fun `it should return persons with device activations`() {
+      MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
+      MockEmDatastoreClient.addResponseFile("successfulGetQueryExecutionIdResponse")
+
+      val result = webTestClient.get()
+        .uri("/persons?personName=name&includeDeviceActivations=true")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(PersonDto::class.java)
+        .hasSize(1)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result[0].deviceActivations).isNotNull()
+    }
+
+    @Test
+    fun `it should return persons and reuse existing query when found in cache`() {
+      MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
+
+      personsQueryCacheRepository.save(
+        PersonsQuery(
+          personName = "name",
+          nomisId = null,
+          deviceId = null,
+          includeDeviceActivations = false,
+          queryExecutionId = "query-execution-id",
+          queryOwner = "user",
+        ),
+      )
+
+      webTestClient.get()
+        .uri("/persons?personName=name")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(PersonDto::class.java)
+        .hasSize(1)
+
+      val databaseResult =
+        personsQueryCacheRepository.findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
+          null,
+          "name",
+          null,
+          false,
+          ZonedDateTime.now().minusDays(1),
+        )
+      assertThat(databaseResult).isNotNull()
+      assertThat(databaseResult?.queryExecutionId).isEqualTo("query-execution-id")
+    }
+
+    @Test
+    fun `it should fail with bad request when invalid criteria fields are passed`() {
+      webTestClient.get()
+        .uri("/persons")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isBadRequest
     }
   }
 
-  @Test
-  fun `it should return persons with device activations`() {
-    MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
-    MockEmDatastoreClient.addResponseFile("successfulGetQueryExecutionIdResponse")
+  @Nested
+  @DisplayName("GET /persons/{personId}")
+  inner class GetPerson {
+    @Test
+    fun `it should return a NOT_FOUND response if person was not found in Athena`() {
+      MockEmDatastoreClient.addResponseFile("successfulEmptyPersonResponse")
 
-    val result = webTestClient.get()
-      .uri("/persons?personName=name&includeDeviceActivations=true")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(PersonDto::class.java)
-      .hasSize(1)
-      .returnResult()
-      .responseBody!!
+      webTestClient.get()
+        .uri("/persons/1")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
 
-    assertThat(result[0].deviceActivations).isNotNull()
-  }
+    @Test
+    fun `it should return an OK response if person was found in Athena`() {
+      MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
 
-  @Test
-  fun `it should return persons and reuse existing query when found in cache`() {
-    MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
+      val result = webTestClient.get()
+        .uri("/persons/1")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(PersonDto::class.java)
+        .returnResult()
+        .responseBody!!
 
-    personsQueryCacheRepository.save(
-      PersonsQuery(
-        personName = "name",
-        nomisId = null,
-        deviceId = null,
-        includeDeviceActivations = false,
-        queryExecutionId = "query-execution-id",
-        queryOwner = "user",
-      ),
-    )
-
-    webTestClient.get()
-      .uri("/persons?personName=name")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(PersonDto::class.java)
-      .hasSize(1)
-
-    val databaseResult = personsQueryCacheRepository.findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
-      null,
-      "name",
-      null,
-      false,
-      ZonedDateTime.now().minusDays(1),
-    )
-    assertThat(databaseResult).isNotNull()
-    assertThat(databaseResult?.queryExecutionId).isEqualTo("query-execution-id")
-  }
-
-  @Test
-  fun `it should fail with bad request when invalid criteria fields are passed`() {
-    webTestClient.get()
-      .uri("/persons")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isBadRequest
+      assertThat(result.personId).isEqualTo("1")
+      assertThat(result.nomisId).isEqualTo("nomis_id")
+      assertThat(result.personName).isEqualTo("person_name")
+      assertThat(result.address).isEqualTo("street city zip")
+      assertThat(result.dateOfBirth).isEqualTo("2000-05-29")
+      assertThat(result.deviceActivations).isNotNull().isEmpty()
+    }
   }
 }

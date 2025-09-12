@@ -8,6 +8,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
@@ -44,5 +45,25 @@ class PersonController(
     }
     val result = personService.getPersons(personsQueryCriteria, authentication.name)
     return ResponseEntity.ok(result)
+  }
+
+  @Operation(
+    tags = ["Person"],
+    summary = "Get a persons",
+  )
+  @RequestMapping(
+    method = [RequestMethod.GET],
+    path = [
+      "/{personId}",
+    ],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  fun getPerson(
+    authentication: Authentication,
+    @PathVariable personId: Long,
+  ): ResponseEntity<PersonDto> {
+    val person = personService.getPerson(personId, authentication.name)
+
+    return ResponseEntity.ok(person)
   }
 }
