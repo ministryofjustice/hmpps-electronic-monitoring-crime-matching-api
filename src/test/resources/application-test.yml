@@ -32,3 +32,9 @@ spring:
     url: 'jdbc:h2:mem:query-db;MODE=PostgreSQL'
     username: postgres
     password:
+
+aws:
+  region: eu-west-2
+  endpointUrl: http://localhost:8091
+  athena:
+    role: testIAM
