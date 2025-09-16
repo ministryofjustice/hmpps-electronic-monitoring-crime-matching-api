@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.caching
 
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.Lob
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
@@ -17,10 +17,10 @@ data class CacheEntry(
 
   val cacheName: String,
 
-  @Lob
+  @Column(columnDefinition = "bytea")
   val cacheKey: ByteArray,
 
-  @Lob
+  @Column(columnDefinition = "bytea")
   val cacheValue: ByteArray,
 
   val createdAt: LocalDateTime = LocalDateTime.now(),
