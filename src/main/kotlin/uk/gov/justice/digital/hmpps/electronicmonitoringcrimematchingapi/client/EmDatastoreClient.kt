@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import software.amazon.awssdk.services.athena.AthenaClient
 import software.amazon.awssdk.services.athena.model.AthenaException
 import software.amazon.awssdk.services.athena.model.GetQueryExecutionRequest
@@ -41,6 +43,8 @@ class EmDatastoreClient(
     return resultSet
   }
 
+  @Cacheable("athenaQueryExecutions")
+  @Transactional
   override fun getQueryExecutionId(athenaQuery: AthenaQuery): String {
     val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
     return queryExecutionId

@@ -10,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.PersonsQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.PersonsQueryCacheRepository
 import java.time.ZonedDateTime
 
@@ -19,9 +20,13 @@ class PersonControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var personsQueryCacheRepository: PersonsQueryCacheRepository
 
+  @Autowired
+  lateinit var cacheEntryRepository: CacheEntryRepository
+
   @BeforeEach
   fun setup() {
     personsQueryCacheRepository.deleteAll()
+    cacheEntryRepository.deleteAll()
   }
 
   @Nested
@@ -175,6 +180,36 @@ class PersonControllerTest : IntegrationTestBase() {
       assertThat(result.address).isEqualTo("street city zip")
       assertThat(result.dateOfBirth).isEqualTo("2000-05-29")
       assertThat(result.deviceActivations).isNotNull().isEmpty()
+    }
+
+    @Test
+    fun `it should use the cached query execution when a duplicate request is made`() {
+      stubQueryExecution(
+        "123",
+        "SUCCEEDED",
+        "athenaResponses/successfulPersonsResponse.json",
+      )
+
+      webTestClient.get()
+        .uri("/persons/1")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      webTestClient.get()
+        .uri("/persons/1")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Only one query should have been started
+      verifyAthenaStartQueryExecutionCount(1)
+      // The status of the existing query should have been checked twice
+      verifyAthenaGetQueryExecutionCount(2)
+      // The results of the existing query should have been used twice
+      verifyAthenaGetQueryResultsCount(2)
     }
   }
 }
