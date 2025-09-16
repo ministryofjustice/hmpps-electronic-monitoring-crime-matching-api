@@ -67,8 +67,8 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
     .body(
       ErrorResponse(
         status = INTERNAL_SERVER_ERROR,
-        userMessage = "Unexpected error: ${e.message}",
-        developerMessage = e.message,
+        userMessage = "Unexpected error: There was an unexpected error processing the request.",
+        developerMessage = "There was an unexpected error processing the request.",
       ),
     ).also { log.error("Unexpected exception", e) }
 
