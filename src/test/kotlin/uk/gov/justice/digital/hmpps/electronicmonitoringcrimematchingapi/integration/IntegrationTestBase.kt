@@ -59,6 +59,13 @@ abstract class IntegrationTestBase {
     awsMockServer.stubAthenaGetQueryResults(queryResponseFile)
   }
 
+  protected fun stubFailedQueryExecution(
+    queryExecutionId: String,
+  ) {
+    awsMockServer.stubAthenaStartQueryExecution(queryExecutionId)
+    awsMockServer.stubAthenaGetQueryExecution("FAILED")
+  }
+
   protected fun verifyAthenaStartQueryExecutionCount(
     count: Int,
   ) {

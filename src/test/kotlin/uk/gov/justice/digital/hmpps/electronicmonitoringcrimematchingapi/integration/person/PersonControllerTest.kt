@@ -6,12 +6,14 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.PersonsQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.PersonsQueryCacheRepository
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZonedDateTime
 
 @ActiveProfiles("integration")
@@ -135,6 +137,29 @@ class PersonControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isBadRequest
     }
+
+    @Test
+    fun `it should return an INTERNAL_SERVER_ERROR response if the Athena query fails`() {
+      stubFailedQueryExecution("123")
+
+      val response = webTestClient.get()
+        .uri("/persons?personName=name")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = INTERNAL_SERVER_ERROR,
+          userMessage = "Unexpected error: There was an unexpected error processing the request.",
+          developerMessage = "There was an unexpected error processing the request.",
+        ),
+      )
+    }
   }
 
   @Nested
@@ -210,6 +235,29 @@ class PersonControllerTest : IntegrationTestBase() {
       verifyAthenaGetQueryExecutionCount(2)
       // The results of the existing query should have been used twice
       verifyAthenaGetQueryResultsCount(2)
+    }
+
+    @Test
+    fun `it should return an INTERNAL_SERVER_ERROR response if the Athena query fails`() {
+      stubFailedQueryExecution("123")
+
+      val response = webTestClient.get()
+        .uri("/persons/1")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = INTERNAL_SERVER_ERROR,
+          userMessage = "Unexpected error: There was an unexpected error processing the request.",
+          developerMessage = "There was an unexpected error processing the request.",
+        ),
+      )
     }
   }
 }
