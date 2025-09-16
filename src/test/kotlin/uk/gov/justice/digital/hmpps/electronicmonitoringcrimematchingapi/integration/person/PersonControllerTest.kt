@@ -140,11 +140,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return an INTERNAL_SERVER_ERROR response if the Athena query fails`() {
-      stubQueryExecution(
-        "456",
-        "FAILED",
-        "athenaResponses/successfulPersonsResponse.json",
-      )
+      stubFailedQueryExecution("123")
 
       val response = webTestClient.get()
         .uri("/persons?personName=name")
@@ -243,11 +239,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return an INTERNAL_SERVER_ERROR response if the Athena query fails`() {
-      stubQueryExecution(
-        "456",
-        "FAILED",
-        "athenaResponses/successfulPersonsResponse.json",
-      )
+      stubFailedQueryExecution("123")
 
       val response = webTestClient.get()
         .uri("/persons/1")
