@@ -21,6 +21,12 @@ services:
   athena-roles:
     general: testIAM
 
+aws:
+  region: eu-west-2
+  endpointUrl: http://localhost:8091
+  athena:
+    role: testIAM
+
 spring:
   jpa:
     show-sql: true
@@ -32,9 +38,3 @@ spring:
     url: 'jdbc:h2:mem:query-db;MODE=PostgreSQL'
     username: postgres
     password:
-
-aws:
-  region: eu-west-2
-  endpointUrl: http://localhost:8091
-  athena:
-    role: testIAM
