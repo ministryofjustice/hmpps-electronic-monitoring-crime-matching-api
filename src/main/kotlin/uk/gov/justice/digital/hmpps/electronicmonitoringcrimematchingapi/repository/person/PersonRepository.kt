@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClientInterface
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
@@ -12,7 +11,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.p
 
 @Service
 class PersonRepository(
-  @Autowired val athenaClient: EmDatastoreClientInterface,
+  val athenaClient: EmDatastoreClientInterface,
 ) {
 
   fun getPersonsQueryResults(queryExecutionId: String): List<AthenaPersonDto> {

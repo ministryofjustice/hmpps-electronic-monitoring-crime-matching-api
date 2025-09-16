@@ -71,5 +71,8 @@ services:
     mfa: ${MFA_REQUIRED}
   athena:
     output: ${ATHENA_OUTPUT_BUCKET}
-  athena-roles:
-    general: ${ATHENA_GENERAL_IAM_ROLE}
+
+aws:
+  region: eu-west-2
+  athena:
+    role: ${ATHENA_GENERAL_IAM_ROLE}

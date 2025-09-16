@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.PersonsQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.mocks.MockEmDatastoreClient
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.PersonsQueryCacheRepository
 import java.time.ZonedDateTime
@@ -30,8 +29,11 @@ class PersonControllerTest : IntegrationTestBase() {
   inner class GetPersons {
     @Test
     fun `it should return persons without device activations and store query in cache`() {
-      MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
-      MockEmDatastoreClient.addResponseFile("successfulGetQueryExecutionIdResponse")
+      stubQueryExecution(
+        "123",
+        "SUCCEEDED",
+        "athenaResponses/successfulPersonsResponse.json",
+      )
 
       val result = webTestClient.get()
         .uri("/persons?personName=name")
@@ -59,8 +61,11 @@ class PersonControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return persons with device activations`() {
-      MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
-      MockEmDatastoreClient.addResponseFile("successfulGetQueryExecutionIdResponse")
+      stubQueryExecution(
+        "123",
+        "SUCCEEDED",
+        "athenaResponses/successfulPersonsResponse.json",
+      )
 
       val result = webTestClient.get()
         .uri("/persons?personName=name&includeDeviceActivations=true")
@@ -78,7 +83,11 @@ class PersonControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return persons and reuse existing query when found in cache`() {
-      MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
+      stubQueryExecution(
+        "123",
+        "SUCCEEDED",
+        "athenaResponses/successfulPersonsResponse.json",
+      )
 
       personsQueryCacheRepository.save(
         PersonsQuery(
@@ -128,7 +137,11 @@ class PersonControllerTest : IntegrationTestBase() {
   inner class GetPerson {
     @Test
     fun `it should return a NOT_FOUND response if person was not found in Athena`() {
-      MockEmDatastoreClient.addResponseFile("successfulEmptyPersonResponse")
+      stubQueryExecution(
+        "123",
+        "SUCCEEDED",
+        "athenaResponses/successfulEmptyPersonResponse.json",
+      )
 
       webTestClient.get()
         .uri("/persons/1")
@@ -140,7 +153,11 @@ class PersonControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return an OK response if person was found in Athena`() {
-      MockEmDatastoreClient.addResponseFile("successfulPersonsResponse")
+      stubQueryExecution(
+        "123",
+        "SUCCEEDED",
+        "athenaResponses/successfulPersonsResponse.json",
+      )
 
       val result = webTestClient.get()
         .uri("/persons/1")
