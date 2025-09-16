@@ -65,6 +65,10 @@ jobs:
             *.gradle*
             **/gradle-wrapper.properties
       - run: ./gradlew check
+        env:
+          AWS_ACCESS_KEY_ID: ASIAIOSFODNN7EXAMPLE
+          AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          AWS_SESSION_TOKEN: IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE
       - name: upload the artifacts
         if: always()
         uses: actions/upload-artifact@v4
