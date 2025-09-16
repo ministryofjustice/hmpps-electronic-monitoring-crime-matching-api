@@ -16,14 +16,10 @@ hmpps:
 services:
   hmpps-auth:
     url: "http://localhost:8090/auth"
-  athena:
-    output: test-output-bucket
-  athena-roles:
-    general: testIAM
 
 aws:
   region: eu-west-2
-  endpointUrl: http://localhost:8091
+  endpoint-url: http://localhost:8091
   athena:
     role: testIAM
 
@@ -38,3 +34,7 @@ spring:
     url: 'jdbc:h2:mem:query-db;MODE=PostgreSQL'
     username: postgres
     password:
+
+datastore:
+  output-bucket-arn: test-output-bucket
+  retry-interval-ms: 10

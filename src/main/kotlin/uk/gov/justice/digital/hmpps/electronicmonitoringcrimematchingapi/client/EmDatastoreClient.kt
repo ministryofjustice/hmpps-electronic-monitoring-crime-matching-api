@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client
 
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -16,16 +16,15 @@ import software.amazon.awssdk.services.athena.model.ResultConfiguration
 import software.amazon.awssdk.services.athena.model.ResultSet
 import software.amazon.awssdk.services.athena.model.StartQueryExecutionRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.AthenaClientException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.datastore.DatastoreProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 
+@EnableConfigurationProperties(DatastoreProperties::class)
 @Component
 class EmDatastoreClient(
   val athenaClient: AthenaClient,
+  val properties: DatastoreProperties,
 ) : EmDatastoreClientInterface {
-
-  @Value("\${services.athena.output}")
-  private val output: String = "s3://emds-dev-athena-query-results-20240917144028307600000004"
-  private val sleepLength: Long = 1000
 
   override fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
     val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
@@ -59,7 +58,7 @@ class EmDatastoreClient(
 
       // The result configuration specifies where the results of the query should go.
       val resultConfiguration = ResultConfiguration.builder()
-        .outputLocation(output)
+        .outputLocation(properties.outputBucketArn)
         .build()
 
       var startQueryExecutionRequest = StartQueryExecutionRequest.builder()
@@ -102,7 +101,7 @@ class EmDatastoreClient(
         isQueryStillRunning = false
       } else {
         // Sleep an amount of time before retrying again.
-        Thread.sleep(sleepLength)
+        Thread.sleep(properties.retryIntervalMs)
       }
       println("The current status is: $queryState")
     }

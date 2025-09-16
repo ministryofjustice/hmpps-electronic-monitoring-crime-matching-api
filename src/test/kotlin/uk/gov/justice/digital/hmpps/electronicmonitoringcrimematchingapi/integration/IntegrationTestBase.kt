@@ -51,11 +51,12 @@ abstract class IntegrationTestBase {
 
   protected fun stubQueryExecution(
     queryExecutionId: String,
-    queryExecutionStatus: String,
+    retryCount: Int,
+    finalQueryExecutionStatus: String,
     queryResponseFile: String,
   ) {
     awsMockServer.stubAthenaStartQueryExecution(queryExecutionId)
-    awsMockServer.stubAthenaGetQueryExecution(queryExecutionStatus)
+    awsMockServer.stubAthenaGetQueryExecution(retryCount, finalQueryExecutionStatus)
     awsMockServer.stubAthenaGetQueryResults(queryResponseFile)
   }
 
