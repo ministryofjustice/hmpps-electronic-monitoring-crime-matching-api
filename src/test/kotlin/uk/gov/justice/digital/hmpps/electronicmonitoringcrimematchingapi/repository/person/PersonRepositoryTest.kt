@@ -91,11 +91,9 @@ class PersonRepositoryTest {
     @Test
     fun `it should return a list of persons`() {
       val personsQueryCriteria = PersonsQueryCriteria(name = "name", includeDeviceActivations = true)
-      val queryExecutionId = "query-execution-id"
       val expectedResult = AthenaHelper.resultSetFromJson(simpleResultTest)
 
-      whenever(athenaClient.getQueryExecutionId(any<AthenaQuery>())).thenReturn(queryExecutionId)
-      whenever(athenaClient.getQueryResult(queryExecutionId)).thenReturn(expectedResult)
+      whenever(athenaClient.getQueryResult(any<AthenaQuery>())).thenReturn(expectedResult)
 
       val result = repository.getPersons(personsQueryCriteria)
       assertThat(result).isNotEmpty()
