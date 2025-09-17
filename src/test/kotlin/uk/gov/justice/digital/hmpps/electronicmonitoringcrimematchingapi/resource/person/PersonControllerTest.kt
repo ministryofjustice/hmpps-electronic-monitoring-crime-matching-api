@@ -38,7 +38,7 @@ class PersonControllerTest {
 
       val expectedResult = listOf(
         PersonDto(
-          "personId",
+          1,
           "name",
           "nomisId",
           "pncRef",

@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.deviceactivation.DeviceActivationDto
 
 data class PersonDto(
-  val personId: String,
+  val personId: Int,
   val name: String,
   val nomisId: String?,
   val pncRef: String,
@@ -13,14 +13,14 @@ data class PersonDto(
   val address: String?,
   val deviceActivations: List<DeviceActivationDto>?,
 ) {
-  constructor(dto: Person) : this(
-    personId = dto.personId,
-    name = dto.personName,
-    nomisId = dto.uIdNomis,
+  constructor(entity: Person) : this(
+    personId = entity.personId,
+    name = entity.personName,
+    nomisId = entity.uIdNomis,
     pncRef = "",
-    dateOfBirth = dto.uDob,
+    dateOfBirth = entity.uDob,
     probationPractitioner = "",
-    address = "${dto.street} ${dto.city} ${dto.zip}",
+    address = "${entity.street} ${entity.city} ${entity.zip}",
     deviceActivations = null,
   )
 }

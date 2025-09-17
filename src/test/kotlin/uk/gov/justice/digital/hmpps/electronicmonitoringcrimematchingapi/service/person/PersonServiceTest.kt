@@ -33,7 +33,7 @@ class PersonServiceTest {
 
       val expectedResult = listOf(
         Person(
-          personId = "1",
+          personId = 1,
           personName = "name",
           uIdNomis = "nomisId",
           uDob = "1990-01-01",
@@ -63,15 +63,15 @@ class PersonServiceTest {
 
       val expectedResult = listOf(
         Person(
-          personId = "1",
+          personId = 1,
           personName = "name",
           uIdNomis = "nomisId",
           uDob = "1990-01-01",
           zip = "FK12 3FA",
           city = "Fakesville",
           street = "123 Fake Street",
-          deviceId = "12345",
-          deviceActivationId = "54321",
+          deviceId = 12345,
+          deviceActivationId = 54321,
           deviceActivationDate = "",
           deviceDeactivationDate = "",
         ),

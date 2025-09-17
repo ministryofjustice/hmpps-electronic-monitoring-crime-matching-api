@@ -35,10 +35,10 @@ class PersonService(
     val first = rows.first()
     val deviceActivations = rows.map {
       DeviceActivationDto(
-        deviceActivationId = it.deviceActivationId!!.toInt(),
-        deviceId = it.deviceId!!.toInt(),
+        deviceActivationId = it.deviceActivationId!!,
+        deviceId = it.deviceId!!,
         deviceName = "",
-        personId = it.personId.toInt(),
+        personId = it.personId,
         deviceActivationDate = nullableLocalDateTime(it.deviceActivationDate),
         deviceDeactivationDate = nullableLocalDateTime(it.deviceDeactivationDate),
         orderStart = "",

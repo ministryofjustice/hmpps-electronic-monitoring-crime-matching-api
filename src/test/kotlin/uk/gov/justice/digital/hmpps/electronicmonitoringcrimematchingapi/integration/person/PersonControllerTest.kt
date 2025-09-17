@@ -149,7 +149,7 @@ class PersonControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      assertThat(result.personId).isEqualTo("1")
+      assertThat(result.personId).isEqualTo(1)
       assertThat(result.nomisId).isEqualTo("nomis_id")
       assertThat(result.name).isEqualTo("person_name")
       assertThat(result.address).isEqualTo("street city zip")
