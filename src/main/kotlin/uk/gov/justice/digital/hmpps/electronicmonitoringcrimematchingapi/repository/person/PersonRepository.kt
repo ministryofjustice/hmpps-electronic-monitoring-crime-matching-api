@@ -14,8 +14,7 @@ class PersonRepository(
 
   fun getPersons(personsQueryCriteria: PersonsQueryCriteria): List<Person> {
     val query = GetPersonsQueryBuilder(personsQueryCriteria).build()
-    val queryExecutionId = athenaClient.getQueryExecutionId(query)
-    val queryResult = athenaClient.getQueryResult(queryExecutionId)
+    val queryResult = athenaClient.getQueryResult(query)
     return AthenaHelper.Companion.mapTo<Person>(queryResult)
   }
 
