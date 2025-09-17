@@ -23,7 +23,7 @@ AWS requests are differentiated by the `X-Amz-Target` header.
 
 ## Athena Queries
 
-By default the application is configured to with a log level of `DEBUG` for any class path within 
+By default the application is configured with a log level of `DEBUG` for any class path within 
 `uk.gov.justice.digital.hmpps`. To change the log level of the Athena query logging, the following snippet can be added 
 to `logback-spring.xml`.
 
