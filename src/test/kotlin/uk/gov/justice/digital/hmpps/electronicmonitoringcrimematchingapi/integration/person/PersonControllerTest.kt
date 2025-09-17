@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.PaginatedResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -43,14 +43,13 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(PaginatedResponse::class.java)
-        .hasSize(1)
+        .expectBody(PagedResponse::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(result[0].data).isNotNull()
-      assertThat(result[0].data).isNotEmpty()
-      assertThat(result[0].data[0]).extracting("deviceActivations").isNull()
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(1)
+      assertThat(result.data[0]).extracting("deviceActivations").isNull()
     }
 
     @Test
@@ -68,14 +67,13 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(PaginatedResponse::class.java)
-        .hasSize(1)
+        .expectBody(PagedResponse::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(result[0].data).isNotNull()
-      assertThat(result[0].data).isNotEmpty()
-      assertThat(result[0].data[0]).extracting("deviceActivations").isNotNull()
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(1)
+      assertThat(result.data[0]).extracting("deviceActivations").isNotNull()
     }
 
     @Test
@@ -93,7 +91,7 @@ class PersonControllerTest : IntegrationTestBase() {
       stubFailedQueryExecution("123")
 
       val response = webTestClient.get()
-        .uri("/persons?personName=name")
+        .uri("/persons?name=name")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
