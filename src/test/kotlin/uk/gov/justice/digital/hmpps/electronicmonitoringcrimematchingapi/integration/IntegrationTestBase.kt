@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration
 
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -48,11 +51,49 @@ abstract class IntegrationTestBase {
 
   protected fun stubQueryExecution(
     queryExecutionId: String,
-    queryExecutionStatus: String,
+    retryCount: Int,
+    finalQueryExecutionStatus: String,
     queryResponseFile: String,
   ) {
     awsMockServer.stubAthenaStartQueryExecution(queryExecutionId)
-    awsMockServer.stubAthenaGetQueryExecution(queryExecutionStatus)
+    awsMockServer.stubAthenaGetQueryExecution(retryCount, finalQueryExecutionStatus)
     awsMockServer.stubAthenaGetQueryResults(queryResponseFile)
+  }
+
+  protected fun stubFailedQueryExecution(
+    queryExecutionId: String,
+  ) {
+    awsMockServer.stubAthenaStartQueryExecution(queryExecutionId)
+    awsMockServer.stubAthenaGetQueryExecution(1, "FAILED")
+  }
+
+  protected fun verifyAthenaStartQueryExecutionCount(
+    count: Int,
+  ) {
+    awsMockServer.verify(
+      count,
+      postRequestedFor(urlPathEqualTo("/"))
+        .withHeader("X-Amz-Target", equalTo("AmazonAthena.StartQueryExecution")),
+    )
+  }
+
+  protected fun verifyAthenaGetQueryExecutionCount(
+    count: Int,
+  ) {
+    awsMockServer.verify(
+      count,
+      postRequestedFor(urlPathEqualTo("/"))
+        .withHeader("X-Amz-Target", equalTo("AmazonAthena.GetQueryExecution")),
+    )
+  }
+
+  protected fun verifyAthenaGetQueryResultsCount(
+    count: Int,
+  ) {
+    awsMockServer.verify(
+      count,
+      postRequestedFor(urlPathEqualTo("/"))
+        .withHeader("X-Amz-Target", equalTo("AmazonAthena.GetQueryResults")),
+    )
   }
 }
