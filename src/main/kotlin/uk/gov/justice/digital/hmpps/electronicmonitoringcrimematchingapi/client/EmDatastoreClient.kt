@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client
 
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Component
@@ -25,6 +26,8 @@ class EmDatastoreClient(
   val athenaClient: AthenaClient,
   val properties: DatastoreProperties,
 ) : EmDatastoreClientInterface {
+
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   override fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
     val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
@@ -71,6 +74,8 @@ class EmDatastoreClient(
 
       startQueryExecutionRequest.resultConfiguration(resultConfiguration)
 
+      log.debug("Starting query: {}", query)
+
       val startQueryExecutionResponse = athenaClient.startQueryExecution(startQueryExecutionRequest.build())
 
       return startQueryExecutionResponse.queryExecutionId()
@@ -103,7 +108,7 @@ class EmDatastoreClient(
         // Sleep an amount of time before retrying again.
         Thread.sleep(properties.retryIntervalMs)
       }
-      println("The current status is: $queryState")
+      log.debug("Query execution id $queryExecutionId has status: $queryState")
     }
   }
 
