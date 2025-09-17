@@ -34,15 +34,16 @@ class PersonControllerTest {
   inner class GetPersons {
     @Test
     fun `it should return persons when valid criteria passed`() {
-      val personsQueryCriteria = PersonsQueryCriteria(personName = "name")
+      val personsQueryCriteria = PersonsQueryCriteria(name = "name")
 
       val expectedResult = listOf(
         PersonDto(
           "personId",
           "name",
           "nomisId",
-          "",
+          "pncRef",
           "1990-01-01",
+          "probationPractitioner",
           "address",
           emptyList(),
         ),
@@ -52,7 +53,8 @@ class PersonControllerTest {
 
       val result = controller.getPersons(authentication, personsQueryCriteria)
       assertThat(result.body).isNotNull()
-      assertThat(result.body).isEqualTo(expectedResult)
+      assertThat(result.body?.data).isNotNull()
+      assertThat(result.body?.data).isEqualTo(expectedResult)
     }
 
     @Test

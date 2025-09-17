@@ -198,10 +198,10 @@
             "VarCharValue": "street"
           },
           {
-            "VarCharValue": "device_id"
+            "VarCharValue": "12345"
           },
           {
-            "VarCharValue": "device_activation_id"
+            "VarCharValue": "54321"
           },
           {
             "VarCharValue": "2023-05-18 00:00:00.000"

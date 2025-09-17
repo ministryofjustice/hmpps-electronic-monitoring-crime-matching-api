@@ -10,8 +10,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClient
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.Person
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaPersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
 
@@ -27,22 +27,8 @@ class PersonRepositoryTest {
   }
 
   @Nested
-  @DisplayName("GetPersonsQueryId")
-  inner class GetPersonsQueryId {
-    @Test
-    fun `it should return queryExecutionId`() {
-      val personsQueryCriteria = PersonsQueryCriteria(personName = "name", includeDeviceActivations = true)
-      val queryExecutionId = "query-execution-id"
-      whenever(athenaClient.getQueryExecutionId(any<AthenaQuery>())).thenReturn(queryExecutionId)
-
-      val result = repository.getPersonsQueryId(personsQueryCriteria)
-      assertThat(result).isEqualTo(queryExecutionId)
-    }
-  }
-
-  @Nested
-  @DisplayName("GetPersonsQueryResults")
-  inner class GetPersonsQueryResults {
+  @DisplayName("GetPersons")
+  inner class GetPersons {
 
     val simpleResultTest: String = """
       {
@@ -104,13 +90,16 @@ class PersonRepositoryTest {
 
     @Test
     fun `it should return a list of persons`() {
+      val personsQueryCriteria = PersonsQueryCriteria(name = "name", includeDeviceActivations = true)
       val queryExecutionId = "query-execution-id"
       val expectedResult = AthenaHelper.resultSetFromJson(simpleResultTest)
+
+      whenever(athenaClient.getQueryExecutionId(any<AthenaQuery>())).thenReturn(queryExecutionId)
       whenever(athenaClient.getQueryResult(queryExecutionId)).thenReturn(expectedResult)
 
-      val result = repository.getPersonsQueryResults(queryExecutionId)
+      val result = repository.getPersons(personsQueryCriteria)
       assertThat(result).isNotEmpty()
-      assertThat(result[0]).isInstanceOf(AthenaPersonDto::class.java)
+      assertThat(result[0]).isInstanceOf(Person::class.java)
     }
   }
 }

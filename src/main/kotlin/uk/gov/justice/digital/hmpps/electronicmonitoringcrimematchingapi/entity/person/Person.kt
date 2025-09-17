@@ -1,6 +1,6 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person
 
-data class AthenaPersonDto(
+data class Person(
   val personId: String,
   val personName: String,
   val uIdNomis: String?,

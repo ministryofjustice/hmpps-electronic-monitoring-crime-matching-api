@@ -18,7 +18,7 @@ data class PersonsQuery(
   val id: UUID = UUID.randomUUID(),
 
   val nomisId: String?,
-  val personName: String?,
+  val name: String?,
   val deviceId: String?,
   val includeDeviceActivations: Boolean,
 
