@@ -6,7 +6,5 @@ class AthenaQuery(
   val queryString: String,
   val parameters: Array<String>,
 ) : Serializable {
-  override fun toString(): String {
-    return this.queryString
-  }
+  override fun toString(): String = this.queryString
 }
