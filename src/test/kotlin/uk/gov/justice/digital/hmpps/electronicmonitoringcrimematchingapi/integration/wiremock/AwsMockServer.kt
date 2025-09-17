@@ -8,6 +8,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.common.SingleRootFileSource
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.stubbing.Scenario
 
 class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
   companion object {
@@ -78,16 +79,20 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
     )
   }
 
-  fun stubAthenaGetQueryExecution(state: String) {
-    stubFor(
-      post(
-        urlPathEqualTo("/"),
-      ).withHeader("X-Amz-Target", equalTo("AmazonAthena.GetQueryExecution"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-              """
+  fun stubAthenaGetQueryExecution(retryCount: Int, finalQueryExecutionState: String) {
+    (1..retryCount).forEach {
+      stubFor(
+        post(
+          urlPathEqualTo("/"),
+        )
+          .withHeader("X-Amz-Target", equalTo("AmazonAthena.GetQueryExecution"))
+          .inScenario("GetQueryExecution")
+          .whenScenarioStateIs(if (it == 1) Scenario.STARTED else "RETRY${it - 1}")
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withBody(
+                """
             {
               "QueryExecution": {
                 "QueryExecutionId": "",
@@ -101,7 +106,7 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
                   "Catalog": ""
                 },
                 "Status": {
-                  "State": "$state",
+                  "State": "${if (it == retryCount) finalQueryExecutionState else "RUNNING"}",
                   "SubmissionDateTime": 0,
                   "CompletionDateTime": 0
                 },
@@ -115,10 +120,12 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
                 "WorkGroup": "AthenaAdmin"
               }
             }
-              """.trimIndent(),
-            ),
-        ),
-    )
+                """.trimIndent(),
+              ),
+          )
+          .willSetStateTo(if (it == retryCount) Scenario.STARTED else "RETRY$it"),
+      )
+    }
   }
 
   fun stubAthenaGetQueryResults(responseFile: String) {

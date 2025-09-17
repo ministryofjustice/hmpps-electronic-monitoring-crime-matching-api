@@ -38,6 +38,7 @@ class PersonControllerTest : IntegrationTestBase() {
     fun `it should return persons without device activations and store query in cache`() {
       stubQueryExecution(
         "123",
+        1,
         "SUCCEEDED",
         "athenaResponses/successfulPersonsResponse.json",
       )
@@ -70,6 +71,7 @@ class PersonControllerTest : IntegrationTestBase() {
     fun `it should return persons with device activations`() {
       stubQueryExecution(
         "123",
+        1,
         "SUCCEEDED",
         "athenaResponses/successfulPersonsResponse.json",
       )
@@ -92,6 +94,7 @@ class PersonControllerTest : IntegrationTestBase() {
     fun `it should return persons and reuse existing query when found in cache`() {
       stubQueryExecution(
         "123",
+        1,
         "SUCCEEDED",
         "athenaResponses/successfulPersonsResponse.json",
       )
@@ -169,6 +172,7 @@ class PersonControllerTest : IntegrationTestBase() {
     fun `it should return a NOT_FOUND response if person was not found in Athena`() {
       stubQueryExecution(
         "123",
+        1,
         "SUCCEEDED",
         "athenaResponses/successfulEmptyPersonResponse.json",
       )
@@ -185,6 +189,7 @@ class PersonControllerTest : IntegrationTestBase() {
     fun `it should return an OK response if person was found in Athena`() {
       stubQueryExecution(
         "123",
+        1,
         "SUCCEEDED",
         "athenaResponses/successfulPersonsResponse.json",
       )
@@ -211,6 +216,7 @@ class PersonControllerTest : IntegrationTestBase() {
     fun `it should use the cached query execution when a duplicate request is made`() {
       stubQueryExecution(
         "123",
+        1,
         "SUCCEEDED",
         "athenaResponses/successfulPersonsResponse.json",
       )
@@ -258,6 +264,30 @@ class PersonControllerTest : IntegrationTestBase() {
           developerMessage = "There was an unexpected error processing the request.",
         ),
       )
+    }
+
+    @Test
+    fun `it should keep retrying to get query results until the query is finished`() {
+      stubQueryExecution(
+        "123",
+        3,
+        "SUCCEEDED",
+        "athenaResponses/successfulPersonsResponse.json",
+      )
+
+      webTestClient.get()
+        .uri("/persons/1")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Only one query should have been started
+      verifyAthenaStartQueryExecutionCount(1)
+      // The status of the existing query should have been checked twice
+      verifyAthenaGetQueryExecutionCount(3)
+      // The results of the existing query should have been used twice
+      verifyAthenaGetQueryResultsCount(1)
     }
   }
 }
