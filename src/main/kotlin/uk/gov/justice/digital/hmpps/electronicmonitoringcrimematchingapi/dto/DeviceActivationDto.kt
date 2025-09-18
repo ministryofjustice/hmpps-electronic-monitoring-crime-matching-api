@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.deviceactivation
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 import java.time.LocalDateTime
 

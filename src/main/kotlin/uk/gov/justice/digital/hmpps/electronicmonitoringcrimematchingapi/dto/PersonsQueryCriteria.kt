@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 data class PersonsQueryCriteria(
   val name: String? = null,

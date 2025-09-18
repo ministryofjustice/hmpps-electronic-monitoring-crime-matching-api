@@ -10,10 +10,10 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClient
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.Person
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 
 @ActiveProfiles("test")
 class PersonRepositoryTest {

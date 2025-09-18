@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.PagedResponse
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
 
 @RestController
@@ -37,7 +37,7 @@ class PersonController(
     authentication: Authentication,
     @Parameter(description = "The search criteria for the query", required = true)
     personsQueryCriteria: PersonsQueryCriteria,
-  ): ResponseEntity<PagedResponse<PersonDto>> {
+  ): ResponseEntity<PagedResponseDto<PersonDto>> {
     if (!personsQueryCriteria.isValid()) {
       throw ResponseStatusException(
         HttpStatus.BAD_REQUEST,
@@ -45,7 +45,7 @@ class PersonController(
       )
     }
     val result = personService.getPersons(personsQueryCriteria, authentication.name)
-    return ResponseEntity.ok(PagedResponse(result))
+    return ResponseEntity.ok(PagedResponseDto(result))
   }
 
   @Operation(

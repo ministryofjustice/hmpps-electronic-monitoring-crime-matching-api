@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.Person
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.PersonRepository
 
 @ActiveProfiles("test")
