@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.resour
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -16,13 +15,15 @@ import org.springframework.web.server.ResponseStatusException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.PersonMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
 
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
 @RequestMapping("/persons", produces = ["application/json"])
 class PersonController(
-  @Autowired val personService: PersonService,
+  val personService: PersonService,
+  val mapper: PersonMapper,
 ) {
 
   @Operation(
@@ -44,8 +45,8 @@ class PersonController(
         "Query parameters are invalid: $personsQueryCriteria",
       )
     }
-    val result = personService.getPersons(personsQueryCriteria, authentication.name)
-    return ResponseEntity.ok(PagedResponseDto(result))
+    val result = personService.getPersons(personsQueryCriteria)
+    return ResponseEntity.ok(PagedResponseDto(result.map { mapper.fromModelToDto(it) }))
   }
 
   @Operation(
@@ -60,11 +61,10 @@ class PersonController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getPerson(
-    authentication: Authentication,
     @PathVariable personId: Long,
   ): ResponseEntity<PersonDto> {
-    val person = personService.getPerson(personId, authentication.name)
+    val person = personService.getPerson(personId)
 
-    return ResponseEntity.ok(person)
+    return ResponseEntity.ok(mapper.fromModelToDto(person))
   }
 }

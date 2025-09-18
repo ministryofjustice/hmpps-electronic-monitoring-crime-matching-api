@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.deviceactivation.DeviceActivation
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.deviceactivation.DeviceActivationDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.DeviceActivationMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.deviceActivation.DeviceActivationService
 
 @RestController
@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 @RequestMapping("/device-activations", produces = ["application/json"])
 class DeviceActivationController(
   private val deviceActivationService: DeviceActivationService,
+  private val mapper: DeviceActivationMapper,
 ) {
   @Operation(
     tags = ["Device Activation"],
@@ -34,15 +35,6 @@ class DeviceActivationController(
   ): ResponseEntity<DeviceActivationDto> {
     val deviceActivation = deviceActivationService.getDeviceActivation(deviceActivationId)
 
-    return ResponseEntity.ok(mapToDto(deviceActivation))
+    return ResponseEntity.ok(mapper.fromModelToDto(deviceActivation))
   }
-
-  private fun mapToDto(
-    deviceActivation: DeviceActivation,
-  ): DeviceActivationDto = DeviceActivationDto(
-    deviceActivationId = deviceActivation.deviceActivationId.toString(),
-    deviceId = deviceActivation.deviceId.toString(),
-    deviceActivationDate = deviceActivation.deviceActivationDate,
-    deviceDeactivationDate = deviceActivation.deviceDeactivationDate,
-  )
 }
