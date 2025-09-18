@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity
 
 data class Person(
   val personId: Int,

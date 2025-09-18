@@ -1,7 +1,6 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.Person
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.deviceactivation.DeviceActivationDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 
 data class PersonDto(
   val personId: Int,

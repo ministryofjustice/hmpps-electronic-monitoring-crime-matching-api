@@ -3,9 +3,9 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClientInterface
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.Person
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 
 @Service
 class PersonRepository(

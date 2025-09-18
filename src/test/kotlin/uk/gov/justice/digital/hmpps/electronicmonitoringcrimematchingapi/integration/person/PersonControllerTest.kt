@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.PagedResponse
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -43,7 +43,7 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(PagedResponse::class.java)
+        .expectBody(PagedResponseDto::class.java)
         .returnResult()
         .responseBody!!
 
@@ -67,7 +67,7 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(PagedResponse::class.java)
+        .expectBody(PagedResponseDto::class.java)
         .returnResult()
         .responseBody!!
 
