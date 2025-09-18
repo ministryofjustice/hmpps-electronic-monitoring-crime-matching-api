@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
@@ -36,7 +37,7 @@ class PersonController(
     authentication: Authentication,
     @Parameter(description = "The search criteria for the query", required = true)
     personsQueryCriteria: PersonsQueryCriteria,
-  ): ResponseEntity<List<PersonDto>> {
+  ): ResponseEntity<PagedResponse<PersonDto>> {
     if (!personsQueryCriteria.isValid()) {
       throw ResponseStatusException(
         HttpStatus.BAD_REQUEST,
@@ -44,7 +45,7 @@ class PersonController(
       )
     }
     val result = personService.getPersons(personsQueryCriteria, authentication.name)
-    return ResponseEntity.ok(result)
+    return ResponseEntity.ok(PagedResponse(result))
   }
 
   @Operation(

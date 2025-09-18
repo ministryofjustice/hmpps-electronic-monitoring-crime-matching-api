@@ -3,8 +3,12 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 import java.time.LocalDateTime
 
 data class DeviceActivationDto(
-  val deviceActivationId: String,
-  val deviceId: String,
+  val deviceActivationId: Int,
+  val deviceId: Int,
+  val deviceName: String?,
+  val personId: Int,
   val deviceActivationDate: LocalDateTime?,
   val deviceDeactivationDate: LocalDateTime?,
+  val orderStart: String?,
+  val orderEnd: String?,
 )

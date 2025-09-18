@@ -8,26 +8,20 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.entity.person.PersonsQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.person.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.PersonsQueryCacheRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
-import java.time.ZonedDateTime
 
 @ActiveProfiles("integration")
 class PersonControllerTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var personsQueryCacheRepository: PersonsQueryCacheRepository
 
   @Autowired
   lateinit var cacheEntryRepository: CacheEntryRepository
 
   @BeforeEach
   fun setup() {
-    personsQueryCacheRepository.deleteAll()
     cacheEntryRepository.deleteAll()
   }
 
@@ -35,7 +29,7 @@ class PersonControllerTest : IntegrationTestBase() {
   @DisplayName("GET /persons")
   inner class GetPersons {
     @Test
-    fun `it should return persons without device activations and store query in cache`() {
+    fun `it should return persons without device activations`() {
       stubQueryExecution(
         "123",
         1,
@@ -44,27 +38,18 @@ class PersonControllerTest : IntegrationTestBase() {
       )
 
       val result = webTestClient.get()
-        .uri("/persons?personName=name")
+        .uri("/persons?name=name")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(PersonDto::class.java)
-        .hasSize(1)
+        .expectBody(PagedResponse::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(result[0].deviceActivations).isNull()
-
-      val databaseResult =
-        personsQueryCacheRepository.findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
-          null,
-          "name",
-          null,
-          false,
-          ZonedDateTime.now().minusDays(1),
-        )
-      assertThat(databaseResult).isNotNull()
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(1)
+      assertThat(result.data[0]).extracting("deviceActivations").isNull()
     }
 
     @Test
@@ -77,58 +62,18 @@ class PersonControllerTest : IntegrationTestBase() {
       )
 
       val result = webTestClient.get()
-        .uri("/persons?personName=name&includeDeviceActivations=true")
+        .uri("/persons?name=name&includeDeviceActivations=true")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(PersonDto::class.java)
-        .hasSize(1)
+        .expectBody(PagedResponse::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(result[0].deviceActivations).isNotNull()
-    }
-
-    @Test
-    fun `it should return persons and reuse existing query when found in cache`() {
-      stubQueryExecution(
-        "123",
-        1,
-        "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
-      )
-
-      personsQueryCacheRepository.save(
-        PersonsQuery(
-          personName = "name",
-          nomisId = null,
-          deviceId = null,
-          includeDeviceActivations = false,
-          queryExecutionId = "query-execution-id",
-          queryOwner = "user",
-        ),
-      )
-
-      webTestClient.get()
-        .uri("/persons?personName=name")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(PersonDto::class.java)
-        .hasSize(1)
-
-      val databaseResult =
-        personsQueryCacheRepository.findByNomisIdAndPersonNameAndDeviceIdAndIncludeDeviceActivationsAndCreatedAtAfter(
-          null,
-          "name",
-          null,
-          false,
-          ZonedDateTime.now().minusDays(1),
-        )
-      assertThat(databaseResult).isNotNull()
-      assertThat(databaseResult?.queryExecutionId).isEqualTo("query-execution-id")
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(1)
+      assertThat(result.data[0]).extracting("deviceActivations").isNotNull()
     }
 
     @Test
@@ -146,7 +91,7 @@ class PersonControllerTest : IntegrationTestBase() {
       stubFailedQueryExecution("123")
 
       val response = webTestClient.get()
-        .uri("/persons?personName=name")
+        .uri("/persons?name=name")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -204,9 +149,9 @@ class PersonControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      assertThat(result.personId).isEqualTo("1")
+      assertThat(result.personId).isEqualTo(1)
       assertThat(result.nomisId).isEqualTo("nomis_id")
-      assertThat(result.personName).isEqualTo("person_name")
+      assertThat(result.name).isEqualTo("person_name")
       assertThat(result.address).isEqualTo("street city zip")
       assertThat(result.dateOfBirth).isEqualTo("2000-05-29")
       assertThat(result.deviceActivations).isNotNull().isEmpty()
