@@ -1,0 +1,109 @@
+{
+  "ResultSet": {
+    "ResultSetMetadata": {
+      "ColumnInfo": [
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_activation_id",
+          "Name": "device_activation_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_id",
+          "Name": "device_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "person_id",
+          "Name": "person_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_activation_date",
+          "Name": "device_activation_date",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "timestamp"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_deactivation_date",
+          "Name": "device_deactivation_date",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "timestamp"
+        }
+      ]
+    },
+    "Rows": [
+      {
+        "Data": [
+          {
+            "VarCharValue": "device_activation_id"
+          },
+          {
+            "VarCharValue": "device_id"
+          },
+          {
+            "VarCharValue": "person_id"
+          },
+          {
+            "VarCharValue": "device_activation_date"
+          },
+          {
+            "VarCharValue": "device_deactivation_date"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "12345"
+          },
+          {
+            "VarCharValue": "54321"
+          },
+          {
+            "VarCharValue": "98765"
+          },
+          {
+            "VarCharValue": "2023-05-18 00:00:00.000"
+          },
+          {
+            "VarCharValue": null
+          }
+        ]
+      }
+    ]
+  },
+  "UpdateCount": 0
+}

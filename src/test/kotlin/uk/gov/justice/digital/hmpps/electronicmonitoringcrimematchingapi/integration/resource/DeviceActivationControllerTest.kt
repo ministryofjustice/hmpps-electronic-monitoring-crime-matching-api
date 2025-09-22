@@ -53,7 +53,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulEmptyDeviceActivationResponse.json",
+        "athenaResponses/device-activation.empty.success.json",
       )
 
       webTestClient.get()
@@ -70,7 +70,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulDeviceActivationResponse.json",
+        "athenaResponses/device-activation.inactive.success.json",
       )
 
       val result = webTestClient.get()
@@ -98,12 +98,45 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return a null deactivation date if the device activation is active`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/device-activation.active.success.json",
+      )
+
+      val result = webTestClient.get()
+        .uri("/device-activations/1")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<DeviceActivationDto>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result).isEqualTo(
+        DeviceActivationDto(
+          deviceActivationId = 12345,
+          deviceId = 54321,
+          deviceName = "",
+          personId = 98765,
+          deviceActivationDate = "2023-05-18T00:00",
+          deviceDeactivationDate = null,
+          orderStart = "",
+          orderEnd = "",
+        ),
+      )
+    }
+
+    @Test
     fun `it should use the cached query execution when a duplicate request is made`() {
       stubQueryExecution(
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulDeviceActivationResponse.json",
+        "athenaResponses/device-activation.inactive.success.json",
       )
 
       webTestClient.get()
@@ -157,7 +190,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         "123",
         3,
         "SUCCEEDED",
-        "athenaResponses/successfulDeviceActivationResponse.json",
+        "athenaResponses/device-activation.inactive.success.json",
       )
 
       webTestClient.get()

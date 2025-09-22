@@ -18,7 +18,7 @@ data class DeviceActivationDto(
     deviceName = deviceActivation.deviceName,
     personId = deviceActivation.personId,
     deviceActivationDate = deviceActivation.deviceActivationDate.toString(),
-    deviceDeactivationDate = deviceActivation.deviceDeactivationDate.toString(),
+    deviceDeactivationDate = deviceActivation.deviceDeactivationDate?.toString(),
     orderStart = deviceActivation.orderStart,
     orderEnd = deviceActivation.orderEnd,
   )
