@@ -29,7 +29,7 @@ class SimpleResultSetExtractor<T>(
     .findAndRegisterModules()
     .registerKotlinModule()
     .apply {
-      propertyNamingStrategy = AthenaHelper.Companion.AlphanumericSnakeCaseStrategy()
+      propertyNamingStrategy = AlphanumericSnakeCaseStrategy()
     }
 
   fun getColumnsNames(resultSet: ResultSet): List<String> = resultSet
