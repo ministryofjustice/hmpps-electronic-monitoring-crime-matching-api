@@ -8,10 +8,11 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.DeviceActivation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.PersonRepository
+import java.time.LocalDateTime
 
 @ActiveProfiles("test")
 class PersonServiceTest {
@@ -35,26 +36,25 @@ class PersonServiceTest {
         Person(
           personId = 1,
           personName = "name",
-          uIdNomis = "nomisId",
-          uDob = "1990-01-01",
+          nomisId = "nomisId",
+          pncRef = "",
+          probationPractitioner = "",
+          dob = "1990-01-01",
           zip = "FK12 3FA",
           city = "Fakesville",
           street = "123 Fake Street",
-          deviceId = null,
-          deviceActivationId = null,
-          deviceActivationDate = null,
-          deviceDeactivationDate = null,
+          deviceActivations = mutableListOf(),
         ),
       )
 
       whenever(personRepository.getPersons(personsQueryCriteria)).thenReturn(expectedResult)
 
-      val result = service.getPersons(personsQueryCriteria, "")
+      val result = service.getPersons(personsQueryCriteria)
 
       assertThat(result).isInstanceOf(List::class.java)
       assertThat(result.count()).isEqualTo(1)
-      assertThat(result.first()).isInstanceOf(PersonDto::class.java)
-      assertThat(result.first().deviceActivations).isNull()
+      assertThat(result.first()).isInstanceOf(Person::class.java)
+      assertThat(result.first().deviceActivations).isEqualTo(listOf<DeviceActivation>())
     }
 
     @Test
@@ -65,25 +65,35 @@ class PersonServiceTest {
         Person(
           personId = 1,
           personName = "name",
-          uIdNomis = "nomisId",
-          uDob = "1990-01-01",
+          nomisId = "nomisId",
+          pncRef = "",
+          probationPractitioner = "",
+          dob = "1990-01-01",
           zip = "FK12 3FA",
           city = "Fakesville",
           street = "123 Fake Street",
-          deviceId = 12345,
-          deviceActivationId = 54321,
-          deviceActivationDate = "",
-          deviceDeactivationDate = "",
+          deviceActivations = mutableListOf(
+            DeviceActivation(
+              deviceActivationId = 54321,
+              deviceId = 12345,
+              deviceName = "",
+              personId = 1,
+              deviceActivationDate = LocalDateTime.of(2021, 1, 1, 1, 1),
+              deviceDeactivationDate = null,
+              orderStart = "",
+              orderEnd = "",
+            ),
+          ),
         ),
       )
 
       whenever(personRepository.getPersons(personsQueryCriteria)).thenReturn(expectedResult)
 
-      val result = service.getPersons(personsQueryCriteria, "")
+      val result = service.getPersons(personsQueryCriteria)
 
       assertThat(result).isInstanceOf(List::class.java)
       assertThat(result.count()).isEqualTo(1)
-      assertThat(result.first()).isInstanceOf(PersonDto::class.java)
+      assertThat(result.first()).isInstanceOf(Person::class.java)
       assertThat(result.first().deviceActivations).hasSize(1)
     }
   }

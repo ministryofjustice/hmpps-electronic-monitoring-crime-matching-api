@@ -85,6 +85,54 @@
           "SchemaName": "",
           "TableName": "",
           "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_id",
+          "Name": "device_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_activation_id",
+          "Name": "device_activation_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_activation_date",
+          "Name": "device_activation_date",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "timestamp"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_deactivation_date",
+          "Name": "device_deactivation_date",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "timestamp"
         }
       ]
     },
@@ -111,6 +159,18 @@
           },
           {
             "VarCharValue": "street"
+          },
+          {
+            "VarCharValue": "device_id"
+          },
+          {
+            "VarCharValue": "device_activation_id"
+          },
+          {
+            "VarCharValue": "device_activation_date"
+          },
+          {
+            "VarCharValue": "device_deactivation_date"
           }
         ]
       },
@@ -136,6 +196,18 @@
           },
           {
             "VarCharValue": "street"
+          },
+          {
+            "VarCharValue": "12345"
+          },
+          {
+            "VarCharValue": "54321"
+          },
+          {
+            "VarCharValue": "2023-05-18 00:00:00.000"
+          },
+          {
+            "VarCharValue": "2024-05-18 00:00:00.000"
           }
         ]
       }

@@ -1,33 +1,26 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person
 
-import jakarta.persistence.EntityNotFoundException
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClientInterface
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaHelper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.AthenaRepository
+import java.util.Optional
 
-@Service
+@Repository
 class PersonRepository(
-  val athenaClient: EmDatastoreClientInterface,
-) {
+  athenaClient: EmDatastoreClientInterface,
+) : AthenaRepository<Person>(athenaClient) {
 
-  fun getPersons(personsQueryCriteria: PersonsQueryCriteria): List<Person> {
-    val query = GetPersonsQueryBuilder(personsQueryCriteria).build()
-    val queryResult = athenaClient.getQueryResult(query)
-    return AthenaHelper.Companion.mapTo<Person>(queryResult)
-  }
+  override val resultSetExtractor = PersonResultSetExtractor()
 
-  fun getPersonById(id: Long): Person {
-    val query = GetPersonByIdQueryBuilder(id).build()
-    val queryExecutionId = athenaClient.getQueryExecutionId(query)
-    val queryResult = athenaClient.getQueryResult(queryExecutionId)
-    val persons = AthenaHelper.Companion.mapTo<Person>(queryResult)
+  fun getPersons(personsQueryCriteria: PersonsQueryCriteria): List<Person> = this.executeQuery(
+    GetPersonsQueryBuilder(personsQueryCriteria).build(),
+  )
 
-    if (persons.isEmpty()) {
-      throw EntityNotFoundException("No person found with id: $id")
-    }
-
-    return persons.first()
-  }
+  fun findById(id: Long): Optional<Person> = Optional.ofNullable(
+    this.executeQuery(
+      GetPersonByIdQueryBuilder(id).build(),
+    ).firstOrNull(),
+  )
 }
