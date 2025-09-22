@@ -1,29 +1,19 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.person
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @ActiveProfiles("integration")
 class PersonControllerTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var cacheEntryRepository: CacheEntryRepository
-
-  @BeforeEach
-  fun setup() {
-    cacheEntryRepository.deleteAll()
-  }
 
   @Nested
   @DisplayName("GET /persons")
@@ -43,13 +33,13 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(PagedResponseDto::class.java)
+        .expectBody<PagedResponseDto<PersonDto>>()
         .returnResult()
         .responseBody!!
 
       assertThat(result.data).isNotNull()
       assertThat(result.data).hasSize(1)
-      assertThat(result.data[0]).extracting("deviceActivations").isNull()
+      assertThat(result.data[0].deviceActivations).isEmpty()
     }
 
     @Test
@@ -58,7 +48,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/successfulPersonsResponseWithDeviceActivations.json",
       )
 
       val result = webTestClient.get()
@@ -67,13 +57,13 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(PagedResponseDto::class.java)
+        .expectBody<PagedResponseDto<PersonDto>>()
         .returnResult()
         .responseBody!!
 
       assertThat(result.data).isNotNull()
       assertThat(result.data).hasSize(1)
-      assertThat(result.data[0]).extracting("deviceActivations").isNotNull()
+      assertThat(result.data[0].deviceActivations).hasSize(1)
     }
 
     @Test
