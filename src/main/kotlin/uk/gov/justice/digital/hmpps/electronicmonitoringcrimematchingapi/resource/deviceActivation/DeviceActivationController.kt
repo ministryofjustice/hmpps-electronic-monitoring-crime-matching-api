@@ -57,8 +57,6 @@ class DeviceActivationController(
   ): ResponseEntity<List<PositionDto>> {
     val positions = deviceActivationService.getDeviceActivationPositions(deviceActivationId, geolocationMechanism)
 
-    println("Geolocation Mechanism: $geolocationMechanism")
-
     return ResponseEntity.ok(
       positions.map { PositionDto(it) },
     )

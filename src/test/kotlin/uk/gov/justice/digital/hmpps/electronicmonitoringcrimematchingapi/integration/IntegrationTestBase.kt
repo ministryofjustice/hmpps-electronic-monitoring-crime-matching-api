@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration
 
+import com.github.tomakehurst.wiremock.client.WireMock.containing
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import org.junit.jupiter.api.AfterEach
@@ -99,6 +101,28 @@ abstract class IntegrationTestBase {
       count,
       postRequestedFor(urlPathEqualTo("/"))
         .withHeader("X-Amz-Target", equalTo("AmazonAthena.GetQueryResults")),
+    )
+  }
+
+  protected fun verifyAthenaStartQueryExecutionWithQuery(
+    query: String,
+    executionParameters: List<String>,
+  ) {
+    val requestPattern = postRequestedFor(urlPathEqualTo("/"))
+      .withHeader("X-Amz-Target", equalTo("AmazonAthena.StartQueryExecution"))
+      .withRequestBody(
+        matchingJsonPath("QueryString", containing(query)),
+      )
+
+    for (executionParameter in executionParameters) {
+      requestPattern.withRequestBody(
+        matchingJsonPath("$.ExecutionParameters[?(@ == '$executionParameter')]"),
+      )
+    }
+
+    awsMockServer.verify(
+      1,
+      requestPattern,
     )
   }
 }
