@@ -21,7 +21,7 @@ class DeviceActivationService(
 
   fun getDeviceActivationPositions(
     id: Long,
-    geolocationMechanism: GeolocationMechanism?
+    geolocationMechanism: GeolocationMechanism?,
   ): List<Position> = this.positionRepository
     .findByDeviceActivationId(id, geolocationMechanism)
 }

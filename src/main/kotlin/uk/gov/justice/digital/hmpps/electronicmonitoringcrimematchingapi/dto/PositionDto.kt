@@ -11,7 +11,7 @@ data class PositionDto(
   val speed: Long,
   val direction: Long,
   val timestamp: String,
-  val geolocationMechanism: String
+  val geolocationMechanism: String,
 ) {
   constructor(position: Position) : this(
     positionId = position.positionId,

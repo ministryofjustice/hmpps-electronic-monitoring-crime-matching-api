@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.position
 
 import org.springframework.stereotype.Repository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClientInterface
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClient
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.SimpleResultSetExtractor
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Position
@@ -9,18 +9,19 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 
 @Repository
 class PositionRepository(
-  athenaClient: EmDatastoreClientInterface,
+  athenaClient: EmDatastoreClient,
 ) : AthenaRepository<Position>(athenaClient) {
 
   override val resultSetExtractor = SimpleResultSetExtractor(Position::class.java)
 
   fun findByDeviceActivationId(
     id: Long,
-    geolocationMechanism: GeolocationMechanism?
+    geolocationMechanism: GeolocationMechanism?,
   ): List<Position> = this.executeQuery(
     GetPositionsByDeviceActivationId(
+      athenaClient.properties,
       id,
-      geolocationMechanism
+      geolocationMechanism,
     ).build(),
   )
 }
