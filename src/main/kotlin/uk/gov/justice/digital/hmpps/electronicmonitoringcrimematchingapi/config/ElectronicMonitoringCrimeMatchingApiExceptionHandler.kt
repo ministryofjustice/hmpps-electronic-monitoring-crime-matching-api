@@ -37,8 +37,8 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
     .body(
       ErrorResponse(
         status = BAD_REQUEST,
-        userMessage = "The provided value \"${e.value}\" is the incorrect type for the ${e.name} parameter.",
-        developerMessage = "The provided value \"${e.value}\" is the incorrect type for the ${e.name} parameter.",
+        userMessage = "The provided value '${e.value}' is the incorrect type for the '${e.name}' parameter.",
+        developerMessage = "The provided value '${e.value}' is the incorrect type for the '${e.name}' parameter.",
       ),
     ).also { log.info("MethodArgumentTypeMismatchException: {}", e.message) }
 
