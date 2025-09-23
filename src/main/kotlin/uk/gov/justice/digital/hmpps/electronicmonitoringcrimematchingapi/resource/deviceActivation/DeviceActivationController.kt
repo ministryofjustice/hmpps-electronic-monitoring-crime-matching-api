@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Dev
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.deviceActivation.DeviceActivationService
+import java.time.ZonedDateTime
 
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
@@ -54,8 +55,15 @@ class DeviceActivationController(
   fun getDeviceActivationPositions(
     @PathVariable deviceActivationId: Long,
     geolocationMechanism: GeolocationMechanism? = null,
+    from: ZonedDateTime? = null,
+    to: ZonedDateTime? = null,
   ): ResponseEntity<List<PositionDto>> {
-    val positions = deviceActivationService.getDeviceActivationPositions(deviceActivationId, geolocationMechanism)
+    val positions = deviceActivationService.getDeviceActivationPositions(
+      deviceActivationId,
+      geolocationMechanism,
+      from,
+      to,
+    )
 
     return ResponseEntity.ok(
       positions.map { PositionDto(it) },

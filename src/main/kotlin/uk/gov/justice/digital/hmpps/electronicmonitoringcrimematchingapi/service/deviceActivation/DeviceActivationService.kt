@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Position
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.deviceActivation.DeviceActivationRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.position.PositionRepository
+import java.time.ZonedDateTime
 
 @Service
 class DeviceActivationService(
@@ -22,6 +23,8 @@ class DeviceActivationService(
   fun getDeviceActivationPositions(
     id: Long,
     geolocationMechanism: GeolocationMechanism?,
+    from: ZonedDateTime?,
+    to: ZonedDateTime?,
   ): List<Position> = this.positionRepository
-    .findByDeviceActivationId(id, geolocationMechanism)
+    .findByDeviceActivationId(id, geolocationMechanism, from, to)
 }

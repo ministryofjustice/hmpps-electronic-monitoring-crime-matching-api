@@ -3,8 +3,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 import io.zeko.db.sql.Query
 import io.zeko.db.sql.QueryBlock
 import io.zeko.db.sql.dsl.eq
+import io.zeko.db.sql.dsl.greaterEq
+import io.zeko.db.sql.dsl.lessEq
 import io.zeko.db.sql.dsl.like
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
+import java.time.ZonedDateTime
 
 enum class JoinType {
   INNER,
@@ -25,7 +28,7 @@ open class SqlQueryBuilder(
 ) {
   private val joins: MutableList<Join> = mutableListOf()
   private val fields: MutableList<String> = mutableListOf()
-  private val whereClauses: MutableMap<String, QueryBlock> = mutableMapOf()
+  private val whereClauses: MutableList<QueryBlock> = mutableListOf()
   private val values: MutableList<String> = mutableListOf()
 
   fun addFields(fieldList: List<String>): SqlQueryBuilder = apply {
@@ -39,29 +42,39 @@ open class SqlQueryBuilder(
   fun addLikeFilter(field: String, value: String?): SqlQueryBuilder = apply {
     if (!value.isNullOrBlank()) {
       values.add("'%$value%'")
-      whereClauses.put(field, field like "'%$value%'")
+      whereClauses.add(field like "'%$value%'")
     }
   }
 
   fun addFilter(field: String, value: String): SqlQueryBuilder = apply {
     values.add("'$value'")
-    whereClauses.put(field, field eq "'$value'")
+    whereClauses.add(field eq "'$value'")
   }
 
   fun addFilter(field: String, value: Int): SqlQueryBuilder = apply {
     values.add("$value")
-    whereClauses.put(field, field eq "$value")
+    whereClauses.add(field eq "$value")
   }
 
   fun addFilter(field: String, value: Long): SqlQueryBuilder = apply {
     values.add("$value")
-    whereClauses.put(field, field eq "$value")
+    whereClauses.add(field eq "$value")
+  }
+
+  fun greaterEq(field: String, value: ZonedDateTime): SqlQueryBuilder = apply {
+    values.add("'$value'")
+    whereClauses.add(field greaterEq "from_iso8601_timestamp(?)")
+  }
+
+  fun lessEq(field: String, value: ZonedDateTime): SqlQueryBuilder = apply {
+    values.add("'$value'")
+    whereClauses.add(field lessEq "from_iso8601_timestamp(?)")
   }
 
   fun addLikeFilterCast(field: String, value: String?): SqlQueryBuilder = apply {
     if (!value.isNullOrBlank()) {
       values.add("'%$value%'")
-      whereClauses.put(field, "CAST($field AS VARCHAR)" like "'%$value%'")
+      whereClauses.add("CAST($field AS VARCHAR)" like "'%$value%'")
     }
   }
 
@@ -79,7 +92,7 @@ open class SqlQueryBuilder(
 
     query.fields(*fields.toTypedArray())
 
-    whereClauses.values.forEach { query.where(it) }
+    whereClauses.forEach { query.where(it) }
 
     return AthenaQuery(query.toSql(), values.toTypedArray())
   }
