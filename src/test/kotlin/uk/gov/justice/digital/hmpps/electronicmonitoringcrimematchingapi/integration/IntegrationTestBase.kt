@@ -116,7 +116,7 @@ abstract class IntegrationTestBase {
 
     for (executionParameter in executionParameters) {
       requestPattern.withRequestBody(
-        matchingJsonPath("$.ExecutionParameters[?(@ == '$executionParameter')]"),
+        matchingJsonPath("$.ExecutionParameters[?(@ == \"$executionParameter\")]"),
       )
     }
 

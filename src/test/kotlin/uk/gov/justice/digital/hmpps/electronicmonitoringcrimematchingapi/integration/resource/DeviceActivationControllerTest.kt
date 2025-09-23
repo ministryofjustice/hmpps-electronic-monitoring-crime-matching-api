@@ -360,6 +360,62 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return a BAD_REQUEST response if from date is not valid`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/device-activation.positions.some.success.json",
+      )
+
+      val result = webTestClient.get()
+        .uri("/device-activations/1/positions?from=abc")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result).isEqualTo(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "The provided value \"abc\" is the incorrect type for the from parameter.",
+          developerMessage = "The provided value \"abc\" is the incorrect type for the from parameter.",
+        ),
+      )
+    }
+
+    @Test
+    fun `it should return a BAD_REQUEST response if to date is not valid`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/device-activation.positions.some.success.json",
+      )
+
+      val result = webTestClient.get()
+        .uri("/device-activations/1/positions?to=abc")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result).isEqualTo(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "The provided value \"abc\" is the incorrect type for the to parameter.",
+          developerMessage = "The provided value \"abc\" is the incorrect type for the to parameter.",
+        ),
+      )
+    }
+
+    @Test
     fun `it should filter devices by geolocation mechanism in Athena query`() {
       stubQueryExecution(
         "123",
@@ -382,6 +438,58 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
       verifyAthenaStartQueryExecutionWithQuery(
         "WHERE d.device_activation_id = ? AND p.position_lbs = ?",
         listOf("1", "1"),
+      )
+    }
+
+    @Test
+    fun `it should filter devices by from date in Athena query`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/device-activation.positions.some.success.json",
+      )
+
+      webTestClient.get()
+        .uri("/device-activations/1/positions?from=2025-01-01T00:00:00Z")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList<PositionDto>()
+        .returnResult()
+        .responseBody!!
+
+      // Check that the WHERE clause include the geolocation mechanism filter
+      verifyAthenaStartQueryExecutionWithQuery(
+        "WHERE d.device_activation_id = ? AND p.position_gps_date >= from_iso8601_timestamp(?)",
+        listOf("1", "'2025-01-01T00:00Z'"),
+      )
+    }
+
+    @Test
+    fun `it should filter devices by to date in Athena query`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/device-activation.positions.some.success.json",
+      )
+
+      webTestClient.get()
+        .uri("/device-activations/1/positions?to=2025-01-01T00:00:00Z")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList<PositionDto>()
+        .returnResult()
+        .responseBody!!
+
+      // Check that the WHERE clause include the geolocation mechanism filter
+      verifyAthenaStartQueryExecutionWithQuery(
+        "WHERE d.device_activation_id = ? AND p.position_gps_date <= from_iso8601_timestamp(?)",
+        listOf("1", "'2025-01-01T00:00Z'"),
       )
     }
 
