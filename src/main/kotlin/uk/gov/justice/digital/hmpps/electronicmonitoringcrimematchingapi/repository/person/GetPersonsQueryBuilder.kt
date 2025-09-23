@@ -1,11 +1,15 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person
 
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.datastore.DatastoreProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlQueryBuilder
 
 class GetPersonsQueryBuilder : SqlQueryBuilder {
-  constructor(personsQueryCriteria: PersonsQueryCriteria) : super("allied_mdss_test_20250714014447.person", "p") {
+  constructor(
+    datastoreProperties: DatastoreProperties,
+    personsQueryCriteria: PersonsQueryCriteria,
+  ) : super("${datastoreProperties.mdssDatabase}.person", "p") {
     this.addFields(
       listOf(
         "p.person_id",
@@ -18,17 +22,17 @@ class GetPersonsQueryBuilder : SqlQueryBuilder {
       ),
     )
       .addJoin(
-        "serco_servicenow_test.x_serg2_ems_csm_profile_device_wearer pdw",
+        "${datastoreProperties.fmsDatabase}.x_serg2_ems_csm_profile_device_wearer pdw",
         "p.person_name = pdw.u_id_device_wearer",
         JoinType.INNER,
       )
       .addJoin(
-        "serco_servicenow_test.csm_consumer csm",
+        "${datastoreProperties.fmsDatabase}.csm_consumer csm",
         "pdw.consumer__value = csm.sys_id",
         JoinType.INNER,
       )
       .addJoin(
-        "serco_servicenow_test.x_serg2_ems_csm_profile_sensitive pdws",
+        "${datastoreProperties.fmsDatabase}.x_serg2_ems_csm_profile_sensitive pdws",
         "csm.sys_id = pdws.consumer__value",
         JoinType.INNER,
       )
@@ -45,7 +49,7 @@ class GetPersonsQueryBuilder : SqlQueryBuilder {
             "da.device_deactivation_date",
           ),
         )
-        .addJoin("allied_mdss_test_20250714014447.device_activation da", "p.person_id = da.person_id", JoinType.INNER)
+        .addJoin("${datastoreProperties.mdssDatabase}.device_activation da", "p.person_id = da.person_id", JoinType.INNER)
         .addLikeFilterCast("da.device_id", personsQueryCriteria.deviceId)
     }
   }

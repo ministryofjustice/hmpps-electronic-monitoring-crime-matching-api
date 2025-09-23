@@ -76,4 +76,6 @@ aws:
     role: ${ATHENA_GENERAL_IAM_ROLE}
 
 datastore:
+  fms-database: ${FMS_DATABASE:serco_servicenow_test}
+  mdss-database: ${MDSS_DATABASE:allied_mdss_test}
   output-bucket-arn: ${ATHENA_OUTPUT_BUCKET}
