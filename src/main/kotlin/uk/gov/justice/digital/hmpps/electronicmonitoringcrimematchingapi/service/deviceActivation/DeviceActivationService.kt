@@ -3,15 +3,25 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.DeviceActivation
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Position
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.deviceActivation.DeviceActivationRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.position.PositionRepository
 
 @Service
 class DeviceActivationService(
   val deviceActivationRepository: DeviceActivationRepository,
+  val positionRepository: PositionRepository,
 ) {
   fun getDeviceActivation(id: Long): DeviceActivation = this.deviceActivationRepository
     .findById(id)
     .orElseThrow {
       EntityNotFoundException("No device activation found with id: $id")
     }
+
+  fun getDeviceActivationPositions(
+    id: Long,
+    geolocationMechanism: GeolocationMechanism?
+  ): List<Position> = this.positionRepository
+    .findByDeviceActivationId(id, geolocationMechanism)
 }

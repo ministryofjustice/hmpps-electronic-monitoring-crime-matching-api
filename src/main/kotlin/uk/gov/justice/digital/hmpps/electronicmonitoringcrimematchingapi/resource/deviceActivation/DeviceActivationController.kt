@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.deviceActivation.DeviceActivationService
 
 @RestController
@@ -35,6 +37,30 @@ class DeviceActivationController(
 
     return ResponseEntity.ok(
       DeviceActivationDto(deviceActivation),
+    )
+  }
+
+  @Operation(
+    tags = ["Device Activation Positions"],
+    summary = "Get positions for a device activation",
+  )
+  @RequestMapping(
+    method = [RequestMethod.GET],
+    path = [
+      "/{deviceActivationId}/positions",
+    ],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  fun getDeviceActivationPositions(
+    @PathVariable deviceActivationId: Long,
+    geolocationMechanism: GeolocationMechanism? = null,
+  ): ResponseEntity<List<PositionDto>> {
+    val positions = deviceActivationService.getDeviceActivationPositions(deviceActivationId, geolocationMechanism)
+
+    println("Geolocation Mechanism: $geolocationMechanism")
+
+    return ResponseEntity.ok(
+      positions.map { PositionDto(it) },
     )
   }
 }
