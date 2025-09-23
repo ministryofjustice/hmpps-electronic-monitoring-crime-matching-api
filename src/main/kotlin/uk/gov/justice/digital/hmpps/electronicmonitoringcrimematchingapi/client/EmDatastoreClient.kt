@@ -25,11 +25,11 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.a
 class EmDatastoreClient(
   val athenaClient: AthenaClient,
   val properties: DatastoreProperties,
-) : EmDatastoreClientInterface {
+) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  override fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
+  fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
     val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
 
     // Wait for query to complete - blocking
@@ -39,7 +39,7 @@ class EmDatastoreClient(
     return resultSet
   }
 
-  override fun getQueryResult(queryExecutionId: String): ResultSet {
+  fun getQueryResult(queryExecutionId: String): ResultSet {
     waitForQueryToComplete(athenaClient, queryExecutionId)
     val resultSet: ResultSet = retrieveResults(athenaClient, queryExecutionId)
     return resultSet
@@ -47,7 +47,7 @@ class EmDatastoreClient(
 
   @Cacheable("athenaQueryExecutions")
   @Transactional
-  override fun getQueryExecutionId(athenaQuery: AthenaQuery): String {
+  fun getQueryExecutionId(athenaQuery: AthenaQuery): String {
     val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
     return queryExecutionId
   }
