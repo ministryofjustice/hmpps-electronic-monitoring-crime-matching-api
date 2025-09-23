@@ -43,8 +43,8 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
       assertThat(result).isEqualTo(
         ErrorResponse(
           status = BAD_REQUEST,
-          userMessage = "The provided value \"abc\" is the incorrect type for the deviceActivationId parameter.",
-          developerMessage = "The provided value \"abc\" is the incorrect type for the deviceActivationId parameter.",
+          userMessage = "The provided value 'abc' is the incorrect type for the 'deviceActivationId' parameter.",
+          developerMessage = "The provided value 'abc' is the incorrect type for the 'deviceActivationId' parameter.",
         ),
       )
     }
@@ -238,8 +238,8 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
       assertThat(result).isEqualTo(
         ErrorResponse(
           status = BAD_REQUEST,
-          userMessage = "The provided value \"abc\" is the incorrect type for the deviceActivationId parameter.",
-          developerMessage = "The provided value \"abc\" is the incorrect type for the deviceActivationId parameter.",
+          userMessage = "The provided value 'abc' is the incorrect type for the 'deviceActivationId' parameter.",
+          developerMessage = "The provided value 'abc' is the incorrect type for the 'deviceActivationId' parameter.",
         ),
       )
     }
@@ -353,8 +353,8 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
       assertThat(result).isEqualTo(
         ErrorResponse(
           status = BAD_REQUEST,
-          userMessage = "The provided value \"abc\" is the incorrect type for the geolocationMechanism parameter.",
-          developerMessage = "The provided value \"abc\" is the incorrect type for the geolocationMechanism parameter.",
+          userMessage = "The provided value 'abc' is the incorrect type for the 'geolocationMechanism' parameter.",
+          developerMessage = "The provided value 'abc' is the incorrect type for the 'geolocationMechanism' parameter.",
         ),
       )
     }
@@ -381,8 +381,8 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
       assertThat(result).isEqualTo(
         ErrorResponse(
           status = BAD_REQUEST,
-          userMessage = "The provided value \"abc\" is the incorrect type for the from parameter.",
-          developerMessage = "The provided value \"abc\" is the incorrect type for the from parameter.",
+          userMessage = "The provided value 'abc' is the incorrect type for the 'from' parameter.",
+          developerMessage = "The provided value 'abc' is the incorrect type for the 'from' parameter.",
         ),
       )
     }
@@ -409,8 +409,8 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
       assertThat(result).isEqualTo(
         ErrorResponse(
           status = BAD_REQUEST,
-          userMessage = "The provided value \"abc\" is the incorrect type for the to parameter.",
-          developerMessage = "The provided value \"abc\" is the incorrect type for the to parameter.",
+          userMessage = "The provided value 'abc' is the incorrect type for the 'to' parameter.",
+          developerMessage = "The provided value 'abc' is the incorrect type for the 'to' parameter.",
         ),
       )
     }
