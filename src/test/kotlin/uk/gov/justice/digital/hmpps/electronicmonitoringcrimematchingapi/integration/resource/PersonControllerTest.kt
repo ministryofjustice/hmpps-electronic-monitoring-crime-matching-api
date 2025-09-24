@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -135,16 +136,22 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(PersonDto::class.java)
+        .expectBody<ResponseDto<PersonDto>>()
         .returnResult()
         .responseBody!!
 
-      assertThat(result.personId).isEqualTo(1)
-      assertThat(result.nomisId).isEqualTo("nomis_id")
-      assertThat(result.name).isEqualTo("person_name")
-      assertThat(result.address).isEqualTo("street city zip")
-      assertThat(result.dateOfBirth).isEqualTo("2000-05-29")
-      assertThat(result.deviceActivations).isNotNull().isEmpty()
+      assertThat(result.data).isEqualTo(
+        PersonDto(
+          personId = 1,
+          name = "person_name",
+          nomisId = "nomis_id",
+          pncRef = "",
+          dateOfBirth = "2000-05-29",
+          probationPractitioner = "",
+          address = "street city zip",
+          deviceActivations = listOf(),
+        ),
+      )
     }
 
     @Test

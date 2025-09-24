@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.deviceActivation.DeviceActivationService
 import java.time.ZonedDateTime
@@ -33,11 +34,13 @@ class DeviceActivationController(
   )
   fun getDeviceActivation(
     @PathVariable deviceActivationId: Long,
-  ): ResponseEntity<DeviceActivationDto> {
+  ): ResponseEntity<ResponseDto<DeviceActivationDto>> {
     val deviceActivation = deviceActivationService.getDeviceActivation(deviceActivationId)
 
     return ResponseEntity.ok(
-      DeviceActivationDto(deviceActivation),
+      ResponseDto(
+        DeviceActivationDto(deviceActivation),
+      ),
     )
   }
 
@@ -57,7 +60,7 @@ class DeviceActivationController(
     geolocationMechanism: GeolocationMechanism? = null,
     from: ZonedDateTime? = null,
     to: ZonedDateTime? = null,
-  ): ResponseEntity<List<PositionDto>> {
+  ): ResponseEntity<ResponseDto<List<PositionDto>>> {
     val positions = deviceActivationService.getDeviceActivationPositions(
       deviceActivationId,
       geolocationMechanism,
@@ -66,7 +69,9 @@ class DeviceActivationController(
     )
 
     return ResponseEntity.ok(
-      positions.map { PositionDto(it) },
+      ResponseDto(
+        positions.map { PositionDto(it) },
+      ),
     )
   }
 }

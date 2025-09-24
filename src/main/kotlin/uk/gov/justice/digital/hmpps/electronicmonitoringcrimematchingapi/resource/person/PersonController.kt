@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
 
 @RestController
@@ -58,9 +59,13 @@ class PersonController(
   )
   fun getPerson(
     @PathVariable personId: Long,
-  ): ResponseEntity<PersonDto> {
+  ): ResponseEntity<ResponseDto<PersonDto>> {
     val person = personService.getPerson(personId)
 
-    return ResponseEntity.ok(PersonDto(person))
+    return ResponseEntity.ok(
+      ResponseDto(
+        PersonDto(person),
+      ),
+    )
   }
 }
