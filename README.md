@@ -46,32 +46,52 @@ docker compose pull && docker compose up --scale hmpps-electronic-monitoring-cri
 will just start a docker instance of HMPPS Auth. The application should then be started with a `local` active profile
 in Intellij.
 
+### Connecting to the cloud platform kubernetes cluster
+
+- Configure KubeCtl to let you connect to the Cloud Platform Kubernetes cluster - [follow this guide](https://user-guide.cloud-platform.service.justice.gov.uk/documentation/getting-started/kubectl-config.html)
+
 ### Running the application with connection to dev Athena
 
-#### Acquiring local credentials
-1. Configure KubeCtl to let you connect to the Cloud Platform Kubernetes cluster - [follow this guide](https://user-guide.cloud-platform.service.justice.gov.uk/documentation/getting-started/kubectl-config.html)
-2. Set the kubectl context to the dev environment: `kubectl config set-context --current --namespace=hmpps-electronic-monitoring-crime-matching-dev`
-3. Get details for the service pod that you can use to query AWS: `kubectl get pods`. One should have a name indicating it's a service account similar to `hmpps-em-crime-matching-dev-service-pod-#Z###ZZZ##-Z####`.
-4. Ssh into this service pod: `kubectl exec --stdin --tty YOUR_SERVICE_POD_NAME_FROM_THE_PREV_STEP -- /bin/bash`
-   > Confirm you've signed in correctly by running `aws sts get-caller-identity` - this should return a response with an ARN matching the pattern `arn:aws:sts::############:assumed-role/cloud-platform-irsa-abc123xyz-live/botocore-session-##########`
-5. Assume the correct role ([AWS docs](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sts/assume-role.html)): `aws sts assume-role --role-arn YOUR_ATHENA_ROLE_ARN --role-session-name cli-session`
-   > This will return AWS credentials including  a SessionToken, which will last around an hour
+When deployed to cloud-platform, the pod running the service is configured to use a service account which gives 
+it the permissions of the linked IAM role. The linked IAM role is allowed to assume a role that gives it access to the 
+Electronic Monitoring Datastore (Athena). When we're running the application locally, we want to try to connect to 
+AWS/Athena in a similar way to the deployed service. To achieve this, we can get a programmatic access key which will 
+give our workstation access to AWS.
 
-_You now have Athena credentials_ - they will last for 1 hour.
+Navigate to https://moj.awsapps.com/start/#/?tab=accounts and retrieve access keys for 
+`electronic-monitoring-data-test`. Add these to the `.env` file in root of this project. N.B. These will expire so you
+will need to refresh them periodically.
 
-#### Run configuration setup
-1. Edit your Spring Boot configuration file to include the following environment variables you retrieved in [acquiring local credentials](#acquiring-local-credentials):
-  - `AWS_ACCESS_KEY_ID` = value you retrieved (no quotes)
-  - `AWS_SECRET_ACCESS_KEY` = value you retrieved (no quotes)
-  - `AWS_SESSION_TOKEN` = value you retrieved (no quotes)
-  - `FLAG_USE_LOCAL_CREDS` = `true`
-2. The [EmDatastoreRoleProvider](src/main/kotlin/uk/gov/justice/digital/hmpps/electronicmonitoringdatastoreapi/client/EmDatastoreRoleProvider.kt)`.getRole()` method will now use these values to create the athena connection at runtime.
-3. To disable this, just set `FLAG_USE_LOCAL_CREDS` to `false`
+e.g.
+```env
+AWS_ACCESS_KEY_ID="ASIAIOSFODNN7EXAMPLE"
+AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+AWS_SESSION_TOKEN="IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE"
+```
 
-This should pick up the values you set in your environment variables as per the [AWS Java SDK docs](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html).
+These credentials will allow access to Athena without any additional configuration, however, the goal is to connect 
+to Athena in a similar way the deployed service will, so we will also configure a role to assume. The 
+`./scripts/get-athena-credentials.sh` script will fetch the ARN of the role the dev environment will use to connect to 
+Athena. Add this to your `.env` file.
 
-### Running the application with mocked Athena
-It's possible to run the application without a connection to Athena and mock responses using the `mocking` spring profile.
+e.g.
+```env
+ATHENA_GENERAL_IAM_ROLE=""
+```
+
+### Running tests
+
+When we run tests either via the command line or IntelliJ, the AWS SDK still expects to find credentials from any of the 
+default credential providers.
+
+The easiest way to get around this is to add some dummy variables to the AWS credentials file `~/.aws/credentials`. This should allow you to
+run any test in IntelliJ or from the cli e.g. `./gradlew check`.
+
+```text
+AWS_ACCESS_KEY_ID="ASIAIOSFODNN7EXAMPLE"
+AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+AWS_SESSION_TOKEN="IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE"
+```
 
 ### Code coverage
 This project has Jacoco integrated and this will run after each test run. The generated report can be found [here](build/reports/jacoco/test/html/index.html) and can be opened in your browser.
