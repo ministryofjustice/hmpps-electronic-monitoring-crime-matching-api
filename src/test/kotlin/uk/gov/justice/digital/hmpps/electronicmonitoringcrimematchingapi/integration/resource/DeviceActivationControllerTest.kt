@@ -8,9 +8,9 @@ import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
-import org.springframework.test.web.reactive.server.expectBodyList
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -81,11 +81,11 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<DeviceActivationDto>()
+        .expectBody<ResponseDto<DeviceActivationDto>>()
         .returnResult()
         .responseBody!!
 
-      assertThat(result).isEqualTo(
+      assertThat(result.data).isEqualTo(
         DeviceActivationDto(
           deviceActivationId = 12345,
           deviceId = 54321,
@@ -114,11 +114,11 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<DeviceActivationDto>()
+        .expectBody<ResponseDto<DeviceActivationDto>>()
         .returnResult()
         .responseBody!!
 
-      assertThat(result).isEqualTo(
+      assertThat(result.data).isEqualTo(
         DeviceActivationDto(
           deviceActivationId = 12345,
           deviceId = 54321,
@@ -259,11 +259,11 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<PositionDto>()
+        .expectBody<ResponseDto<List<PositionDto>>>()
         .returnResult()
         .responseBody!!
 
-      assertThat(result).isEmpty()
+      assertThat(result.data).isEmpty()
     }
 
     @Test
@@ -281,11 +281,11 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<PositionDto>()
+        .expectBody<ResponseDto<List<PositionDto>>>()
         .returnResult()
         .responseBody!!
 
-      assertThat(result).isEqualTo(
+      assertThat(result.data).isEqualTo(
         listOf(
           PositionDto(
             positionId = 1,
@@ -430,7 +430,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<PositionDto>()
+        .expectBody<ResponseDto<List<PositionDto>>>()
         .returnResult()
         .responseBody!!
 
@@ -456,7 +456,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<PositionDto>()
+        .expectBody<ResponseDto<List<PositionDto>>>()
         .returnResult()
         .responseBody!!
 
@@ -482,7 +482,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<PositionDto>()
+        .expectBody<ResponseDto<List<PositionDto>>>()
         .returnResult()
         .responseBody!!
 
