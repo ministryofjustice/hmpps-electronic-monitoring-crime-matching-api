@@ -25,7 +25,7 @@ class PersonController(
 ) {
 
   @Operation(
-    tags = ["Person"],
+    tags = ["Persons"],
     summary = "Search for persons",
   )
   @RequestMapping(
@@ -47,7 +47,7 @@ class PersonController(
   }
 
   @Operation(
-    tags = ["Person"],
+    tags = ["Persons"],
     summary = "Get a persons",
   )
   @RequestMapping(
