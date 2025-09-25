@@ -74,3 +74,6 @@ sonar-project.properties
 
 #Localstack
 localstack/
+
+## env files
+.env
