@@ -53,7 +53,7 @@ class PostgresCacheTest {
     }
 
     @Test
-    fun `get should return null for an expired entry`() {
+    fun `get should return null for an expired entry and remove the existing entry`() {
       whenever(
         repository.findByCacheNameAndCacheKey(any(), any()),
       ).thenReturn(expiredCacheEntry)
@@ -61,6 +61,7 @@ class PostgresCacheTest {
       val retrievedValue = cache.get("expired", String::class.java)
 
       assertThat(retrievedValue).isNull()
+      verify(repository, times(1)).delete(expiredCacheEntry)
     }
 
     @Test
