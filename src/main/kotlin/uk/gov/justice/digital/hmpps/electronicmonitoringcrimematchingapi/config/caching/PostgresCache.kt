@@ -29,6 +29,7 @@ class PostgresCache(
 
     return entry?.let {
       if (it.createdAt.plus(ttl).isBefore(LocalDateTime.now())) {
+        repository.delete(entry)
         return null
       }
 

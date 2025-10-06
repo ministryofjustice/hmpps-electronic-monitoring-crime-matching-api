@@ -18,7 +18,7 @@ class PostgresCacheManager(
 ) : CacheManager {
 
   private val caches = ConcurrentHashMap<String, Cache>()
-  val defaultTtl: Duration = Duration.ofMinutes(10)
+  val defaultTtl: Duration = Duration.ofHours(6)
 
   override fun getCache(name: String): Cache? = caches.computeIfAbsent(name) {
     val cacheConfig = properties.configs[it]
