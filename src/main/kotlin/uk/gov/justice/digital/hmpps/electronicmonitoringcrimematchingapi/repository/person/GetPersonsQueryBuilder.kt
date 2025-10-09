@@ -24,17 +24,17 @@ class GetPersonsQueryBuilder : SqlQueryBuilder {
       .addJoin(
         "${datastoreProperties.fmsDatabase}.x_serg2_ems_csm_profile_device_wearer pdw",
         "p.person_name = pdw.u_id_device_wearer",
-        JoinType.INNER,
+        JoinType.LEFT,
       )
       .addJoin(
         "${datastoreProperties.fmsDatabase}.csm_consumer csm",
         "pdw.consumer__value = csm.sys_id",
-        JoinType.INNER,
+        JoinType.LEFT,
       )
       .addJoin(
         "${datastoreProperties.fmsDatabase}.x_serg2_ems_csm_profile_sensitive pdws",
         "csm.sys_id = pdws.consumer__value",
-        JoinType.INNER,
+        JoinType.LEFT,
       )
       .addLikeFilter("p.person_name", personsQueryCriteria.name)
       .addLikeFilter("pdw.u_id_nomis", personsQueryCriteria.nomisId)

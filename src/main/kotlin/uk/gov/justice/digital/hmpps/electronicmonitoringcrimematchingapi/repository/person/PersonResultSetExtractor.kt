@@ -55,7 +55,7 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
       row
         .data()
         .map { col ->
-          col.varCharValue()
+          col.varCharValue() ?: ""
         }
     }
 }
