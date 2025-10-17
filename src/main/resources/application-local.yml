@@ -1,14 +1,24 @@
 hmpps.sqs:
   provider: localstack
+  region: us-east-1
   useWebToken: false
   queues:
     audit:
       queueName: "audit"
+    email:
+      queueName: "email"
+      subscribeTopicId: emailtopic
+  topics:
+    emailtopic:
+      arn: arn:aws:sns:us-east-1:000000000000:email-topic
 
 services:
   hmpps-auth:
-    url: ${HMPPS_AUTH_URL:http://localhost:8090/auth}
+    url: ${HMPPS_AUTH_URL:http://localhost:9090/auth}
     mfa: false
+
+aws:
+  region: us-east-1
 
 spring:
   jpa:
