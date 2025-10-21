@@ -65,7 +65,8 @@ services:
       - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
       - DOCKER_HOST=unix:///var/run/docker.sock
       - AWS_EXECUTION_ENV=True
-      - DEFAULT_REGION=us-east-1
+      - DEFAULT_REGION=eu-west-2
+      - AWS_REGION=eu-west-2
       - HOSTNAME_EXTERNAL=awslocal
     volumes:
       - "./localstack:/var/lib/localstack"

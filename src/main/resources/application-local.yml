@@ -1,6 +1,6 @@
 hmpps.sqs:
   provider: localstack
-  region: us-east-1
+  region: eu-west-2
   useWebToken: false
   queues:
     audit:
@@ -10,7 +10,7 @@ hmpps.sqs:
       subscribeTopicId: emailtopic
   topics:
     emailtopic:
-      arn: arn:aws:sns:us-east-1:000000000000:email-topic
+      arn: arn:aws:sns:eu-west-2:000000000000:email-topic
 
 services:
   hmpps-auth:
@@ -18,7 +18,8 @@ services:
     mfa: false
 
 aws:
-  region: us-east-1
+  region: eu-west-2
+  endpointUrl: http://localhost:4566
 
 spring:
   jpa:

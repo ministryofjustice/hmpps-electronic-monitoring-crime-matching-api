@@ -17,4 +17,12 @@ data class CrimeBatch(
   val crimeTypeDescription: String,
   val batchId: String,
   val crimeId: String,
+  val crimeDateTimeFrom: String,
+  val crimeDateTimeTo: String,
+  val easting: String?,
+  val northing: String?,
+  val latitude: String?,
+  val longitude: String?,
+  val datum: String?,
+  val crimeText: String?,
 )

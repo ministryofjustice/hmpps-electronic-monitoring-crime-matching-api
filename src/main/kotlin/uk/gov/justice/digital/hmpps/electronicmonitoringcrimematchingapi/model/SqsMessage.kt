@@ -1,6 +1,5 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import java.util.UUID
@@ -12,17 +11,14 @@ data class SqsMessage(
   val MessageId: UUID,
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class MessageBody(
   val receipt: Receipt,
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class Receipt(
   val action: Action,
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class Action(
   val objectKey: String,
   val bucketName: String,
