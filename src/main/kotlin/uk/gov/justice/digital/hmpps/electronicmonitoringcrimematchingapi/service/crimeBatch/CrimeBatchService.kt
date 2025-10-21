@@ -4,16 +4,16 @@ import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import java.io.InputStream
 
+private const val BATCH_SIZE = 100
+
 @Service
 class CrimeBatchService(
   private val repository: CrimeBatchRepository,
-  @Value("\${crime-data.batch.size}") val batchSize: Int,
 ) {
 
   @Transactional
@@ -42,7 +42,7 @@ class CrimeBatchService(
 
           validBatch.add(crimeBatch)
 
-          if (validBatch.size >= batchSize) {
+          if (validBatch.size >= BATCH_SIZE) {
             repository.saveAll(validBatch)
             validBatch.clear()
           }
