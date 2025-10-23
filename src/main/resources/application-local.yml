@@ -8,6 +8,7 @@ hmpps.sqs:
     email:
       queueName: "email"
       subscribeTopicId: emailtopic
+      dlqName: email_dlq
   topics:
     emailtopic:
       arn: arn:aws:sns:eu-west-2:000000000000:email-topic

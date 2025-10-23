@@ -20,8 +20,7 @@ class S3Service(private val s3Client: S3Client) {
     try {
       return s3Client.getObject(objectRequest)
     } catch (e: Exception) {
-      throw IOException("Failed to retrieve S3 object: $objectKey")
+      throw IOException("Failed to retrieve S3 object: ${e.message}")
     }
   }
-
 }
