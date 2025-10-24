@@ -41,10 +41,10 @@ generic-service:
       DB_NAME: "database_name"
       DB_USER: "database_username"
       DB_PASS: "database_password"
-    sqs-crime-batch-secret:
+    email-notifications-queue:
       HMPPS_SQS_QUEUES_EMAIL_QUEUENAME: "sqs_queue_name"
       HMPPS_SQS_QUEUES_EMAIL_QUEUEARN: "sqs_queue_arn"
-    sqs-crime-batch-dlq-secret   :
+    email-notifications-dlq:
       HMPPS_SQS_QUEUES_EMAIL_DLQNAME: "sqs_queue_name"
 
   allowlist:
