@@ -26,8 +26,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+      jdbc:
+        batch_size: 100
+      order_inserts: true
+      order_updates: true
   datasource:
-    url: 'jdbc:postgresql://${DB_SERVER}/${DB_NAME}?sslmode=prefer'
+    url: 'jdbc:postgresql://${DB_SERVER}/${DB_NAME}?sslmode=prefer&reWriteBatchedStatements=true'
     username: ${DB_USER}
     password: ${DB_PASS}
   flyway:
@@ -74,6 +78,8 @@ aws:
   region: eu-west-2
   athena:
     role: ${ATHENA_GENERAL_IAM_ROLE}
+  s3:
+    bucket-name: police-emails
 
 datastore:
   fms-database: ${FMS_DATABASE:serco_servicenow_test}

@@ -93,5 +93,42 @@ AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 AWS_SESSION_TOKEN="IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE"
 ```
 
+### Using the email listener with localstack
+
+The repository will setup the required SQS/SNS config to allow simulation of the email notification flow.
+
+An S3 bucket will be required in localstack which the listener function will retrieve email files from, to create this bucket you can use the `./scripts/localstack-init.sh` script
+
+To add a file to S3 you can use the following command
+
+```text
+awslocal s3api put-object \
+--bucket police-emails \
+--key email-file \
+--body email-file \
+--region eu-west-2
+```
+
+An example email-file can be found in the `test/resources/emailExamples` folder
+
+#### Example SNS message
+The following command can be used to simulate sending an email notification
+
+```text
+awslocal sns publish \
+--topic-arn "arn:aws:sns:eu-west-2:000000000000:email-topic" \
+--message '{
+    "notificationType": "Received",
+    "receipt": {
+        "action": {
+            "type": "S3",
+            "bucketName": "police-emails",
+            "objectKeyPrefix": "crime-data/",
+            "objectKey": "email-file"
+        }
+    }
+}'
+```
+
 ### Code coverage
 This project has Jacoco integrated and this will run after each test run. The generated report can be found [here](build/reports/jacoco/test/html/index.html) and can be opened in your browser.

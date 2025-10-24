@@ -16,6 +16,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
   implementation("software.amazon.awssdk:athena:2.34.3")
+  implementation("software.amazon.awssdk:s3:2.34.3")
+  implementation("org.apache.commons:commons-email:1.6.0")
+  implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20250517")
   implementation("io.zeko:zeko-sql-builder:1.5.6")
 
