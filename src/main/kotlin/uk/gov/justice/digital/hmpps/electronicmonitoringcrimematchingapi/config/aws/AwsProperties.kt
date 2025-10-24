@@ -11,5 +11,7 @@ data class AwsProperties(
 
   val endpointUrl: String? = null,
 
+  val localstackUrl: String? = null,
+
   val region: Region,
 )

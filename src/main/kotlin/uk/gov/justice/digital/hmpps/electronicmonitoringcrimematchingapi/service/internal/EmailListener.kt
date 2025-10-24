@@ -6,7 +6,7 @@ import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.extractAttachment
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MessageBody
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 
@@ -21,11 +21,11 @@ class EmailListener(
   fun receiveEmailNotification(message: SqsMessage) {
     try {
       // Map message contents
-      val messageBody: MessageBody = mapper.readValue(message.Message)
+      val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
 
       // Get S3 object key and bucket from message
-      val bucketName = messageBody.receipt.action.bucketName
-      val objectKey = messageBody.receipt.action.objectKey
+      val bucketName = emailReceivedMessage.receipt.action.bucketName
+      val objectKey = emailReceivedMessage.receipt.action.objectKey
 
       // Get email file from S3
       val emailFile = s3Service.getObject(objectKey, bucketName)

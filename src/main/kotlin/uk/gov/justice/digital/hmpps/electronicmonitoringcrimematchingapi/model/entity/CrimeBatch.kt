@@ -13,6 +13,6 @@ data class CrimeBatch(
   val id: String,
   val policeForce: String,
 
-  @OneToMany(mappedBy = "crimeBatch", cascade = [CascadeType.ALL])
+  @OneToMany(mappedBy = "crimeBatch", cascade = [CascadeType.ALL], orphanRemoval = true)
   val crimes: MutableList<Crime> = mutableListOf(),
 )

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity
 
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
@@ -27,6 +28,7 @@ data class Crime(
   val datum: String?,
   val crimeText: String?,
 
+  @Schema(hidden = true)
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "batch_id", nullable = false)
   var crimeBatch: CrimeBatch,

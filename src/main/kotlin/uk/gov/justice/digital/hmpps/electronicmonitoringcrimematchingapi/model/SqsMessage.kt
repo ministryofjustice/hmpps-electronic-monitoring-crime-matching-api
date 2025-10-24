@@ -11,7 +11,7 @@ data class SqsMessage(
   val MessageId: UUID,
 )
 
-class MessageBody(
+class EmailReceivedMessage(
   val receipt: Receipt,
 )
 

@@ -58,8 +58,8 @@ class AwsConfig(
     val clientBuilder = S3Client.builder()
       .region(properties.region)
 
-    if (properties.endpointUrl != null) {
-      clientBuilder.endpointOverride(URI(properties.endpointUrl))
+    if (properties.localstackUrl != null) {
+      clientBuilder.endpointOverride(URI(properties.localstackUrl))
       clientBuilder.forcePathStyle(true)
     }
 
