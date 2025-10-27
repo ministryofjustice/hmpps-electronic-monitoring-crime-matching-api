@@ -20,7 +20,8 @@ services:
 
 aws:
   region: eu-west-2
-  localstack-url: http://localhost:4566
+  s3:
+    endpoint-url: http://localhost:4566
 
 spring:
   jpa:

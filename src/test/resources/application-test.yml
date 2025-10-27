@@ -28,7 +28,8 @@ services:
 aws:
   region: eu-west-2
   endpoint-url: http://localhost:8091
-  localstack-url: http://localhost:4566
+  s3:
+    endpoint-url: http://localhost:4566
   athena:
     role: testIAM
 

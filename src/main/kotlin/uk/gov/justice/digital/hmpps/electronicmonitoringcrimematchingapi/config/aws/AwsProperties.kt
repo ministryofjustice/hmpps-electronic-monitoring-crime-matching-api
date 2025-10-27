@@ -9,9 +9,10 @@ data class AwsProperties(
   @NestedConfigurationProperty
   val athena: AthenaProperties = AthenaProperties(),
 
-  val endpointUrl: String? = null,
+  @NestedConfigurationProperty
+  val s3: S3Properties = S3Properties(),
 
-  val localstackUrl: String? = null,
+  val endpointUrl: String? = null,
 
   val region: Region,
 )
