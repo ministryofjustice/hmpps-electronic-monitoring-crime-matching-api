@@ -12,6 +12,14 @@ hmpps:
     queues:
       audit:
         queueName: "audit"
+      email:
+        queueName: "email"
+        subscribeTopicId: emailtopic
+        dlqName: email_dlq
+    topics:
+      emailtopic:
+        arn: arn:aws:sns:eu-west-2:000000000000:email-topic
+
 
 services:
   hmpps-auth:
@@ -20,6 +28,8 @@ services:
 aws:
   region: eu-west-2
   endpoint-url: http://localhost:8091
+  s3:
+    endpoint-url: http://localhost:4566
   athena:
     role: testIAM
 
