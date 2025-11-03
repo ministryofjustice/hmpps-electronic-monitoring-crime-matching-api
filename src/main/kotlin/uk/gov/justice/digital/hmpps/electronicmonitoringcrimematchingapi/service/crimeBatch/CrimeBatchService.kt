@@ -37,26 +37,23 @@ class CrimeBatchService(
 
     val batchViolations = validator.validate(crimeBatch)
     if (batchViolations.isNotEmpty()) {
-      for (violation in batchViolations) {
-        log.debug("Batch violation found: ${violation.message}")
-      }
-      throw ValidationException("Batch invalid")
+      throw ValidationException("Batch data violation found: ${batchViolations.first().message}")
     }
 
     records.forEach { record ->
       try {
         val crime = constructCrime(record, crimeBatch)
 
-        val crimeViolations = validator.validate(crime)
-        if (crimeViolations.isEmpty()) {
+        val crimeDataViolations = validator.validate(crime)
+        if (crimeDataViolations.isEmpty()) {
           crimeBatch.crimes.add(crime)
         } else {
-          for (violation in crimeViolations) {
-            log.debug("Crime violation found: ${violation.message}")
+          for (violation in crimeDataViolations) {
+            log.debug("Crime data violation found: ${violation.message}")
           }
         }
       } catch (e: Exception) {
-        log.debug("Unexpected crime validation error: ${e.message}")
+        log.debug("Unexpected crime data validation error: ${e.message}")
       }
     }
 
