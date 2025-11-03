@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
+import jakarta.persistence.EntityNotFoundException
+
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
@@ -38,4 +40,10 @@ class CrimeBatchService(
     crimeText = record.crimeText,
     crimeBatch = batch,
   )
+
+  fun getCrimeBatch(id: String): CrimeBatch = this.crimeBatchRepository
+    .findById(id)
+    .orElseThrow {
+      EntityNotFoundException("No crime batch found with id: $id")
+    }
 }
