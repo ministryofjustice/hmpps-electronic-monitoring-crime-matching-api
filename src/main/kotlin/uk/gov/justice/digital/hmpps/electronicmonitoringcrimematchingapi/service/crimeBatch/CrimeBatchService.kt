@@ -1,11 +1,17 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
 import jakarta.transaction.Transactional
+import jakarta.validation.ValidationException
+import jakarta.validation.Validator
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
+import org.apache.commons.csv.CSVRecord
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import java.io.InputStream
 import java.util.UUID
@@ -13,7 +19,10 @@ import java.util.UUID
 @Service
 class CrimeBatchService(
   private val crimeBatchRepository: CrimeBatchRepository,
+  private val validator: Validator,
 ) {
+
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   @Transactional
   fun ingestCsvData(csvData: InputStream) {
@@ -23,32 +32,49 @@ class CrimeBatchService(
     val firstRecord = records.first()
     val crimeBatch = CrimeBatch(
       id = UUID.randomUUID().toString(),
-      policeForce = firstRecord[0],
+      policeForce = PoliceForce.from(firstRecord[0])?.name,
     )
+
+    val batchViolations = validator.validate(crimeBatch)
+    if (batchViolations.isNotEmpty()) {
+      for (violation in batchViolations) {
+        log.debug("Batch violation found: ${violation.message}")
+      }
+      throw ValidationException("Batch invalid")
+    }
 
     records.forEach { record ->
       try {
-        val crime = Crime(
-          crimeTypeId = record[1],
-          crimeTypeDescription = record[2],
-          crimeReference = record[4],
-          crimeDateTimeFrom = record[5],
-          crimeDateTimeTo = record[6],
-          easting = record[7],
-          northing = record[8],
-          latitude = record[9],
-          longitude = record[10],
-          datum = record[11],
-          crimeText = record[12],
-          crimeBatch = crimeBatch,
-        )
+        val crime = constructCrime(record, crimeBatch)
 
-        crimeBatch.crimes.add(crime)
+        val crimeViolations = validator.validate(crime)
+        if (crimeViolations.isEmpty()) {
+          crimeBatch.crimes.add(crime)
+        } else {
+          for (violation in crimeViolations) {
+            log.debug("Crime violation found: ${violation.message}")
+          }
+        }
       } catch (e: Exception) {
-        // TODO handle invalid rows
+        log.debug("Unexpected crime validation error: ${e.message}")
       }
     }
 
     crimeBatchRepository.save(crimeBatch)
   }
+
+  fun constructCrime(record: CSVRecord, crimeBatch: CrimeBatch) = Crime(
+    crimeTypeId = record[1],
+    crimeTypeDescription = CrimeType.from(record[1])?.value,
+    crimeReference = record[4],
+    crimeDateTimeFrom = record[5],
+    crimeDateTimeTo = record[6],
+    easting = record[7],
+    northing = record[8],
+    latitude = record[9],
+    longitude = record[10],
+    datum = record[11],
+    crimeText = record[12],
+    crimeBatch = crimeBatch,
+  )
 }
