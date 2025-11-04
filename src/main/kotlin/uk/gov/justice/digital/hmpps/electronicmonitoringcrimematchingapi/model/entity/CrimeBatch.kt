@@ -15,7 +15,7 @@ data class CrimeBatch(
   @Id
   val id: String,
   @field:ValidEnum(enumClass = PoliceForce::class, message = INVALID_POLICE_FORCE)
-  val policeForce: String?,
+  val policeForce: String,
 
   @OneToMany(mappedBy = "crimeBatch", cascade = [CascadeType.ALL], orphanRemoval = true)
   val crimes: MutableList<Crime> = mutableListOf(),

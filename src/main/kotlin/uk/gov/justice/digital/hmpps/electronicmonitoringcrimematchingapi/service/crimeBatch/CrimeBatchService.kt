@@ -32,7 +32,7 @@ class CrimeBatchService(
     val firstRecord = records.first()
     val crimeBatch = CrimeBatch(
       id = UUID.randomUUID().toString(),
-      policeForce = PoliceForce.from(firstRecord[0])?.name,
+      policeForce = PoliceForce.from(firstRecord[0])?.name ?: "",
     )
 
     val batchViolations = validator.validate(crimeBatch)
