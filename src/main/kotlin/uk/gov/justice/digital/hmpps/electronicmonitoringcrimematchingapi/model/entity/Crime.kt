@@ -29,7 +29,7 @@ data class Crime(
   val id: Long? = null,
   @field:ValidEnum(enumClass = CrimeType::class, message = INVALID_CRIME_TYPE)
   val crimeTypeId: String,
-  val crimeTypeDescription: String?,
+  val crimeTypeDescription: String,
   @field:NotBlank(message = INVALID_CRIME_REFERENCE)
   val crimeReference: String,
   val crimeDateTimeFrom: String,

@@ -62,7 +62,7 @@ class CrimeBatchService(
 
   fun constructCrime(record: CSVRecord, crimeBatch: CrimeBatch) = Crime(
     crimeTypeId = record[1],
-    crimeTypeDescription = CrimeType.from(record[1])?.value,
+    crimeTypeDescription = CrimeType.from(record[1]).value,
     crimeReference = record[4],
     crimeDateTimeFrom = record[5],
     crimeDateTimeTo = record[6],

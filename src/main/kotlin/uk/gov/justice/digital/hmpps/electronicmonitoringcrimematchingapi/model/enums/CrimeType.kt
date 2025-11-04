@@ -11,7 +11,7 @@ enum class CrimeType(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): CrimeType? = CrimeType.entries.firstOrNull {
+    fun from(value: String?): CrimeType = CrimeType.entries.first {
       it.name == value
     }
   }
