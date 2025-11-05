@@ -195,6 +195,6 @@ class EmailListenerTest : IntegrationTestBase() {
           "TopicArn" : "arn:aws:sns:eu-west-2:000000000000:email-topic",
           "Message" : "{ \"notificationType\": \"Received\", \"receipt\": { \"action\": { \"bucketName\": \"$BUCKET_NAME\", \"objectKey\": \"$objectKey\" }}}"
         }
-      """.trimIndent()
+    """.trimIndent()
   }
 }
