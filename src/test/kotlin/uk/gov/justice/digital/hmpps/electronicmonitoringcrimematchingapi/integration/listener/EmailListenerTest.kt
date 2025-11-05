@@ -40,7 +40,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
   companion object {
     const val BUCKET_NAME = "emails"
-    const val OBJECT_KEY = "email-file"
   }
 
   @Autowired
@@ -77,6 +76,8 @@ class EmailListenerTest : IntegrationTestBase() {
     emailDeadLetterSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(emailDeadLetterSqsUrl).build(),
     ).get()
+    crimeBatchRepository.deleteAll()
+    crimeRepository.deleteAll()
   }
 
   @AfterAll
@@ -99,19 +100,12 @@ class EmailListenerTest : IntegrationTestBase() {
   inner class ReceiveEmailNotification {
     @Test
     fun `it should process a valid email notification`() {
-      val message = """
-        {
-          "Type" : "Notification",
-          "MessageId" : "4730435b-88b9-5b6c-a91c-9b1236b456f7",
-          "TopicArn" : "arn:aws:sns:eu-west-2:000000000000:email-topic",
-          "Message" : "{ \"notificationType\": \"Received\", \"receipt\": { \"action\": { \"bucketName\": \"$BUCKET_NAME\", \"objectKey\": \"$OBJECT_KEY\" }}}"
-        }
-      """.trimIndent()
-      val fileData = ClassPathResource("emailExamples/$OBJECT_KEY")
+      val objectKey = "email-file"
+      val fileData = ClassPathResource("emailExamples/$objectKey")
 
-      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromFile(fileData.file))
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(objectKey).build(), RequestBody.fromFile(fileData.file))
 
-      sendDomainSqsMessage(message)
+      sendDomainSqsMessage(getMessage(objectKey))
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
@@ -142,6 +136,40 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(dlqMessage.body()).isEqualTo(message)
     }
 
+    @Test
+    fun `it should move the message to the dead letter queue when the email contains invalid batch data`() {
+      val invalidObjectKey = "invalid-batch-email-file"
+      val message = getMessage(invalidObjectKey)
+      val fileData = ClassPathResource("emailExamples/$invalidObjectKey")
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(invalidObjectKey).build(), RequestBody.fromFile(fileData.file))
+
+      sendDomainSqsMessage(message)
+
+      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
+
+      val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
+      assertThat(dlqMessage.body()).isEqualTo(message)
+    }
+
+    @Test
+    fun `it should process an email with valid and invalid crime data`() {
+      val objectKey = "invalid-crime-email-file"
+      val fileData = ClassPathResource("emailExamples/$objectKey")
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(objectKey).build(), RequestBody.fromFile(fileData.file))
+
+      sendDomainSqsMessage(getMessage(objectKey))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatches = crimeBatchRepository.findAll()
+      assertThat(crimeBatches).hasSize(1)
+      assertThat(crimeBatches.first()).isNotNull()
+      val crimes = crimeRepository.findAll()
+      assertThat(crimes).isNotEmpty()
+      assertThat(crimes).hasSize(2)
+    }
+
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(
       SendMessageRequest.builder().queueUrl(
         emailQueueSqsUrl,
@@ -159,5 +187,14 @@ class EmailListenerTest : IntegrationTestBase() {
     fun getMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse = emailDeadLetterSqsClient.receiveMessage(
       ReceiveMessageRequest.builder().queueUrl(emailDeadLetterSqsUrl).build(),
     ).get()
+
+    fun getMessage(objectKey: String): String = """
+        {
+          "Type" : "Notification",
+          "MessageId" : "4730435b-88b9-5b6c-a91c-9b1236b456f7",
+          "TopicArn" : "arn:aws:sns:eu-west-2:000000000000:email-topic",
+          "Message" : "{ \"notificationType\": \"Received\", \"receipt\": { \"action\": { \"bucketName\": \"$BUCKET_NAME\", \"objectKey\": \"$objectKey\" }}}"
+        }
+    """.trimIndent()
   }
 }
