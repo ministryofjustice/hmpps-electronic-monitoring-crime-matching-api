@@ -2,15 +2,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.ClassPathResource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import software.amazon.awssdk.core.sync.RequestBody
@@ -18,7 +16,6 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
@@ -26,6 +23,8 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
@@ -33,13 +32,15 @@ import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 import java.util.concurrent.CompletableFuture
+import kotlin.io.encoding.Base64
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @ActiveProfiles("integration")
 class EmailListenerTest : IntegrationTestBase() {
 
   companion object {
     const val BUCKET_NAME = "emails"
+    const val OBJECT_KEY = "email-file"
   }
 
   @Autowired
@@ -63,13 +64,9 @@ class EmailListenerTest : IntegrationTestBase() {
   val emailDeadLetterSqsClient by lazy { emailQueueConfig.sqsDlqClient as SqsAsyncClient }
   val emailDeadLetterSqsUrl by lazy { emailQueueConfig.dlqUrl as String }
 
-  @BeforeAll
-  fun beforeAll() {
-    s3Client.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build())
-  }
-
   @BeforeEach
   fun beforeEach() {
+    s3Client.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build())
     emailQueueSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(emailQueueSqsUrl).build(),
     ).get()
@@ -80,18 +77,15 @@ class EmailListenerTest : IntegrationTestBase() {
     crimeRepository.deleteAll()
   }
 
-  @AfterAll
-  fun afterAll() {
-    val objectListing = s3Client.listObjects(ListObjectsRequest.builder().bucket(BUCKET_NAME).build())
-    objectListing.contents()?.forEach {
-      s3Client.deleteObject(
-        DeleteObjectRequest
-          .builder()
-          .bucket(BUCKET_NAME)
-          .key(it.key())
-          .build(),
-      )
-    }
+  @AfterEach
+  fun afterEach() {
+    s3Client.deleteObject(
+      DeleteObjectRequest
+        .builder()
+        .bucket(BUCKET_NAME)
+        .key(OBJECT_KEY)
+        .build(),
+    )
     s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(BUCKET_NAME).build())
   }
 
@@ -100,12 +94,17 @@ class EmailListenerTest : IntegrationTestBase() {
   inner class ReceiveEmailNotification {
     @Test
     fun `it should process a valid email notification`() {
-      val objectKey = "email-file"
-      val fileData = ClassPathResource("emailExamples/$objectKey")
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(),
+      ).joinToString("\n")
 
-      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(objectKey).build(), RequestBody.fromFile(fileData.file))
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
 
-      sendDomainSqsMessage(getMessage(objectKey))
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
@@ -114,7 +113,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatches.first()).isNotNull()
       val crimes = crimeRepository.findAll()
       assertThat(crimes).isNotEmpty()
-      assertThat(crimes).hasSize(3)
+      assertThat(crimes).hasSize(2)
     }
 
     @Test
@@ -138,10 +137,12 @@ class EmailListenerTest : IntegrationTestBase() {
 
     @Test
     fun `it should move the message to the dead letter queue when the email contains invalid batch data`() {
-      val invalidObjectKey = "invalid-batch-email-file"
-      val message = getMessage(invalidObjectKey)
-      val fileData = ClassPathResource("emailExamples/$invalidObjectKey")
-      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(invalidObjectKey).build(), RequestBody.fromFile(fileData.file))
+      val message = getMessage(OBJECT_KEY)
+
+      val encoded = Base64.encode(createCsvRow(policeForce = "invalid").toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
 
       sendDomainSqsMessage(message)
 
@@ -153,12 +154,18 @@ class EmailListenerTest : IntegrationTestBase() {
 
     @Test
     fun `it should process an email with valid and invalid crime data`() {
-      val objectKey = "invalid-crime-email-file"
-      val fileData = ClassPathResource("emailExamples/$objectKey")
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(crimeTypeId = "invalid"),
+        createCsvRow(),
+      ).joinToString("\n")
 
-      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(objectKey).build(), RequestBody.fromFile(fileData.file))
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
 
-      sendDomainSqsMessage(getMessage(objectKey))
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 

@@ -15,6 +15,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.caching.CacheEntry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
@@ -109,18 +110,4 @@ class CrimeBatchServiceTest {
       assertThat(firstValue.crimes).isEmpty()
     }
   }
-
-  fun createCsvRow(
-    policeForce: String = "Metropolitan",
-    crimeTypeId: String = "TOMV",
-    crimeReference: String = "CRI00000001",
-    crimeDateTimeFrom: String = "20250125083000",
-    crimeDateTimeTo: String = "20250125083000",
-    easting: String = "",
-    northing: String = "",
-    latitude: String = "54.732410000000002",
-    longitude: String = "-1.38542",
-    datum: String = "WGS84",
-    crimeText: String = "",
-  ) = "$policeForce,$crimeTypeId,crimeDesc,oldBatchId,$crimeReference,$crimeDateTimeFrom,$crimeDateTimeTo,$easting,$northing,$latitude,$longitude,$datum,$crimeText"
 }

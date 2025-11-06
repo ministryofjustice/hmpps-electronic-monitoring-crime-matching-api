@@ -11,10 +11,11 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
-import org.springframework.core.io.ClassPathResource
 import org.springframework.test.context.ActiveProfiles
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 import java.util.UUID
@@ -49,13 +50,14 @@ class EmailListenerTest {
           }
         }
       """.trimIndent()
-      val fileData = ClassPathResource("emailExamples/email-file").inputStream
       val sqsMessage = SqsMessage("Notification", message, UUID.randomUUID())
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
-        fileData,
+        createEmailFile("").byteInputStream(),
       )
+
       whenever(s3Service.getObject("email-file", "emails")).thenReturn(responseStream)
+
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
     }
 
@@ -71,6 +73,7 @@ class EmailListenerTest {
         }
       """.trimIndent()
       val sqsMessage = SqsMessage("Notification", message, UUID.randomUUID())
+
       assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
@@ -88,13 +91,14 @@ class EmailListenerTest {
           }
         }
       """.trimIndent()
-      val fileData = ClassPathResource("emailExamples/email-file-no-attachment").inputStream
       val sqsMessage = SqsMessage("Notification", message, UUID.randomUUID())
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
-        fileData,
+        createEmailFileWithoutAttachment().byteInputStream(),
       )
+
       whenever(s3Service.getObject("email-file-no-attachment", "emails")).thenReturn(responseStream)
+
       assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
