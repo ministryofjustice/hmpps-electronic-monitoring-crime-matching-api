@@ -137,6 +137,20 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
+  @Test
+  fun `it should not parse a crime if dateTo is before dateFrom`() {
+    val crimeData = createCsvRow(
+      crimeDateTimeFrom = "20250225083000",
+      crimeDateTimeTo = "20250125083000",
+    ).byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf("A valid crime date range must be provided"),
+    )
+  }
+
   @ParameterizedTest(name = "it should parse all valid geodetic datum values - {0} -> {1}")
   @MethodSource("geodeticDatumValues")
   fun `it should parse all valid geodetic datum values`(csvValue: String, enumValue: GeodeticDatum) {
