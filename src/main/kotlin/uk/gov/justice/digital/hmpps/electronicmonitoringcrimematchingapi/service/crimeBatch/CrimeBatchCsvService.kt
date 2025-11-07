@@ -5,7 +5,7 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.CsvColumnIndices.CrimeBatchColumnsIndices
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.CsvConfig.CrimeBatchCsvConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.GeodeticDatum
@@ -37,6 +37,12 @@ class CrimeBatchCsvService(
   }
 
   private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordDto> {
+    if (record.size() != CrimeBatchCsvConfig.COLUMN_COUNT) {
+      return ValidationResult.Failure(
+        listOf("Incorrect number of columns in crime record"),
+      )
+    }
+
     val policeForce = parseEnumValue<PoliceForce>("policeForce", record.policeForce())
     val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId())
     val crimeReference = parseStringValue("crimeReference", record.crimeReference().trim())
@@ -137,15 +143,15 @@ class CrimeBatchCsvService(
     )
   }
 
-  private fun CSVRecord.policeForce() = this[CrimeBatchColumnsIndices.POLICE_FORCE]
-  private fun CSVRecord.crimeTypeId() = this[CrimeBatchColumnsIndices.CRIME_TYPE_ID]
-  private fun CSVRecord.crimeReference() = this[CrimeBatchColumnsIndices.CRIME_REFERENCE]
-  private fun CSVRecord.crimeDateTimeFrom() = this[CrimeBatchColumnsIndices.CRIME_DATE_FROM]
-  private fun CSVRecord.crimeDateTimeTo() = this[CrimeBatchColumnsIndices.CRIME_DATE_TO]
-  private fun CSVRecord.easting() = this[CrimeBatchColumnsIndices.EASTING]
-  private fun CSVRecord.northing() = this[CrimeBatchColumnsIndices.NORTHING]
-  private fun CSVRecord.latitude() = this[CrimeBatchColumnsIndices.LATITUDE]
-  private fun CSVRecord.longitude() = this[CrimeBatchColumnsIndices.LONGITUDE]
-  private fun CSVRecord.datum() = this[CrimeBatchColumnsIndices.DATUM]
-  private fun CSVRecord.crimeText() = this[CrimeBatchColumnsIndices.CRIME_TEXT]
+  private fun CSVRecord.policeForce() = this[CrimeBatchCsvConfig.ColumnsIndices.POLICE_FORCE]
+  private fun CSVRecord.crimeTypeId() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_TYPE_ID]
+  private fun CSVRecord.crimeReference() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_REFERENCE]
+  private fun CSVRecord.crimeDateTimeFrom() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_DATE_FROM]
+  private fun CSVRecord.crimeDateTimeTo() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_DATE_TO]
+  private fun CSVRecord.easting() = this[CrimeBatchCsvConfig.ColumnsIndices.EASTING]
+  private fun CSVRecord.northing() = this[CrimeBatchCsvConfig.ColumnsIndices.NORTHING]
+  private fun CSVRecord.latitude() = this[CrimeBatchCsvConfig.ColumnsIndices.LATITUDE]
+  private fun CSVRecord.longitude() = this[CrimeBatchCsvConfig.ColumnsIndices.LONGITUDE]
+  private fun CSVRecord.datum() = this[CrimeBatchCsvConfig.ColumnsIndices.DATUM]
+  private fun CSVRecord.crimeText() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_TEXT]
 }

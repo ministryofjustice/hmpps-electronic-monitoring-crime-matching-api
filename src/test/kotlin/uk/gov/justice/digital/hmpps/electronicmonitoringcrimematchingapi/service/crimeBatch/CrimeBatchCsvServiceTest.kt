@@ -60,6 +60,28 @@ class CrimeBatchCsvServiceTest {
     assertThat(errors).hasSize(0)
   }
 
+  @Test
+  fun `it should not parse a row with an too few columns`() {
+    val crimeData = ",,".byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf("Incorrect number of columns in crime record"),
+    )
+  }
+
+  @Test
+  fun `it should not parse a row with an too many columns`() {
+    val crimeData = ",,,,,,,,,,,,,".byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf("Incorrect number of columns in crime record"),
+    )
+  }
+
   @ParameterizedTest(name = "it should parse all valid police forces - {0} -> {1}")
   @MethodSource("policeForceValues")
   fun `it should parse all valid police forces`(csvValue: String, enumValue: PoliceForce) {
