@@ -159,6 +159,29 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
+  @Test
+  fun `it should return many errors if multiple fields are invalid`() {
+    val crimeData = createCsvRow(
+      policeForce = "invalid police force",
+      crimeTypeId = "invalid crime type",
+      crimeDateTimeFrom = "",
+      crimeDateTimeTo = "",
+      datum = "invalid datum",
+    ).byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf(
+        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force'.",
+        "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type'.",
+        "dateFrom must be a date with format yyyyMMddHHmmss but was ''.",
+        "dateTo must be a date with format yyyyMMddHHmmss but was ''.",
+        "datum must be one of WGS84, OSGB36 but was 'invalid datum'.",
+      ),
+    )
+  }
+
   companion object {
     @JvmStatic
     fun policeForceValues() = listOf(
