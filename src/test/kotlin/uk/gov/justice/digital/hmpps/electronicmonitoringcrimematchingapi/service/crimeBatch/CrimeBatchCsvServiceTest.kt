@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.GeodeticDatum
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.time.LocalDateTime
+import kotlin.collections.listOf
 
 @ActiveProfiles("test")
 class CrimeBatchCsvServiceTest {
@@ -61,24 +62,24 @@ class CrimeBatchCsvServiceTest {
   }
 
   @Test
-  fun `it should not parse a row with an too few columns`() {
+  fun `it should not parse a row with too few columns`() {
     val crimeData = ",,".byteInputStream()
     val (crimes, errors) = service.parseCsvFile(crimeData)
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("Incorrect number of columns in crime record"),
+      listOf("Incorrect number of columns on row 1."),
     )
   }
 
   @Test
-  fun `it should not parse a row with an too many columns`() {
+  fun `it should not parse a row with too many columns`() {
     val crimeData = ",,,,,,,,,,,,,".byteInputStream()
     val (crimes, errors) = service.parseCsvFile(crimeData)
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("Incorrect number of columns in crime record"),
+      listOf("Incorrect number of columns on row 1."),
     )
   }
 
@@ -100,7 +101,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force'."),
+      listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1."),
     )
   }
 
@@ -122,7 +123,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type'."),
+      listOf("crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1."),
     )
   }
 
@@ -144,7 +145,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("dateFrom must be a date with format yyyyMMddHHmmss but was ''."),
+      listOf("dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1."),
     )
   }
 
@@ -155,7 +156,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("dateTo must be a date with format yyyyMMddHHmmss but was ''."),
+      listOf("dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1."),
     )
   }
 
@@ -191,7 +192,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("datum must be one of WGS84, OSGB36 but was 'invalid datum'."),
+      listOf("datum must be one of WGS84, OSGB36 but was 'invalid datum' on row 1."),
     )
   }
 
@@ -209,11 +210,29 @@ class CrimeBatchCsvServiceTest {
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
       listOf(
-        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force'.",
-        "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type'.",
-        "dateFrom must be a date with format yyyyMMddHHmmss but was ''.",
-        "dateTo must be a date with format yyyyMMddHHmmss but was ''.",
-        "datum must be one of WGS84, OSGB36 but was 'invalid datum'.",
+        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1.",
+        "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
+        "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
+        "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
+        "datum must be one of WGS84, OSGB36 but was 'invalid datum' on row 1.",
+      ),
+    )
+  }
+
+  @Test
+  fun `it should be possible to identity which row the error was on`() {
+    val crimeData = listOf(
+      createCsvRow(),
+      createCsvRow(crimeTypeId = "invalid"),
+      createCsvRow(crimeDateTimeFrom = "invalid"),
+    ).joinToString("\n").byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+
+    assertThat(crimes).hasSize(1)
+    assertThat(errors).isEqualTo(
+      listOf(
+        "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid' on row 2.",
+        "dateFrom must be a date with format yyyyMMddHHmmss but was 'invalid' on row 3.",
       ),
     )
   }

@@ -39,21 +39,23 @@ class CrimeBatchCsvService(
   private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordDto> {
     if (record.size() != CrimeBatchCsvConfig.COLUMN_COUNT) {
       return ValidationResult.Failure(
-        listOf("Incorrect number of columns in crime record"),
+        listOf("Incorrect number of columns on row ${record.recordNumber}."),
       )
     }
 
-    val policeForce = parseEnumValue<PoliceForce>("policeForce", record.policeForce())
-    val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId())
-    val crimeReference = parseStringValue("crimeReference", record.crimeReference().trim())
-    val crimeDateFrom = parseDateValue("dateFrom", record.crimeDateTimeFrom())
-    val crimeDateTo = parseDateValue("dateTo", record.crimeDateTimeTo())
-    val easting = parseDoubleValue("easting", record.easting())
-    val northing = parseDoubleValue("northing", record.northing())
-    val latitude = parseDoubleValue("latitude", record.latitude())
-    val longitude = parseDoubleValue("latitude", record.longitude())
-    val datum = parseEnumValue<GeodeticDatum>("datum", record.datum())
-    val crimeText = parseStringValue("crimeText", record.crimeText())
+    print(record.recordNumber)
+
+    val policeForce = parseEnumValue<PoliceForce>(record.recordNumber, "policeForce", record.policeForce())
+    val crimeTypeId = parseEnumValue<CrimeType>(record.recordNumber, "crimeType", record.crimeTypeId())
+    val crimeReference = parseStringValue(record.recordNumber, "crimeReference", record.crimeReference().trim())
+    val crimeDateFrom = parseDateValue(record.recordNumber, "dateFrom", record.crimeDateTimeFrom())
+    val crimeDateTo = parseDateValue(record.recordNumber, "dateTo", record.crimeDateTimeTo())
+    val easting = parseDoubleValue(record.recordNumber, "easting", record.easting())
+    val northing = parseDoubleValue(record.recordNumber, "northing", record.northing())
+    val latitude = parseDoubleValue(record.recordNumber, "latitude", record.latitude())
+    val longitude = parseDoubleValue(record.recordNumber, "latitude", record.longitude())
+    val datum = parseEnumValue<GeodeticDatum>(record.recordNumber, "datum", record.datum())
+    val crimeText = parseStringValue(record.recordNumber, "crimeText", record.crimeText())
 
     val errors = listOf(
       policeForce,
@@ -97,27 +99,28 @@ class CrimeBatchCsvService(
     return ValidationResult.Success(crimeRecordDto)
   }
 
-  private fun parseStringValue(fieldName: String, value: String): FieldValidationResult<String> = try {
+  private fun parseStringValue(recordNumber: Long, fieldName: String, value: String): FieldValidationResult<String> = try {
     FieldValidationResult(
       value = value.trim(),
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be text but was '$value'.",
+      errorMessage = "$fieldName must be text but was '$value' on row $recordNumber.",
     )
   }
 
-  private fun parseDoubleValue(fieldName: String, value: String): FieldValidationResult<Double> = try {
+  private fun parseDoubleValue(recordNumber: Long, fieldName: String, value: String): FieldValidationResult<Double> = try {
     FieldValidationResult(
       value = if (value.trim().isBlank()) null else value.trim().toDouble(),
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be a number but was '$value'.",
+      errorMessage = "$fieldName must be a number but was '$value' on row $recordNumber.",
     )
   }
 
   private fun parseDateValue(
+    recordNumber: Long,
     fieldName: String,
     value: String,
   ): FieldValidationResult<LocalDateTime> = try {
@@ -126,11 +129,12 @@ class CrimeBatchCsvService(
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be a date with format yyyyMMddHHmmss but was '$value'.",
+      errorMessage = "$fieldName must be a date with format yyyyMMddHHmmss but was '$value' on row $recordNumber.",
     )
   }
 
   private inline fun <reified T : Enum<T>> parseEnumValue(
+    recordNumber: Long,
     fieldName: String,
     value: String,
   ): FieldValidationResult<T> = try {
@@ -139,7 +143,7 @@ class CrimeBatchCsvService(
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be one of ${enumValues<T>().joinToString { it.name }} but was '$value'.",
+      errorMessage = "$fieldName must be one of ${enumValues<T>().joinToString { it.name }} but was '$value' on row $recordNumber.",
     )
   }
 
