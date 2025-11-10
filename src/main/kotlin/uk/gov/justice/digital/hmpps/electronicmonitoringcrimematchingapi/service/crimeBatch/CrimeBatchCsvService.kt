@@ -43,8 +43,6 @@ class CrimeBatchCsvService(
       )
     }
 
-    print(record.recordNumber)
-
     val policeForce = parseEnumValue<PoliceForce>(record.recordNumber, "policeForce", record.policeForce())
     val crimeTypeId = parseEnumValue<CrimeType>(record.recordNumber, "crimeType", record.crimeTypeId())
     val crimeReference = parseStringValue(record.recordNumber, "crimeReference", record.crimeReference().trim())
