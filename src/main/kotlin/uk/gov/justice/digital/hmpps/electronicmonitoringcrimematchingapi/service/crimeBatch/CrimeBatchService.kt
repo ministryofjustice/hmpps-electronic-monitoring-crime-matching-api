@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
+import java.util.UUID
 
 @Service
 class CrimeBatchService(
@@ -13,6 +14,7 @@ class CrimeBatchService(
 
   fun createCrimeBatch(records: List<CrimeRecordDto>) {
     val crimeBatch = CrimeBatch(
+      id = UUID.randomUUID().toString(),
       policeForce = records[0].policeForce,
     )
 

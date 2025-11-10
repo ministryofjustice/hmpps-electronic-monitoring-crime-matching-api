@@ -9,14 +9,13 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import java.util.UUID
 
 @Entity
 @Table(name = "crime_batch")
 data class CrimeBatch(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
-  val id: UUID = UUID.randomUUID(),
+  val id: String = "",
 
   @Enumerated(EnumType.STRING)
   val policeForce: PoliceForce,
