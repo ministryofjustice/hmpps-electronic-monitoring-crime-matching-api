@@ -24,13 +24,7 @@ aws:
     endpoint-url: http://localhost:4566
 
 spring:
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
     username: postgres
     password: postgres
-  flyway:
-    enabled: false
