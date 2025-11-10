@@ -4,10 +4,14 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 
 data class CrimeBatchDto(
   val id: String,
-  val policeForce: String
+  val crimes: List<CrimeDto>,
+  val policeForce: String,
 ) {
-  constructor(crimeBatch: CrimeBatch): this(
+  constructor(crimeBatch: CrimeBatch) : this(
     id = crimeBatch.id,
-    policeForce = crimeBatch.policeForce
+    policeForce = crimeBatch.policeForce.name,
+    crimes = crimeBatch.crimes.map {
+      CrimeDto(it)
+    },
   )
 }
