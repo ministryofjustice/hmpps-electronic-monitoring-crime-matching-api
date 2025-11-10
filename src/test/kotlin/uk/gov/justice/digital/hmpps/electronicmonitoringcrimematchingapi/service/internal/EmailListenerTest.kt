@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import jakarta.validation.Validation
 import jakarta.validation.ValidationException
+import jakarta.validation.Validator
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -17,6 +19,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 import java.util.UUID
 
@@ -24,15 +27,18 @@ import java.util.UUID
 class EmailListenerTest {
   private lateinit var listener: EmailListener
   private lateinit var s3Service: S3Service
+  private lateinit var crimeBatchCsvService: CrimeBatchCsvService
   private lateinit var crimeBatchService: CrimeBatchService
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
+  private val validator: Validator = Validation.buildDefaultValidatorFactory().validator
 
   @BeforeEach
   fun setup() {
     s3Service = Mockito.mock(S3Service::class.java)
+    crimeBatchCsvService = CrimeBatchCsvService(validator)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchService)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchService)
   }
 
   @Nested

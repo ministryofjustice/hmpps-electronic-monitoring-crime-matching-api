@@ -27,7 +27,7 @@ class CrimeBatchCsvServiceTest {
   }
 
   @Test
-  fun `it should parse a valid crime data`() {
+  fun `it should parse a valid crime`() {
     val crimeData = createCsvRow().byteInputStream()
     val (crimes, errors) = service.parseCsvFile(crimeData)
 
