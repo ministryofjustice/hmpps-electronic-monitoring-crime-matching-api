@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -56,6 +57,9 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isNotFound
+        .expectBody()
+        .jsonPath("$.developerMessage").isEqualTo("No crime batch found with id: 1")
+        .jsonPath("$.userMessage").isEqualTo("Not Found")
     }
 
     @Test
