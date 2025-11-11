@@ -54,6 +54,7 @@ class CrimeBatchCsvService(
     val longitude = parseDoubleValue(record.recordNumber, "latitude", record.longitude())
     val datum = parseEnumValue<GeodeticDatum>(record.recordNumber, "datum", record.datum())
     val crimeText = parseStringValue(record.recordNumber, "crimeText", record.crimeText())
+    val locationData = validateLocationData(record.recordNumber, easting.value, northing.value, latitude.value, longitude.value)
 
     val errors = listOf(
       policeForce,
@@ -67,6 +68,7 @@ class CrimeBatchCsvService(
       longitude,
       datum,
       crimeText,
+      locationData,
     )
       .mapNotNull { it.errorMessage }
 
@@ -143,6 +145,40 @@ class CrimeBatchCsvService(
     FieldValidationResult(
       errorMessage = "$fieldName must be one of ${enumValues<T>().joinToString { it.name }} but was '$value' on row $recordNumber.",
     )
+  }
+
+  private fun validateLocationData(recordNumber: Long, easting: Double?, northing: Double?, latitude: Double?, longitude: Double?): FieldValidationResult<String> {
+    val eastingRange = 0.0..600000.0
+    val northingRange = 0.0..1300000.0
+    val latitudeRange = 49.5..61.5
+    val longitudeRange = -8.5..2.6
+
+    val hasGridRef = easting != null && northing != null
+    val hasLatLong = latitude != null && longitude != null
+
+    if (!(hasGridRef xor hasLatLong)) {
+      return FieldValidationResult(
+        errorMessage = "Either easting/northing or latitude/longitude must be provided on row $recordNumber.",
+      )
+    }
+
+    if (hasGridRef) {
+      if (easting !in eastingRange || northing !in northingRange) {
+        return FieldValidationResult(
+          errorMessage = "Easting '$easting' or Northing '$northing' is outside of acceptable range on row $recordNumber.",
+        )
+      }
+    }
+
+    if (hasLatLong) {
+      if (latitude !in latitudeRange || longitude !in longitudeRange) {
+        return FieldValidationResult(
+          errorMessage = "Latitude '$latitude' or Longitude '$longitude' is outside of acceptable range on row $recordNumber.",
+        )
+      }
+    }
+
+    return FieldValidationResult()
   }
 
   private fun CSVRecord.policeForce() = this[CrimeBatchCsvConfig.ColumnsIndices.POLICE_FORCE]
