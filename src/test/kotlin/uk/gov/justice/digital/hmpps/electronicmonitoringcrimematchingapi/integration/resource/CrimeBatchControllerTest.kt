@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -75,7 +74,7 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           crimeTypeId = CrimeType.AB,
           crimeReference = "CRI00000001",
           crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-          crimeDateTimeTo =  LocalDateTime.of(2025, 1, 25, 8, 30),
+          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
           easting = null,
           northing = null,
           latitude = 51.574865,
@@ -83,7 +82,7 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           datum = GeodeticDatum.WGS84,
           crimeText = "",
           crimeBatch = batch,
-        )
+        ),
       )
       batch.crimes.addAll(crimes)
       repo.save(batch)
