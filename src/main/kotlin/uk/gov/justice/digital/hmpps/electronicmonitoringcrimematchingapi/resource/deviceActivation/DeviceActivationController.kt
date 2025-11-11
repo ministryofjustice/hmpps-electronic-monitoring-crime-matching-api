@@ -45,7 +45,7 @@ class DeviceActivationController(
   }
 
   @Operation(
-    tags = ["Device Activation Positions"],
+    tags = ["Device Activation"],
     summary = "Get positions for a device activation",
   )
   @RequestMapping(
