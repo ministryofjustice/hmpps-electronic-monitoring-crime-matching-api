@@ -1,0 +1,19 @@
+{
+  "data": {
+    "id": "142a9a57-337f-4208-908b-2874b75fa10d",
+    "crimes": [
+      {
+        "id": 1,
+        "crimeTypeId": "AB",
+        "crimeTypeDescription": "Aggravated Burglary",
+        "crimeReference": "CRI00000001",
+        "crimeDateTimeFrom": "2025-01-25T08:30",
+        "crimeDateTimeTo": "2025-01-25T08:30",
+        "latitude": 51.574865,
+        "longitude": 0.060977,
+        "crimeText": ""
+      }
+    ],
+    "policeForce": "METROPOLITAN"
+  }
+}
