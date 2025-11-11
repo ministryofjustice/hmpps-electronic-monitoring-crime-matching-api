@@ -237,6 +237,17 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
+  @ParameterizedTest(name = "{index} => lat={0}, long={1}, easting={2}, northing={3}, errorMessage={4}")
+  @MethodSource("invalidLocationValues")
+  fun `it should not parse invalid location data`(easting: String, northing: String, latitude: String, longitude: String, errorMessage: String) {
+    val crimeData = createCsvRow(easting = easting, northing = northing, latitude = latitude, longitude = longitude).byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf(errorMessage),
+    )
+  }
+
   companion object {
     @JvmStatic
     fun policeForceValues() = listOf(
@@ -275,6 +286,20 @@ class CrimeBatchCsvServiceTest {
     fun geodeticDatumValues() = listOf(
       Arguments.of("WGS84", GeodeticDatum.WGS84),
       Arguments.of("OSGB36", GeodeticDatum.OSGB36),
+    )
+
+    @JvmStatic
+    fun invalidLocationValues() = listOf(
+      Arguments.of("-1", "1", "", "", "Easting value cannot be below the minimum of 0"),
+      Arguments.of("600001", "1", "", "", "Easting value cannot be above the maximum of 600000"),
+      Arguments.of("1", "-1", "", "", "Northing value cannot be below the minimum of 0"),
+      Arguments.of("1", "1300001", "", "", "Northing value cannot be above the maximum of 1300000"),
+      Arguments.of("", "", "49", "1", "Latitude value cannot be below the minimum of 49.5"),
+      Arguments.of("", "", "62", "1", "Latitude value cannot be above the maximum of 61.5"),
+      Arguments.of("", "", "50", "-9", "Longitude value cannot be below the minimum of -8.5"),
+      Arguments.of("", "", "50", "3", "Longitude value cannot be above the maximum of 2.6"),
+      Arguments.of("1", "1", "50", "1", "One location data type required"),
+      Arguments.of("", "", "", "", "One location data type required"),
     )
   }
 }
