@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
+import jakarta.validation.ValidationException
 import jakarta.validation.Validator
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
@@ -22,7 +23,7 @@ class CrimeBatchCsvService(
   private val validator: Validator,
 ) {
 
-  fun parseCsvFile(inputStream: InputStream): Pair<List<CrimeRecordDto>, MutableList<String>> {
+  fun parseCsvFile(inputStream: InputStream): Pair<List<CrimeRecordDto>, List<String>> {
     val crimes = mutableListOf<CrimeRecordDto>()
     val errors = mutableListOf<String>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
@@ -32,6 +33,10 @@ class CrimeBatchCsvService(
         is ValidationResult.Success -> crimes.add(result.value)
         is ValidationResult.Failure -> errors.addAll(result.errors)
       }
+    }
+
+    if (crimes.isNotEmpty() && crimes.map { it.policeForce }.distinct().size != 1) {
+      throw ValidationException("Multiple police forces found in csv file")
     }
 
     return Pair(crimes, errors)
@@ -49,10 +54,10 @@ class CrimeBatchCsvService(
     val crimeReference = parseStringValue(record.recordNumber, "crimeReference", record.crimeReference().trim())
     val crimeDateFrom = parseDateValue(record.recordNumber, "dateFrom", record.crimeDateTimeFrom())
     val crimeDateTo = parseCrimeDateTo(record.recordNumber, record.crimeDateTimeTo(), crimeDateFrom)
-    val easting = parseLocationValue(record.recordNumber, record.easting(), "easting", 0.0..600000.0, record.northing(), Pair(record.latitude(), record.longitude()))
-    val northing = parseLocationValue(record.recordNumber, record.northing(), "northing", 0.0..1300000.0, record.easting(), Pair(record.latitude(), record.longitude()))
-    val latitude = parseLocationValue(record.recordNumber, record.latitude(), "latitude", 49.5..61.5, record.longitude(), Pair(record.easting(), record.northing()))
-    val longitude = parseLocationValue(record.recordNumber, record.longitude(), "longitude", -8.5..2.6, record.latitude(), Pair(record.easting(), record.northing()))
+    val easting = parseLocationValue(record.recordNumber, record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..600000.0)
+    val northing = parseLocationValue(record.recordNumber, record.northing(), "northing", record.easting(), Pair(record.latitude(), record.longitude()), 0.0..1300000.0)
+    val latitude = parseLocationValue(record.recordNumber, record.latitude(), "latitude", record.longitude(), Pair(record.easting(), record.northing()), 49.5..61.5)
+    val longitude = parseLocationValue(record.recordNumber, record.longitude(), "longitude", record.latitude(), Pair(record.easting(), record.northing()), -8.5..2.6)
     val datum = parseEnumValue<GeodeticDatum>(record.recordNumber, "datum", record.datum())
     val crimeText = parseStringValue(record.recordNumber, "crimeText", record.crimeText())
     val locationValidation = validateLocationData(record.recordNumber, listOf(record.easting(), record.northing(), record.latitude(), record.longitude()))
@@ -150,7 +155,7 @@ class CrimeBatchCsvService(
       )
     }
 
-    if (Duration.between(dateTo, dateFrom).toHours() > 12) {
+    if (Duration.between(dateFrom, dateTo).toHours() > 12) {
       return FieldValidationResult(
         errorMessage = "Crime date time window must not exceed 12 hours on row $recordNumber.",
       )
@@ -177,9 +182,9 @@ class CrimeBatchCsvService(
     recordNumber: Long,
     recordValue: String,
     fieldName: String,
-    range: ClosedFloatingPointRange<Double>,
     dependentField: String,
     opposingFields: Pair<String, String>,
+    range: ClosedFloatingPointRange<Double>,
   ): FieldValidationResult<Double> {
     val parsedDouble = parseDoubleValue(recordNumber, fieldName, recordValue)
     val parsedDoubleValue = parsedDouble.value ?: return parsedDouble

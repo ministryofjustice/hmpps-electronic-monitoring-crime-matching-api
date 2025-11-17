@@ -41,10 +41,6 @@ class EmailListener(
       // Parse csv rows
       val (records, errors) = crimeBatchCsvService.parseCsvFile(csvData)
 
-      if (records.map { it.policeForce }.distinct().size != 1) {
-        errors.add("Multiple police forces found in csv file")
-      }
-
       for (error in errors) {
         log.debug("Crime data violation found: $error")
       }

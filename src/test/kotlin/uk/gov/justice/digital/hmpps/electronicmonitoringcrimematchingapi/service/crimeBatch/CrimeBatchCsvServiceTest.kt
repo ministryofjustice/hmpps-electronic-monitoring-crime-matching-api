@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
 import jakarta.validation.Validation
+import jakarta.validation.ValidationException
 import jakarta.validation.Validator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -105,6 +107,18 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
+  @Test
+  fun `it should throw an exception when multiple police forces are present`() {
+    val crimeData = listOf(
+      createCsvRow(),
+      createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.value),
+    ).joinToString("\n").byteInputStream()
+
+    assertThrows<ValidationException> {
+      service.parseCsvFile(crimeData)
+    }
+  }
+
   @ParameterizedTest(name = "it should parse all valid crime types - {0} -> {1}")
   @MethodSource("crimeTypeValues")
   fun `it should parse all valid crime types`(csvValue: String, enumValue: CrimeType) {
@@ -174,6 +188,20 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
+  @Test
+  fun `it should not parse a crime if crime date windows exceeds 12 hours`() {
+    val crimeData = createCsvRow(
+      crimeDateTimeFrom = "20250125083000",
+      crimeDateTimeTo = "20250325083000",
+    ).byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf("Crime date time window must not exceed 12 hours on row 1."),
+    )
+  }
+
   @ParameterizedTest(name = "it should parse all valid geodetic datum values - {0} -> {1}")
   @MethodSource("geodeticDatumValues")
   fun `it should parse all valid geodetic datum values`(csvValue: String, enumValue: GeodeticDatum) {
@@ -238,7 +266,7 @@ class CrimeBatchCsvServiceTest {
   }
 
   @Test
-  fun `it should not parse when no valid location data`() {
+  fun `it should not parse when multiple location data types are provided`() {
     val crimeData = createCsvRow(easting = "1", northing = "1", latitude = "50", longitude = "1").byteInputStream()
     val (crimes, errors) = service.parseCsvFile(crimeData)
     assertThat(crimes).hasSize(0)
