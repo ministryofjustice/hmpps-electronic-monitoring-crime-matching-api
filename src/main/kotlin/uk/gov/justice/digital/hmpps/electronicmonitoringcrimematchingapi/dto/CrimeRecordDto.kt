@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
-import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotBlank
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.ValidationErrors.Crime.INVALID_CRIME_DATE
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.ValidationErrors.Crime.INVALID_CRIME_REFERENCE
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.GeodeticDatum
@@ -32,11 +30,4 @@ data class CrimeRecordDto(
   val datum: GeodeticDatum,
 
   val crimeText: String,
-) {
-  @AssertTrue(message = INVALID_CRIME_DATE)
-  fun isValidCrimeDateRange(): Boolean = try {
-    crimeDateTimeFrom.isBefore(crimeDateTimeTo) || crimeDateTimeFrom.isEqual(crimeDateTimeTo)
-  } catch (e: Exception) {
-    false
-  }
-}
+)

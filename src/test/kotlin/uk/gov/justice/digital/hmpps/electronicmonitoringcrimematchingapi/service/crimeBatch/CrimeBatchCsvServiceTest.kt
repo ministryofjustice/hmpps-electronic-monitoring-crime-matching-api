@@ -170,7 +170,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("A valid crime date range must be provided"),
+      listOf("Crime date time to must be after crime date time from on row 1."),
     )
   }
 
@@ -237,7 +237,22 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
-  @ParameterizedTest(name = "{index} => easting={0}, northing={1}, lat={2}, long={3}, errorMessage={4}")
+  @Test
+  fun `it should not parse when no valid location data`() {
+    val crimeData = createCsvRow(easting = "1", northing = "1", latitude = "50", longitude = "1").byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf(
+        "Only one location data type should be provided on 1.",
+        "Only one location data type should be provided on 1.",
+        "Only one location data type should be provided on 1.",
+        "Only one location data type should be provided on 1.",
+      ),
+    )
+  }
+
+  @ParameterizedTest(name = "easting={0}, northing={1}, lat={2}, long={3}, errorMessage={4}")
   @MethodSource("invalidLocationValues")
   fun `it should not parse invalid location data`(easting: String, northing: String, latitude: String, longitude: String, errorMessage: String) {
     val crimeData = createCsvRow(easting = easting, northing = northing, latitude = latitude, longitude = longitude).byteInputStream()
@@ -290,16 +305,19 @@ class CrimeBatchCsvServiceTest {
 
     @JvmStatic
     fun invalidLocationValues() = listOf(
-      Arguments.of("-1", "1", "", "", "Easting '-1.0' or Northing '1.0' is outside of acceptable range on row 1."),
-      Arguments.of("600001", "1", "", "", "Easting '600001.0' or Northing '1.0' is outside of acceptable range on row 1."),
-      Arguments.of("1", "-1", "", "", "Easting '1.0' or Northing '-1.0' is outside of acceptable range on row 1."),
-      Arguments.of("1", "1300001", "", "", "Easting '1.0' or Northing '1300001.0' is outside of acceptable range on row 1."),
-      Arguments.of("", "", "49", "1", "Latitude '49.0' or Longitude '1.0' is outside of acceptable range on row 1."),
-      Arguments.of("", "", "62", "1", "Latitude '62.0' or Longitude '1.0' is outside of acceptable range on row 1."),
-      Arguments.of("", "", "50", "-9", "Latitude '50.0' or Longitude '-9.0' is outside of acceptable range on row 1."),
-      Arguments.of("", "", "50", "3", "Latitude '50.0' or Longitude '3.0' is outside of acceptable range on row 1."),
-      Arguments.of("1", "1", "50", "1", "Either easting/northing or latitude/longitude must be provided on row 1."),
-      Arguments.of("", "", "", "", "Either easting/northing or latitude/longitude must be provided on row 1."),
+      Arguments.of("-1", "1", "", "", "easting value '-1.0' outside of valid range on row 1."),
+      Arguments.of("600001", "1", "", "", "easting value '600001.0' outside of valid range on row 1."),
+      Arguments.of("1", "", "", "", "Dependent location data field must be provided when using easting on row 1."),
+      Arguments.of("1", "-1", "", "", "northing value '-1.0' outside of valid range on row 1."),
+      Arguments.of("1", "1300001", "", "", "northing value '1300001.0' outside of valid range on row 1."),
+      Arguments.of("", "1", "", "", "Dependent location data field must be provided when using northing on row 1."),
+      Arguments.of("", "", "62", "1", "latitude value '62.0' outside of valid range on row 1."),
+      Arguments.of("", "", "49", "1", "latitude value '49.0' outside of valid range on row 1."),
+      Arguments.of("", "", "50", "", "Dependent location data field must be provided when using latitude on row 1."),
+      Arguments.of("", "", "50", "-9.0", "longitude value '-9.0' outside of valid range on row 1."),
+      Arguments.of("", "", "50", "3", "longitude value '3.0' outside of valid range on row 1."),
+      Arguments.of("", "", "", "1", "Dependent location data field must be provided when using longitude on row 1."),
+      Arguments.of("", "", "", "", "No location data present on row 1."),
     )
   }
 }

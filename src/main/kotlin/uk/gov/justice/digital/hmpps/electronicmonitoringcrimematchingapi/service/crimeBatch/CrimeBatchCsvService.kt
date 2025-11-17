@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.FieldValidationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.ValidationResult
 import java.io.InputStream
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -21,7 +22,7 @@ class CrimeBatchCsvService(
   private val validator: Validator,
 ) {
 
-  fun parseCsvFile(inputStream: InputStream): Pair<List<CrimeRecordDto>, List<String>> {
+  fun parseCsvFile(inputStream: InputStream): Pair<List<CrimeRecordDto>, MutableList<String>> {
     val crimes = mutableListOf<CrimeRecordDto>()
     val errors = mutableListOf<String>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
@@ -47,14 +48,14 @@ class CrimeBatchCsvService(
     val crimeTypeId = parseEnumValue<CrimeType>(record.recordNumber, "crimeType", record.crimeTypeId())
     val crimeReference = parseStringValue(record.recordNumber, "crimeReference", record.crimeReference().trim())
     val crimeDateFrom = parseDateValue(record.recordNumber, "dateFrom", record.crimeDateTimeFrom())
-    val crimeDateTo = parseDateValue(record.recordNumber, "dateTo", record.crimeDateTimeTo())
-    val easting = parseDoubleValue(record.recordNumber, "easting", record.easting())
-    val northing = parseDoubleValue(record.recordNumber, "northing", record.northing())
-    val latitude = parseDoubleValue(record.recordNumber, "latitude", record.latitude())
-    val longitude = parseDoubleValue(record.recordNumber, "latitude", record.longitude())
+    val crimeDateTo = parseCrimeDateTo(record.recordNumber, record.crimeDateTimeTo(), crimeDateFrom)
+    val easting = parseLocationValue(record.recordNumber, record.easting(), "easting", 0.0..600000.0, record.northing(), Pair(record.latitude(), record.longitude()))
+    val northing = parseLocationValue(record.recordNumber, record.northing(), "northing", 0.0..1300000.0, record.easting(), Pair(record.latitude(), record.longitude()))
+    val latitude = parseLocationValue(record.recordNumber, record.latitude(), "latitude", 49.5..61.5, record.longitude(), Pair(record.easting(), record.northing()))
+    val longitude = parseLocationValue(record.recordNumber, record.longitude(), "longitude", -8.5..2.6, record.latitude(), Pair(record.easting(), record.northing()))
     val datum = parseEnumValue<GeodeticDatum>(record.recordNumber, "datum", record.datum())
     val crimeText = parseStringValue(record.recordNumber, "crimeText", record.crimeText())
-    val locationData = validateLocationData(record.recordNumber, easting.value, northing.value, latitude.value, longitude.value)
+    val locationValidation = validateLocationData(record.recordNumber, listOf(record.easting(), record.northing(), record.latitude(), record.longitude()))
 
     val errors = listOf(
       policeForce,
@@ -68,7 +69,7 @@ class CrimeBatchCsvService(
       longitude,
       datum,
       crimeText,
-      locationData,
+      locationValidation,
     )
       .mapNotNull { it.errorMessage }
 
@@ -133,6 +134,31 @@ class CrimeBatchCsvService(
     )
   }
 
+  private fun parseCrimeDateTo(
+    recordNumber: Long,
+    crimeDateTo: String,
+    crimeDateFrom: FieldValidationResult<LocalDateTime>,
+  ): FieldValidationResult<LocalDateTime> {
+    val parsedDate = parseDateValue(recordNumber, "dateTo", crimeDateTo)
+
+    val dateTo = parsedDate.value ?: return parsedDate
+    val dateFrom = crimeDateFrom.value ?: return parsedDate
+
+    if (dateTo.isBefore(dateFrom)) {
+      return FieldValidationResult(
+        errorMessage = "Crime date time to must be after crime date time from on row $recordNumber.",
+      )
+    }
+
+    if (Duration.between(dateTo, dateFrom).toHours() > 12) {
+      return FieldValidationResult(
+        errorMessage = "Crime date time window must not exceed 12 hours on row $recordNumber.",
+      )
+    }
+
+    return parsedDate
+  }
+
   private inline fun <reified T : Enum<T>> parseEnumValue(
     recordNumber: Long,
     fieldName: String,
@@ -147,35 +173,41 @@ class CrimeBatchCsvService(
     )
   }
 
-  private fun validateLocationData(recordNumber: Long, easting: Double?, northing: Double?, latitude: Double?, longitude: Double?): FieldValidationResult<String> {
-    val eastingRange = 0.0..600000.0
-    val northingRange = 0.0..1300000.0
-    val latitudeRange = 49.5..61.5
-    val longitudeRange = -8.5..2.6
+  private fun parseLocationValue(
+    recordNumber: Long,
+    recordValue: String,
+    fieldName: String,
+    range: ClosedFloatingPointRange<Double>,
+    dependentField: String,
+    opposingFields: Pair<String, String>,
+  ): FieldValidationResult<Double> {
+    val parsedDouble = parseDoubleValue(recordNumber, fieldName, recordValue)
+    val parsedDoubleValue = parsedDouble.value ?: return parsedDouble
 
-    val hasGridRef = easting != null && northing != null
-    val hasLatLong = latitude != null && longitude != null
-
-    if (!(hasGridRef xor hasLatLong)) {
+    if (dependentField.isBlank()) {
       return FieldValidationResult(
-        errorMessage = "Either easting/northing or latitude/longitude must be provided on row $recordNumber.",
+        errorMessage = "Dependent location data field must be provided when using $fieldName on row $recordNumber.",
       )
     }
 
-    if (hasGridRef) {
-      if (easting !in eastingRange || northing !in northingRange) {
-        return FieldValidationResult(
-          errorMessage = "Easting '$easting' or Northing '$northing' is outside of acceptable range on row $recordNumber.",
-        )
-      }
+    if (!opposingFields.first.isBlank() || !opposingFields.second.isBlank()) {
+      return FieldValidationResult(
+        errorMessage = "Only one location data type should be provided on $recordNumber.",
+      )
     }
 
-    if (hasLatLong) {
-      if (latitude !in latitudeRange || longitude !in longitudeRange) {
-        return FieldValidationResult(
-          errorMessage = "Latitude '$latitude' or Longitude '$longitude' is outside of acceptable range on row $recordNumber.",
-        )
-      }
+    if (parsedDoubleValue !in range) {
+      return FieldValidationResult(
+        errorMessage = "$fieldName value '$parsedDoubleValue' outside of valid range on row $recordNumber.",
+      )
+    }
+
+    return parsedDouble
+  }
+
+  private fun validateLocationData(recordNumber: Long, locationValues: List<String>): FieldValidationResult<Double> {
+    if (locationValues.all { it.trim().isBlank() }) {
+      return FieldValidationResult(errorMessage = "No location data present on row $recordNumber.")
     }
 
     return FieldValidationResult()
