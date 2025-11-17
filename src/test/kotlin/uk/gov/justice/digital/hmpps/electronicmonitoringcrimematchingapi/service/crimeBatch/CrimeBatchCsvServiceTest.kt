@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
 import jakarta.validation.Validation
+import jakarta.validation.ValidationException
 import jakarta.validation.Validator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -105,6 +107,18 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
+  @Test
+  fun `it should throw an exception when multiple police forces are present`() {
+    val crimeData = listOf(
+      createCsvRow(),
+      createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.value),
+    ).joinToString("\n").byteInputStream()
+
+    assertThrows<ValidationException> {
+      service.parseCsvFile(crimeData)
+    }
+  }
+
   @ParameterizedTest(name = "it should parse all valid crime types - {0} -> {1}")
   @MethodSource("crimeTypeValues")
   fun `it should parse all valid crime types`(csvValue: String, enumValue: CrimeType) {
@@ -170,7 +184,21 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
-      listOf("A valid crime date range must be provided"),
+      listOf("Crime date time to must be after crime date time from on row 1."),
+    )
+  }
+
+  @Test
+  fun `it should not parse a crime if crime date windows exceeds 12 hours`() {
+    val crimeData = createCsvRow(
+      crimeDateTimeFrom = "20250125083000",
+      crimeDateTimeTo = "20250325083000",
+    ).byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf("Crime date time window must not exceed 12 hours on row 1."),
     )
   }
 
@@ -237,6 +265,32 @@ class CrimeBatchCsvServiceTest {
     )
   }
 
+  @Test
+  fun `it should not parse when multiple location data types are provided`() {
+    val crimeData = createCsvRow(easting = "1", northing = "1", latitude = "50", longitude = "1").byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf(
+        "Only one location data type should be provided on row 1.",
+        "Only one location data type should be provided on row 1.",
+        "Only one location data type should be provided on row 1.",
+        "Only one location data type should be provided on row 1.",
+      ),
+    )
+  }
+
+  @ParameterizedTest(name = "easting={0}, northing={1}, lat={2}, long={3}, errorMessage={4}")
+  @MethodSource("invalidLocationValues")
+  fun `it should not parse invalid location data`(easting: String, northing: String, latitude: String, longitude: String, errorMessage: String) {
+    val crimeData = createCsvRow(easting = easting, northing = northing, latitude = latitude, longitude = longitude).byteInputStream()
+    val (crimes, errors) = service.parseCsvFile(crimeData)
+    assertThat(crimes).hasSize(0)
+    assertThat(errors).isEqualTo(
+      listOf(errorMessage),
+    )
+  }
+
   companion object {
     @JvmStatic
     fun policeForceValues() = listOf(
@@ -275,6 +329,23 @@ class CrimeBatchCsvServiceTest {
     fun geodeticDatumValues() = listOf(
       Arguments.of("WGS84", GeodeticDatum.WGS84),
       Arguments.of("OSGB36", GeodeticDatum.OSGB36),
+    )
+
+    @JvmStatic
+    fun invalidLocationValues() = listOf(
+      Arguments.of("-1", "1", "", "", "easting value '-1.0' outside of valid range on row 1."),
+      Arguments.of("600001", "1", "", "", "easting value '600001.0' outside of valid range on row 1."),
+      Arguments.of("1", "", "", "", "Dependent location data field must be provided when using easting on row 1."),
+      Arguments.of("1", "-1", "", "", "northing value '-1.0' outside of valid range on row 1."),
+      Arguments.of("1", "1300001", "", "", "northing value '1300001.0' outside of valid range on row 1."),
+      Arguments.of("", "1", "", "", "Dependent location data field must be provided when using northing on row 1."),
+      Arguments.of("", "", "62", "1", "latitude value '62.0' outside of valid range on row 1."),
+      Arguments.of("", "", "49", "1", "latitude value '49.0' outside of valid range on row 1."),
+      Arguments.of("", "", "50", "", "Dependent location data field must be provided when using latitude on row 1."),
+      Arguments.of("", "", "50", "-9.0", "longitude value '-9.0' outside of valid range on row 1."),
+      Arguments.of("", "", "50", "3", "longitude value '3.0' outside of valid range on row 1."),
+      Arguments.of("", "", "", "1", "Dependent location data field must be provided when using longitude on row 1."),
+      Arguments.of("", "", "", "", "No location data present on row 1."),
     )
   }
 }
