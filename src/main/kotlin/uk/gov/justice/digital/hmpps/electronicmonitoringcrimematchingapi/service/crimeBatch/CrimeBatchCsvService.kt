@@ -18,6 +18,8 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+private const val CRIME_DATE_WINDOW_HOURS = 12
+
 @Service
 class CrimeBatchCsvService(
   private val validator: Validator,
@@ -155,9 +157,9 @@ class CrimeBatchCsvService(
       )
     }
 
-    if (Duration.between(dateFrom, dateTo).toHours() > 12) {
+    if (Duration.between(dateFrom, dateTo).toHours() > CRIME_DATE_WINDOW_HOURS) {
       return FieldValidationResult(
-        errorMessage = "Crime date time window must not exceed 12 hours on row $recordNumber.",
+        errorMessage = "Crime date time window must not exceed $CRIME_DATE_WINDOW_HOURS hours on row $recordNumber.",
       )
     }
 
@@ -197,7 +199,7 @@ class CrimeBatchCsvService(
 
     if (!opposingFields.first.isBlank() || !opposingFields.second.isBlank()) {
       return FieldValidationResult(
-        errorMessage = "Only one location data type should be provided on $recordNumber.",
+        errorMessage = "Only one location data type should be provided on row $recordNumber.",
       )
     }
 

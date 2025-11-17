@@ -272,10 +272,10 @@ class CrimeBatchCsvServiceTest {
     assertThat(crimes).hasSize(0)
     assertThat(errors).isEqualTo(
       listOf(
-        "Only one location data type should be provided on 1.",
-        "Only one location data type should be provided on 1.",
-        "Only one location data type should be provided on 1.",
-        "Only one location data type should be provided on 1.",
+        "Only one location data type should be provided on row 1.",
+        "Only one location data type should be provided on row 1.",
+        "Only one location data type should be provided on row 1.",
+        "Only one location data type should be provided on row 1.",
       ),
     )
   }
