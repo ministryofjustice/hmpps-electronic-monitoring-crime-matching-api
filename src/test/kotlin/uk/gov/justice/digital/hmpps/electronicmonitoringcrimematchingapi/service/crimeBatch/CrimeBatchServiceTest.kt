@@ -16,17 +16,20 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.GeodeticDatum
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
 class CrimeBatchServiceTest {
   private lateinit var crimeBatchRepository: CrimeBatchRepository
   private lateinit var service: CrimeBatchService
+  private lateinit var matchingNotificationService: MatchingNotificationService
 
   @BeforeEach
   fun setup() {
     crimeBatchRepository = Mockito.mock(CrimeBatchRepository::class.java)
-    service = CrimeBatchService(crimeBatchRepository)
+    matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
+    service = CrimeBatchService(crimeBatchRepository, matchingNotificationService)
   }
 
   @Nested
@@ -51,12 +54,16 @@ class CrimeBatchServiceTest {
           ),
         ),
       )
-      argumentCaptor<CrimeBatch>().apply {
-        verify(crimeBatchRepository, times(1)).save(capture())
-        assertThat(firstValue.policeForce).isEqualTo(PoliceForce.METROPOLITAN)
-        assertThat(firstValue.crimes).isNotEmpty()
-        assertThat(firstValue.crimes).hasSize(1)
-      }
+      val crimeBatchCaptor = argumentCaptor<CrimeBatch>()
+      val notificationCaptor = argumentCaptor<String>()
+
+      verify(crimeBatchRepository, times(1)).save(crimeBatchCaptor.capture())
+      verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
+
+      assertThat(crimeBatchCaptor.allValues.first().policeForce).isEqualTo(PoliceForce.METROPOLITAN)
+      assertThat(crimeBatchCaptor.allValues.first().crimes).isNotEmpty()
+      assertThat(crimeBatchCaptor.allValues.first().crimes).hasSize(1)
+      assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatchCaptor.allValues.first().id)
     }
   }
 }

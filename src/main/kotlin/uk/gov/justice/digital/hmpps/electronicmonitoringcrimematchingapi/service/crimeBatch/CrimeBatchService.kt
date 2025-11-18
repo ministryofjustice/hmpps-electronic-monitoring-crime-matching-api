@@ -6,11 +6,13 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.util.UUID
 
 @Service
 class CrimeBatchService(
   private val crimeBatchRepository: CrimeBatchRepository,
+  private val matchingNotificationService: MatchingNotificationService,
 ) {
 
   fun createCrimeBatch(records: List<CrimeRecordDto>) {
@@ -24,6 +26,8 @@ class CrimeBatchService(
     }
 
     crimeBatchRepository.save(crimeBatch)
+
+    matchingNotificationService.publishMatchingRequest(crimeBatch.id)
   }
 
   fun createCrime(record: CrimeRecordDto, batch: CrimeBatch): Crime = Crime(
