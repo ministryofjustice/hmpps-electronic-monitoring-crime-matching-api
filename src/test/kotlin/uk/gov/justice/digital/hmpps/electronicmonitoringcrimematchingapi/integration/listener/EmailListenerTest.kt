@@ -66,7 +66,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
   val matchingNotificationsQueueConfig by lazy {
     hmppsQueueService.findByQueueId("matchingnotifications")
-      ?: throw MissingQueueException("HmppsQueue email not found")
+      ?: throw MissingQueueException("HmppsQueue matchingnotifications not found")
   }
   val matchingNotificationsSqsUrl by lazy { matchingNotificationsQueueConfig.queueUrl }
   val matchingNotificationsSqsClient by lazy { matchingNotificationsQueueConfig.sqsClient }
