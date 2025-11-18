@@ -46,6 +46,8 @@ generic-service:
       HMPPS_SQS_QUEUES_EMAIL_QUEUEARN: "sqs_queue_arn"
     email-notifications-dlq:
       HMPPS_SQS_QUEUES_EMAIL_DLQNAME: "sqs_queue_name"
+    matching-notifications-topic:
+      HMPPS_SQS_TOPICS_MATCHINGNOTIFICATIONSTOPIC_ARN: "topic_arn"
 
   allowlist:
     groups:
