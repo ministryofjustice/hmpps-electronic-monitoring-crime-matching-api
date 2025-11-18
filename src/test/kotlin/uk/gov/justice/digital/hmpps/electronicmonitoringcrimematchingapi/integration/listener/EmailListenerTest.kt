@@ -64,6 +64,13 @@ class EmailListenerTest : IntegrationTestBase() {
   val emailDeadLetterSqsClient by lazy { emailQueueConfig.sqsDlqClient as SqsAsyncClient }
   val emailDeadLetterSqsUrl by lazy { emailQueueConfig.dlqUrl as String }
 
+  val matchingNotificationsQueueConfig by lazy {
+    hmppsQueueService.findByQueueId("matchingnotifications")
+      ?: throw MissingQueueException("HmppsQueue matchingnotifications not found")
+  }
+  val matchingNotificationsSqsUrl by lazy { matchingNotificationsQueueConfig.queueUrl }
+  val matchingNotificationsSqsClient by lazy { matchingNotificationsQueueConfig.sqsClient }
+
   @BeforeEach
   fun beforeEach() {
     s3Client.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build())
@@ -73,6 +80,9 @@ class EmailListenerTest : IntegrationTestBase() {
     emailDeadLetterSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(emailDeadLetterSqsUrl).build(),
     ).get()
+    matchingNotificationsSqsClient.purgeQueue(
+      PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
+    )
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
   }
@@ -114,6 +124,9 @@ class EmailListenerTest : IntegrationTestBase() {
       val crimes = crimeRepository.findAll()
       assertThat(crimes).isNotEmpty()
       assertThat(crimes).hasSize(2)
+
+      // Check that notification to start algo was generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
     }
 
     @Test
@@ -133,6 +146,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
       assertThat(dlqMessage.body()).isEqualTo(message)
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
     }
 
     @Test
@@ -150,6 +166,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
       assertThat(dlqMessage.body()).isEqualTo(message)
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
     }
 
     @Test
@@ -175,6 +194,9 @@ class EmailListenerTest : IntegrationTestBase() {
       val crimes = crimeRepository.findAll()
       assertThat(crimes).isNotEmpty()
       assertThat(crimes).hasSize(2)
+
+      // Check that notification to start algo was generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
     }
 
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(
@@ -193,6 +215,10 @@ class EmailListenerTest : IntegrationTestBase() {
 
     fun getMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse = emailDeadLetterSqsClient.receiveMessage(
       ReceiveMessageRequest.builder().queueUrl(emailDeadLetterSqsUrl).build(),
+    ).get()
+
+    fun getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue(): Int = matchingNotificationsSqsClient.countAllMessagesOnQueue(
+      matchingNotificationsSqsUrl,
     ).get()
 
     fun getMessage(objectKey: String): String = """

@@ -16,9 +16,14 @@ hmpps:
         queueName: "email"
         subscribeTopicId: emailtopic
         dlqName: email_dlq
+      matchingnotifications:
+        queueName: "matching-notifications"
+        subscribeTopicId: matchingnotificationstopic
     topics:
       emailtopic:
         arn: arn:aws:sns:eu-west-2:000000000000:email-topic
+      matchingnotificationstopic:
+        arn: arn:aws:sns:eu-west-2:000000000000:matching-notifications
 
 
 services:
