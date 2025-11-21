@@ -2,11 +2,15 @@
 # Per environment values which override defaults in hmpps-electronic-monitoring-crime-matching-api/values.yaml
 
 generic-service:
+  serviceAccountName: "hmpps-em-crime-matching-prod"
+
   ingress:
     host: electronic-monitoring-crime-matching-api.hmpps.service.justice.gov.uk
 
   env:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
+    ATHENA_OUTPUT_BUCKET: "placeholder"
+    MFA_REQUIRED: "false"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
