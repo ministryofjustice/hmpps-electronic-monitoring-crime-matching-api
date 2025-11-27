@@ -19,13 +19,14 @@ erDiagram
     CRIME-MATCHING-RESULT-DEVICE-WEARER 1 to 1+ CRIME-MATCHING-RESULT-POSITION : "has 2 or more positions"
 
     CRIME-BATCH {
-        string batch-id pk
+        uuid id pk
+        string batch-id
         uuid crime-batch-email-attachment fk
     }
 
     CRIME-BATCH-CRIME-VERSION {
         uuid id pk
-        string batch-id fk, uk "composite unique constraint"
+        string crime-batch-id fk, uk "composite unique constraint"
         uuid crime-version-id fk, uk "composite unique constraint"
     }
 
