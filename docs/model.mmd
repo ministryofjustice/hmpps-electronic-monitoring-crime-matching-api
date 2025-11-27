@@ -1,0 +1,102 @@
+---
+title: Crime Matching
+---
+erDiagram 
+    %% Domain
+    CRIME 1 to 1+ CRIME-VERSION : "has 1 or more versions"
+    CRIME-VERSION 1 to 0+ CRIME-MATCHING-RESULT : "has 0 or more matching results"
+    CRIME-BATCH 1 to 1+ CRIME-BATCH-CRIME-VERSION : "includes crime versions"
+    CRIME-VERSION 1 to 1+ CRIME-BATCH-CRIME-VERSION : "appears in batches"
+
+    %% Ingestion
+    CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or one CRIME-BATCH : "produces at most 1 crime batch"
+    CRIME-BATCH-INGESTION-ATTEMPT 1 to 1 CRIME-BATCH-EMAIL : "has 1 email"
+    CRIME-BATCH-EMAIL 1 to 0+ CRIME-BATCH-EMAIL-ATTACHMENT : "has 0 or more attachments"
+
+    %% Matching
+    CRIME-MATCHING-RESULT 1 to 0+ CRIME-MATCHING-RESULT-DEVICE-WEARER : "has 0 or more matched device wearers"
+    CRIME-MATCHING-RESULT 1 to 1+ CRIME-MATCHING-RESULT-PARAMETERS : "has 1 or more matching parameters"
+    CRIME-MATCHING-RESULT-DEVICE-WEARER 1 to 1+ CRIME-MATCHING-RESULT-POSITION : "has 2 or more positions"
+
+    CRIME-BATCH {
+        string batch-id pk
+        uuid crime-batch-email-attachment fk
+    }
+
+    CRIME-BATCH-CRIME-VERSION {
+        uuid id pk
+        string batch-id fk, uk "composite unique constraint"
+        uuid crime-version-id fk, uk "composite unique constraint"
+    }
+
+    CRIME-BATCH-INGESTION-ATTEMPT {
+        uuid id pk
+        string bucket
+        string object-name
+        datetime created-at
+    }
+
+    CRIME-BATCH-EMAIL {
+        uuid id pk
+        uuid crime-batch-ingestion-attempt-id fk
+        string sender
+        string original-sender
+        string subject
+        datetime sent-at
+    }
+
+    CRIME-BATCH-EMAIL-ATTACHMENT {
+        uuid id pk
+        uuid crime-batch-email-id fk
+        string filename
+        int row-count
+    }
+
+    CRIME {
+        uuid id pk
+        string police-force-area uk "composite unique constraint"
+        string crimeReference uk "composite unique constraint"
+    }
+
+    CRIME-VERSION {
+        uuid id pk
+        uuid crime-id fk
+        string crimeTypeId
+        datetime crimeDateTimeFrom
+        datetime crimeDateTimeTo
+        double latitude
+        double longitude
+        double easting
+        double northing
+        string crimeText
+        datetime created-at
+    }
+
+    CRIME-MATCHING-RESULT {
+        uuid id pk
+        uuid crime-version-id fk
+        datetime created-at
+    }
+
+    CRIME-MATCHING-RESULT-PARAMETERS {
+        uuid id pk
+        uuid crime-matching-result-id fk, uk "composite unique constraint"
+        string key uk "composite unique constraint"
+        string value
+    }
+
+    CRIME-MATCHING-RESULT-DEVICE-WEARER {
+        uuid id pk
+        uuid crime-matching-result-id fk
+        string name
+        string nomisid
+    }
+
+    CRIME-MATCHING-RESULT-POSITION {
+        uuid id pk
+        uuid crime-matching-result-device-wearer fk
+        double latitude
+        double longitude
+        datetime timestamp
+        string sequenceNumber
+    }
