@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import java.util.UUID
 
 @Repository
-interface CrimeBatchRepository : JpaRepository<CrimeBatch, UUID>
+interface CrimeBatchEmailAttachmentRepository : JpaRepository<CrimeBatchEmailAttachment, UUID>

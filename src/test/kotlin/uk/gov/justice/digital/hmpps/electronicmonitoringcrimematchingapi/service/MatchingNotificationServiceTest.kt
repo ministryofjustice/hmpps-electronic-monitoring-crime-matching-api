@@ -17,6 +17,7 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sns.model.PublishResponse
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
+import java.util.UUID
 import java.util.concurrent.CompletableFuture.completedFuture
 
 @ActiveProfiles("test")
@@ -40,8 +41,10 @@ class MatchingNotificationServiceTest {
   fun `it should send a crime matching request to the SNS topic`() {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
+    val batchId = UUID.randomUUID()
 
-    service.publishMatchingRequest("abc")
+
+    service.publishMatchingRequest(batchId)
 
     val captor = argumentCaptor<PublishRequest>()
 
@@ -49,6 +52,6 @@ class MatchingNotificationServiceTest {
     verify(snsClient, times(1)).publish(captor.capture())
 
     assertThat(captor.allValues).hasSize(1)
-    assertThat(captor.allValues.first().message()).isEqualTo("{\"type\":\"CRIME_MATCHING_REQUEST\",\"crime_batch_id\":\"abc\"}")
+    assertThat(captor.allValues.first().message()).isEqualTo("{\"type\":\"CRIME_MATCHING_REQUEST\",\"crime_batch_id\":\"${batchId}\"}")
   }
 }

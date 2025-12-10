@@ -32,6 +32,9 @@ class EmailListener(
       val bucketName = emailReceivedMessage.receipt.action.bucketName
       val objectKey = emailReceivedMessage.receipt.action.objectKey
 
+      // CrimeBatchIngestionAttempt
+      val crimeBatchIngestionAttempt = crimeBatchService.createCrimeBatchIngestionAttempt(bucketName, objectKey)
+
       // Get email file from S3
       val emailFile = s3Service.getObject(objectKey, bucketName)
 
@@ -41,12 +44,13 @@ class EmailListener(
       // Parse csv rows
       val (records, errors) = crimeBatchCsvService.parseCsvFile(csvData)
 
+      val crimeBatchEmailAttachment = crimeBatchService.createCrimeBatchEmail(crimeBatchIngestionAttempt)
+
       for (error in errors) {
         log.debug("Crime data violation found: $error")
       }
 
-      // Insert into DB
-      crimeBatchService.createCrimeBatch(records)
+      crimeBatchService.createCrimeBatch(records, crimeBatchEmailAttachment)
     } catch (e: Exception) {
       throw ValidationException("Failed to process email: ${e.message}")
     }

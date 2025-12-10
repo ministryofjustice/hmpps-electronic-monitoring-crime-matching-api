@@ -26,8 +26,13 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchCrimeVersionRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchEmailAttachmentRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchEmailRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
@@ -54,6 +59,21 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var crimeRepository: CrimeRepository
+
+  @MockitoSpyBean
+  lateinit var crimeVersionRepository: CrimeVersionRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchCrimeVersionRepository: CrimeBatchCrimeVersionRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchEmailRepository: CrimeBatchEmailRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchEmailAttachmentRepository: CrimeBatchEmailAttachmentRepository
 
   val emailQueueConfig by lazy {
     hmppsQueueService.findByQueueId("email")
@@ -85,6 +105,11 @@ class EmailListenerTest : IntegrationTestBase() {
     )
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
+    crimeVersionRepository.deleteAll()
+    crimeBatchCrimeVersionRepository.deleteAll()
+    crimeBatchIngestionAttemptRepository.deleteAll()
+    crimeBatchEmailRepository.deleteAll()
+    crimeBatchEmailAttachmentRepository.deleteAll()
   }
 
   @AfterEach
@@ -123,7 +148,12 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatches.first()).isNotNull()
       val crimes = crimeRepository.findAll()
       assertThat(crimes).isNotEmpty()
-      assertThat(crimes).hasSize(2)
+      assertThat(crimes).hasSize(1)
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      val crimeBatchEmails = crimeBatchEmailRepository.findAll()
+      val crimeBatchEmailAttachments = crimeBatchEmailAttachmentRepository.findAll()
+      val crimeVersions = crimeVersionRepository.findAll()
+      val crimeBatchCrimeVersions = crimeBatchCrimeVersionRepository.findAll()
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)

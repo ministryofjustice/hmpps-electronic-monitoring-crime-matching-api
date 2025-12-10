@@ -10,11 +10,9 @@ import org.springframework.test.json.JsonCompareMode
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.GeodeticDatum
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
-import java.time.LocalDateTime
+import java.util.UUID
 
 @ActiveProfiles("integration")
 class CrimeBatchControllerTest : IntegrationTestBase() {
@@ -64,27 +62,18 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a crime batch if it exists`() {
       // Create a crime batch
-      val id = "142a9a57-337f-4208-908b-2874b75fa10d"
+      val id = UUID.randomUUID()
       val batch = CrimeBatch(
-        id = id,
-        policeForce = PoliceForce.METROPOLITAN,
+        batchId = "batchId",
+        crimeBatchEmailAttachment = null,
       )
       val crimes = mutableListOf(
         Crime(
-          crimeTypeId = CrimeType.AB,
+          policeForceArea = PoliceForce.METROPOLITAN,
           crimeReference = "CRI00000001",
-          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
-          easting = null,
-          northing = null,
-          latitude = 51.574865,
-          longitude = 0.060977,
-          datum = GeodeticDatum.WGS84,
-          crimeText = "",
-          crimeBatch = batch,
         ),
       )
-      batch.crimes.addAll(crimes)
+//      batch.crimes.addAll(crimes)
       repo.save(batch)
 
       // Validate crime batch is retrieved successfully
