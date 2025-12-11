@@ -5,11 +5,13 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import java.time.LocalDateTime
+import java.util.Optional
 import java.util.UUID
 
 @Repository
 interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
-  fun existsByCrimeTypeIdAndCrimeDateTimeFromAndCrimeDateTimeToAndEastingAndNorthingAndLatitudeAndLongitudeAndCrimeText(
+  fun findByCrimeIdAndCrimeTypeIdAndCrimeDateTimeFromAndCrimeDateTimeToAndEastingAndNorthingAndLatitudeAndLongitudeAndCrimeText(
+    crimeId: UUID,
     crimeTypeId: CrimeType,
     crimeDateTimeFrom: LocalDateTime,
     crimeDateTimeTo: LocalDateTime,
@@ -18,5 +20,5 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
     latitude: Double?,
     longitude: Double?,
     crimeText: String,
-  ): Boolean
+  ): Optional<CrimeVersion>
 }

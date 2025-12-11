@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
-import java.util.UUID
 
 data class CrimeDto(
-  val id: UUID,
+  val id: String,
   val crimeTypeId: String,
+  val policeForce: String,
   val crimeTypeDescription: String,
   val crimeReference: String,
   val crimeDateTimeFrom: String,
@@ -15,9 +15,10 @@ data class CrimeDto(
   val crimeText: String,
 ) {
   constructor(crime: CrimeVersion) : this(
-    id = crime.id,
+    id = crime.id.toString(),
     crimeTypeId = crime.crimeTypeId.name,
     crimeTypeDescription = crime.crimeTypeId.value,
+    policeForce = crime.crime.policeForceArea.name,
     crimeReference = crime.crime.crimeReference,
     crimeDateTimeFrom = crime.crimeDateTimeFrom.toString(),
     crimeDateTimeTo = crime.crimeDateTimeTo.toString(),

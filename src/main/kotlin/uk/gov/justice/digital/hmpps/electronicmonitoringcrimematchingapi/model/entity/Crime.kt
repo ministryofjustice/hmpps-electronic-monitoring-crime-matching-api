@@ -22,7 +22,7 @@ data class Crime(
   val policeForceArea: PoliceForce,
   val crimeReference: String,
 
-  @OneToMany(mappedBy = "crime", cascade = [CascadeType.ALL], orphanRemoval = true)
-  val crimeVersions: MutableList<CrimeVersion> = mutableListOf(),
+//  @OneToMany(mappedBy = "crime", cascade = [CascadeType.ALL], orphanRemoval = true)
+//  val crimeVersions: MutableList<CrimeVersion> = mutableListOf(),
 
 )

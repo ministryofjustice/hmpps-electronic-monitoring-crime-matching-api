@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import java.util.UUID
 
 @RestController
-@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO')")
+//@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO')")
 @RequestMapping("/crime-batches", produces = ["application/json"])
 class CrimeBatchController(
   private val crimeBatchService: CrimeBatchService,
