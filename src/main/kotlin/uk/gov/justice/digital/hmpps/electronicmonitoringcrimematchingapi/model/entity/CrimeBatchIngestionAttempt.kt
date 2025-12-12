@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
@@ -16,7 +17,7 @@ data class CrimeBatchIngestionAttempt(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @OneToOne(mappedBy = "crimeBatchIngestionAttempt", cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToOne(mappedBy = "crimeBatchIngestionAttempt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   var crimeBatchEmail: CrimeBatchEmail? = null,
 
   val bucket: String,

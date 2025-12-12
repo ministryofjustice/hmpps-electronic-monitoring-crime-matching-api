@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
@@ -16,7 +17,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
-import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -75,31 +75,43 @@ class CrimeBatchService(
     return CrimeBatchDto(crimeBatch)
   }
 
-  fun saveCrimeBatchDetails(bucketName: String, objectKey: String): CrimeBatchEmailAttachment {
-    val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
-      bucket = bucketName,
-      objectName = objectKey,
-    )
+  fun saveCrimeBatchIngestionAttempt(bucketName: String, objectKey: String, emailData: EmailData, recordCount: Int): CrimeBatchEmailAttachment {
+    val crimeBatchIngestionAttempt = createCrimeBatchIngestionAttempt(bucketName, objectKey)
 
-    val crimeBatchEmail = CrimeBatchEmail(
-      sender = "",
-      originalSender = "",
-      subject = "",
-      sentAt = LocalDateTime.now(),
-      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-    )
+    val crimeBatchEmail = createCrimeBatchEmail(emailData, crimeBatchIngestionAttempt)
     crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
 
-    val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
-      fileName = "",
-      rowCount = 1,
-      crimeBatchEmail = crimeBatchEmail,
-    )
-    crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
+    val crimeBatchEmailAttachment = createCrimeBatchEmailAttachment(emailData.attachment.name, recordCount, crimeBatchEmail)
+    crimeBatchEmail.crimeBatchEmailAttachment = crimeBatchEmailAttachment
 
     crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
 
     return crimeBatchEmailAttachment
+  }
+
+  private fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt {
+    return CrimeBatchIngestionAttempt(
+      bucket = bucketName,
+      objectName = objectKey,
+    )
+  }
+
+  private fun createCrimeBatchEmail(emailData: EmailData, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchEmail {
+    return CrimeBatchEmail(
+      sender = emailData.sender,
+      originalSender = emailData.originalSender,
+      subject = emailData.subject,
+      sentAt = emailData.sentAt,
+      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+    )
+  }
+
+  private fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment {
+    return CrimeBatchEmailAttachment(
+      fileName = fileName,
+      rowCount = recordCount,
+      crimeBatchEmail = crimeBatchEmail,
+    )
   }
 
   private fun createCrimeVersion(record: CrimeRecordDto, crime: Crime): CrimeVersion = CrimeVersion(

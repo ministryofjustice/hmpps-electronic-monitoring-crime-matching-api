@@ -25,12 +25,14 @@ class CrimeBatchCsvService(
   private val validator: Validator,
 ) {
 
-  fun parseCsvFile(inputStream: InputStream): Pair<List<CrimeRecordDto>, List<String>> {
+  fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordDto>()
     val errors = mutableListOf<String>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
+    var recordCount = 0
 
     for (record in records) {
+      recordCount++
       when (val result = parseRecord(record)) {
         is ValidationResult.Success -> crimes.add(result.value)
         is ValidationResult.Failure -> errors.addAll(result.errors)
@@ -41,7 +43,7 @@ class CrimeBatchCsvService(
       throw ValidationException("Multiple police forces found in csv file")
     }
 
-    return Pair(crimes, errors)
+    return ParseResult(recordCount, crimes, errors)
   }
 
   private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordDto> {
@@ -232,3 +234,10 @@ class CrimeBatchCsvService(
   private fun CSVRecord.datum() = this[CrimeBatchCsvConfig.ColumnsIndices.DATUM]
   private fun CSVRecord.crimeText() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_TEXT]
 }
+
+class ParseResult(
+  val recordCount: Int,
+  val records: List<CrimeRecordDto>,
+  val errors: List<String>,
+)
+
