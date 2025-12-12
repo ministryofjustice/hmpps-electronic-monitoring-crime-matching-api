@@ -32,11 +32,10 @@ class CrimeBatchService(
   fun createCrimeBatch(records: List<CrimeRecordDto>, crimeBatchEmailAttachment: CrimeBatchEmailAttachment) {
     // Create a new batch
     val crimeBatch =  CrimeBatch(
-      batchId = "batchId-" + UUID.randomUUID(),
+      batchId = records.first().batchId,
       crimeBatchEmailAttachment = crimeBatchEmailAttachment,
     )
 
-    // Parse crime records
     for (record in records) {
       // Check for existing crime else save new crime
       val crime = crimeRepository.findByCrimeReferenceAndPoliceForceArea(record.crimeReference, record.policeForce)
