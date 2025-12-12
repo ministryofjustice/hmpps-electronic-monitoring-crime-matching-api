@@ -74,28 +74,18 @@ class CrimeBatchService(
     return CrimeBatchDto(crimeBatch)
   }
 
-  fun saveCrimeBatchIngestionAttempt(bucketName: String, objectKey: String, emailData: EmailData, recordCount: Int): CrimeBatchEmailAttachment {
-    val crimeBatchIngestionAttempt = createCrimeBatchIngestionAttempt(bucketName, objectKey)
-
-    val crimeBatchEmail = createCrimeBatchEmail(emailData, crimeBatchIngestionAttempt)
-    crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
-
-    val crimeBatchEmailAttachment = createCrimeBatchEmailAttachment(emailData.attachment.name, recordCount, crimeBatchEmail)
-    crimeBatchEmail.crimeBatchEmailAttachment = crimeBatchEmailAttachment
-
-    crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
-
-    return crimeBatchEmailAttachment
+  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt {
+    return crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
   }
 
-  private fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt {
+  fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt {
     return CrimeBatchIngestionAttempt(
       bucket = bucketName,
       objectName = objectKey,
     )
   }
 
-  private fun createCrimeBatchEmail(emailData: EmailData, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchEmail {
+  fun createCrimeBatchEmail(emailData: EmailData, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchEmail {
     return CrimeBatchEmail(
       sender = emailData.sender,
       originalSender = emailData.originalSender,
@@ -105,7 +95,7 @@ class CrimeBatchService(
     )
   }
 
-  private fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment {
+  fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment {
     return CrimeBatchEmailAttachment(
       fileName = fileName,
       rowCount = recordCount,

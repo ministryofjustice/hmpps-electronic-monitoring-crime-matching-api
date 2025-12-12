@@ -47,7 +47,15 @@ class EmailListener(
         log.debug("Crime data violation found: $error")
       }
 
-      val crimeBatchEmailAttachment = crimeBatchService.saveCrimeBatchIngestionAttempt(bucketName, objectKey, emailData, parseResult.recordCount)
+      val crimeBatchIngestionAttempt = crimeBatchService.createCrimeBatchIngestionAttempt(bucketName, objectKey)
+
+      val crimeBatchEmail = crimeBatchService.createCrimeBatchEmail(emailData, crimeBatchIngestionAttempt)
+      crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
+
+      val crimeBatchEmailAttachment = crimeBatchService.createCrimeBatchEmailAttachment(emailData.attachment.name, parseResult.recordCount, crimeBatchEmail)
+      crimeBatchEmail.crimeBatchEmailAttachment = crimeBatchEmailAttachment
+
+      crimeBatchService.saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt)
 
       crimeBatchService.createCrimeBatch(parseResult.records, crimeBatchEmailAttachment)
     } catch (e: Exception) {
