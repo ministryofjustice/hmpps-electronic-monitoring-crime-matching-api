@@ -2,9 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 
 import org.apache.commons.mail.util.MimeMessageParser
 import java.io.InputStream
-import java.util.Date
 import java.util.Properties
-import javax.activation.DataSource
 import javax.mail.Session
 import javax.mail.internet.MimeMessage
 
@@ -30,11 +28,3 @@ fun extractEmailData(emailFile: InputStream): EmailData {
     attachment,
   )
 }
-
-class EmailData(
-  val sender: String,
-  val originalSender: String,
-  val subject: String,
-  val sentAt: Date,
-  val attachment: DataSource,
-)

@@ -41,8 +41,7 @@ class MatchingNotificationServiceTest {
   fun `it should send a crime matching request to the SNS topic`() {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
-    val batchId = UUID.randomUUID()
-
+    val batchId = UUID.randomUUID().toString()
 
     service.publishMatchingRequest(batchId)
 

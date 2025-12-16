@@ -19,7 +19,9 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
+import java.time.Instant
 import java.time.LocalDateTime
+import java.util.Date
 import java.util.UUID
 
 @ActiveProfiles("integration")
@@ -53,7 +55,7 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a 403 if the client does not have a valid role`() {
       webTestClient.get()
-        .uri("/crime-batches/1")
+        .uri("/crime-batches/" + UUID.randomUUID())
         .headers(setAuthorisation(roles = listOf()))
         .exchange()
         .expectStatus()
@@ -62,14 +64,15 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a 404 if the crime batch does not exist`() {
+      val id = UUID.randomUUID()
       webTestClient.get()
-        .uri("/crime-batches/1")
+        .uri("/crime-batches/$id")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
         .exchange()
         .expectStatus()
         .isNotFound
         .expectBody()
-        .jsonPath("$.developerMessage").isEqualTo("No crime batch found with id: 1")
+        .jsonPath("$.developerMessage").isEqualTo("No crime batch found with id: $id")
         .jsonPath("$.userMessage").isEqualTo("Not Found")
     }
 
@@ -78,7 +81,7 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
       // Create a crime batch
       val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
         bucket = "bucket",
-        objectName = "objectName"
+        objectName = "objectName",
       )
 
       val crimeBatchEmail = CrimeBatchEmail(
@@ -86,16 +89,16 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
         sender = "sender",
         originalSender = "originalSender",
         subject = "subject",
-        sentAt = LocalDateTime.now()
+        sentAt = Date.from(Instant.now()),
       )
 
       val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
         crimeBatchEmail = crimeBatchEmail,
         fileName = "filename",
-        rowCount = 1
+        rowCount = 1,
       )
 
-      crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
+      crimeBatchEmail.crimeBatchEmailAttachment = crimeBatchEmailAttachment
       crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
 
       crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
@@ -134,7 +137,7 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
 
       // Validate crime batch is retrieved successfully
       webTestClient.get()
-        .uri("/crime-batches/${crimeBatchId}")
+        .uri("/crime-batches/$crimeBatchId")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
         .exchange()
         .expectStatus()

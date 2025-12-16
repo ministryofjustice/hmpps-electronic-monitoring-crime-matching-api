@@ -15,7 +15,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import java.util.UUID
 
 @Entity
-@Table(name = "crime",
+@Table(
+  name = "crime",
   uniqueConstraints = [
     UniqueConstraint(columnNames = ["police_force_area", "crime_reference"]),
   ],
@@ -30,7 +31,7 @@ data class Crime(
   val crimeReference: String,
 
   @Schema(hidden = true)
-  @OneToMany(mappedBy = "crime", fetch = FetchType.LAZY, orphanRemoval = true)
+  @OneToMany(mappedBy = "crime", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY, orphanRemoval = true)
   val crimeVersions: MutableList<CrimeVersion> = mutableListOf(),
 
 )

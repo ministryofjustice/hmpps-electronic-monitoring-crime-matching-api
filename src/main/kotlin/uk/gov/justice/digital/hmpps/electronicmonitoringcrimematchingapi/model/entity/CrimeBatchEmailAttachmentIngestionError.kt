@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.util.UUID
 
@@ -13,15 +15,13 @@ data class CrimeBatchEmailAttachmentIngestionError(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  val crimeBatchEmailAttachmentId: UUID,
-
   val rowNumber: Int,
 
   val crimeReference: String,
 
   val errorType: String,
 
-//  @OneToOne
-//  @JoinColumn(name = "crime_batch_email_attachment_id")
-//  val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
+  @OneToOne
+  @JoinColumn(name = "crime_batch_email_attachment_id")
+  val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 )

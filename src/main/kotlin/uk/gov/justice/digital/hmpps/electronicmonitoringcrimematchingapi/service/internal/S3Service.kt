@@ -6,12 +6,11 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import java.io.IOException
-import java.util.UUID
 
 @Service
 class S3Service(private val s3Client: S3Client) {
 
-  fun getObject(messageId: UUID, objectKey: String, bucketName: String): ResponseInputStream<GetObjectResponse> {
+  fun getObject(messageId: String, objectKey: String, bucketName: String): ResponseInputStream<GetObjectResponse> {
     val objectRequest = GetObjectRequest
       .builder()
       .key(objectKey)

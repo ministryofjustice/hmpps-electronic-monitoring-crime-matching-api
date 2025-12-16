@@ -42,7 +42,7 @@ class S3ServiceTest {
         client.getObject(any<GetObjectRequest>()),
       ).thenReturn(responseStream)
 
-      val res = service.getObject("objectKey", "bucketName")
+      val res = service.getObject("messageId", "objectKey", "bucketName")
 
       assert(res.readAllBytes().decodeToString().contentEquals(fileData))
     }
@@ -55,7 +55,7 @@ class S3ServiceTest {
     ).thenThrow(S3Exception.builder().build())
 
     assertThrows<IOException> {
-      service.getObject("objectKey", "bucketName")
+      service.getObject("messageId", "objectKey", "bucketName")
     }
   }
 }

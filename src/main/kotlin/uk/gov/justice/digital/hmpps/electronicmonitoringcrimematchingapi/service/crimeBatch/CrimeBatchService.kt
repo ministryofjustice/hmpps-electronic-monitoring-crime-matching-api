@@ -31,7 +31,7 @@ class CrimeBatchService(
   @Transactional
   fun createCrimeBatch(records: List<CrimeRecordDto>, crimeBatchEmailAttachment: CrimeBatchEmailAttachment) {
     // Create a new batch
-    val crimeBatch =  CrimeBatch(
+    val crimeBatch = CrimeBatch(
       batchId = records.first().batchId,
       crimeBatchEmailAttachment = crimeBatchEmailAttachment,
     )
@@ -44,15 +44,15 @@ class CrimeBatchService(
       // Check for duplicate version
       val crimeVersion = crimeVersionRepository.findByCrimeIdAndCrimeTypeIdAndCrimeDateTimeFromAndCrimeDateTimeToAndEastingAndNorthingAndLatitudeAndLongitudeAndCrimeText(
         crime.id,
-            record.crimeTypeId,
-            record.crimeDateTimeFrom,
-            record.crimeDateTimeTo,
-            record.easting,
-            record.northing,
-            record.latitude,
-            record.longitude,
-            record.crimeText,
-          ) .orElseGet { createCrimeVersion(record, crime) }
+        record.crimeTypeId,
+        record.crimeDateTimeFrom,
+        record.crimeDateTimeTo,
+        record.easting,
+        record.northing,
+        record.latitude,
+        record.longitude,
+        record.crimeText,
+      ).orElseGet { createCrimeVersion(record, crime) }
 
       // Add version to batch
       crimeBatch.crimeVersions.add(crimeVersion)
@@ -61,7 +61,7 @@ class CrimeBatchService(
     // Save batch
     crimeBatchRepository.save(crimeBatch)
 
-    matchingNotificationService.publishMatchingRequest(crimeBatch.id)
+    matchingNotificationService.publishMatchingRequest(crimeBatch.id.toString())
   }
 
   fun getCrimeBatch(id: UUID): CrimeBatchDto {
@@ -74,34 +74,26 @@ class CrimeBatchService(
     return CrimeBatchDto(crimeBatch)
   }
 
-  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt {
-    return crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
-  }
+  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
 
-  fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt {
-    return CrimeBatchIngestionAttempt(
-      bucket = bucketName,
-      objectName = objectKey,
-    )
-  }
+  fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+    bucket = bucketName,
+    objectName = objectKey,
+  )
 
-  fun createCrimeBatchEmail(emailData: EmailData, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchEmail {
-    return CrimeBatchEmail(
-      sender = emailData.sender,
-      originalSender = emailData.originalSender,
-      subject = emailData.subject,
-      sentAt = emailData.sentAt,
-      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-    )
-  }
+  fun createCrimeBatchEmail(emailData: EmailData, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchEmail = CrimeBatchEmail(
+    sender = emailData.sender,
+    originalSender = emailData.originalSender,
+    subject = emailData.subject,
+    sentAt = emailData.sentAt,
+    crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+  )
 
-  fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment {
-    return CrimeBatchEmailAttachment(
-      fileName = fileName,
-      rowCount = recordCount,
-      crimeBatchEmail = crimeBatchEmail,
-    )
-  }
+  fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+    fileName = fileName,
+    rowCount = recordCount,
+    crimeBatchEmail = crimeBatchEmail,
+  )
 
   private fun createCrimeVersion(record: CrimeRecordDto, crime: Crime): CrimeVersion = CrimeVersion(
     crime = crime,

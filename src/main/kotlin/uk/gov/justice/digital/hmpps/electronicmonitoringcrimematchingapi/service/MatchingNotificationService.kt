@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.excepti
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.publish
-import java.util.UUID
 
 @Service
 class MatchingNotificationService(
@@ -36,7 +35,7 @@ class MatchingNotificationService(
     throw PublishEventException(message, e)
   }
 
-  fun publishMatchingRequest(crimeBatchId: UUID) = publish(
+  fun publishMatchingRequest(crimeBatchId: String) = publish(
     MatchingNotification(
       type = CRIME_MATCHING_REQUEST,
       crimeBatchId = crimeBatchId,

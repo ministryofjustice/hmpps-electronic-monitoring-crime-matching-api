@@ -20,13 +20,13 @@ data class CrimeBatch(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  val batchId : String,
+  val batchId: String,
 
   @OneToOne
   @JoinColumn(name = "crime_batch_email_attachment_id")
   val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 
-  @ManyToMany(cascade = [CascadeType.ALL])
+  @ManyToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE])
   @JoinTable(
     name = "crime_batch_crime_version",
     joinColumns = [JoinColumn(name = "crime_batch_id")],

@@ -34,7 +34,7 @@ class EmailListener(
       val objectKey = emailReceivedMessage.receipt.action.objectKey
 
       // Get email file from S3
-      val emailFile = s3Service.getObject(messageId, objectKey, bucketName)
+      val emailFile = s3Service.getObject(messageId.toString(), objectKey, bucketName)
 
       // Extract email details
       val emailData = emailFile.use { extractEmailData(it) }
@@ -62,5 +62,4 @@ class EmailListener(
       throw ValidationException("Failed to process email: ${e.message}")
     }
   }
-
 }

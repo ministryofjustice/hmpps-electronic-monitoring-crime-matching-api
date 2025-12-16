@@ -242,4 +242,3 @@ class ParseResult(
   val records: List<CrimeRecordDto>,
   val errors: List<String>,
 )
-
