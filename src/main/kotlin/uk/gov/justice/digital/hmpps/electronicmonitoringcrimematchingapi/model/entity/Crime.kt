@@ -31,7 +31,7 @@ data class Crime(
   val crimeReference: String,
 
   @Schema(hidden = true)
-  @OneToMany(mappedBy = "crime", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY, orphanRemoval = true)
+  @OneToMany(mappedBy = "crime", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   val crimeVersions: MutableList<CrimeVersion> = mutableListOf(),
 
 )

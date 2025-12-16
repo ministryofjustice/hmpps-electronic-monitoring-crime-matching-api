@@ -14,16 +14,16 @@ data class CrimeDto(
   val longitude: Double,
   val crimeText: String,
 ) {
-  constructor(crime: CrimeVersion) : this(
-    id = crime.id.toString(),
-    crimeTypeId = crime.crimeTypeId.name,
-    crimeTypeDescription = crime.crimeTypeId.value,
-    policeForce = crime.crime.policeForceArea.name,
-    crimeReference = crime.crime.crimeReference,
-    crimeDateTimeFrom = crime.crimeDateTimeFrom.toString(),
-    crimeDateTimeTo = crime.crimeDateTimeTo.toString(),
-    latitude = crime.latitude ?: 0.0,
-    longitude = crime.longitude ?: 0.0,
-    crimeText = crime.crimeText,
+  constructor(version: CrimeVersion) : this(
+    id = version.id.toString(),
+    crimeTypeId = version.crimeTypeId.name,
+    crimeTypeDescription = version.crimeTypeId.value,
+    policeForce = version.crime.policeForceArea.name,
+    crimeReference = version.crime.crimeReference,
+    crimeDateTimeFrom = version.crimeDateTimeFrom.toString(),
+    crimeDateTimeTo = version.crimeDateTimeTo.toString(),
+    latitude = version.latitude ?: 0.0,
+    longitude = version.longitude ?: 0.0,
+    crimeText = version.crimeText,
   )
 }

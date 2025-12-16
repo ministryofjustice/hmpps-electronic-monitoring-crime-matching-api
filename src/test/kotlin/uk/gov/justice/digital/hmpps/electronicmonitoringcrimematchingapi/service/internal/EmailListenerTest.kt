@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.S
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 import java.time.Instant
 import java.util.Date
@@ -33,6 +34,7 @@ class EmailListenerTest {
   private lateinit var listener: EmailListener
   private lateinit var s3Service: S3Service
   private lateinit var crimeBatchCsvService: CrimeBatchCsvService
+  private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
   private lateinit var crimeBatchService: CrimeBatchService
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
@@ -42,8 +44,9 @@ class EmailListenerTest {
   fun setup() {
     s3Service = Mockito.mock(S3Service::class.java)
     crimeBatchCsvService = CrimeBatchCsvService(validator)
+    crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchService)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService)
   }
 
   @Nested
@@ -74,11 +77,11 @@ class EmailListenerTest {
       )
 
       whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
-      whenever(crimeBatchService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
         crimeBatchIngestionAttempt,
       )
 
-      whenever(crimeBatchService.createCrimeBatchEmail(any(), any())).thenReturn(
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
         CrimeBatchEmail(
           crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
           sender = "sender",

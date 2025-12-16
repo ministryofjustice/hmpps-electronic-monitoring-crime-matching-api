@@ -37,7 +37,7 @@ class CrimeBatchController(
 
     return ResponseEntity.ok(
       ResponseDto(
-        batch,
+        CrimeBatchDto(batch),
       ),
     )
   }

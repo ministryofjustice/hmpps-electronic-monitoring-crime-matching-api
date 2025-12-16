@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
@@ -27,7 +26,6 @@ import java.time.LocalDateTime
 
 @ActiveProfiles("test")
 class CrimeBatchServiceTest {
-  private lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
   private lateinit var crimeBatchRepository: CrimeBatchRepository
   private lateinit var crimeRepository: CrimeRepository
   private lateinit var crimeVersionRepository: CrimeVersionRepository
@@ -36,12 +34,11 @@ class CrimeBatchServiceTest {
 
   @BeforeEach
   fun setup() {
-    crimeBatchIngestionAttemptRepository = Mockito.mock(CrimeBatchIngestionAttemptRepository::class.java)
     crimeBatchRepository = Mockito.mock(CrimeBatchRepository::class.java)
     crimeRepository = Mockito.mock(CrimeRepository::class.java)
     crimeVersionRepository = Mockito.mock(CrimeVersionRepository::class.java)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
-    service = CrimeBatchService(crimeBatchIngestionAttemptRepository, crimeBatchRepository, crimeRepository, crimeVersionRepository, matchingNotificationService)
+    service = CrimeBatchService(crimeBatchRepository, crimeRepository, crimeVersionRepository, matchingNotificationService)
   }
 
   @Nested
@@ -69,7 +66,7 @@ class CrimeBatchServiceTest {
             crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
             easting = null,
             northing = null,
-            latitude = 54.732410000000002,
+            latitude = 54.73241,
             longitude = -1.38542,
             crimeText = "",
           ),

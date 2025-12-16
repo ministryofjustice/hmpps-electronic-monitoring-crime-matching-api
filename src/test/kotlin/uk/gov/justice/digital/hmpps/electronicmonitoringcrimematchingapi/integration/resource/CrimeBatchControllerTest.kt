@@ -98,7 +98,7 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
         rowCount = 1,
       )
 
-      crimeBatchEmail.crimeBatchEmailAttachment = crimeBatchEmailAttachment
+      crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
       crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
 
       crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)

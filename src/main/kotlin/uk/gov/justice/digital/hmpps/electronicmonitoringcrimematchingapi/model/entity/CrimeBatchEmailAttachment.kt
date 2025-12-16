@@ -6,6 +6,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.util.UUID
@@ -18,7 +19,7 @@ data class CrimeBatchEmailAttachment(
   val id: UUID = UUID.randomUUID(),
 
   @Schema(hidden = true)
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "crime_batch_email_id")
   var crimeBatchEmail: CrimeBatchEmail,
 

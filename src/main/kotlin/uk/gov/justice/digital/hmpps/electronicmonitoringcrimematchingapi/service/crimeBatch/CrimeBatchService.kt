@@ -3,16 +3,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
@@ -21,7 +16,6 @@ import java.util.UUID
 
 @Service
 class CrimeBatchService(
-  private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
   private val crimeBatchRepository: CrimeBatchRepository,
   private val crimeRepository: CrimeRepository,
   private val crimeVersionRepository: CrimeVersionRepository,
@@ -64,36 +58,15 @@ class CrimeBatchService(
     matchingNotificationService.publishMatchingRequest(crimeBatch.id.toString())
   }
 
-  fun getCrimeBatch(id: UUID): CrimeBatchDto {
+  fun getCrimeBatch(id: UUID): CrimeBatch {
     val crimeBatch = crimeBatchRepository
       .findById(id)
       .orElseThrow {
         EntityNotFoundException("No crime batch found with id: $id")
       }
 
-    return CrimeBatchDto(crimeBatch)
+    return crimeBatch
   }
-
-  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
-
-  fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
-    bucket = bucketName,
-    objectName = objectKey,
-  )
-
-  fun createCrimeBatchEmail(emailData: EmailData, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchEmail = CrimeBatchEmail(
-    sender = emailData.sender,
-    originalSender = emailData.originalSender,
-    subject = emailData.subject,
-    sentAt = emailData.sentAt,
-    crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-  )
-
-  fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment = CrimeBatchEmailAttachment(
-    fileName = fileName,
-    rowCount = recordCount,
-    crimeBatchEmail = crimeBatchEmail,
-  )
 
   private fun createCrimeVersion(record: CrimeRecordDto, crime: Crime): CrimeVersion = CrimeVersion(
     crime = crime,

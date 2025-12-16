@@ -7,6 +7,7 @@ class CsvConfig {
     object ColumnsIndices {
       const val POLICE_FORCE = 0
       const val CRIME_TYPE_ID = 1
+      const val CRIME_TYPE_DESCRIPTION = 2
       const val BATCH_ID = 3
       const val CRIME_REFERENCE = 4
       const val CRIME_DATE_FROM = 5

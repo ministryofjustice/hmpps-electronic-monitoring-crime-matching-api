@@ -141,7 +141,7 @@ class EmailListenerTest : IntegrationTestBase() {
       val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachment).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
 
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
@@ -218,7 +218,7 @@ class EmailListenerTest : IntegrationTestBase() {
       val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachment).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
 
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
@@ -271,7 +271,7 @@ class EmailListenerTest : IntegrationTestBase() {
       val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachment).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
 
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
@@ -324,7 +324,7 @@ class EmailListenerTest : IntegrationTestBase() {
       val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachment).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
 
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
