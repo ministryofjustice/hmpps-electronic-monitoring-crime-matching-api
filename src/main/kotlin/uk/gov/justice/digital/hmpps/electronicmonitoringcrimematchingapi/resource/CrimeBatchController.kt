@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
+import java.util.UUID
 
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO')")
@@ -30,7 +31,7 @@ class CrimeBatchController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getCrimeBatch(
-    @PathVariable crimeBatchId: String,
+    @PathVariable crimeBatchId: UUID,
   ): ResponseEntity<ResponseDto<CrimeBatchDto>> {
     val batch = this.crimeBatchService.getCrimeBatch(crimeBatchId)
 

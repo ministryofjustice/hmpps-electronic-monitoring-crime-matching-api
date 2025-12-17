@@ -3,23 +3,40 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import jakarta.persistence.UniqueConstraint
+import java.time.LocalDateTime
+import java.util.UUID
 
 @Entity
 @Table(name = "crime_batch")
 data class CrimeBatch(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
-  val id: String = "",
+  val id: UUID = UUID.randomUUID(),
 
-  @Enumerated(EnumType.STRING)
-  val policeForce: PoliceForce,
+  val batchId: String,
 
-  @OneToMany(mappedBy = "crimeBatch", cascade = [CascadeType.ALL], orphanRemoval = true)
-  val crimes: MutableList<Crime> = mutableListOf(),
+  @OneToOne
+  @JoinColumn(name = "crime_batch_email_attachment_id")
+  val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
+
+  @ManyToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE])
+  @JoinTable(
+    name = "crime_batch_crime_version",
+    joinColumns = [JoinColumn(name = "crime_batch_id")],
+    inverseJoinColumns = [JoinColumn(name = "crime_version_id")],
+    uniqueConstraints = [
+      UniqueConstraint(columnNames = ["crime_batch_id", "crime_version_id"]),
+    ],
+  )
+  val crimeVersions: MutableSet<CrimeVersion> = mutableSetOf(),
+
+  val createdAt: LocalDateTime = LocalDateTime.now(),
+
 )

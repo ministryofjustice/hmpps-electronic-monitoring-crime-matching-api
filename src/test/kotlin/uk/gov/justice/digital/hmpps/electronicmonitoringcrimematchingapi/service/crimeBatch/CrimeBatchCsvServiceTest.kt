@@ -14,7 +14,6 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.GeodeticDatum
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.time.LocalDateTime
 import kotlin.collections.listOf
@@ -32,13 +31,14 @@ class CrimeBatchCsvServiceTest {
   @Test
   fun `it should parse a valid crime`() {
     val crimeData = createCsvRow().byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).isEqualTo(
+    assertThat(parseResult.records).isEqualTo(
       listOf(
         CrimeRecordDto(
           policeForce = PoliceForce.METROPOLITAN,
           crimeTypeId = CrimeType.TOMV,
+          batchId = "MPS20250126",
           crimeReference = "CRI00000001",
           crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
           crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
@@ -46,65 +46,70 @@ class CrimeBatchCsvServiceTest {
           northing = null,
           latitude = 54.73241,
           longitude = -1.38542,
-          datum = GeodeticDatum.WGS84,
           crimeText = "",
         ),
       ),
     )
-    assertThat(errors).hasSize(0)
+    assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
   fun `it should ignore an empty row`() {
     val crimeData = "".byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).hasSize(0)
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.recordCount).isEqualTo(0)
   }
 
   @Test
   fun `it should not parse a row with too few columns`() {
     val crimeData = ",,".byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("Incorrect number of columns on row 1."),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
   fun `it should not parse a row with too many columns`() {
     val crimeData = ",,,,,,,,,,,,,".byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("Incorrect number of columns on row 1."),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @ParameterizedTest(name = "it should parse all valid police forces - {0} -> {1}")
   @MethodSource("policeForceValues")
   fun `it should parse all valid police forces`(csvValue: String, enumValue: PoliceForce) {
     val crimeData = createCsvRow(policeForce = csvValue).byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(1)
-    assertThat(crimes[0].policeForce).isEqualTo(enumValue)
-    assertThat(errors).hasSize(0)
+    assertThat(parseResult.records).hasSize(1)
+    assertThat(parseResult.records[0].policeForce).isEqualTo(enumValue)
+    assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
   fun `it should not parse an invalid police force`() {
     val crimeData = createCsvRow(policeForce = "invalid police force").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1."),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
@@ -123,55 +128,83 @@ class CrimeBatchCsvServiceTest {
   @MethodSource("crimeTypeValues")
   fun `it should parse all valid crime types`(csvValue: String, enumValue: CrimeType) {
     val crimeData = createCsvRow(crimeTypeId = csvValue).byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(1)
-    assertThat(crimes[0].crimeTypeId).isEqualTo(enumValue)
-    assertThat(errors).hasSize(0)
+    assertThat(parseResult.records).hasSize(1)
+    assertThat(parseResult.records[0].crimeTypeId).isEqualTo(enumValue)
+    assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
   fun `it should not parse an invalid crime type`() {
     val crimeData = createCsvRow(crimeTypeId = "invalid crime type").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1."),
     )
   }
 
   @Test
+  fun `it should not parse an invalid batch ID`() {
+    val crimeData = createCsvRow(batchId = "").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf("A valid batch id must be provided"),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should throw an exception when multiple batch IDs are present`() {
+    val crimeData = listOf(
+      createCsvRow(),
+      createCsvRow(batchId = "MPS20250127"),
+    ).joinToString("\n").byteInputStream()
+
+    assertThrows<ValidationException> {
+      service.parseCsvFile(crimeData)
+    }
+  }
+
+  @Test
   fun `it should not parse an invalid crime reference`() {
     val crimeData = createCsvRow(crimeReference = "").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("A crime reference must be provided"),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
   fun `it should not parse an invalid crime date from`() {
     val crimeData = createCsvRow(crimeDateTimeFrom = "").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1."),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
   fun `it should not parse an invalid crime date to`() {
     val crimeData = createCsvRow(crimeDateTimeTo = "").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1."),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
@@ -180,12 +213,13 @@ class CrimeBatchCsvServiceTest {
       crimeDateTimeFrom = "20250225083000",
       crimeDateTimeTo = "20250125083000",
     ).byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("Crime date time to must be after crime date time from on row 1."),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
@@ -194,34 +228,13 @@ class CrimeBatchCsvServiceTest {
       crimeDateTimeFrom = "20250125083000",
       crimeDateTimeTo = "20250325083000",
     ).byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf("Crime date time window must not exceed 12 hours on row 1."),
     )
-  }
-
-  @ParameterizedTest(name = "it should parse all valid geodetic datum values - {0} -> {1}")
-  @MethodSource("geodeticDatumValues")
-  fun `it should parse all valid geodetic datum values`(csvValue: String, enumValue: GeodeticDatum) {
-    val crimeData = createCsvRow(datum = csvValue).byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
-
-    assertThat(crimes).hasSize(1)
-    assertThat(crimes[0].datum).isEqualTo(enumValue)
-    assertThat(errors).hasSize(0)
-  }
-
-  @Test
-  fun `it should not parse an invalid geodetic datum value`() {
-    val crimeData = createCsvRow(datum = "invalid datum").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
-
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
-      listOf("datum must be one of WGS84, OSGB36 but was 'invalid datum' on row 1."),
-    )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
@@ -231,46 +244,46 @@ class CrimeBatchCsvServiceTest {
       crimeTypeId = "invalid crime type",
       crimeDateTimeFrom = "",
       crimeDateTimeTo = "",
-      datum = "invalid datum",
     ).byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf(
         "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1.",
         "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
         "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
-        "datum must be one of WGS84, OSGB36 but was 'invalid datum' on row 1.",
       ),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
-  fun `it should be possible to identity which row the error was on`() {
+  fun `it should be possible to identify which row the error was on`() {
     val crimeData = listOf(
       createCsvRow(),
       createCsvRow(crimeTypeId = "invalid"),
       createCsvRow(crimeDateTimeFrom = "invalid"),
     ).joinToString("\n").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
+    val parseResult = service.parseCsvFile(crimeData)
 
-    assertThat(crimes).hasSize(1)
-    assertThat(errors).isEqualTo(
+    assertThat(parseResult.records).hasSize(1)
+    assertThat(parseResult.errors).isEqualTo(
       listOf(
         "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid' on row 2.",
         "dateFrom must be a date with format yyyyMMddHHmmss but was 'invalid' on row 3.",
       ),
     )
+    assertThat(parseResult.recordCount).isEqualTo(3)
   }
 
   @Test
   fun `it should not parse when multiple location data types are provided`() {
     val crimeData = createCsvRow(easting = "1", northing = "1", latitude = "50", longitude = "1").byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    val parseResult = service.parseCsvFile(crimeData)
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf(
         "Only one location data type should be provided on row 1.",
         "Only one location data type should be provided on row 1.",
@@ -278,17 +291,19 @@ class CrimeBatchCsvServiceTest {
         "Only one location data type should be provided on row 1.",
       ),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @ParameterizedTest(name = "easting={0}, northing={1}, lat={2}, long={3}, errorMessage={4}")
   @MethodSource("invalidLocationValues")
   fun `it should not parse invalid location data`(easting: String, northing: String, latitude: String, longitude: String, errorMessage: String) {
     val crimeData = createCsvRow(easting = easting, northing = northing, latitude = latitude, longitude = longitude).byteInputStream()
-    val (crimes, errors) = service.parseCsvFile(crimeData)
-    assertThat(crimes).hasSize(0)
-    assertThat(errors).isEqualTo(
+    val parseResult = service.parseCsvFile(crimeData)
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
       listOf(errorMessage),
     )
+    assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   companion object {
@@ -323,12 +338,6 @@ class CrimeBatchCsvServiceTest {
       Arguments.of("TOMV", CrimeType.TOMV),
       Arguments.of("TFP", CrimeType.TFP),
       Arguments.of("TFMV", CrimeType.TFMV),
-    )
-
-    @JvmStatic
-    fun geodeticDatumValues() = listOf(
-      Arguments.of("WGS84", GeodeticDatum.WGS84),
-      Arguments.of("OSGB36", GeodeticDatum.OSGB36),
     )
 
     @JvmStatic

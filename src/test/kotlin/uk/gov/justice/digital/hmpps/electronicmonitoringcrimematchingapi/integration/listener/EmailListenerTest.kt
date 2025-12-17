@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import software.amazon.awssdk.core.sync.RequestBody
@@ -26,11 +27,19 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
+import java.time.LocalDateTime
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.io.encoding.Base64
 
@@ -49,11 +58,20 @@ class EmailListenerTest : IntegrationTestBase() {
   @Autowired
   lateinit var hmppsQueueService: HmppsQueueService
 
+  @Autowired
+  lateinit var jdbcTemplate: JdbcTemplate
+
   @MockitoSpyBean
   lateinit var crimeBatchRepository: CrimeBatchRepository
 
   @MockitoSpyBean
   lateinit var crimeRepository: CrimeRepository
+
+  @MockitoSpyBean
+  lateinit var crimeVersionRepository: CrimeVersionRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
 
   val emailQueueConfig by lazy {
     hmppsQueueService.findByQueueId("email")
@@ -83,8 +101,10 @@ class EmailListenerTest : IntegrationTestBase() {
     matchingNotificationsSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
     )
+    jdbcTemplate.update("DELETE FROM crime_batch_crime_version")
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
+    crimeBatchIngestionAttemptRepository.deleteAll()
   }
 
   @AfterEach
@@ -106,7 +126,7 @@ class EmailListenerTest : IntegrationTestBase() {
     fun `it should process a valid email notification`() {
       val csvContent = listOf(
         createCsvRow(),
-        createCsvRow(),
+        createCsvRow(crimeReference = "CRI00000002"),
       ).joinToString("\n")
 
       val encoded = Base64.encode(csvContent.toByteArray())
@@ -118,12 +138,19 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
+
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
-      assertThat(crimeBatches.first()).isNotNull()
+
       val crimes = crimeRepository.findAll()
-      assertThat(crimes).isNotEmpty()
       assertThat(crimes).hasSize(2)
+
+      val crimeVersions = crimeVersionRepository.findAll()
+      assertThat(crimeVersions).hasSize(2)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
@@ -176,6 +203,112 @@ class EmailListenerTest : IntegrationTestBase() {
       val csvContent = listOf(
         createCsvRow(),
         createCsvRow(crimeTypeId = "invalid"),
+        createCsvRow(crimeReference = "CRI00000002"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
+
+      val crimeBatches = crimeBatchRepository.findAll()
+      assertThat(crimeBatches).hasSize(1)
+
+      val crimes = crimeRepository.findAll()
+      assertThat(crimes).hasSize(2)
+
+      val crimeVersions = crimeVersionRepository.findAll()
+      assertThat(crimeVersions).hasSize(2)
+
+      // Check that notification to start algo was generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+    }
+
+    @Test
+    fun `it should process an email with new crime versions`() {
+      val crime = Crime(
+        policeForceArea = PoliceForce.METROPOLITAN,
+        crimeReference = "CRI00000001",
+      )
+      crimeRepository.save(crime)
+
+      val crimeVersion = CrimeVersion(
+        id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
+        crime = crime,
+        crimeTypeId = CrimeType.AB,
+        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
+        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+        easting = null,
+        northing = null,
+        latitude = 51.574865,
+        longitude = 0.060977,
+        crimeText = "",
+      )
+      crimeVersionRepository.save(crimeVersion)
+
+      val csvContent = listOf(
+        createCsvRow(crimeDateTimeTo = "20250125093000"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
+
+      val crimeBatches = crimeBatchRepository.findAll()
+      assertThat(crimeBatches).hasSize(1)
+
+      val crimes = crimeRepository.findAll()
+      assertThat(crimes).hasSize(1)
+
+      val crimeVersions = crimeVersionRepository.findAll()
+      assertThat(crimeVersions).hasSize(2)
+
+      // Check that notification to start algo was generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+    }
+
+    @Test
+    fun `it should process an email with a duplicate crime version`() {
+      val crime = Crime(
+        policeForceArea = PoliceForce.METROPOLITAN,
+        crimeReference = "CRI00000001",
+      )
+      crimeRepository.save(crime)
+
+      val crimeVersion = CrimeVersion(
+        id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
+        crime = crime,
+        crimeTypeId = CrimeType.TOMV,
+        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
+        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+        easting = null,
+        northing = null,
+        latitude = 54.73241,
+        longitude = -1.38542,
+        crimeText = "",
+      )
+      crimeVersionRepository.save(crimeVersion)
+
+      val csvContent = listOf(
         createCsvRow(),
       ).joinToString("\n")
 
@@ -188,12 +321,19 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
+
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
-      assertThat(crimeBatches.first()).isNotNull()
+
       val crimes = crimeRepository.findAll()
-      assertThat(crimes).isNotEmpty()
-      assertThat(crimes).hasSize(2)
+      assertThat(crimes).hasSize(1)
+
+      val crimeVersions = crimeVersionRepository.findAll()
+      assertThat(crimeVersions).hasSize(1)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)

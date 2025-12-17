@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 fun createCsvRow(
   policeForce: String = "Metropolitan",
   crimeTypeId: String = "TOMV",
+  batchId: String = "MPS20250126",
   crimeReference: String = "CRI00000001",
   crimeDateTimeFrom: String = "20250125083000",
   crimeDateTimeTo: String = "20250125083000",
@@ -12,9 +13,10 @@ fun createCsvRow(
   longitude: String = "-1.38542",
   datum: String = "WGS84",
   crimeText: String = "",
-) = "$policeForce,$crimeTypeId,crimeDesc,oldBatchId,$crimeReference,$crimeDateTimeFrom,$crimeDateTimeTo,$easting,$northing,$latitude,$longitude,$datum,$crimeText"
+) = "$policeForce,$crimeTypeId,crimeDesc,$batchId,$crimeReference,$crimeDateTimeFrom,$crimeDateTimeTo,$easting,$northing,$latitude,$longitude,$datum,$crimeText"
 
 fun createEmailFile(csvContent: String) = """
+  From: test@email.com
   Subject: Test-SQS-Email
   Date: Wed, 15 Oct 2025 13:56:58 +0000
   X-MS-Has-Attach: yes
@@ -37,6 +39,7 @@ fun createEmailFile(csvContent: String) = """
 """.trimIndent()
 
 fun createEmailFileWithoutAttachment() = """
+  From: test@email.com
   Subject: Test-SQS-Email
   Date: Wed, 15 Oct 2025 13:56:58 +0000
   X-MS-Has-Attach: no

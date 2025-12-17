@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import software.amazon.awssdk.core.ResponseInputStream
@@ -19,8 +20,13 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
+import java.time.Instant
+import java.util.Date
 import java.util.UUID
 
 @ActiveProfiles("test")
@@ -28,6 +34,7 @@ class EmailListenerTest {
   private lateinit var listener: EmailListener
   private lateinit var s3Service: S3Service
   private lateinit var crimeBatchCsvService: CrimeBatchCsvService
+  private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
   private lateinit var crimeBatchService: CrimeBatchService
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
@@ -37,8 +44,9 @@ class EmailListenerTest {
   fun setup() {
     s3Service = Mockito.mock(S3Service::class.java)
     crimeBatchCsvService = CrimeBatchCsvService(validator)
+    crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchService)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService)
   }
 
   @Nested
@@ -56,13 +64,32 @@ class EmailListenerTest {
           }
         }
       """.trimIndent()
-      val sqsMessage = SqsMessage("Notification", message, UUID.randomUUID())
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
         createEmailFile("").byteInputStream(),
       )
 
-      whenever(s3Service.getObject("email-file", "emails")).thenReturn(responseStream)
+      val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file",
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
+        crimeBatchIngestionAttempt,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
+        CrimeBatchEmail(
+          crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+          sender = "sender",
+          originalSender = "originalSender",
+          subject = "subject",
+          sentAt = Date.from(Instant.now()),
+        ),
+      )
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
     }
@@ -103,7 +130,7 @@ class EmailListenerTest {
         createEmailFileWithoutAttachment().byteInputStream(),
       )
 
-      whenever(s3Service.getObject("email-file-no-attachment", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject("messageId", "email-file-no-attachment", "emails")).thenReturn(responseStream)
 
       assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)

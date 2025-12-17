@@ -8,8 +8,8 @@ import org.apache.commons.csv.CSVRecord
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.CsvConfig.CrimeBatchCsvConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.ParseResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.GeodeticDatum
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.FieldValidationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.ValidationResult
@@ -25,12 +25,14 @@ class CrimeBatchCsvService(
   private val validator: Validator,
 ) {
 
-  fun parseCsvFile(inputStream: InputStream): Pair<List<CrimeRecordDto>, List<String>> {
+  fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordDto>()
     val errors = mutableListOf<String>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
+    var recordCount = 0
 
     for (record in records) {
+      recordCount++
       when (val result = parseRecord(record)) {
         is ValidationResult.Success -> crimes.add(result.value)
         is ValidationResult.Failure -> errors.addAll(result.errors)
@@ -41,7 +43,11 @@ class CrimeBatchCsvService(
       throw ValidationException("Multiple police forces found in csv file")
     }
 
-    return Pair(crimes, errors)
+    if (crimes.isNotEmpty() && crimes.map { it.batchId }.distinct().size != 1) {
+      throw ValidationException("Multiple batch Ids found in csv file")
+    }
+
+    return ParseResult(recordCount, crimes, errors)
   }
 
   private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordDto> {
@@ -53,6 +59,7 @@ class CrimeBatchCsvService(
 
     val policeForce = parseEnumValue<PoliceForce>(record.recordNumber, "policeForce", record.policeForce())
     val crimeTypeId = parseEnumValue<CrimeType>(record.recordNumber, "crimeType", record.crimeTypeId())
+    val batchId = parseStringValue(record.recordNumber, "batchId", record.batchId().trim())
     val crimeReference = parseStringValue(record.recordNumber, "crimeReference", record.crimeReference().trim())
     val crimeDateFrom = parseDateValue(record.recordNumber, "dateFrom", record.crimeDateTimeFrom())
     val crimeDateTo = parseCrimeDateTo(record.recordNumber, record.crimeDateTimeTo(), crimeDateFrom)
@@ -60,7 +67,6 @@ class CrimeBatchCsvService(
     val northing = parseLocationValue(record.recordNumber, record.northing(), "northing", record.easting(), Pair(record.latitude(), record.longitude()), 0.0..1300000.0)
     val latitude = parseLocationValue(record.recordNumber, record.latitude(), "latitude", record.longitude(), Pair(record.easting(), record.northing()), 49.5..61.5)
     val longitude = parseLocationValue(record.recordNumber, record.longitude(), "longitude", record.latitude(), Pair(record.easting(), record.northing()), -8.5..2.6)
-    val datum = parseEnumValue<GeodeticDatum>(record.recordNumber, "datum", record.datum())
     val crimeText = parseStringValue(record.recordNumber, "crimeText", record.crimeText())
     val locationValidation = validateLocationData(record.recordNumber, listOf(record.easting(), record.northing(), record.latitude(), record.longitude()))
 
@@ -74,7 +80,6 @@ class CrimeBatchCsvService(
       northing,
       latitude,
       longitude,
-      datum,
       crimeText,
       locationValidation,
     )
@@ -87,6 +92,7 @@ class CrimeBatchCsvService(
     val crimeRecordDto = CrimeRecordDto(
       policeForce.value!!,
       crimeTypeId.value!!,
+      batchId.value!!,
       crimeReference.value!!,
       crimeDateFrom.value!!,
       crimeDateTo.value!!,
@@ -94,7 +100,6 @@ class CrimeBatchCsvService(
       northing.value,
       latitude.value,
       longitude.value,
-      datum.value!!,
       crimeText.value!!,
     )
 
@@ -222,6 +227,7 @@ class CrimeBatchCsvService(
 
   private fun CSVRecord.policeForce() = this[CrimeBatchCsvConfig.ColumnsIndices.POLICE_FORCE]
   private fun CSVRecord.crimeTypeId() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_TYPE_ID]
+  private fun CSVRecord.batchId() = this[CrimeBatchCsvConfig.ColumnsIndices.BATCH_ID]
   private fun CSVRecord.crimeReference() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_REFERENCE]
   private fun CSVRecord.crimeDateTimeFrom() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_DATE_FROM]
   private fun CSVRecord.crimeDateTimeTo() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_DATE_TO]
@@ -229,6 +235,5 @@ class CrimeBatchCsvService(
   private fun CSVRecord.northing() = this[CrimeBatchCsvConfig.ColumnsIndices.NORTHING]
   private fun CSVRecord.latitude() = this[CrimeBatchCsvConfig.ColumnsIndices.LATITUDE]
   private fun CSVRecord.longitude() = this[CrimeBatchCsvConfig.ColumnsIndices.LONGITUDE]
-  private fun CSVRecord.datum() = this[CrimeBatchCsvConfig.ColumnsIndices.DATUM]
   private fun CSVRecord.crimeText() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_TEXT]
 }

@@ -6,14 +6,25 @@ import java.util.Properties
 import javax.mail.Session
 import javax.mail.internet.MimeMessage
 
-fun extractAttachment(emailFile: InputStream): InputStream {
+fun extractEmailData(emailFile: InputStream): EmailData {
   val session = Session.getDefaultInstance(Properties())
   val mimeMessage = MimeMessage(session, emailFile)
 
   val parser = MimeMessageParser(mimeMessage).parse()
 
-  return parser.attachmentList
+  val subject = parser.subject
+  val sender = parser.from
+  val sentAt = parser.mimeMessage.sentDate
+
+  val attachment = parser.attachmentList
     .firstOrNull { it.name?.endsWith(".csv", ignoreCase = true) == true }
-    ?.inputStream
     ?: throw NoSuchElementException("No CSV attachment found in email")
+
+  return EmailData(
+    sender,
+    "placeholder",
+    subject,
+    sentAt,
+    attachment,
+  )
 }

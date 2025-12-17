@@ -1,10 +1,11 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 
 data class CrimeDto(
-  val id: Long,
+  val id: String,
   val crimeTypeId: String,
+  val policeForce: String,
   val crimeTypeDescription: String,
   val crimeReference: String,
   val crimeDateTimeFrom: String,
@@ -13,15 +14,16 @@ data class CrimeDto(
   val longitude: Double,
   val crimeText: String,
 ) {
-  constructor(crime: Crime) : this(
-    id = crime.id!!,
-    crimeTypeId = crime.crimeTypeId.name,
-    crimeTypeDescription = crime.crimeTypeId.value,
-    crimeReference = crime.crimeReference,
-    crimeDateTimeFrom = crime.crimeDateTimeFrom.toString(),
-    crimeDateTimeTo = crime.crimeDateTimeTo.toString(),
-    latitude = crime.latitude ?: 0.0,
-    longitude = crime.longitude ?: 0.0,
-    crimeText = crime.crimeText,
+  constructor(version: CrimeVersion) : this(
+    id = version.id.toString(),
+    crimeTypeId = version.crimeTypeId.name,
+    crimeTypeDescription = version.crimeTypeId.value,
+    policeForce = version.crime.policeForceArea.name,
+    crimeReference = version.crime.crimeReference,
+    crimeDateTimeFrom = version.crimeDateTimeFrom.toString(),
+    crimeDateTimeTo = version.crimeDateTimeTo.toString(),
+    latitude = version.latitude ?: 0.0,
+    longitude = version.longitude ?: 0.0,
+    crimeText = version.crimeText,
   )
 }

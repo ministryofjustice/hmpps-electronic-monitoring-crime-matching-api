@@ -10,7 +10,7 @@ import java.io.IOException
 @Service
 class S3Service(private val s3Client: S3Client) {
 
-  fun getObject(objectKey: String, bucketName: String): ResponseInputStream<GetObjectResponse> {
+  fun getObject(messageId: String, objectKey: String, bucketName: String): ResponseInputStream<GetObjectResponse> {
     val objectRequest = GetObjectRequest
       .builder()
       .key(objectKey)
@@ -20,7 +20,7 @@ class S3Service(private val s3Client: S3Client) {
     try {
       return s3Client.getObject(objectRequest)
     } catch (e: Exception) {
-      throw IOException("Failed to retrieve S3 object: ${e.message}")
+      throw IOException("Message $messageId failed to retrieve S3 object $objectKey from bucket $bucketName due to: ${e.message}")
     }
   }
 }
