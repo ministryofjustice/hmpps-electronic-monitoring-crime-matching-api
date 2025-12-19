@@ -4,6 +4,7 @@ import jakarta.validation.Validation
 import jakarta.validation.ValidationException
 import jakarta.validation.Validator
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -11,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchEmailAttachmentIngestionErrorDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
@@ -71,7 +73,12 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("Incorrect number of columns on row 1."),
+      listOf(
+        errorDto(
+          crimeReference = null,
+          errorType = "Incorrect number of columns",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -83,7 +90,12 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("Incorrect number of columns on row 1."),
+      listOf(
+        errorDto(
+          crimeReference = null,
+          errorType = "Incorrect number of columns",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -107,7 +119,9 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1."),
+      listOf(
+        errorDto(errorType = "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1."),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -119,9 +133,11 @@ class CrimeBatchCsvServiceTest {
       createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.value),
     ).joinToString("\n").byteInputStream()
 
-    assertThrows<ValidationException> {
+    val exception = assertThrows<ValidationException> {
       service.parseCsvFile(crimeData)
     }
+
+    assertEquals("Multiple police forces found in csv file", exception.message)
   }
 
   @ParameterizedTest(name = "it should parse all valid crime types - {0} -> {1}")
@@ -143,7 +159,11 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1."),
+      listOf(
+        errorDto(
+          errorType = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
+        ),
+      ),
     )
   }
 
@@ -154,7 +174,11 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("A valid batch id must be provided"),
+      listOf(
+        errorDto(
+          errorType = "A valid batch id must be provided",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -166,9 +190,10 @@ class CrimeBatchCsvServiceTest {
       createCsvRow(batchId = "MPS20250127"),
     ).joinToString("\n").byteInputStream()
 
-    assertThrows<ValidationException> {
+    val exception = assertThrows<ValidationException> {
       service.parseCsvFile(crimeData)
     }
+    assertEquals("Multiple batch Ids found in csv file", exception.message)
   }
 
   @Test
@@ -178,7 +203,12 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("A crime reference must be provided"),
+      listOf(
+        errorDto(
+          crimeReference = "",
+          errorType = "A crime reference must be provided",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -190,7 +220,11 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1."),
+      listOf(
+        errorDto(
+          errorType = "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -202,7 +236,11 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1."),
+      listOf(
+        errorDto(
+          errorType = "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -217,7 +255,11 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("Crime date time to must be after crime date time from on row 1."),
+      listOf(
+        errorDto(
+          errorType = "Crime date time to must be after crime date time from on row 1.",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -232,7 +274,11 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("Crime date time window must not exceed 12 hours on row 1."),
+      listOf(
+        errorDto(
+          errorType = "Crime date time window must not exceed 12 hours on row 1.",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -250,10 +296,18 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1.",
-        "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
-        "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
-        "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
+        errorDto(
+          errorType = "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1.",
+        ),
+        errorDto(
+          errorType = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
+        ),
+        errorDto(
+          errorType = "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
+        ),
+        errorDto(
+          errorType = "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
+        ),
       ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
@@ -271,8 +325,14 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(1)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid' on row 2.",
-        "dateFrom must be a date with format yyyyMMddHHmmss but was 'invalid' on row 3.",
+        errorDto(
+          rowNumber = 2,
+          errorType = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid' on row 2.",
+        ),
+        errorDto(
+          rowNumber = 3,
+          errorType = "dateFrom must be a date with format yyyyMMddHHmmss but was 'invalid' on row 3.",
+        ),
       ),
     )
     assertThat(parseResult.recordCount).isEqualTo(3)
@@ -284,11 +344,20 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
+
       listOf(
-        "Only one location data type should be provided on row 1.",
-        "Only one location data type should be provided on row 1.",
-        "Only one location data type should be provided on row 1.",
-        "Only one location data type should be provided on row 1.",
+        errorDto(
+          errorType = "Only one location data type should be provided on row 1.",
+        ),
+        errorDto(
+          errorType = "Only one location data type should be provided on row 1.",
+        ),
+        errorDto(
+          errorType = "Only one location data type should be provided on row 1.",
+        ),
+        errorDto(
+          errorType = "Only one location data type should be provided on row 1.",
+        ),
       ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
@@ -301,10 +370,20 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf(errorMessage),
+      listOf(
+        errorDto(
+          errorType = errorMessage,
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
+
+  fun errorDto(rowNumber: Long = 1, crimeReference: String? = "CRI00000001", errorType: String): CrimeBatchEmailAttachmentIngestionErrorDto = CrimeBatchEmailAttachmentIngestionErrorDto(
+    rowNumber = rowNumber,
+    crimeReference = crimeReference,
+    errorType = errorType,
+  )
 
   companion object {
     @JvmStatic

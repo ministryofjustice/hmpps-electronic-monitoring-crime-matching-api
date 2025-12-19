@@ -21,7 +21,7 @@ data class CrimeBatchEmail(
   val id: UUID = UUID.randomUUID(),
 
   @Schema(hidden = true)
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crime_batch_ingestion_attempt_id")
   var crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
 

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -54,8 +55,10 @@ class S3ServiceTest {
       client.getObject(any<GetObjectRequest>()),
     ).thenThrow(S3Exception.builder().build())
 
-    assertThrows<IOException> {
+    val exception = assertThrows<IOException> {
       service.getObject("messageId", "objectKey", "bucketName")
     }
+
+    assertEquals("Message messageId failed to retrieve S3 object objectKey from bucket bucketName due to: null", exception.message)
   }
 }

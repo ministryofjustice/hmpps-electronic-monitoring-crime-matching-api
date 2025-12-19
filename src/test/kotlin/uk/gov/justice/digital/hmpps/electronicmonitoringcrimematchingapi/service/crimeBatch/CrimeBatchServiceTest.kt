@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
+import java.util.Optional
 
 @ActiveProfiles("test")
 class CrimeBatchServiceTest {
@@ -45,7 +46,7 @@ class CrimeBatchServiceTest {
   @DisplayName("createCrimeBatch")
   inner class CreateCrimeBatch {
     @Test
-    fun `it should create a crime batch from crime csv records`() {
+    fun `it should create a crime batch from crime csv records with new crime`() {
       val crimeBatchEmailAttachment = Mockito.mock(CrimeBatchEmailAttachment::class.java)
 
       whenever(crimeRepository.save(any())).thenReturn(
@@ -78,6 +79,52 @@ class CrimeBatchServiceTest {
       val notificationCaptor = argumentCaptor<String>()
 
       verify(crimeRepository, times(1)).save(crimeCaptor.capture())
+      verify(crimeBatchRepository, times(1)).save(crimeBatchCaptor.capture())
+      verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
+
+      assertThat(crimeBatchCaptor.allValues.first().crimeBatchEmailAttachment).isEqualTo(crimeBatchEmailAttachment)
+      assertThat(crimeBatchCaptor.allValues.first().batchId).isEqualTo("batchId")
+      assertThat(crimeBatchCaptor.allValues.first().crimeVersions).isNotEmpty()
+      assertThat(crimeBatchCaptor.allValues.first().crimeVersions).hasSize(1)
+      assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatchCaptor.allValues.first().id.toString())
+    }
+
+    @Test
+    fun `it should create a crime batch from crime csv records with existing crime and new crime version`() {
+      val crimeBatchEmailAttachment = Mockito.mock(CrimeBatchEmailAttachment::class.java)
+
+      whenever(crimeRepository.findByCrimeReferenceAndPoliceForceArea("crimeRef", PoliceForce.METROPOLITAN)).thenReturn(
+        Optional.of(
+          Crime(
+            policeForceArea = PoliceForce.METROPOLITAN,
+            crimeReference = "crimeRef",
+          ),
+        ),
+      )
+
+      service.createCrimeBatch(
+        listOf(
+          CrimeRecordDto(
+            policeForce = PoliceForce.METROPOLITAN,
+            crimeTypeId = CrimeType.AB,
+            batchId = "batchId",
+            crimeReference = "crimeRef",
+            crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
+            crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+            easting = null,
+            northing = null,
+            latitude = 54.73241,
+            longitude = -1.38542,
+            crimeText = "",
+          ),
+        ),
+        crimeBatchEmailAttachment,
+      )
+      val crimeCaptor = argumentCaptor<Crime>()
+      val crimeBatchCaptor = argumentCaptor<CrimeBatch>()
+      val notificationCaptor = argumentCaptor<String>()
+
+      verify(crimeRepository, times(0)).save(crimeCaptor.capture())
       verify(crimeBatchRepository, times(1)).save(crimeBatchCaptor.capture())
       verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
 

@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchEmailAttachmentIngestionErrorDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 
@@ -30,5 +32,12 @@ class CrimeBatchEmailIngestionService(
     fileName = fileName,
     rowCount = recordCount,
     crimeBatchEmail = crimeBatchEmail,
+  )
+
+  fun createCrimeBatchEmailIngestionError(error: CrimeBatchEmailAttachmentIngestionErrorDto, crimeBatchEmailAttachment: CrimeBatchEmailAttachment): CrimeBatchEmailAttachmentIngestionError = CrimeBatchEmailAttachmentIngestionError(
+    rowNumber = error.rowNumber,
+    crimeReference = error.crimeReference,
+    errorType = error.errorType,
+    crimeBatchEmailAttachment = crimeBatchEmailAttachment,
   )
 }

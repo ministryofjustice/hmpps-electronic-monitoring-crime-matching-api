@@ -4,7 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToOne
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.util.UUID
 
@@ -15,13 +15,13 @@ data class CrimeBatchEmailAttachmentIngestionError(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  val rowNumber: Int,
+  val rowNumber: Long?,
 
-  val crimeReference: String,
+  val crimeReference: String?,
 
   val errorType: String,
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "crime_batch_email_attachment_id")
   val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 )

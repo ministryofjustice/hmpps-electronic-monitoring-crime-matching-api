@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.extractEmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
@@ -45,16 +46,20 @@ class EmailListener(
       val csvData = emailData.attachment.inputStream
       val parseResult = csvData.use { crimeBatchCsvService.parseCsvFile(it) }
 
-      for (error in parseResult.errors) {
-        log.debug("Crime data violation found: $error")
-      }
-
       val crimeBatchIngestionAttempt = crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt(bucketName, objectKey)
 
       val crimeBatchEmail = crimeBatchEmailIngestionService.createCrimeBatchEmail(emailData, crimeBatchIngestionAttempt)
       crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
 
       val crimeBatchEmailAttachment = crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(emailData.attachment.name, parseResult.recordCount, crimeBatchEmail)
+
+      // Save ingestion errors from parse results
+      val ingestionErrors = mutableListOf<CrimeBatchEmailAttachmentIngestionError>()
+      for (error in parseResult.errors) {
+        ingestionErrors.add(crimeBatchEmailIngestionService.createCrimeBatchEmailIngestionError(error, crimeBatchEmailAttachment))
+      }
+      crimeBatchEmailAttachment.crimeBatchEmailAttachmentIngestionErrors.addAll(ingestionErrors)
+
       crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
 
       crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt)
