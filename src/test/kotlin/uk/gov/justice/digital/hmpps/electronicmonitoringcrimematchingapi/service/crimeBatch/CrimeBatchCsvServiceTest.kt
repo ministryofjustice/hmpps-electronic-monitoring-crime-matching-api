@@ -12,11 +12,11 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchEmailAttachmentIngestionErrorDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import java.time.LocalDateTime
 import kotlin.collections.listOf
 
@@ -74,7 +74,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           crimeReference = null,
           errorType = "Incorrect number of columns",
         ),
@@ -91,7 +91,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           crimeReference = null,
           errorType = "Incorrect number of columns",
         ),
@@ -120,7 +120,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(errorType = "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1."),
+        ingestionError(errorType = "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1."),
       ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
@@ -160,7 +160,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
         ),
       ),
@@ -175,7 +175,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "A valid batch id must be provided",
         ),
       ),
@@ -204,7 +204,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           crimeReference = "",
           errorType = "A crime reference must be provided",
         ),
@@ -221,7 +221,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         ),
       ),
@@ -237,7 +237,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         ),
       ),
@@ -256,7 +256,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "Crime date time to must be after crime date time from on row 1.",
         ),
       ),
@@ -275,7 +275,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "Crime date time window must not exceed 12 hours on row 1.",
         ),
       ),
@@ -296,16 +296,16 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1.",
         ),
-        errorDto(
+        ingestionError(
           errorType = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
         ),
-        errorDto(
+        ingestionError(
           errorType = "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         ),
-        errorDto(
+        ingestionError(
           errorType = "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         ),
       ),
@@ -325,11 +325,11 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(1)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           rowNumber = 2,
           errorType = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid' on row 2.",
         ),
-        errorDto(
+        ingestionError(
           rowNumber = 3,
           errorType = "dateFrom must be a date with format yyyyMMddHHmmss but was 'invalid' on row 3.",
         ),
@@ -346,16 +346,16 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
 
       listOf(
-        errorDto(
+        ingestionError(
           errorType = "Only one location data type should be provided on row 1.",
         ),
-        errorDto(
+        ingestionError(
           errorType = "Only one location data type should be provided on row 1.",
         ),
-        errorDto(
+        ingestionError(
           errorType = "Only one location data type should be provided on row 1.",
         ),
-        errorDto(
+        ingestionError(
           errorType = "Only one location data type should be provided on row 1.",
         ),
       ),
@@ -371,7 +371,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        errorDto(
+        ingestionError(
           errorType = errorMessage,
         ),
       ),
@@ -379,7 +379,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
-  fun errorDto(rowNumber: Long = 1, crimeReference: String? = "CRI00000001", errorType: String): CrimeBatchEmailAttachmentIngestionErrorDto = CrimeBatchEmailAttachmentIngestionErrorDto(
+  fun ingestionError(rowNumber: Long = 1, crimeReference: String? = "CRI00000001", errorType: String): EmailAttachmentIngestionError = EmailAttachmentIngestionError(
     rowNumber = rowNumber,
     crimeReference = crimeReference,
     errorType = errorType,

@@ -7,11 +7,11 @@ import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.CsvConfig.CrimeBatchCsvConfig
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchEmailAttachmentIngestionErrorDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.ParseResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.FieldValidationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.ValidationResult
 import java.io.InputStream
@@ -28,7 +28,7 @@ class CrimeBatchCsvService(
 
   fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordDto>()
-    val errors = mutableListOf<CrimeBatchEmailAttachmentIngestionErrorDto>()
+    val errors = mutableListOf<EmailAttachmentIngestionError>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
     var recordCount = 0
 
@@ -54,7 +54,7 @@ class CrimeBatchCsvService(
   private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordDto> {
     if (record.size() != CrimeBatchCsvConfig.COLUMN_COUNT) {
       return ValidationResult.Failure(
-        listOf(CrimeBatchEmailAttachmentIngestionErrorDto(rowNumber = record.recordNumber, crimeReference = null, errorType = "Incorrect number of columns")),
+        listOf(EmailAttachmentIngestionError(rowNumber = record.recordNumber, crimeReference = null, errorType = "Incorrect number of columns")),
       )
     }
 
@@ -84,7 +84,7 @@ class CrimeBatchCsvService(
       crimeText,
       locationValidation,
     ).mapNotNull { it.errorMessage }
-      .map { CrimeBatchEmailAttachmentIngestionErrorDto(rowNumber = record.recordNumber, crimeReference = crimeReference.value, errorType = it) }
+      .map { EmailAttachmentIngestionError(rowNumber = record.recordNumber, crimeReference = crimeReference.value, errorType = it) }
 
     if (errors.isNotEmpty()) {
       return ValidationResult.Failure(errors)
@@ -107,7 +107,15 @@ class CrimeBatchCsvService(
     val violations = validator.validate(crimeRecordDto)
 
     if (violations.isNotEmpty()) {
-      return ValidationResult.Failure(violations.map { CrimeBatchEmailAttachmentIngestionErrorDto(rowNumber = record.recordNumber, crimeReference = crimeReference.value, errorType = it.message) })
+      return ValidationResult.Failure(
+        violations.map {
+          EmailAttachmentIngestionError(
+            rowNumber = record.recordNumber,
+            crimeReference = crimeReference.value,
+            errorType = it.message,
+          )
+        },
+      )
     }
 
     return ValidationResult.Success(crimeRecordDto)

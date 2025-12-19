@@ -15,13 +15,13 @@ import java.util.UUID
 
 @Entity
 @Table(name = "crime_batch_email")
-data class CrimeBatchEmail(
+class CrimeBatchEmail(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
   @Schema(hidden = true)
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne
   @JoinColumn(name = "crime_batch_ingestion_attempt_id")
   var crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
 

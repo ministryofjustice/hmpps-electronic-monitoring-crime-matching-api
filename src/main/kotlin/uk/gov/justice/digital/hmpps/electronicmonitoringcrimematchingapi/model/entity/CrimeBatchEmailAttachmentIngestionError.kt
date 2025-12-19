@@ -10,7 +10,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "crime_batch_email_attachment_ingestion_error")
-data class CrimeBatchEmailAttachmentIngestionError(
+class CrimeBatchEmailAttachmentIngestionError(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
