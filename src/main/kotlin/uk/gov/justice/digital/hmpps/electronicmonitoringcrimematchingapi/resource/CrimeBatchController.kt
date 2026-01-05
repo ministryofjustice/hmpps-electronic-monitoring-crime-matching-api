@@ -31,7 +31,7 @@ class CrimeBatchController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getCrimeBatch(
-    @PathVariable crimeBatchId: UUID,
+    @PathVariable crimeBatchId: String,
   ): ResponseEntity<ResponseDto<CrimeBatchDto>> {
     val batch = this.crimeBatchService.getCrimeBatch(crimeBatchId)
 
