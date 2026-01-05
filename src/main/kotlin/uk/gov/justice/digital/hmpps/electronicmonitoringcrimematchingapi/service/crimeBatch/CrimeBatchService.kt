@@ -58,9 +58,9 @@ class CrimeBatchService(
     matchingNotificationService.publishMatchingRequest(crimeBatch.id.toString())
   }
 
-  fun getCrimeBatch(id: UUID): CrimeBatch {
+  fun getCrimeBatch(id: String): CrimeBatch {
     val crimeBatch = crimeBatchRepository
-      .findById(id)
+      .findById(UUID.fromString(id))
       .orElseThrow {
         EntityNotFoundException("No crime batch found with id: $id")
       }
