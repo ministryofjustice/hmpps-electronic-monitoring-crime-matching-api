@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.extractEmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionRowError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
@@ -54,11 +54,11 @@ class EmailListener(
       val crimeBatchEmailAttachment = crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(emailData.attachment.name, parseResult.recordCount, crimeBatchEmail)
 
       // Save ingestion errors from parse results
-      val ingestionErrors = mutableListOf<CrimeBatchEmailAttachmentIngestionError>()
+      val ingestionRowErrors = mutableListOf<CrimeBatchEmailAttachmentIngestionRowError>()
       for (error in parseResult.errors) {
-        ingestionErrors.add(crimeBatchEmailIngestionService.createCrimeBatchEmailIngestionError(error, crimeBatchEmailAttachment))
+        ingestionRowErrors.add(crimeBatchEmailIngestionService.createCrimeBatchEmailIngestionError(error, crimeBatchEmailAttachment))
       }
-      crimeBatchEmailAttachment.crimeBatchEmailAttachmentIngestionErrors.addAll(ingestionErrors)
+      crimeBatchEmailAttachment.crimeBatchEmailAttachmentIngestionRowErrors.addAll(ingestionRowErrors)
 
       crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
 

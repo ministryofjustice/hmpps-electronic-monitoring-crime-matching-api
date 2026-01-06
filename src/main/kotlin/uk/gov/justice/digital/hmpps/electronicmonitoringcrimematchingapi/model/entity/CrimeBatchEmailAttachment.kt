@@ -31,6 +31,9 @@ class CrimeBatchEmailAttachment(
   @OneToMany(mappedBy = "crimeBatchEmailAttachment", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   var crimeBatchEmailAttachmentIngestionErrors: MutableList<CrimeBatchEmailAttachmentIngestionError> = mutableListOf(),
 
+  @OneToMany(mappedBy = "crimeBatchEmailAttachment", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  var crimeBatchEmailAttachmentIngestionRowErrors: MutableList<CrimeBatchEmailAttachmentIngestionRowError> = mutableListOf(),
+
   val fileName: String,
   val rowCount: Int,
 )
