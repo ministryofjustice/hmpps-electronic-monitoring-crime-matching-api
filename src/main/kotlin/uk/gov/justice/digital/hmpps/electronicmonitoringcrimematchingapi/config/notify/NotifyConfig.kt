@@ -14,5 +14,4 @@ class NotifyConfig(@Value("\${notify.apikey}") private val apiKey: String) {
 
   @Bean
   fun notifyClient(): NotificationClient = NotificationClient(apiKey)
-
 }

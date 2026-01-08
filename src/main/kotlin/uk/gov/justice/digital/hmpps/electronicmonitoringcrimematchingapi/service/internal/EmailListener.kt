@@ -62,7 +62,7 @@ class EmailListener(
 
       val crimeBatch = crimeBatchService.createCrimeBatch(parseResult.records, crimeBatchEmailAttachment)
 
-      if (parseResult.errors.isEmpty()) {
+      if (parseResult.errors.isEmpty() && parseResult.records.isNotEmpty()) {
         val policeForce = parseResult.records.first().policeForce
         emailNotificationService.sendSuccessfulIngestionEmail(
           crimeBatch.batchId,

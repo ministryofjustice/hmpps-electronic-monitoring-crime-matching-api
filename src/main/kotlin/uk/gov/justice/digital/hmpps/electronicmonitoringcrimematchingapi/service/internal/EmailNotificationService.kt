@@ -15,9 +15,8 @@ class EmailNotificationService(
   fun sendSuccessfulIngestionEmail(
     batchId: String,
     policeForce: PoliceForce,
-    emailData: EmailData
+    emailData: EmailData,
   ) {
-//    val emailAddresses = listOf(properties.hubEmail, getPoliceEmail(policeForce))
     val emailAddresses = listOf(emailData.sender, emailData.originalSender)
 
     val personalisation = hashMapOf<String, String>()
@@ -27,7 +26,7 @@ class EmailNotificationService(
     personalisation.put("policeForce", policeForce.name)
 
     for (emailAddress in emailAddresses) {
-      sendEmail(properties.successfulIngestionTemplateId, emailAddress, personalisation)
+      sendEmail(properties.successfulIngestionTemplateId, emailAddress, personalisation, batchId)
     }
   }
 
@@ -35,19 +34,15 @@ class EmailNotificationService(
     templateId: String,
     emailAddress: String,
     personalisation: Map<String, String>,
+    reference: String,
   ) {
     if (properties.enabled) {
       notifyClient.sendEmail(
         templateId,
         emailAddress,
         personalisation,
-        // TODO setup a reference using a relevant ID
-        null,
+        reference,
       )
     }
-  }
-
-  private fun getPoliceEmail(policeForce: PoliceForce): String {
-    return properties.policeEmails[policeForce]!!
   }
 }

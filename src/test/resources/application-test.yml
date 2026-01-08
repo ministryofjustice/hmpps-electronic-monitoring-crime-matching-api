@@ -56,8 +56,6 @@ datastore:
 
 notify:
   enabled: true
-  hubEmail: hub@justice.gov.uk
-  policeEmails:
-    metropolitan: hub@justice.gov.uk
-  successfulIngestionTemplateId: successfulIngestionTemplateId
+  successfulIngestionTemplateId: 42122252-63d8-4747-9057-428d6e2d3bd5
+  apikey: ${NOTIFY_TEST_API_KEY}
 

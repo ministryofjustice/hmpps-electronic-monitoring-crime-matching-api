@@ -73,26 +73,6 @@ services:
 notify:
   enabled: true
   apikey: ${NOTIFY_API_KEY}
-  hubEmail: hub@justice.gov.uk
-  policeEmails:
-    avon-and-somerset:
-    bedfordshire:
-    cheshire:
-    city-of-london:
-    cumbria:
-    derbyshire:
-    durham:
-    essex:
-    gloucestershire:
-    gwent:
-    hampshire:
-    hertfordshire:
-    humberside:
-    kent:
-    metropolitan:
-    north-wales:
-    nottinghamshire:
-    west-midlands:
   successfulIngestionTemplateId: 42122252-63d8-4747-9057-428d6e2d3bd5
 
 aws:

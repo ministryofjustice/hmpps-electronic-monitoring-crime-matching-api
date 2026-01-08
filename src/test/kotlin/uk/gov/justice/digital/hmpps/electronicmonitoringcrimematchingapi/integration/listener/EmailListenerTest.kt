@@ -163,8 +163,8 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
 
-      val messageTemplateId = "successfulIngestionTemplateId"
-      val emailAddress = "hub@justice.gov.uk"
+      val messageTemplateId = "42122252-63d8-4747-9057-428d6e2d3bd5"
+      val emailAddress = "test@email.com"
       val personalisation = mutableMapOf<String, Any>(
         "fileName" to "crime-data.csv",
         "ingestionDate" to LocalDate.now().toString(),
@@ -172,7 +172,7 @@ class EmailListenerTest : IntegrationTestBase() {
         "policeForce" to "METROPOLITAN",
       )
 
-      verify(notifyClient, times(2)).sendEmail(messageTemplateId, emailAddress, personalisation, null)
+      verify(notifyClient, times(2)).sendEmail(messageTemplateId, emailAddress, personalisation, "MPS20250126")
     }
 
     @Test
