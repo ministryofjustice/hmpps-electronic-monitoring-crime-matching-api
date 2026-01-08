@@ -53,3 +53,11 @@ spring:
 datastore:
   output-bucket-arn: test-output-bucket
   retry-interval-ms: 10
+
+notify:
+  enabled: true
+  hubEmail: hub@justice.gov.uk
+  policeEmails:
+    metropolitan: hub@justice.gov.uk
+  successfulIngestionTemplateId: successfulIngestionTemplateId
+

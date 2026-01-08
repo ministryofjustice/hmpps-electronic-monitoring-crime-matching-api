@@ -36,6 +36,7 @@ class EmailListenerTest {
   private lateinit var crimeBatchCsvService: CrimeBatchCsvService
   private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
   private lateinit var crimeBatchService: CrimeBatchService
+  private lateinit var emailNotificationService: EmailNotificationService
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
   private val validator: Validator = Validation.buildDefaultValidatorFactory().validator
@@ -46,7 +47,8 @@ class EmailListenerTest {
     crimeBatchCsvService = CrimeBatchCsvService(validator)
     crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService)
+    emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService)
   }
 
   @Nested
