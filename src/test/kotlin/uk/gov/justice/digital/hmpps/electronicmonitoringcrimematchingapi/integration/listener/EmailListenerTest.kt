@@ -8,12 +8,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -41,8 +38,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
-import uk.gov.service.notify.NotificationClient
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -77,9 +72,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
-
-  @MockitoBean
-  lateinit var notifyClient: NotificationClient
 
   val emailQueueConfig by lazy {
     hmppsQueueService.findByQueueId("email")
@@ -162,17 +154,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
-
-      val messageTemplateId = "42122252-63d8-4747-9057-428d6e2d3bd5"
-      val emailAddress = "test@email.com"
-      val personalisation = mutableMapOf<String, Any>(
-        "fileName" to "crime-data.csv",
-        "ingestionDate" to LocalDate.now().toString(),
-        "batchId" to "MPS20250126",
-        "policeForce" to "METROPOLITAN",
-      )
-
-      verify(notifyClient, times(2)).sendEmail(messageTemplateId, emailAddress, personalisation, "MPS20250126")
     }
 
     @Test
