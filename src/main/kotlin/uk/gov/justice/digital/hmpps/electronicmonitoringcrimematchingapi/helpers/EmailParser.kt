@@ -14,6 +14,8 @@ fun extractEmailData(emailFile: InputStream): EmailData {
 
   val subject = parser.subject
   val sender = parser.from
+  // Placeholder until we're receiving forwarded emails
+  val originalSender = parser.mimeMessage.getHeader("Resent-From", ", ") ?: sender
   val sentAt = parser.mimeMessage.sentDate
 
   val attachment = parser.attachmentList
@@ -22,7 +24,7 @@ fun extractEmailData(emailFile: InputStream): EmailData {
 
   return EmailData(
     sender,
-    "placeholder",
+    originalSender,
     subject,
     sentAt,
     attachment,

@@ -23,7 +23,7 @@ class CrimeBatchService(
 ) {
 
   @Transactional
-  fun createCrimeBatch(records: List<CrimeRecordDto>, crimeBatchEmailAttachment: CrimeBatchEmailAttachment) {
+  fun createCrimeBatch(records: List<CrimeRecordDto>, crimeBatchEmailAttachment: CrimeBatchEmailAttachment): CrimeBatch {
     // Create a new batch
     val crimeBatch = CrimeBatch(
       batchId = records.first().batchId,
@@ -56,6 +56,8 @@ class CrimeBatchService(
     crimeBatchRepository.save(crimeBatch)
 
     matchingNotificationService.publishMatchingRequest(crimeBatch.id.toString())
+
+    return crimeBatch
   }
 
   fun getCrimeBatch(id: String): CrimeBatch {

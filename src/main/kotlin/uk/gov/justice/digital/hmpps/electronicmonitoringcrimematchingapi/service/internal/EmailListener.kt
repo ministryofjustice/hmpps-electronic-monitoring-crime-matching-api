@@ -20,6 +20,7 @@ class EmailListener(
   private val crimeBatchCsvService: CrimeBatchCsvService,
   private val crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService,
   private val crimeBatchService: CrimeBatchService,
+  private val emailNotificationService: EmailNotificationService,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -59,7 +60,16 @@ class EmailListener(
 
       crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt)
 
-      crimeBatchService.createCrimeBatch(parseResult.records, crimeBatchEmailAttachment)
+      val crimeBatch = crimeBatchService.createCrimeBatch(parseResult.records, crimeBatchEmailAttachment)
+
+      if (parseResult.errors.isEmpty() && parseResult.records.isNotEmpty()) {
+        val policeForce = parseResult.records.first().policeForce
+        emailNotificationService.sendSuccessfulIngestionEmail(
+          crimeBatch.batchId,
+          policeForce,
+          emailData,
+        )
+      }
     } catch (e: Exception) {
       throw ValidationException("Failed to process email: ${e.message}")
     }
