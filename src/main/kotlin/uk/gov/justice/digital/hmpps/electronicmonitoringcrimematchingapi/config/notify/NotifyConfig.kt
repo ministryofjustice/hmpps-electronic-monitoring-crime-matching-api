@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -10,8 +9,8 @@ import uk.gov.service.notify.NotificationClient
 @EnableConfigurationProperties(
   NotifyProperties::class,
 )
-class NotifyConfig(@Value("\${notify.apikey}") private val apiKey: String) {
+class NotifyConfig(private val properties: NotifyProperties) {
 
   @Bean
-  fun notifyClient(): NotificationClient = NotificationClient(apiKey)
+  fun notifyClient(): NotificationClient = NotificationClient(properties.apikey)
 }

@@ -13,14 +13,19 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
@@ -28,6 +33,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
+import kotlin.io.encoding.Base64
 
 @ActiveProfiles("test")
 class EmailListenerTest {
@@ -68,9 +74,15 @@ class EmailListenerTest {
       """.trimIndent()
       val messageId = UUID.randomUUID()
       val sqsMessage = SqsMessage("Notification", message, messageId)
+
+      val csvContent = listOf(
+        createCsvRow(),
+      ).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
-        createEmailFile("").byteInputStream(),
+        createEmailFile(encoded).byteInputStream(),
       )
 
       val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
@@ -81,6 +93,33 @@ class EmailListenerTest {
       whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
       whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
         crimeBatchIngestionAttempt,
+      )
+
+      val crimeBatchEmail = CrimeBatchEmail(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+      )
+
+      val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+        crimeBatchEmail = crimeBatchEmail,
+        fileName = "filename",
+        rowCount = 1,
+      )
+
+      val crimeBatch = CrimeBatch(
+        batchId = "batchId",
+        crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any())).thenReturn(
+        crimeBatchEmailAttachment,
+      )
+
+      whenever(crimeBatchService.createCrimeBatch(any(), any())).thenReturn(
+        crimeBatch,
       )
 
       whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
@@ -94,6 +133,7 @@ class EmailListenerTest {
       )
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
+      verify(emailNotificationService, times(1)).sendSuccessfulIngestionEmail(any(), any(), any())
     }
 
     @Test
