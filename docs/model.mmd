@@ -13,6 +13,7 @@ erDiagram
     CRIME-BATCH-INGESTION-ATTEMPT 1 to 1 CRIME-BATCH-EMAIL : "has 1 email"
     CRIME-BATCH-EMAIL 1 to 0+ CRIME-BATCH-EMAIL-ATTACHMENT : "has 0 or more attachments"
     CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or more CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ERROR : "has 0 or more ingestion errors"
+    CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or more CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ROW-ERROR : "has 0 or more row errors"
 
     %% Matching
     CRIME-MATCHING-RESULT 1 to 0+ CRIME-MATCHING-RESULT-DEVICE-WEARER : "has 0 or more matched device wearers"
@@ -56,6 +57,12 @@ erDiagram
     }
 
     CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ERROR {
+        uuid id pk
+        uuid crime-batch-email-attachment-id fk
+        string errorType
+    }
+
+CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ROW-ERROR {
         uuid id pk
         uuid crime-batch-email-attachment-id fk
         int rowNumber

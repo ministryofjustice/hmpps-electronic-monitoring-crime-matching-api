@@ -44,9 +44,9 @@ CREATE TABLE crime_batch_email_attachment
 
 CREATE TABLE crime_batch_email_attachment_ingestion_error
 (
-    id                              UUID    NOT NULL,
-    crime_batch_email_attachment_id UUID    NOT NULL,
-    row_number                      INTEGER NOT NULL,
+    id                              UUID   NOT NULL,
+    crime_batch_email_attachment_id UUID   NOT NULL,
+    row_number                      BIGINT NOT NULL,
     crime_reference                 VARCHAR(255),
     error_type                      VARCHAR(255),
     CONSTRAINT pk_crime_batch_email_attachment_ingestion_error PRIMARY KEY (id)
