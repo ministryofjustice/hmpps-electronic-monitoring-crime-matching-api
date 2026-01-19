@@ -1,7 +1,7 @@
 ---
 title: Crime Matching
 ---
-erDiagram 
+erDiagram
     %% Domain
     CRIME 1 to 1+ CRIME-VERSION : "has 1 or more versions"
     CRIME-VERSION 1 to 0+ CRIME-MATCHING-RESULT : "has 0 or more matching results"
@@ -15,8 +15,9 @@ erDiagram
     CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or more CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ERROR : "has 0 or more ingestion errors"
 
     %% Matching
+    CRIME-BATCH 1 to 0+ CRIME-MATCHING-RUN : "has 0 or more matching runs"
+    CRIME-MATCHING-RUN 1 to 1+ CRIME-MATCHING-RESULT : "produces 1 or more matching results"
     CRIME-MATCHING-RESULT 1 to 0+ CRIME-MATCHING-RESULT-DEVICE-WEARER : "has 0 or more matched device wearers"
-    CRIME-MATCHING-RESULT 1 to 1+ CRIME-MATCHING-RESULT-PARAMETERS : "has 1 or more matching parameters"
     CRIME-MATCHING-RESULT-DEVICE-WEARER 1 to 1+ CRIME-MATCHING-RESULT-POSITION : "has 2 or more positions"
 
     CRIME-BATCH {
@@ -83,17 +84,22 @@ erDiagram
         datetime created-at
     }
 
+    CRIME-MATCHING-RUN {
+        uuid id pk
+        uuid crime-batch-id fk
+        string algorithm-version
+        string trigger-type
+        string status
+        datetime created-at
+        datetime matching-started
+        datetime matching-ended
+    }
+
     CRIME-MATCHING-RESULT {
         uuid id pk
         uuid crime-version-id fk
+        uuid crime-matching-run-id fk
         datetime created-at
-    }
-
-    CRIME-MATCHING-RESULT-PARAMETERS {
-        uuid id pk
-        uuid crime-matching-result-id fk, uk "composite unique constraint"
-        string key uk "composite unique constraint"
-        string value
     }
 
     CRIME-MATCHING-RESULT-DEVICE-WEARER {
@@ -105,9 +111,10 @@ erDiagram
 
     CRIME-MATCHING-RESULT-POSITION {
         uuid id pk
-        uuid crime-matching-result-device-wearer fk
+        uuid crime-matching-result-device-wearer-id fk
         double latitude
         double longitude
         datetime timestamp
-        string sequenceNumber
+        string sequenceLabel
+        int confidenceCircle
     }
