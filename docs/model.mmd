@@ -18,7 +18,6 @@ erDiagram
     CRIME-BATCH 1 to 0+ CRIME-MATCHING-RUN : "has 0 or more matching runs"
     CRIME-MATCHING-RUN 1 to 1+ CRIME-MATCHING-RESULT : "produces 1 or more matching results"
     CRIME-MATCHING-RESULT 1 to 0+ CRIME-MATCHING-RESULT-DEVICE-WEARER : "has 0 or more matched device wearers"
-    CRIME-MATCHING-RESULT 1 to 1+ CRIME-MATCHING-RESULT-PARAMETERS : "has 1 or more matching parameters"
     CRIME-MATCHING-RESULT-DEVICE-WEARER 1 to 1+ CRIME-MATCHING-RESULT-POSITION : "has 2 or more positions"
 
     CRIME-BATCH {
@@ -103,13 +102,6 @@ erDiagram
         datetime created-at
     }
 
-    CRIME-MATCHING-RESULT-PARAMETERS {
-        uuid id pk
-        uuid crime-matching-result-id fk, uk "composite unique constraint"
-        string key uk "composite unique constraint"
-        string value
-    }
-
     CRIME-MATCHING-RESULT-DEVICE-WEARER {
         uuid id pk
         uuid crime-matching-result-id fk
@@ -124,4 +116,5 @@ erDiagram
         double longitude
         datetime timestamp
         string sequenceLabel
+        int confidenceCircle
     }
