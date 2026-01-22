@@ -43,4 +43,4 @@ data class CrimeMatchingRun(
 
   @OneToMany(mappedBy = "crimeMatchingRun", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   val results: MutableList<CrimeMatchingResult> = mutableListOf(),
-  )
+)
