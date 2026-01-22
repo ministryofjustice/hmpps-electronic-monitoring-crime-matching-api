@@ -97,17 +97,17 @@ erDiagram
 
     CRIME-MATCHING-RESULT {
         uuid id pk
-        uuid crime-version-id fk
-        uuid crime-matching-run-id fk
+        uuid crime-version-id fk, uk "composite unique constraint"
+        uuid crime-matching-run-id fk, uk "composite unique constraint"
         datetime created-at
     }
 
     CRIME-MATCHING-RESULT-DEVICE-WEARER {
         uuid id pk
-        uuid crime-matching-result-id fk
+        uuid crime-matching-result-id fk, uk "composite unique constraint"
         string name
         string nomisid
-        long deviceId
+        long deviceId uk "composite unique constraint"
     }
 
     CRIME-MATCHING-RESULT-POSITION {
