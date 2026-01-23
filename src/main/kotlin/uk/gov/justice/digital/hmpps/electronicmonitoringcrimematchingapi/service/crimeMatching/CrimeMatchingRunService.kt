@@ -3,15 +3,15 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingRunDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDeviceWearerDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultPositionDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingRunDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingRun
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultDeviceWearer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultPosition
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingRun
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
@@ -59,13 +59,11 @@ class CrimeMatchingRunService(
     }
   }
 
-  private fun findCrimeBatch(id: UUID): CrimeBatch =
-    crimeBatchRepository.findById(id)
-      .orElseThrow { EntityNotFoundException("No crime batch found with id: $id") }
+  private fun findCrimeBatch(id: UUID): CrimeBatch = crimeBatchRepository.findById(id)
+    .orElseThrow { EntityNotFoundException("No crime batch found with id: $id") }
 
-  private fun findCrimeVersion(id: UUID): CrimeVersion =
-    crimeVersionRepository.findById(id)
-      .orElseThrow { EntityNotFoundException("No crime version found with id: $id") }
+  private fun findCrimeVersion(id: UUID): CrimeVersion = crimeVersionRepository.findById(id)
+    .orElseThrow { EntityNotFoundException("No crime version found with id: $id") }
 
   private fun createResult(run: CrimeMatchingRun, crimeVersion: CrimeVersion, resultDto: CrimeMatchingResultDto): CrimeMatchingResult {
     val result = CrimeMatchingResult(
@@ -98,13 +96,12 @@ class CrimeMatchingRunService(
     return wearer
   }
 
-  private fun createPosition(wearer: CrimeMatchingResultDeviceWearer, positionDto: CrimeMatchingResultPositionDto): CrimeMatchingResultPosition =
-    CrimeMatchingResultPosition(
-      crimeMatchingResultDeviceWearer = wearer,
-      latitude = positionDto.latitude,
-      longitude = positionDto.longitude,
-      capturedDateTime = positionDto.capturedDateTime,
-      sequenceLabel = positionDto.sequenceLabel,
-      confidenceCircle = positionDto.confidenceCircle,
-    )
+  private fun createPosition(wearer: CrimeMatchingResultDeviceWearer, positionDto: CrimeMatchingResultPositionDto): CrimeMatchingResultPosition = CrimeMatchingResultPosition(
+    crimeMatchingResultDeviceWearer = wearer,
+    latitude = positionDto.latitude,
+    longitude = positionDto.longitude,
+    capturedDateTime = positionDto.capturedDateTime,
+    sequenceLabel = positionDto.sequenceLabel,
+    confidenceCircle = positionDto.confidenceCircle,
+  )
 }
