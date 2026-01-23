@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -14,7 +15,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Res
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeMatching.CrimeMatchingRunService
 
 @RestController
-// TODO: Create role for this - @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW')")
+@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW')")
 @RequestMapping("/crime-matching-run", produces = ["application/json"])
 class CrimeMatchingRunController(
   private val crimeMatchingRunService: CrimeMatchingRunService,
