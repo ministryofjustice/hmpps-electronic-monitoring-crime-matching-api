@@ -12,10 +12,10 @@ data class DeviceActivation(
 
   val personId: Long,
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss[.[SSSSSS][SSS]]")
   val deviceActivationDate: LocalDateTime,
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss[.[SSSSSS][SSS]]")
   val deviceDeactivationDate: LocalDateTime?,
 
   val orderStart: String = "",
