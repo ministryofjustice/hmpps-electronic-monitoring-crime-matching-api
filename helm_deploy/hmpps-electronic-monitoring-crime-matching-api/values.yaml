@@ -28,9 +28,9 @@ generic-service:
   namespace_secrets:
     hmpps-electronic-monitoring-crime-matching-api-application-insights:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
-    hmpps-electronic-monitoring-crime-matching-client-credentials:
-      CLIENT_ID: "CLIENT_ID"
-      CLIENT_SECRET: "CLIENT_SECRET"
+    hmpps-electronic-monitoring-crime-matching-api-client-creds:
+      CLIENT_ID: "API_CLIENT_ID"
+      CLIENT_SECRET: "API_CLIENT_SECRET"
     sqs-hmpps-audit-secret:
       HMPPS_SQS_QUEUES_AUDIT_QUEUEARN: "sqs_queue_arn"
       HMPPS_SQS_QUEUES_AUDIT_QUEUENAME: "sqs_queue_name"
