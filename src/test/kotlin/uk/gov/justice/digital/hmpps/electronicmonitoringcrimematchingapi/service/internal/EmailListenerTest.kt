@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import jakarta.validation.Validation
 import jakarta.validation.ValidationException
 import jakarta.validation.Validator
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -90,6 +91,25 @@ class EmailListenerTest {
         objectName = "email-file",
       )
 
+      val crimeBatchEmail = CrimeBatchEmail(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+      )
+
+      crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
+
+      val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+        crimeBatchEmail = crimeBatchEmail,
+        crimeBatchEmailAttachmentIngestionErrors = mutableListOf(),
+        fileName = "fileName",
+        rowCount = 2,
+      )
+
+      crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
+
       whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
       whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
         crimeBatchIngestionAttempt,
@@ -123,13 +143,11 @@ class EmailListenerTest {
       )
 
       whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
-        CrimeBatchEmail(
-          crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-          sender = "sender",
-          originalSender = "originalSender",
-          subject = "subject",
-          sentAt = Date.from(Instant.now()),
-        ),
+        crimeBatchEmail,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any())).thenReturn(
+        crimeBatchEmailAttachment,
       )
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
@@ -166,17 +184,20 @@ class EmailListenerTest {
           }
         }
       """.trimIndent()
-      val sqsMessage = SqsMessage("Notification", message, UUID.randomUUID())
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
         createEmailFileWithoutAttachment().byteInputStream(),
       )
 
-      whenever(s3Service.getObject("messageId", "email-file-no-attachment", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId.toString(), "email-file-no-attachment", "emails")).thenReturn(responseStream)
 
-      assertThrows<ValidationException> {
+      val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
+
+      assertEquals("Failed to process email: No CSV attachment found in email", exception.message)
     }
   }
 }

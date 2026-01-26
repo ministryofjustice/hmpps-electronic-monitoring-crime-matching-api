@@ -9,11 +9,15 @@ import jakarta.persistence.Table
 import java.util.UUID
 
 @Entity
-@Table(name = "crime_batch_email_attachment_ingestion_error")
-class CrimeBatchEmailAttachmentIngestionError(
+@Table(name = "crime_batch_email_attachment_ingestion_row_error")
+class CrimeBatchEmailAttachmentIngestionRowError(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
+
+  val rowNumber: Long,
+
+  val crimeReference: String?,
 
   val errorType: String,
 
