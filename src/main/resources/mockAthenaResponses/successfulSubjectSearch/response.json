@@ -179,7 +179,7 @@
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "2022-03-20 00:00:00.000"
+            "VarCharValue": "2022-03-20 00:00:00.000000"
           },
           {
             "VarCharValue": ""
@@ -188,10 +188,10 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "2022-03-20 00:00:00.000"
+            "VarCharValue": "2022-03-20 00:00:00.000000"
           },
           {
-            "VarCharValue": "2024-03-20 00:00:00.000"
+            "VarCharValue": "2024-03-20 00:00:00.000000"
           }
         ]
       },
@@ -213,7 +213,7 @@
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "2023-05-01 00:00:00.000"
+            "VarCharValue": "2023-05-01 00:00:00.000000"
           },
           {
             "VarCharValue": ""
@@ -222,10 +222,10 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "2022-03-20 00:00:00.000"
+            "VarCharValue": "2022-03-20 00:00:00.000000"
           },
           {
-            "VarCharValue": "2024-03-20 00:00:00.000"
+            "VarCharValue": "2024-03-20 00:00:00.000000"
           }
         ]
       },
@@ -247,7 +247,7 @@
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "2021-07-07 00:00:00.000"
+            "VarCharValue": "2021-07-07 00:00:00.000000"
           },
           {
             "VarCharValue": ""
@@ -256,7 +256,7 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "2023-12-04 00:00:00.000"
+            "VarCharValue": "2023-12-04 00:00:00.000000"
           },
           {
             "VarCharValue": ""
@@ -281,7 +281,7 @@
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "2021-03-17 00:00:00.000"
+            "VarCharValue": "2021-03-17 00:00:00.000000"
           },
           {
             "VarCharValue": ""
@@ -290,10 +290,10 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "2022-03-17 00:00:00.000"
+            "VarCharValue": "2022-03-17 00:00:00.000000"
           },
           {
-            "VarCharValue": "2023-03-17 00:00:00.000"
+            "VarCharValue": "2023-03-17 00:00:00.000000"
           }
         ]
       },
@@ -315,7 +315,7 @@
             "VarCharValue": "address"
           },
           {
-            "VarCharValue": "2021-05-18 00:00:00.000"
+            "VarCharValue": "2021-05-18 00:00:00.000000"
           },
           {
             "VarCharValue": ""
@@ -324,7 +324,7 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "2023-05-18 00:00:00.000"
+            "VarCharValue": "2023-05-18 00:00:00.000000"
           },
           {
             "VarCharValue": ""

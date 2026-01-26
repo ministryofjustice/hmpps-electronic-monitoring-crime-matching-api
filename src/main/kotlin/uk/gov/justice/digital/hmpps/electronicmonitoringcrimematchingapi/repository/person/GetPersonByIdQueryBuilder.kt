@@ -27,12 +27,12 @@ class GetPersonByIdQueryBuilder : SqlQueryBuilder {
       )
       .addJoin(
         "${datastoreProperties.fmsDatabase}.csm_consumer csm",
-        "pdw.consumer__value = csm.sys_id",
+        "pdw.consumer = csm.sys_id",
         JoinType.LEFT,
       )
       .addJoin(
         "${datastoreProperties.fmsDatabase}.x_serg2_ems_csm_profile_sensitive pdws",
-        "csm.sys_id = pdws.consumer__value",
+        "csm.sys_id = pdws.consumer",
         JoinType.LEFT,
       )
       .addFilter("p.person_id", id)
