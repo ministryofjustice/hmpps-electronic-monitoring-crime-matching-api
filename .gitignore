@@ -77,3 +77,6 @@ localstack/
 
 ## env files
 .env
+
+## macOS system files
+.DS_Store 
