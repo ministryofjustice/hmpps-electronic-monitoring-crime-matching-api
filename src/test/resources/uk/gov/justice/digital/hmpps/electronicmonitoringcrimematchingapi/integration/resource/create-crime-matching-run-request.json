@@ -15,15 +15,15 @@
           "nomisId": "A5128CZ",
           "positions": [
             {
-              "latitude": 51.5014,
-              "longitude": -0.1419,
+              "latitude": 51.574865,
+              "longitude": 0.060977,
               "capturedDateTime": "2026-01-16T08:12:03",
               "sequenceLabel": "A1",
               "confidenceCircle": 30
             },
             {
-              "latitude": 51.5015,
-              "longitude": -0.142,
+              "latitude": 51.574153,
+              "longitude": 0.058536,
               "capturedDateTime": "2026-01-16T08:13:03",
               "sequenceLabel": "A2",
               "confidenceCircle": 52
