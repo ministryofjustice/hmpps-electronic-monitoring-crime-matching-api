@@ -1,0 +1,14 @@
+{
+  "crimeBatchId": "00000000-0000-0000-0000-000000000001",
+  "algorithmVersion": "e83c5163316f89bfbde7d9ab23ca2e25604af290",
+  "triggerType": "AUTO",
+  "status": "SUCCESS",
+  "matchingStarted": "2026-01-16T08:30:00",
+  "matchingEnded": "2026-01-16T08:31:10",
+  "results": [
+    {
+      "crimeVersionId": "352a9a57-337f-4208-908b-2874b75fa10e",
+      "deviceWearers": []
+    }
+  ]
+}
