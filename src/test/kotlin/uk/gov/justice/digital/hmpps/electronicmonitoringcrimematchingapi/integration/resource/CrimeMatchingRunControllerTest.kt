@@ -5,8 +5,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
@@ -59,7 +59,7 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         .isUnauthorized
     }
 
-   @Test
+    @Test
     fun `it should return a 403 if the client does not have a valid role`() {
       webTestClient.post()
         .uri("/crime-matching-run")
