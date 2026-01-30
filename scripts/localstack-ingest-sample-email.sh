@@ -47,17 +47,17 @@ QUEUE_URL=$(awslocal sqs get-queue-url \
   --query QueueUrl \
   --output text)
 
-echo "Clearing ALL data from public schema tables in Postgres..."
+echo "Clearing application data from public schema tables in Postgres (keeping Flyway history)..."
 docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DO $$
 DECLARE
   r RECORD;
 BEGIN
-  -- truncate every table in public; CASCADE handles FKs
   FOR r IN (
     SELECT tablename
     FROM pg_tables
     WHERE schemaname = 'public'
+      AND tablename <> 'flyway_schema_history'
   )
   LOOP
     EXECUTE 'TRUNCATE TABLE public.' || quote_ident(r.tablename) || ' CASCADE';

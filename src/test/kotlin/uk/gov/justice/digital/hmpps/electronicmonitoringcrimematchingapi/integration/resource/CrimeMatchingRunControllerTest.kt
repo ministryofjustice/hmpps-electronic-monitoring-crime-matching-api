@@ -168,7 +168,7 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
     )
 
     val crimeVersionId = UUID.fromString("252a9a57-337f-4208-908b-2874b75fa10f")
-    val version = crimeVersionRepository.save(
+    crimeVersionRepository.save(
       CrimeVersion(
         id = crimeVersionId,
         crime = crime,
@@ -183,7 +183,6 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
       ),
     )
 
-    crimeBatch.crimeVersions.add(version)
     crimeBatchRepository.save(crimeBatch)
 
     return Pair(crimeBatchId, crimeVersionId)
