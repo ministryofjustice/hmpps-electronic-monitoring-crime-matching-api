@@ -107,7 +107,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1."),
+      listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1."),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -250,7 +250,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, WEST_MIDLANDS but was 'invalid police force' on row 1.",
+        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.",
         "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
         "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
@@ -326,6 +326,7 @@ class CrimeBatchCsvServiceTest {
       Arguments.of("METROPOLITAN", PoliceForce.METROPOLITAN),
       Arguments.of("NORTH_WALES", PoliceForce.NORTH_WALES),
       Arguments.of("NOTTINGHAMSHIRE", PoliceForce.NOTTINGHAMSHIRE),
+      Arguments.of("SUSSEX", PoliceForce.SUSSEX),
       Arguments.of("WEST_MIDLANDS", PoliceForce.WEST_MIDLANDS),
     )
 

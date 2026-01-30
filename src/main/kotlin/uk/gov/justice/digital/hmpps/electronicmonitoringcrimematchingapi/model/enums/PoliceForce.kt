@@ -18,6 +18,7 @@ enum class PoliceForce(val value: String) {
   METROPOLITAN("Metropolitan"),
   NORTH_WALES("North Wales"),
   NOTTINGHAMSHIRE("Nottinghamshire"),
+  SUSSEX("Sussex"),
   WEST_MIDLANDS("West Midlands"),
   ;
 
