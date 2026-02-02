@@ -54,6 +54,12 @@ QUEUE_URL=$(awslocal sqs get-queue-url \
 
 echo "Queue URL: $QUEUE_URL"
 
+echo "Queue info BEFORE send:"
+awslocal sqs get-queue-attributes \
+  --queue-url "$QUEUE_URL" \
+  --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+  --output json
+
 echo "Clearing application data from public schema tables in Postgres (keeping Flyway history)..."
 docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DO $$
@@ -84,8 +90,20 @@ awslocal sqs send-message \
     \"Message\": \"{\\\"notificationType\\\":\\\"Received\\\",\\\"receipt\\\":{\\\"action\\\":{\\\"type\\\":\\\"S3\\\",\\\"bucketName\\\":\\\"$BUCKET\\\",\\\"objectKeyPrefix\\\":\\\"\\\",\\\"objectKey\\\":\\\"$S3_KEY\\\"}}}\"
   }"
 
+echo "Queue info AFTER send:"
+awslocal sqs get-queue-attributes \
+  --queue-url "$QUEUE_URL" \
+  --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+  --output json
+
 echo "Waiting briefly for ingestion to complete..."
 sleep 1
+
+echo "Queue info AFTER wait:"
+awslocal sqs get-queue-attributes \
+  --queue-url "$QUEUE_URL" \
+  --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+  --output json
 
 echo "Fetching IDs from Postgres to be used in Postman API requests..."
 CRIME_BATCH_UUID=$(docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -t -A -c \
