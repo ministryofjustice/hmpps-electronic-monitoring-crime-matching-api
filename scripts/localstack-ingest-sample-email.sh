@@ -13,6 +13,9 @@ DB_CONTAINER="query-db"
 DB_USER="postgres"
 DB_NAME="postgres"
 
+export AWS_REGION="$REGION"
+export AWS_DEFAULT_REGION="$REGION"
+
 if [ ! -f "$EMAIL_FILE" ]; then
   echo "Sample Email file not found: $EMAIL_FILE" >&2
   exit 1
