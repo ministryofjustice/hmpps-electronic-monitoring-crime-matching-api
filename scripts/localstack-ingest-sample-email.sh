@@ -13,6 +13,9 @@ DB_CONTAINER="query-db"
 DB_USER="postgres"
 DB_NAME="postgres"
 
+export AWS_REGION="$REGION"
+export AWS_DEFAULT_REGION="$REGION"
+
 if [ ! -f "$EMAIL_FILE" ]; then
   echo "Sample Email file not found: $EMAIL_FILE" >&2
   exit 1
@@ -28,17 +31,22 @@ echo "Checking Localstack is reachable..."
 curl -fsS "$LOCALSTACK_ENDPOINT/_localstack/health" >/dev/null
 
 echo "Ensuring S3 bucket exists: $BUCKET"
-if ! awslocal s3api head-bucket --bucket "$BUCKET" >/dev/null 2>/dev/null; then
+if ! awslocal s3api head-bucket --bucket "$BUCKET" >/dev/null 2>&1; then
+  echo "Bucket not found — creating..."
   awslocal s3api create-bucket \
     --bucket "$BUCKET" \
     --region "$REGION" \
-    --create-bucket-configuration "{\"LocationConstraint\": \"$REGION\"}" \
-    >/dev/null
+    --create-bucket-configuration "{\"LocationConstraint\": \"$REGION\"}"
+else
+  echo "Bucket already exists"
 fi
 
 echo "Ensuring SQS queue exists: $QUEUE_NAME"
-if ! awslocal sqs get-queue-url --queue-name "$QUEUE_NAME" >/dev/null 2>/dev/null; then
-  awslocal sqs create-queue --queue-name "$QUEUE_NAME" >/dev/null
+if ! awslocal sqs get-queue-url --queue-name "$QUEUE_NAME" >/dev/null 2>&1; then
+  echo "Queue not found — creating..."
+  awslocal sqs create-queue --queue-name "$QUEUE_NAME"
+else
+  echo "Queue already exists"
 fi
 
 echo "Resolving SQS queue URL..."
@@ -46,6 +54,14 @@ QUEUE_URL=$(awslocal sqs get-queue-url \
   --queue-name "$QUEUE_NAME" \
   --query QueueUrl \
   --output text)
+
+echo "Queue URL: $QUEUE_URL"
+
+echo "Queue info BEFORE send:"
+awslocal sqs get-queue-attributes \
+  --queue-url "$QUEUE_URL" \
+  --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+  --output json
 
 echo "Clearing application data from public schema tables in Postgres (keeping Flyway history)..."
 docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
@@ -66,7 +82,7 @@ END $$;
 SQL
 
 echo "Uploading sample email to S3: s3://$BUCKET/$S3_KEY"
-awslocal s3 cp "$EMAIL_FILE" "s3://$BUCKET/$S3_KEY" >/dev/null
+awslocal s3 cp "$EMAIL_FILE" "s3://$BUCKET/$S3_KEY"
 
 echo "Sending SQS message to trigger ingestion..."
 awslocal sqs send-message \
@@ -75,10 +91,22 @@ awslocal sqs send-message \
     \"Type\": \"Notification\",
     \"MessageId\": \"$(uuidgen)\",
     \"Message\": \"{\\\"notificationType\\\":\\\"Received\\\",\\\"receipt\\\":{\\\"action\\\":{\\\"type\\\":\\\"S3\\\",\\\"bucketName\\\":\\\"$BUCKET\\\",\\\"objectKeyPrefix\\\":\\\"\\\",\\\"objectKey\\\":\\\"$S3_KEY\\\"}}}\"
-  }" >/dev/null
+  }"
+
+echo "Queue info AFTER send:"
+awslocal sqs get-queue-attributes \
+  --queue-url "$QUEUE_URL" \
+  --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+  --output json
 
 echo "Waiting briefly for ingestion to complete..."
 sleep 1
+
+echo "Queue info AFTER wait:"
+awslocal sqs get-queue-attributes \
+  --queue-url "$QUEUE_URL" \
+  --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+  --output json
 
 echo "Fetching IDs from Postgres to be used in Postman API requests..."
 CRIME_BATCH_UUID=$(docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -t -A -c \
