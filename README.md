@@ -130,5 +130,32 @@ awslocal sns publish \
 }'
 ```
 
+### Using Postman to locally test API requests
+The crime ingestion flow in this service is event-driven. There is no REST endpoint to directly trigger ingestion.
+Instead, ingestion normally happens when:
+1. An email file is stored in S3
+2. An SQS/SNS notification is published
+3. The EmailListener consumes the message and processes the CSV attachment
+
+Several downstream APIs (for example POST /crime-matching-run) require existing fields of populated ingestion tables, e.g.
+- `crime_batch.id`
+- `crime_version.id`
+
+To make local development easier, this repository provides a helper script that:
+- clears existing local DB data
+- uploads a sample .eml file to Localstack S3
+- sends an SQS notification message
+- waits for ingestion to complete
+- prints the generated IDs for reuse in Postman / API tests
+
+The script can be found here 
+```text
+scripts/localstack-ingest-sample-email.sh
+```
+It needs `awscli-local` installed and can be run from the repo root with 
+```text
+bash scripts/localstack-ingest-sample-email.sh
+```
+
 ### Code coverage
 This project has Jacoco integrated and this will run after each test run. The generated report can be found [here](build/reports/jacoco/test/html/index.html) and can be opened in your browser.
