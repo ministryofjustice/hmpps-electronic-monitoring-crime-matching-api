@@ -68,6 +68,7 @@ class EmailListener(
           crimeBatch.batchId,
           policeForce,
           emailData,
+          parseResult.records,
         )
       }
     } catch (e: Exception) {

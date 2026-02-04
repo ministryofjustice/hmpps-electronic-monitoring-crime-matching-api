@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
+import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -34,7 +37,6 @@ class EmailNotificationServiceTest {
   @Test
   fun `it should send a successful ingestion email when notify is enabled`() {
     whenever(notifyProperties.enabled).thenReturn(true)
-
     val attachment = ByteArrayDataSource("data", "message/rfc822")
     attachment.name = "attachment.csv"
 
@@ -46,14 +48,34 @@ class EmailNotificationServiceTest {
       attachment = attachment,
     )
 
-    val personalisation = mutableMapOf<String, Any>(
+    val uploadFile = JSONObject()
+
+    val personalisation = mutableMapOf(
       "fileName" to "attachment.csv",
       "ingestionDate" to LocalDate.now().toString(),
       "batchId" to "batchId",
       "policeForce" to "BEDFORDSHIRE",
+      "linkToFile" to uploadFile,
     )
 
-    assertDoesNotThrow { service.sendSuccessfulIngestionEmail("batchId", PoliceForce.BEDFORDSHIRE, emailData) }
+    mockStatic(NotificationClient::class.java).use { staticMock ->
+      staticMock
+        .`when`<Any> {
+          NotificationClient.prepareUpload(
+            any(),
+            any(),
+          )
+        }
+        .thenReturn(uploadFile)
+
+      service.sendSuccessfulIngestionEmail(
+        "batchId",
+        PoliceForce.BEDFORDSHIRE,
+        emailData,
+        emptyList(),
+      )
+    }
+
     verify(notifyClient, times(1)).sendEmail("templateId", "sender", personalisation, "batchId")
     verify(notifyClient, times(1)).sendEmail("templateId", "originalSender", personalisation, "batchId")
   }
@@ -71,14 +93,14 @@ class EmailNotificationServiceTest {
       attachment = attachment,
     )
 
-    val personalisation = mutableMapOf<String, Any>(
+    val personalisation = mutableMapOf(
       "fileName" to "attachment.csv",
       "ingestionDate" to LocalDate.now().toString(),
       "batchId" to "batchId",
       "policeForce" to "BEDFORDSHIRE",
     )
 
-    assertDoesNotThrow { service.sendSuccessfulIngestionEmail("batchId", PoliceForce.BEDFORDSHIRE, emailData) }
+    assertDoesNotThrow { service.sendSuccessfulIngestionEmail("batchId", PoliceForce.BEDFORDSHIRE, emailData, emptyList()) }
     verify(notifyClient, times(0)).sendEmail("templateId", "sender", personalisation, "batchId")
   }
 }
