@@ -133,7 +133,7 @@ class EmailListenerTest {
       )
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
-      verify(emailNotificationService, times(1)).sendSuccessfulIngestionEmail(any(), any(), any())
+      verify(emailNotificationService, times(1)).sendSuccessfulIngestionEmail(any(), any(), any(), any())
     }
 
     @Test

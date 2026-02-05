@@ -73,7 +73,7 @@ services:
 notify:
   enabled: true
   apikey: ${NOTIFY_API_KEY}
-  successfulIngestionTemplateId: 42122252-63d8-4747-9057-428d6e2d3bd5
+  successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11
 
 aws:
   region: eu-west-2
