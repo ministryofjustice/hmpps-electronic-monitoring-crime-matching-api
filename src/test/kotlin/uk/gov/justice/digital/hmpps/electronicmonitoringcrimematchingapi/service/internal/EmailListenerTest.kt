@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import jakarta.validation.Validation
 import jakarta.validation.ValidationException
 import jakarta.validation.Validator
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -21,6 +22,8 @@ import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileInvalidSubject
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithMultipleAttachments
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
@@ -166,17 +169,73 @@ class EmailListenerTest {
           }
         }
       """.trimIndent()
-      val sqsMessage = SqsMessage("Notification", message, UUID.randomUUID())
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
         createEmailFileWithoutAttachment().byteInputStream(),
       )
 
-      whenever(s3Service.getObject("messageId", "email-file-no-attachment", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId.toString(), "email-file-no-attachment", "emails")).thenReturn(responseStream)
 
-      assertThrows<ValidationException> {
+      val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
+      assertThat(exception.message).isEqualTo("Failed to process email: No CSV attachment found in email")
+    }
+
+    @Test
+    fun `it should throw an exception when the email file contains multiple attachments`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file-multiple-attachments"
+            }
+          }
+        }
+      """.trimIndent()
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFileWithMultipleAttachments().byteInputStream(),
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file-multiple-attachments", "emails")).thenReturn(responseStream)
+
+      val exception = assertThrows<ValidationException> {
+        listener.receiveEmailNotification(sqsMessage)
+      }
+      assertThat(exception.message).isEqualTo("Failed to process email: Multiple CSV attachments found")
+    }
+
+    @Test
+    fun `it should throw an exception when the email file contains has an invalid subject`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file-invalid-subject"
+            }
+          }
+        }
+      """.trimIndent()
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFileInvalidSubject().byteInputStream(),
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-subject", "emails")).thenReturn(responseStream)
+
+      val exception = assertThrows<ValidationException> {
+        listener.receiveEmailNotification(sqsMessage)
+      }
+      assertThat(exception.message).isEqualTo("Failed to process email: Invalid email subject")
     }
   }
 }
