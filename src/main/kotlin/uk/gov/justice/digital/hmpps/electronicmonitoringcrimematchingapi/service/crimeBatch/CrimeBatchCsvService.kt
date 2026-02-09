@@ -122,9 +122,9 @@ class CrimeBatchCsvService(
     if (parsed.value.isNullOrBlank() || (policeForce == null)) return parsed
 
     // Batch id pattern validity
-    val regex = Regex("^${Regex.escape(policeForce.code)}(\\d{8})")
+    val regex = Regex("^${policeForce.code}(\\d{8})")
     val match = regex.find(parsed.value) ?: return FieldValidationResult(
-      errorMessage = "Incorrect Batch ID format on row $recordNumber.",
+      errorMessage = "Invalid Batch ID format on row $recordNumber.",
     )
 
     // Batch id date validity

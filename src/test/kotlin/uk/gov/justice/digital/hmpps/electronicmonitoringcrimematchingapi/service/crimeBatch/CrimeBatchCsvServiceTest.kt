@@ -166,7 +166,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("Incorrect Batch ID format on row 1."),
+      listOf("Invalid Batch ID format on row 1."),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
