@@ -50,7 +50,29 @@ generic-service:
       HMPPS_SQS_TOPICS_MATCHINGNOTIFICATIONSTOPIC_ARN: "topic_arn"
     gov-notify-api:
       NOTIFY_API_KEY: "notify_api_key"
-
+    hmpps-electronic-monitoring-crime-matching-api-mailbox-address:
+      MAILBOX_ADDRESS: "mailbox_address"
+    valid-ingestion-emails:
+      hmpps-electronic-monitoring-crime-matching-api-valid-ingestion-emails:
+        - avon-and-somerset
+        - bedfordshire
+        - cheshire
+        - city-of-london
+        - cumbrian
+        - derbyshire
+        - durham
+        - essex
+        - gloucestershire
+        - gwent
+        - hampshire
+        - hertfordshire
+        - humberside
+        - kent
+        - metropolitan
+        - north-wales
+        - nottinghamshire
+        - sussex
+        - west-midlands
 
   allowlist:
     groups:
