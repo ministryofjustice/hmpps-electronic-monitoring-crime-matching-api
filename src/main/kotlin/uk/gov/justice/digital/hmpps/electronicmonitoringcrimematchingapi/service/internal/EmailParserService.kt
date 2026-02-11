@@ -26,21 +26,9 @@ class EmailParserService(
     val redirectAddress = parser.mimeMessage.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
     val sentAt = parser.mimeMessage.sentDate
 
-    if (!parser.subject.equals(
-        "Crime Mapping Request",
-        ignoreCase = true,
-      )
-    ) {
-      throw ValidationException("Invalid email subject")
-    }
+    if (!parser.subject.equals("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
 
-    if (!redirectAddress.contains(
-        properties.mailboxAddress,
-        ignoreCase = true,
-      )
-    ) {
-      throw ValidationException("Invalid redirect email")
-    }
+    if (!redirectAddress.contains(properties.mailboxAddress, ignoreCase = true)) throw ValidationException("Invalid redirect email")
 
     if (!properties.validEmails.values.contains(sender.lowercase())) throw ValidationException("Invalid sender email")
 
