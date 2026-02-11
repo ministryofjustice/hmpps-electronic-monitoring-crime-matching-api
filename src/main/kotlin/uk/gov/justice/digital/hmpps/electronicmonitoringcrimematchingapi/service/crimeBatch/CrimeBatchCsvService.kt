@@ -15,8 +15,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.v
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.ValidationResult
 import java.io.InputStream
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 private const val CRIME_DATE_WINDOW_HOURS = 12
 
@@ -59,7 +61,7 @@ class CrimeBatchCsvService(
 
     val policeForce = parseEnumValue<PoliceForce>(record.recordNumber, "policeForce", record.policeForce())
     val crimeTypeId = parseEnumValue<CrimeType>(record.recordNumber, "crimeType", record.crimeTypeId())
-    val batchId = parseStringValue(record.recordNumber, "batchId", record.batchId().trim())
+    val batchId = parseBatchId(record.recordNumber, record.batchId().trim(), policeForce.value)
     val crimeReference = parseStringValue(record.recordNumber, "crimeReference", record.crimeReference().trim())
     val crimeDateFrom = parseDateValue(record.recordNumber, "dateFrom", record.crimeDateTimeFrom())
     val crimeDateTo = parseCrimeDateTo(record.recordNumber, record.crimeDateTimeTo(), crimeDateFrom)
@@ -73,6 +75,7 @@ class CrimeBatchCsvService(
     val errors = listOf(
       policeForce,
       crimeTypeId,
+      batchId,
       crimeReference,
       crimeDateFrom,
       crimeDateTo,
@@ -110,6 +113,31 @@ class CrimeBatchCsvService(
     }
 
     return ValidationResult.Success(crimeRecordDto)
+  }
+
+  private fun parseBatchId(recordNumber: Long, value: String, policeForce: PoliceForce?): FieldValidationResult<String> {
+    // String validity
+    val parsed = parseStringValue(recordNumber, "batchId", value)
+
+    if (parsed.value.isNullOrBlank() || (policeForce == null)) return parsed
+
+    // Batch id pattern validity
+    val regex = Regex("^${policeForce.code}(\\d{8})")
+    val match = regex.find(parsed.value) ?: return FieldValidationResult(
+      errorMessage = "Invalid Batch ID format on row $recordNumber.",
+    )
+
+    // Batch id date validity
+    val batchIdDate = match.groupValues[1]
+
+    try {
+      LocalDate.parse(batchIdDate, DateTimeFormatter.BASIC_ISO_DATE)
+      return parsed
+    } catch (e: DateTimeParseException) {
+      return FieldValidationResult(
+        errorMessage = "Invalid date in Batch ID on row $recordNumber.",
+      )
+    }
   }
 
   private fun parseStringValue(recordNumber: Long, fieldName: String, value: String): FieldValidationResult<String> = try {

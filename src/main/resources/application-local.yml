@@ -25,6 +25,9 @@ aws:
   s3:
     endpoint-url: http://localhost:4566
 
+notify:
+  enabled: false
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer

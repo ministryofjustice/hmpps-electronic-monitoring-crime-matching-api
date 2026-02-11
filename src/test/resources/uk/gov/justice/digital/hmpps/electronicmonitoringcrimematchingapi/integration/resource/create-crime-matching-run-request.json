@@ -1,0 +1,36 @@
+{
+  "crimeBatchId": "242a9a57-337f-4208-908b-2874b75fa10e",
+  "algorithmVersion": "e83c5163316f89bfbde7d9ab23ca2e25604af290",
+  "triggerType": "AUTO",
+  "status": "SUCCESS",
+  "matchingStarted": "2026-01-16T08:30:00",
+  "matchingEnded": "2026-01-16T08:31:10",
+  "results": [
+    {
+      "crimeVersionId": "252a9a57-337f-4208-908b-2874b75fa10f",
+      "deviceWearers": [
+        {
+          "deviceId": 604008982,
+          "name": "Richard Gibbons",
+          "nomisId": "A5128CZ",
+          "positions": [
+            {
+              "latitude": 51.574865,
+              "longitude": 0.060977,
+              "capturedDateTime": "2026-01-16T08:12:03",
+              "sequenceLabel": "A1",
+              "confidenceCircle": 30
+            },
+            {
+              "latitude": 51.574153,
+              "longitude": 0.058536,
+              "capturedDateTime": "2026-01-16T08:13:03",
+              "sequenceLabel": "A2",
+              "confidenceCircle": 52
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

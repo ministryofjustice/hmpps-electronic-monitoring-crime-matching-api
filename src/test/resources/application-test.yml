@@ -53,3 +53,9 @@ spring:
 datastore:
   output-bucket-arn: test-output-bucket
   retry-interval-ms: 10
+
+notify:
+  enabled: false
+  successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11
+  apikey: test-key
+

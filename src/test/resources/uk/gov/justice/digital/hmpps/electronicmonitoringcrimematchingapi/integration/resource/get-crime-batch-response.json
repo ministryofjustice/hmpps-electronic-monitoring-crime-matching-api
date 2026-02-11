@@ -14,6 +14,18 @@
         "latitude": 51.574865,
         "longitude": 0.060977,
         "crimeText": ""
+      },
+      {
+        "id": "8d595ab3-d4ef-4975-93ef-24570f6f0f61",
+        "crimeTypeId": "BOTD",
+        "crimeTypeDescription": "Burglary in a building other than a dwelling",
+        "crimeReference": "CRI00000001",
+        "policeForce": "METROPOLITAN",
+        "crimeDateTimeFrom": "2025-01-01T00:30",
+        "crimeDateTimeTo": "2025-01-01T01:30",
+        "latitude": 51.499945,
+        "longitude": -0.137438,
+        "crimeText": ""
       }
     ]
   }
