@@ -131,6 +131,18 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           longitude = 0.060977,
           crimeText = "",
         ),
+        CrimeVersion(
+          id = UUID.fromString("8d595ab3-d4ef-4975-93ef-24570f6f0f61"),
+          crime = crime,
+          crimeTypeId = CrimeType.BOTD,
+          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 1, 0, 30),
+          crimeDateTimeTo = LocalDateTime.of(2025, 1, 1, 1, 30),
+          easting = 529381.toDouble(),
+          northing = 179534.toDouble(),
+          latitude = null,
+          longitude = null,
+          crimeText = "",
+        ),
       )
       crimeBatch.crimeVersions.addAll(crimeVersions)
       repo.save(crimeBatch)

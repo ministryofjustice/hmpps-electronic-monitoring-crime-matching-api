@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mapper
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.Osgb36ToWgs84Converter
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.roundTo
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.Wgs84
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.Datum
@@ -22,8 +23,8 @@ class CrimeMapper(
       crimeReference = version.crime.crimeReference,
       crimeDateTimeFrom = version.crimeDateTimeFrom.toString(),
       crimeDateTimeTo = version.crimeDateTimeTo.toString(),
-      latitude = coords.latitude,
-      longitude = coords.longitude,
+      latitude = coords.latitude.roundTo(6),
+      longitude = coords.longitude.roundTo(6),
       crimeText = version.crimeText,
     )
   }
