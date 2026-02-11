@@ -12,7 +12,7 @@ import javax.mail.internet.MimeMessage
 
 @Service
 class EmailParserService(
-    private val properties: EmailIngestionProperties,
+  private val properties: EmailIngestionProperties,
 ) {
 
   fun extractEmailData(emailFile: InputStream): EmailData {
@@ -55,11 +55,11 @@ class EmailParserService(
       }
 
     return EmailData(
-        sender,
-        redirectAddress,
-        subject,
-        sentAt,
-        attachment,
+      sender,
+      redirectAddress,
+      subject,
+      sentAt,
+      attachment,
     )
   }
 }
