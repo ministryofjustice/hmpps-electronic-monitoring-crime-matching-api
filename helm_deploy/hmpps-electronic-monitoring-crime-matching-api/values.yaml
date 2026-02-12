@@ -53,25 +53,25 @@ generic-service:
     hmpps-electronic-monitoring-crime-matching-api-mailbox-address:
       MAILBOX_ADDRESS: "mailbox_address"
     hmpps-electronic-monitoring-crime-matching-api-valid-ingestion-emails:
-      AVON_AND_SOMERSET: avon-and-somerset
-      BEDFORDSHIRE: bedfordshire
-      CHESHIRE: cheshire
-      CITY_OF_LONDON: city-of-london
-      CUMBRIAN: cumbrian
-      DERBYSHIRE: derbyshire
-      DURHAM: durham
-      ESSEX: essex
-      GLOUCESTERSHIRE: gloucestershire
-      GWENT: gwent
-      HAMPSHIRE: hampshire
-      HERTFORDSHIRE: hertfordshire
-      HUMBERSIDE: humberside
-      KENT: kent
-      METROPOLITAN: metropolitan
-      NORTH_WALES: north-wales
-      NOTTINGHAMSHIRE: nottinghamshire
-      SUSSEX: sussex
-      WEST_MIDLANDS: west-midlands
+      AVON_AND_SOMERSET: "avon-and-somerset"
+      BEDFORDSHIRE: "bedfordshire"
+      CHESHIRE: "cheshire"
+      CITY_OF_LONDON: "city-of-london"
+      CUMBRIAN: "cumbrian"
+      DERBYSHIRE: "derbyshire"
+      DURHAM: "durham"
+      ESSEX: "essex"
+      GLOUCESTERSHIRE: "gloucestershire"
+      GWENT: "gwent"
+      HAMPSHIRE: "hampshire"
+      HERTFORDSHIRE: "hertfordshire"
+      HUMBERSIDE: "humberside"
+      KENT: "kent"
+      METROPOLITAN: "metropolitan"
+      NORTH_WALES: "north-wales"
+      NOTTINGHAMSHIRE: "nottinghamshire"
+      SUSSEX: "sussex"
+      WEST_MIDLANDS: "west-midlands"
 
   allowlist:
     groups:
