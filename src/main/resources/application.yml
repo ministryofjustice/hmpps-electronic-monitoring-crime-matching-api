@@ -108,4 +108,4 @@ email-ingestion:
     nottinghamshire: ${NOTTINGHAMSHIRE}
     sussex: ${SUSSEX}
     west-midlands: ${WEST_MIDLANDS}
-  mailbox-address: ${SHARED_MAILBOX}
+  mailbox-address: ${MAILBOX_ADDRESS}
