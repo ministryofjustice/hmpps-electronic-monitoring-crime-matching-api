@@ -22,6 +22,8 @@ dependencies {
   implementation("org.json:json:20250517")
   implementation("io.zeko:zeko-sql-builder:1.5.6")
   implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
+  implementation("org.locationtech.proj4j:proj4j:1.2.3")
+  implementation("org.locationtech.proj4j:proj4j-epsg:1.2.3")
 
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
@@ -34,6 +36,7 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.34") {
     exclude(group = "io.swagger.core.v3")
   }
+  testImplementation("org.skyscreamer:jsonassert:1.5.3")
 }
 
 kotlin {
