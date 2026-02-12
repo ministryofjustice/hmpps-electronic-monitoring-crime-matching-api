@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 
+import jakarta.activation.DataSource
 import java.util.Date
-import javax.activation.DataSource
 
 class EmailData(
   val sender: String,
