@@ -1,14 +1,18 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
+import jakarta.activation.DataSource
+import jakarta.mail.Multipart
+import jakarta.mail.Part
+import jakarta.mail.Session
+import jakarta.mail.internet.InternetAddress
+import jakarta.mail.internet.MimeMessage
+import jakarta.mail.util.ByteArrayDataSource
 import jakarta.validation.ValidationException
-import org.apache.commons.mail.util.MimeMessageParser
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.emailIngestion.EmailIngestionProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import java.io.InputStream
 import java.util.Properties
-import javax.mail.Session
-import javax.mail.internet.MimeMessage
 
 @Service
 class EmailParserService(
@@ -19,28 +23,18 @@ class EmailParserService(
     val session = Session.getDefaultInstance(Properties())
     val mimeMessage = MimeMessage(session, emailFile)
 
-    val parser = MimeMessageParser(mimeMessage).parse()
+    val subject = mimeMessage.subject
+    val sender = (mimeMessage.from?.firstOrNull() as? InternetAddress)?.address!!
+    val sentAt = mimeMessage.sentDate!!
+    val redirectAddress = mimeMessage.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
 
-    val subject = parser.subject
-    val sender = parser.from
-    val redirectAddress = parser.mimeMessage.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
-    val sentAt = parser.mimeMessage.sentDate
-
-    if (!parser.subject.equals("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
+    if (!subject.equals("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
 
     if (!redirectAddress.contains(properties.mailboxAddress, ignoreCase = true)) throw ValidationException("Invalid redirect email")
 
     if (!properties.validEmails.values.contains(sender.lowercase())) throw ValidationException("Invalid sender email")
 
-    val attachment = parser.attachmentList
-      .filter { it.name?.endsWith(".csv", ignoreCase = true) == true }
-      .let { list ->
-        when {
-          list.isEmpty() -> throw NoSuchElementException("No CSV attachment found in email")
-          list.size > 1 -> throw IllegalStateException("Multiple CSV attachments found")
-          else -> list.single()
-        }
-      }
+    val attachment = extractCsvAttachment(mimeMessage)
 
     return EmailData(
       sender,
@@ -49,5 +43,36 @@ class EmailParserService(
       sentAt,
       attachment,
     )
+  }
+
+  private fun extractCsvAttachment(message: MimeMessage): DataSource {
+    // Type has to be multipart for attachments
+    if (!message.isMimeType("multipart/*")) throw ValidationException("No CSV attachment found in email")
+
+    val multipart = message.content as Multipart
+
+    // Parse multipart for valid csv attachments
+    val csvParts = (0 until multipart.count)
+      .map { multipart.getBodyPart(it) }
+      .filter { part ->
+        val fileName = part.fileName
+        Part.ATTACHMENT.equals(part.disposition, ignoreCase = true) &&
+          fileName?.endsWith(".csv", ignoreCase = true) == true
+      }
+
+    val part = when {
+      csvParts.isEmpty() -> throw ValidationException("No CSV attachment found in email")
+      csvParts.size > 1 -> throw NoSuchElementException("Multiple CSV attachments found")
+      else -> csvParts.single()
+    }
+
+    // Construct datasource from valid csv part
+    val fileName = part.fileName
+    val contentType = part.contentType
+    val bytes = part.inputStream.use { it.readAllBytes() }
+
+    return ByteArrayDataSource(bytes, contentType).apply {
+      name = fileName
+    }
   }
 }

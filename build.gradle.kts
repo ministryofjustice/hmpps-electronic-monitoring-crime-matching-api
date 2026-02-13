@@ -17,7 +17,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15")
   implementation("software.amazon.awssdk:athena:2.40.10")
   implementation("software.amazon.awssdk:s3:2.40.10")
-  implementation("org.eclipse.angus:angus-mail")
+  implementation("com.sun.mail:jakarta.mail:2.0.2")
   implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20250517")
   implementation("io.zeko:zeko-sql-builder:1.5.6")
