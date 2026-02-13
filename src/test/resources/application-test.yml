@@ -59,3 +59,7 @@ notify:
   successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11
   apikey: test-key
 
+email-ingestion:
+  valid-emails:
+    metropolitan: "test@email.com"
+  mailbox-address: "shared-mailbox@email.com"

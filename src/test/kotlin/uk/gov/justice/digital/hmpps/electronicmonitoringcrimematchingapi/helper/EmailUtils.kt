@@ -15,27 +15,34 @@ fun createCsvRow(
   crimeText: String = "",
 ) = "$policeForce,$crimeTypeId,crimeDesc,$batchId,$crimeReference,$crimeDateTimeFrom,$crimeDateTimeTo,$easting,$northing,$latitude,$longitude,$datum,$crimeText"
 
-fun createEmailFile(csvContent: String) = """
-  From: test@email.com
-  Subject: Crime Mapping Request
-  Date: Wed, 15 Oct 2025 13:56:58 +0000
+fun createEmailFile(
+  csvContent: String = "test",
+  subject: String = "Crime Mapping Request",
+  fromAddress: String = "test@email.com",
+  resentFrom: String = "<shared-mailbox@email.com>",
+) = """
+  From: $fromAddress
+  Subject: $subject
+  Date: Mon, 9 Feb 2026 14:39:01 +0000
   X-MS-Has-Attach: yes
+  Resent-From: $resentFrom
   Content-Type: multipart/mixed;
-  	boundary="_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_"
+    boundary="_004_95356b68289a43b7bf7a11bf7f7e4d75LO4P123MB4623GBRP123PRO_"
   
-  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_
-  Content-Type: text/csv;
-  	name="crime-data.csv"
-  Content-Description: crime-data.csv
-  Content-Disposition: attachment;
-  	filename="crime-data.csv";
-  	size=1449; creation-date="Wed, 15 Oct 2025 13:56:53 GMT";
-  	modification-date="Wed, 15 Oct 2025 13:56:53 GMT"
+  --_004_95356b68289a43b7bf7a11bf7f7e4d75LO4P123MB4623GBRP123PRO_
+  
+  --_004_95356b68289a43b7bf7a11bf7f7e4d75LO4P123MB4623GBRP123PRO_
+  Content-Type: text/csv; name="valid-data-001.csv"
+  Content-Description: valid-data-001.csv
+  Content-Disposition: attachment; filename="valid-data-001.csv"; size=401;
+    creation-date="Mon, 09 Feb 2026 14:38:33 GMT";
+    modification-date="Mon, 09 Feb 2026 14:38:33 GMT"
   Content-Transfer-Encoding: base64
-
+  
   $csvContent
+  
+  --_004_95356b68289a43b7bf7a11bf7f7e4d75LO4P123MB4623GBRP123PRO_--
 
-  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_--
 """.trimIndent()
 
 fun createEmailFileWithoutAttachment() = """
@@ -43,19 +50,7 @@ fun createEmailFileWithoutAttachment() = """
   Subject: Crime Mapping Request
   Date: Wed, 15 Oct 2025 13:56:58 +0000
   X-MS-Has-Attach: no
-  Content-Type: multipart/mixed;
-  	boundary="_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_"
-  
-  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_
-
-  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_--
-""".trimIndent()
-
-fun createEmailFileInvalidSubject() = """
-  From: test@email.com
-  Subject: Invalid
-  Date: Wed, 15 Oct 2025 13:56:58 +0000
-  X-MS-Has-Attach: yes
+  Resent-From: <shared-mailbox@email.com>
   Content-Type: multipart/mixed;
   	boundary="_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_"
   
@@ -69,6 +64,7 @@ fun createEmailFileWithMultipleAttachments() = """
   Subject: Crime Mapping Request
   Date: Wed, 15 Oct 2025 13:56:58 +0000
   X-MS-Has-Attach: yes
+  Resent-From: <shared-mailbox@email.com>
   Content-Type: multipart/mixed;
   	boundary="_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_"
   
@@ -99,4 +95,17 @@ fun createEmailFileWithMultipleAttachments() = """
 
   --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_--
 
+""".trimIndent()
+
+fun createEmailFileNoRedirect() = """
+  From: test@email.com
+  Subject: Crime Mapping Request
+  Date: Wed, 15 Oct 2025 13:56:58 +0000
+  X-MS-Has-Attach: yes
+  Content-Type: multipart/mixed;
+  	boundary="_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_"
+  
+  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_
+
+  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_--
 """.trimIndent()

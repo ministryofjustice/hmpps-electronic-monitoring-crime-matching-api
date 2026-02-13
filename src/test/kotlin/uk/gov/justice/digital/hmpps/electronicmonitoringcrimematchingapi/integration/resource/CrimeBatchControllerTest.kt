@@ -4,9 +4,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.skyscreamer.jsonassert.JSONAssert
+import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.json.JsonCompareMode
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.Date
@@ -148,14 +150,21 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
       repo.save(crimeBatch)
 
       // Validate crime batch is retrieved successfully
-      webTestClient.get()
+      val body = webTestClient.get()
         .uri("/crime-batches/$crimeBatchId")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
         .exchange()
         .expectStatus()
         .isOk
         .expectBody()
-        .json("get-crime-batch-response".loadJson(), JsonCompareMode.STRICT)
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-batch-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
     }
   }
 

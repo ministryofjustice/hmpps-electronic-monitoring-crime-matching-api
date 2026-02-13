@@ -6,7 +6,6 @@ import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.extractEmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
@@ -21,6 +20,7 @@ class EmailListener(
   private val crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService,
   private val crimeBatchService: CrimeBatchService,
   private val emailNotificationService: EmailNotificationService,
+  private val emailParserService: EmailParserService,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -40,7 +40,7 @@ class EmailListener(
       val emailFile = s3Service.getObject(messageId.toString(), objectKey, bucketName)
 
       // Extract email details
-      val emailData = emailFile.use { extractEmailData(it) }
+      val emailData = emailFile.use { emailParserService.extractEmailData(it) }
 
       // Parse csv rows
       val csvData = emailData.attachment.inputStream

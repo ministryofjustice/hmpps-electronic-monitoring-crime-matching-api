@@ -20,9 +20,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.emailIngestion.EmailIngestionProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileInvalidSubject
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoRedirect
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithMultipleAttachments
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
@@ -46,9 +47,16 @@ class EmailListenerTest {
   private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
   private lateinit var crimeBatchService: CrimeBatchService
   private lateinit var emailNotificationService: EmailNotificationService
+  private lateinit var emailParserService: EmailParserService
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
   private val validator: Validator = Validation.buildDefaultValidatorFactory().validator
+  private val emailIngestionProperties: EmailIngestionProperties = EmailIngestionProperties(
+    mailboxAddress = "shared-mailbox@email.com",
+    validEmails = mapOf(
+      "metropolitan" to "test@email.com",
+    ),
+  )
 
   @BeforeEach
   fun setup() {
@@ -57,7 +65,8 @@ class EmailListenerTest {
     crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
     emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService)
+    emailParserService = EmailParserService(emailIngestionProperties)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService)
   }
 
   @Nested
@@ -227,7 +236,7 @@ class EmailListenerTest {
       val sqsMessage = SqsMessage("Notification", message, messageId)
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
-        createEmailFileInvalidSubject().byteInputStream(),
+        createEmailFile(subject = "invalid").byteInputStream(),
       )
 
       whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-subject", "emails")).thenReturn(responseStream)
@@ -236,6 +245,87 @@ class EmailListenerTest {
         listener.receiveEmailNotification(sqsMessage)
       }
       assertThat(exception.message).isEqualTo("Failed to process email: Invalid email subject")
+    }
+
+    @Test
+    fun `it should throw an exception when the email file has an invalid from address`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file-invalid-from"
+            }
+          }
+        }
+      """.trimIndent()
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFile(fromAddress = "invalid@email.com").byteInputStream(),
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-from", "emails")).thenReturn(responseStream)
+
+      val exception = assertThrows<ValidationException> {
+        listener.receiveEmailNotification(sqsMessage)
+      }
+      assertThat(exception.message).isEqualTo("Failed to process email: Invalid sender email")
+    }
+
+    @Test
+    fun `it should throw an exception when the email file has an invalid redirect address`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file-invalid-redirect"
+            }
+          }
+        }
+      """.trimIndent()
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFile(resentFrom = "invalid").byteInputStream(),
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-redirect", "emails")).thenReturn(responseStream)
+
+      val exception = assertThrows<ValidationException> {
+        listener.receiveEmailNotification(sqsMessage)
+      }
+      assertThat(exception.message).isEqualTo("Failed to process email: Invalid redirect email")
+    }
+
+    @Test
+    fun `it should throw an exception when the email file does not have a redirect address`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file-no-redirect"
+            }
+          }
+        }
+      """.trimIndent()
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFileNoRedirect().byteInputStream(),
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file-no-redirect", "emails")).thenReturn(responseStream)
+
+      val exception = assertThrows<ValidationException> {
+        listener.receiveEmailNotification(sqsMessage)
+      }
+      assertThat(exception.message).isEqualTo("Failed to process email: No redirect email")
     }
   }
 }
