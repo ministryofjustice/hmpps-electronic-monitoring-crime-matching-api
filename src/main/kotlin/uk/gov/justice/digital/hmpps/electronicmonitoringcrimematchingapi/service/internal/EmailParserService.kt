@@ -21,20 +21,15 @@ class EmailParserService(
 
   fun extractEmailData(emailFile: InputStream): EmailData {
     val session = Session.getDefaultInstance(Properties())
-    val mimeMessage = MimeMessage(session, emailFile)
+    val message = MimeMessage(session, emailFile)
 
-    val subject = mimeMessage.subject
-    val sender = (mimeMessage.from?.firstOrNull() as? InternetAddress)?.address!!
-    val sentAt = mimeMessage.sentDate!!
-    val redirectAddress = mimeMessage.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
+    val subject = message.subject
+    val sender = (message.from?.firstOrNull() as? InternetAddress)?.address!!
+    val sentAt = message.sentDate
+    val redirectAddress = message.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
 
-    if (!subject.equals("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
-
-    if (!redirectAddress.contains(properties.mailboxAddress, ignoreCase = true)) throw ValidationException("Invalid redirect email")
-
-    if (!properties.validEmails.values.contains(sender.lowercase())) throw ValidationException("Invalid sender email")
-
-    val attachment = extractCsvAttachment(mimeMessage)
+    validateMetadata(subject, sender, redirectAddress)
+    val attachment = extractCsvAttachment(message)
 
     return EmailData(
       sender,
@@ -45,19 +40,24 @@ class EmailParserService(
     )
   }
 
+  private fun validateMetadata(subject: String, sender: String, redirectAddress: String) {
+    if (!subject.equals("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
+
+    if (!redirectAddress.contains(properties.mailboxAddress, ignoreCase = true)) throw ValidationException("Invalid redirect email")
+
+    if (!properties.validEmails.values.contains(sender.lowercase())) throw ValidationException("Invalid sender email")
+  }
+
   private fun extractCsvAttachment(message: MimeMessage): DataSource {
     // Type has to be multipart for attachments
-    if (!message.isMimeType("multipart/*")) throw NoSuchElementException("No CSV attachment found in email")
-
-    val multipart = message.content as Multipart
+    val multipart = message.content as? Multipart ?: throw NoSuchElementException("No CSV attachment found in email")
 
     // Parse multipart for valid csv attachments
     val csvParts = (0 until multipart.count)
-      .map { multipart.getBodyPart(it) }
+      .map(multipart::getBodyPart)
       .filter { part ->
-        val fileName = part.fileName
         Part.ATTACHMENT.equals(part.disposition, ignoreCase = true) &&
-          fileName?.endsWith(".csv", ignoreCase = true) == true
+          part.fileName?.endsWith(".csv", ignoreCase = true) == true
       }
 
     val part = when {
