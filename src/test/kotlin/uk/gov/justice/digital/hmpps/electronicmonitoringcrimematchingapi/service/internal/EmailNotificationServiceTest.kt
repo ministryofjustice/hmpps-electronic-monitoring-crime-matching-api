@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
+import jakarta.mail.util.ByteArrayDataSource
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,7 +20,6 @@ import uk.gov.service.notify.NotificationClient
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Date
-import javax.mail.util.ByteArrayDataSource
 
 @ActiveProfiles("test")
 class EmailNotificationServiceTest {

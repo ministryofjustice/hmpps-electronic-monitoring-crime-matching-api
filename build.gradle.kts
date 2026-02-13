@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.1"
-  kotlin("plugin.spring") version "2.2.20"
-  kotlin("plugin.jpa") version "2.2.20"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.3"
+  kotlin("plugin.spring") version "2.3.0"
+  kotlin("plugin.jpa") version "2.3.0"
   jacoco
 }
 
@@ -10,16 +10,17 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.7.0")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.11")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.0")
+  implementation("org.springframework.boot:spring-boot-starter-webclient")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.0.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
-  implementation("software.amazon.awssdk:athena:2.34.3")
-  implementation("software.amazon.awssdk:s3:2.34.3")
-  implementation("org.apache.commons:commons-email:1.6.0")
+  implementation("org.springframework.boot:spring-boot-starter-mail")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+  implementation("software.amazon.awssdk:athena:2.41.28")
+  implementation("software.amazon.awssdk:s3:2.41.28")
   implementation("org.apache.commons:commons-csv:1.14.1")
-  implementation("org.json:json:20250517")
+  implementation("org.json:json:20251224")
   implementation("io.zeko:zeko-sql-builder:1.5.6")
   implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
   implementation("org.locationtech.proj4j:proj4j:1.2.3")
@@ -29,11 +30,12 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
   testImplementation("com.h2database:h2:2.4.240")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.7.0")
-  testImplementation("org.mockito:mockito-core:5.20.0")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.0.0")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.34") {
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.0")
+  testImplementation("org.mockito:mockito-core:5.21.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+  testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.37") {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("org.skyscreamer:jsonassert:1.5.3")
