@@ -47,7 +47,7 @@ class EmailParserService(
 
   private fun extractCsvAttachment(message: MimeMessage): DataSource {
     // Type has to be multipart for attachments
-    if (!message.isMimeType("multipart/*")) throw ValidationException("No CSV attachment found in email")
+    if (!message.isMimeType("multipart/*")) throw NoSuchElementException("No CSV attachment found in email")
 
     val multipart = message.content as Multipart
 
@@ -61,8 +61,8 @@ class EmailParserService(
       }
 
     val part = when {
-      csvParts.isEmpty() -> throw ValidationException("No CSV attachment found in email")
-      csvParts.size > 1 -> throw NoSuchElementException("Multiple CSV attachments found")
+      csvParts.isEmpty() -> throw NoSuchElementException("No CSV attachment found in email")
+      csvParts.size > 1 -> throw ValidationException("Multiple CSV attachments found")
       else -> csvParts.single()
     }
 
