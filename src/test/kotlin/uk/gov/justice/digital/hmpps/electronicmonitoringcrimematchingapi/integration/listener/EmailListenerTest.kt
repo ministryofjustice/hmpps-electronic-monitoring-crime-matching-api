@@ -28,10 +28,14 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchEmailAttachmentIngestionErrorRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionErrorRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
@@ -72,6 +76,12 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchEmailAttachmentIngestionErrorRepository: CrimeBatchEmailAttachmentIngestionErrorRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchIngestionErrorRepository: CrimeBatchIngestionErrorRepository
 
   val emailQueueConfig by lazy {
     hmppsQueueService.findByQueueId("email")
@@ -196,6 +206,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+
+      val errors = crimeBatchIngestionErrorRepository.findAll()
+      assertThat(errors).hasSize(1)
     }
 
     @Test
@@ -228,6 +241,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val crimeVersions = crimeVersionRepository.findAll()
       assertThat(crimeVersions).hasSize(2)
+
+      val errors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
+      assertThat(errors).hasSize(1)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
