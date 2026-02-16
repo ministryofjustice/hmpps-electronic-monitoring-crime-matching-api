@@ -91,7 +91,7 @@ class CrimeBatchCsvServiceTest {
   @ParameterizedTest(name = "it should parse all valid police forces - {0} -> {1}")
   @MethodSource("policeForceValues")
   fun `it should parse all valid police forces`(csvValue: String, enumValue: PoliceForce) {
-    val crimeData = createCsvRow(policeForce = csvValue).byteInputStream()
+    val crimeData = createCsvRow(policeForce = csvValue, batchId = enumValue.code + "20250109").byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(1)
@@ -116,7 +116,7 @@ class CrimeBatchCsvServiceTest {
   fun `it should throw an exception when multiple police forces are present`() {
     val crimeData = listOf(
       createCsvRow(),
-      createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.value),
+      createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.value, batchId = PoliceForce.BEDFORDSHIRE.code + "20250109"),
     ).joinToString("\n").byteInputStream()
 
     assertThrows<ValidationException> {
@@ -148,13 +148,37 @@ class CrimeBatchCsvServiceTest {
   }
 
   @Test
-  fun `it should not parse an invalid batch ID`() {
+  fun `it should not parse an empty batch ID`() {
     val crimeData = createCsvRow(batchId = "").byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf("A valid batch id must be provided"),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should not parse an invalid Police Force in batch ID`() {
+    val crimeData = createCsvRow(batchId = "MPS20250101", policeForce = PoliceForce.BEDFORDSHIRE.value).byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf("Invalid Batch ID format on row 1."),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should not parse an invalid date in batch ID`() {
+    val crimeData = createCsvRow(batchId = "MPS20253001").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf("Invalid date in Batch ID on row 1."),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }

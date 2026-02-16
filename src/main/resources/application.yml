@@ -10,8 +10,6 @@ spring:
 
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
 
   security:
     oauth2:
@@ -73,7 +71,7 @@ services:
 notify:
   enabled: true
   apikey: ${NOTIFY_API_KEY}
-  successfulIngestionTemplateId: 42122252-63d8-4747-9057-428d6e2d3bd5
+  successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11
 
 aws:
   region: eu-west-2
@@ -83,6 +81,29 @@ aws:
     bucket-name: police-emails
 
 datastore:
-  fms-database: ${FMS_DATABASE:serco_fms_test}
-  mdss-database: ${MDSS_DATABASE:allied_mdss_test}
+  fms-database: ${FMS_DATABASE:serco_fms_dev}
+  mdss-database: ${MDSS_DATABASE:allied_mdss_dev}
   output-bucket-arn: ${ATHENA_OUTPUT_BUCKET}
+
+email-ingestion:
+  valid-emails:
+    avon-and-somerset: ${AVON_AND_SOMERSET}
+    bedfordshire: ${BEDFORDSHIRE}
+    cheshire: ${CHESHIRE}
+    city-of-london: ${CITY_OF_LONDON}
+    cumbrian: ${CUMBRIAN}
+    derbyshire: ${DERBYSHIRE}
+    durham: ${DURHAM}
+    essex: ${ESSEX}
+    gloucestershire: ${GLOUCESTERSHIRE}
+    gwent: ${GWENT}
+    hampshire: ${HAMPSHIRE}
+    hertfordshire: ${HERTFORDSHIRE}
+    humberside: ${HUMBERSIDE}
+    kent: ${KENT}
+    metropolitan: ${METROPOLITAN}
+    north-wales: ${NORTH_WALES}
+    nottinghamshire: ${NOTTINGHAMSHIRE}
+    sussex: ${SUSSEX}
+    west-midlands: ${WEST_MIDLANDS}
+  mailbox-address: ${MAILBOX_ADDRESS}

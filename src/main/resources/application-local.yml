@@ -33,3 +33,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
     username: postgres
     password: postgres
+
+email-ingestion:
+  valid-emails:
+    metropolitan: "test@email.com"
+  mailbox-address: "shared-mailbox@email.com"

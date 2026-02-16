@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchDto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 
 @RestController
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 @RequestMapping("/crime-batches", produces = ["application/json"])
 class CrimeBatchController(
   private val crimeBatchService: CrimeBatchService,
+  private val crimeBatchMapper: CrimeBatchMapper,
 ) {
   @Operation(
     tags = ["Crime Batch"],
@@ -36,7 +38,7 @@ class CrimeBatchController(
 
     return ResponseEntity.ok(
       ResponseDto(
-        CrimeBatchDto(batch),
+        crimeBatchMapper.toDto(batch),
       ),
     )
   }

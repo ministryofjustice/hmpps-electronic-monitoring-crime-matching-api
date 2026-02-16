@@ -27,7 +27,7 @@ class GetPositionsByDeviceActivationId : SqlQueryBuilder {
       ),
     )
       .addJoin(
-        "allied_mdss_test.position p",
+        "${datastoreProperties.mdssDatabase}.position p",
         "d.device_id = p.device_id AND d.person_id = p.person_id",
         JoinType.INNER,
       )
