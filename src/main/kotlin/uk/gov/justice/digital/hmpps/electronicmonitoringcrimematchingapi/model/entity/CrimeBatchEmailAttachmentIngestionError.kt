@@ -22,6 +22,6 @@ data class CrimeBatchEmailAttachmentIngestionError(
   val errorType: String,
 
   @OneToOne
-  @JoinColumn(name = "crime_batch_email_attachment_id")
+  @JoinColumn(name = "crime_batch_email_attachment_id", nullable = false)
   val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 )

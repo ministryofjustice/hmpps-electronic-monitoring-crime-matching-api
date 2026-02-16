@@ -30,8 +30,10 @@ data class CrimeMatchingResultDeviceWearer(
 
   val deviceId: Long,
 
+  @Column(nullable = false)
   val name: String,
 
+  @Column(nullable = false)
   val nomisId: String,
 
   @OneToMany(mappedBy = "crimeMatchingResultDeviceWearer", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
