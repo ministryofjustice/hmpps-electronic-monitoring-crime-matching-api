@@ -22,7 +22,7 @@ data class CrimeBatchEmail(
 
   @Schema(hidden = true)
   @OneToOne
-  @JoinColumn(name = "crime_batch_ingestion_attempt_id")
+  @JoinColumn(name = "crime_batch_ingestion_attempt_id", nullable = false)
   var crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
 
   @OneToMany(mappedBy = "crimeBatchEmail", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)

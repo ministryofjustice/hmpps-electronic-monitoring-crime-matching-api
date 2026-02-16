@@ -25,8 +25,10 @@ data class CrimeMatchingResultPosition(
 
   val longitude: Double,
 
+  @Column(nullable = false)
   val capturedDateTime: LocalDateTime,
 
+  @Column(nullable = false)
   val sequenceLabel: String,
 
   val confidenceCircle: Int,

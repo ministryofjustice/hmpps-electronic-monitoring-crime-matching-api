@@ -27,18 +27,24 @@ data class CrimeMatchingRun(
   @JoinColumn(name = "crime_batch_id", nullable = false)
   val crimeBatch: CrimeBatch,
 
+  @Column(nullable = false)
   val algorithmVersion: String,
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   val triggerType: CrimeMatchingTriggerType,
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   val status: CrimeMatchingStatus,
 
+  @Column(nullable = false)
   val createdAt: LocalDateTime = LocalDateTime.now(),
 
+  @Column(nullable = false)
   val matchingStarted: LocalDateTime,
 
+  @Column(nullable = false)
   val matchingEnded: LocalDateTime,
 
   @OneToMany(mappedBy = "crimeMatchingRun", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)

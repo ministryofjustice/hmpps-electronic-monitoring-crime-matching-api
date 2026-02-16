@@ -27,7 +27,10 @@ data class Crime(
   val id: UUID = UUID.randomUUID(),
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   val policeForceArea: PoliceForce,
+
+  @Column(nullable = false)
   val crimeReference: String,
 
   @Schema(hidden = true)

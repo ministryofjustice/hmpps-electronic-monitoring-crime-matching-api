@@ -22,14 +22,17 @@ data class CrimeVersion(
   val id: UUID = UUID.randomUUID(),
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "crime_id")
+  @JoinColumn(name = "crime_id", nullable = false)
   var crime: Crime,
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   val crimeTypeId: CrimeType,
 
+  @Column(nullable = false)
   val crimeDateTimeFrom: LocalDateTime,
 
+  @Column(nullable = false)
   val crimeDateTimeTo: LocalDateTime,
 
   val easting: Double?,
@@ -40,8 +43,10 @@ data class CrimeVersion(
 
   val longitude: Double?,
 
+  @Column(nullable = false)
   val crimeText: String,
 
+  @Column(nullable = false)
   val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
   val datum: Datum

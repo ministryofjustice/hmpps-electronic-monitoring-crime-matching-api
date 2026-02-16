@@ -33,6 +33,7 @@ data class CrimeMatchingResult(
   @JoinColumn(name = "crime_matching_run_id", nullable = false)
   val crimeMatchingRun: CrimeMatchingRun,
 
+  @Column(nullable = false)
   val createdAt: LocalDateTime = LocalDateTime.now(),
 
   @OneToMany(mappedBy = "crimeMatchingResult", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
