@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.service.notify.NotificationClient
@@ -14,10 +14,10 @@ class EmailNotificationService(
   private val properties: NotifyProperties,
 ) {
   fun sendSuccessfulIngestionEmail(
-    batchId: String,
-    policeForce: PoliceForce,
-    emailData: EmailData,
-    records: List<CrimeRecordDto>,
+      batchId: String,
+      policeForce: PoliceForce,
+      emailData: EmailData,
+      records: List<CrimeRecordRequest>,
   ) {
     val emailAddresses = listOf(emailData.sender, emailData.originalSender)
     val csvBytes = records.toCsv().toByteArray()
@@ -34,7 +34,7 @@ class EmailNotificationService(
     }
   }
 
-  private fun List<CrimeRecordDto>.toCsv(): String = buildString {
+  private fun List<CrimeRecordRequest>.toCsv(): String = buildString {
     this@toCsv.forEach { r ->
       appendCsvRow(
         r.policeForce.value,

@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.DeviceActivation
 
-data class DeviceActivationDto(
+data class DeviceActivationResponse(
   val deviceActivationId: Long,
   val deviceId: Long,
   val deviceName: String,

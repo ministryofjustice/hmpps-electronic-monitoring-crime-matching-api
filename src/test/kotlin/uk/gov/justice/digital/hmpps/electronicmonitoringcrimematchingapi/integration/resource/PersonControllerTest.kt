@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -34,7 +34,7 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<PagedResponseDto<PersonDto>>()
+        .expectBody<PagedResponse<PersonResponse>>()
         .returnResult()
         .responseBody!!
 
@@ -58,7 +58,7 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<PagedResponseDto<PersonDto>>()
+        .expectBody<PagedResponse<PersonResponse>>()
         .returnResult()
         .responseBody!!
 
@@ -136,12 +136,12 @@ class PersonControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<PersonDto>>()
+        .expectBody<Response<PersonResponse>>()
         .returnResult()
         .responseBody!!
 
       assertThat(result.data).isEqualTo(
-        PersonDto(
+        PersonResponse(
           personId = 1,
           name = "person_name",
           nomisId = "nomis_id",

@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
-data class CrimeDto(
+data class CrimeResponse(
   val id: String,
   val crimeTypeId: String,
   val policeForce: String,

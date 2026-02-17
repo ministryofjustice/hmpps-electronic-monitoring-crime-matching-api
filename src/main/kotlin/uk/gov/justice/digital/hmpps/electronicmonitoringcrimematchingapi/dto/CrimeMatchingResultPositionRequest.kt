@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
 
-data class CrimeMatchingResultPositionDto(
+data class CrimeMatchingResultPositionRequest(
   @field:NotNull(message = "latitude is required")
   val latitude: Double,
 

@@ -7,7 +7,7 @@ import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.CsvConfig.CrimeBatchCsvConfig
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.ParseResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
@@ -28,7 +28,7 @@ class CrimeBatchCsvService(
 ) {
 
   fun parseCsvFile(inputStream: InputStream): ParseResult {
-    val crimes = mutableListOf<CrimeRecordDto>()
+    val crimes = mutableListOf<CrimeRecordRequest>()
     val errors = mutableListOf<String>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
     var recordCount = 0
@@ -52,7 +52,7 @@ class CrimeBatchCsvService(
     return ParseResult(recordCount, crimes, errors)
   }
 
-  private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordDto> {
+  private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordRequest> {
     if (record.size() != CrimeBatchCsvConfig.COLUMN_COUNT) {
       return ValidationResult.Failure(
         listOf("Incorrect number of columns on row ${record.recordNumber}."),
@@ -92,7 +92,7 @@ class CrimeBatchCsvService(
       return ValidationResult.Failure(errors)
     }
 
-    val crimeRecordDto = CrimeRecordDto(
+    val crimeRecordDto = CrimeRecordRequest(
       policeForce.value!!,
       crimeTypeId.value!!,
       batchId.value!!,

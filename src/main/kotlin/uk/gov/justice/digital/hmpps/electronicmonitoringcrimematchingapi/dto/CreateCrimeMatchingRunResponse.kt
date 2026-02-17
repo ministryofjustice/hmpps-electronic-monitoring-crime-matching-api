@@ -1,5 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
-data class CrimeMatchingRunCreatedDto(
+data class CreateCrimeMatchingRunResponse(
   val id: String,
 )

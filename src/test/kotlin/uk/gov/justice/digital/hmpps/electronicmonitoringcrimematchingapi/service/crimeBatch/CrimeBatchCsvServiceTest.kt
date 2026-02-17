@@ -11,7 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
@@ -35,7 +35,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).isEqualTo(
       listOf(
-        CrimeRecordDto(
+        CrimeRecordRequest(
           policeForce = PoliceForce.METROPOLITAN,
           crimeTypeId = CrimeType.TOMV,
           batchId = "MPS20250126",

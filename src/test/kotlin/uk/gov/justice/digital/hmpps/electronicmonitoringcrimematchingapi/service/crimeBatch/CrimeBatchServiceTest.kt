@@ -12,7 +12,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
@@ -57,7 +57,7 @@ class CrimeBatchServiceTest {
 
       service.createCrimeBatch(
         listOf(
-          CrimeRecordDto(
+          CrimeRecordRequest(
             policeForce = PoliceForce.METROPOLITAN,
             crimeTypeId = CrimeType.AB,
             batchId = "batchId",
