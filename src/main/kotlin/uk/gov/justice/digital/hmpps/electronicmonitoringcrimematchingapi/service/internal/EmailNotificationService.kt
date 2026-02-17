@@ -14,10 +14,10 @@ class EmailNotificationService(
   private val properties: NotifyProperties,
 ) {
   fun sendSuccessfulIngestionEmail(
-      batchId: String,
-      policeForce: PoliceForce,
-      emailData: EmailData,
-      records: List<CrimeRecordRequest>,
+    batchId: String,
+    policeForce: PoliceForce,
+    emailData: EmailData,
+    records: List<CrimeRecordRequest>,
   ) {
     val emailAddresses = listOf(emailData.sender, emailData.originalSender)
     val csvBytes = records.toCsv().toByteArray()
