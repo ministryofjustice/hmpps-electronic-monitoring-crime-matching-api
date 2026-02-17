@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Position
 
-data class PositionDto(
+data class PositionResponse(
   val positionId: Long,
   val latitude: Double,
   val longitude: Double,

@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
@@ -23,7 +23,7 @@ class CrimeBatchService(
 ) {
 
   @Transactional
-  fun createCrimeBatch(records: List<CrimeRecordDto>, crimeBatchEmailAttachment: CrimeBatchEmailAttachment): CrimeBatch {
+  fun createCrimeBatch(records: List<CrimeRecordRequest>, crimeBatchEmailAttachment: CrimeBatchEmailAttachment): CrimeBatch {
     // Create a new batch
     val crimeBatch = CrimeBatch(
       batchId = records.first().batchId,
@@ -70,7 +70,7 @@ class CrimeBatchService(
     return crimeBatch
   }
 
-  private fun createCrimeVersion(record: CrimeRecordDto, crime: Crime): CrimeVersion = CrimeVersion(
+  private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime): CrimeVersion = CrimeVersion(
     crime = crime,
     crimeTypeId = record.crimeTypeId,
     crimeDateTimeFrom = record.crimeDateTimeFrom,

@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.deviceActivation.DeviceActivationService
 import java.time.ZonedDateTime
@@ -34,12 +34,12 @@ class DeviceActivationController(
   )
   fun getDeviceActivation(
     @PathVariable deviceActivationId: Long,
-  ): ResponseEntity<ResponseDto<DeviceActivationDto>> {
+  ): ResponseEntity<Response<DeviceActivationResponse>> {
     val deviceActivation = deviceActivationService.getDeviceActivation(deviceActivationId)
 
     return ResponseEntity.ok(
-      ResponseDto(
-        DeviceActivationDto(deviceActivation),
+      Response(
+        DeviceActivationResponse(deviceActivation),
       ),
     )
   }
@@ -60,7 +60,7 @@ class DeviceActivationController(
     geolocationMechanism: GeolocationMechanism? = null,
     from: ZonedDateTime? = null,
     to: ZonedDateTime? = null,
-  ): ResponseEntity<ResponseDto<List<PositionDto>>> {
+  ): ResponseEntity<Response<List<PositionResponse>>> {
     val positions = deviceActivationService.getDeviceActivationPositions(
       deviceActivationId,
       geolocationMechanism,
@@ -69,8 +69,8 @@ class DeviceActivationController(
     )
 
     return ResponseEntity.ok(
-      ResponseDto(
-        positions.map { PositionDto(it) },
+      Response(
+        positions.map { PositionResponse(it) },
       ),
     )
   }

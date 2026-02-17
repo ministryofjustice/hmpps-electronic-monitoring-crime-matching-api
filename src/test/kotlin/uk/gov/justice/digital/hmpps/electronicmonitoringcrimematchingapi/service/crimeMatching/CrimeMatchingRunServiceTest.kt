@@ -14,10 +14,10 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDeviceWearerDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultPositionDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingRunDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CreateCrimeMatchingRunRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDeviceWearerRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultPositionRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingRun
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
@@ -51,7 +51,7 @@ class CrimeMatchingRunServiceTest {
 
     @Test
     fun `it should throw when matchingEnded is before matchingStarted`() {
-      val dto = CrimeMatchingRunDto(
+      val dto = CreateCrimeMatchingRunRequest(
         crimeBatchId = UUID.randomUUID(),
         algorithmVersion = "e83c5163316f89bfbde7d9ab23ca2e25604af290",
         triggerType = CrimeMatchingTriggerType.AUTO,
@@ -72,7 +72,7 @@ class CrimeMatchingRunServiceTest {
 
       whenever(crimeBatchRepository.findById(missingBatchId)).thenReturn(Optional.empty())
 
-      val dto = CrimeMatchingRunDto(
+      val dto = CreateCrimeMatchingRunRequest(
         crimeBatchId = missingBatchId,
         algorithmVersion = "e83c5163316f89bfbde7d9ab23ca2e25604af290",
         triggerType = CrimeMatchingTriggerType.AUTO,
@@ -97,14 +97,14 @@ class CrimeMatchingRunServiceTest {
       whenever(crimeBatchRepository.findById(batchId)).thenReturn(Optional.of(crimeBatch))
       whenever(crimeVersionRepository.findById(missingVersionId)).thenReturn(Optional.empty())
 
-      val dto = CrimeMatchingRunDto(
+      val dto = CreateCrimeMatchingRunRequest(
         crimeBatchId = batchId,
         algorithmVersion = "e83c5163316f89bfbde7d9ab23ca2e25604af290",
         triggerType = CrimeMatchingTriggerType.AUTO,
         status = CrimeMatchingStatus.SUCCESS,
         matchingStarted = LocalDateTime.of(2026, 1, 16, 8, 30, 0),
         matchingEnded = LocalDateTime.of(2026, 1, 16, 8, 31, 0),
-        results = listOf(CrimeMatchingResultDto(crimeVersionId = missingVersionId, deviceWearers = emptyList())),
+        results = listOf(CrimeMatchingResultRequest(crimeVersionId = missingVersionId, deviceWearers = emptyList())),
       )
 
       assertThatThrownBy { service.createCrimeMatchingRun(dto) }
@@ -120,7 +120,7 @@ class CrimeMatchingRunServiceTest {
       whenever(crimeBatchRepository.findById(batchId)).thenReturn(Optional.of(crimeBatch))
       whenever(crimeMatchingRunRepository.save(any())).thenAnswer { it.arguments[0] as CrimeMatchingRun }
 
-      val dto = CrimeMatchingRunDto(
+      val dto = CreateCrimeMatchingRunRequest(
         crimeBatchId = batchId,
         algorithmVersion = "e83c5163316f89bfbde7d9ab23ca2e25604af290",
         triggerType = CrimeMatchingTriggerType.AUTO,
@@ -157,7 +157,7 @@ class CrimeMatchingRunServiceTest {
       whenever(crimeVersionRepository.findById(versionId)).thenReturn(Optional.of(crimeVersion))
       whenever(crimeMatchingRunRepository.save(any())).thenAnswer { it.arguments[0] as CrimeMatchingRun }
 
-      val dto = CrimeMatchingRunDto(
+      val dto = CreateCrimeMatchingRunRequest(
         crimeBatchId = batchId,
         algorithmVersion = "e83c5163316f89bfbde7d9ab23ca2e25604af290",
         triggerType = CrimeMatchingTriggerType.AUTO,
@@ -165,22 +165,22 @@ class CrimeMatchingRunServiceTest {
         matchingStarted = LocalDateTime.of(2026, 1, 16, 8, 30, 0),
         matchingEnded = LocalDateTime.of(2026, 1, 16, 8, 31, 0),
         results = listOf(
-          CrimeMatchingResultDto(
+          CrimeMatchingResultRequest(
             crimeVersionId = versionId,
             deviceWearers = listOf(
-              CrimeMatchingResultDeviceWearerDto(
+              CrimeMatchingResultDeviceWearerRequest(
                 deviceId = 604008982,
                 name = "Richard Gibbons",
                 nomisId = "A5128CZ",
                 positions = listOf(
-                  CrimeMatchingResultPositionDto(
+                  CrimeMatchingResultPositionRequest(
                     latitude = 51.574865,
                     longitude = 0.060977,
                     capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),
                     sequenceLabel = "A1",
                     confidenceCircle = 30,
                   ),
-                  CrimeMatchingResultPositionDto(
+                  CrimeMatchingResultPositionRequest(
                     latitude = 51.574153,
                     longitude = 0.058536,
                     capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),

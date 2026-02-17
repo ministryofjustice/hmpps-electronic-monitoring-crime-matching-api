@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.Osgb36ToWgs84Converter
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.roundTo
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.Wgs84
@@ -12,10 +12,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 class CrimeMapper(
   val converter: Osgb36ToWgs84Converter,
 ) {
-  fun toDto(version: CrimeVersion): CrimeDto {
+  fun toDto(version: CrimeVersion): CrimeResponse {
     val coords = getLatLng(version)
 
-    return CrimeDto(
+    return CrimeResponse(
       id = version.id.toString(),
       crimeTypeId = version.crimeTypeId.name,
       crimeTypeDescription = version.crimeTypeId.value,
