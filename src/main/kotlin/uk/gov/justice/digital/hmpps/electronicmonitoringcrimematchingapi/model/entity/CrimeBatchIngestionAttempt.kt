@@ -23,4 +23,9 @@ data class CrimeBatchIngestionAttempt(
   val bucket: String,
   val objectName: String,
   val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+  fun setEmail(email: CrimeBatchEmail) {
+    crimeBatchEmail = email
+    email.crimeBatchIngestionAttempt = this
+  }
+}

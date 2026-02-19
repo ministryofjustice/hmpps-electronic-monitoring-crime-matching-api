@@ -7,6 +7,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
+import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
@@ -37,6 +38,9 @@ data class CrimeBatch(
     ],
   )
   val crimeVersions: MutableSet<CrimeVersion> = mutableSetOf(),
+
+  @OneToMany(mappedBy = "crimeBatch")
+  var crimeMatchingRuns: MutableList<CrimeMatchingRun> = mutableListOf(),
 
   val createdAt: LocalDateTime = LocalDateTime.now(),
 

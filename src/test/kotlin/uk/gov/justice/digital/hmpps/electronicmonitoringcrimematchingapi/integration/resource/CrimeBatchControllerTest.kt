@@ -8,6 +8,12 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchEmailAttachmentBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchEmailBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchIngestionAttemptBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeVersionBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
@@ -81,59 +87,27 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a crime batch if it exists`() {
       // Create a crime batch
-      val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
-        bucket = "bucket",
-        objectName = "objectName",
-      )
+      val crimeBatchIngestionAttempt = CrimeBatchIngestionAttemptBuilder.aCrimeBatchIngestionAttempt()
 
-      val crimeBatchEmail = CrimeBatchEmail(
-        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-        sender = "sender",
-        originalSender = "originalSender",
-        subject = "subject",
-        sentAt = Date.from(Instant.now()),
-      )
+      val crimeBatchEmail = CrimeBatchEmailBuilder.aCrimeBatchEmail(crimeBatchIngestionAttempt)
 
-      val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
-        crimeBatchEmail = crimeBatchEmail,
-        fileName = "filename",
-        rowCount = 1,
-      )
-
-      crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
-      crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
+      val crimeBatchEmailAttachment = CrimeBatchEmailAttachmentBuilder.aCrimeBatchEmailAttachment(crimeBatchEmail)
 
       crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
 
-      val crimeBatchId = UUID.fromString("142a9a57-337f-4208-908b-2874b75fa10d")
+      val crimeBatch = CrimeBatchBuilder.aCrimeBatch(crimeBatchEmailAttachment = crimeBatchEmailAttachment)
 
-      val crimeBatch = CrimeBatch(
-        id = crimeBatchId,
-        batchId = "batchId",
-        crimeBatchEmailAttachment = crimeBatchEmailAttachment,
-      )
-
-      val crime = Crime(
-        policeForceArea = PoliceForce.METROPOLITAN,
-        crimeReference = "CRI00000001",
-      )
-
+      val crime = CrimeBuilder.aCrime()
       crimeRepository.save(crime)
 
       val crimeVersions = mutableListOf(
-        CrimeVersion(
+        CrimeVersionBuilder.aCrimeVersion(
           id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
           crime = crime,
-          crimeTypeId = CrimeType.AB,
-          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
-          easting = null,
-          northing = null,
           latitude = 51.574865,
           longitude = 0.060977,
-          crimeText = "",
         ),
-        CrimeVersion(
+        CrimeVersionBuilder.aCrimeVersion(
           id = UUID.fromString("8d595ab3-d4ef-4975-93ef-24570f6f0f61"),
           crime = crime,
           crimeTypeId = CrimeType.BOTD,
@@ -141,9 +115,6 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           crimeDateTimeTo = LocalDateTime.of(2025, 1, 1, 1, 30),
           easting = 529381.toDouble(),
           northing = 179534.toDouble(),
-          latitude = null,
-          longitude = null,
-          crimeText = "",
         ),
       )
       crimeBatch.crimeVersions.addAll(crimeVersions)
@@ -151,7 +122,7 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
 
       // Validate crime batch is retrieved successfully
       val body = webTestClient.get()
-        .uri("/crime-batches/$crimeBatchId")
+        .uri("/crime-batches/${crimeBatch.id}")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
         .exchange()
         .expectStatus()

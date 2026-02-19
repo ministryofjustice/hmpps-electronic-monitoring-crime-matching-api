@@ -37,5 +37,5 @@ data class CrimeMatchingResultDeviceWearer(
   val nomisId: String,
 
   @OneToMany(mappedBy = "crimeMatchingResultDeviceWearer", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
-  val positions: MutableList<CrimeMatchingResultPosition> = mutableListOf(),
+  var positions: MutableList<CrimeMatchingResultPosition> = mutableListOf(),
 )

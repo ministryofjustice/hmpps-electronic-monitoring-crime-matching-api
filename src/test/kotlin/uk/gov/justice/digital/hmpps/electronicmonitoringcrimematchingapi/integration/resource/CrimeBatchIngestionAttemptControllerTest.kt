@@ -1,17 +1,20 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
-import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchEmailAttachmentBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchEmailBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBatchIngestionAttemptBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeMatchingResultBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeMatchingResultDeviceWearerBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeMatchingResultPositionBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeMatchingRunBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.CrimeVersionBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
@@ -19,7 +22,13 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultDeviceWearer
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultPosition
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingRun
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeMatchingStatus
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeMatchingTriggerType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
@@ -27,19 +36,16 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.Date
 import java.util.UUID
 
 @ActiveProfiles("integration")
-class CrimeMatchingRunControllerTest : IntegrationTestBase() {
-
+class CrimeBatchIngestionAttemptControllerTest: IntegrationTestBase() {
   @Autowired
-  lateinit var crimeMatchingRunRepository: CrimeMatchingRunRepository
-
-  @Autowired
-  lateinit var crimeBatchRepository: CrimeBatchRepository
+  lateinit var repo: CrimeBatchIngestionAttemptRepository
 
   @Autowired
   lateinit var crimeRepository: CrimeRepository
@@ -48,18 +54,23 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
   lateinit var crimeVersionRepository: CrimeVersionRepository
 
   @Autowired
-  lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
+  lateinit var crimeBatchRepository: CrimeBatchRepository
+
+  @Autowired
+  lateinit var crimeMatchingRunRepository: CrimeMatchingRunRepository
+
+  @BeforeEach
+  fun setup() {
+    repo.deleteAll()
+  }
 
   @Nested
-  @DisplayName("POST /crime-matching-run")
-  inner class CreateCrimeMatchingRun {
-
+  @DisplayName("GET /ingestion-attempts")
+  inner class GetIngestionAttempts {
     @Test
     fun `it should return a 401 if the request is not authenticated`() {
-      webTestClient.post()
-        .uri("/crime-matching-run")
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue("create-crime-matching-run-request".loadJson())
+      webTestClient.get()
+        .uri("/ingestion-attempts")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -67,84 +78,46 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a 403 if the client does not have a valid role`() {
-      webTestClient.post()
-        .uri("/crime-matching-run")
+      webTestClient.get()
+        .uri("/ingestion-attempts")
         .headers(setAuthorisation(roles = listOf()))
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue("create-crime-matching-run-request".loadJson())
         .exchange()
         .expectStatus()
         .isForbidden
     }
 
     @Test
-    fun `it should return a 404 if the crime batch does not exist`() {
-      webTestClient.post()
-        .uri("/crime-matching-run")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW")))
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue("create-crime-matching-run-request-missing-batch".loadJson())
+    fun `it should return a list of ingestion attempts`() {
+      // Create a crime batch
+      val crimeBatchIngestionAttempt = createCrimeBatchWithCrimeVersion()
+
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCH_INGESTION_ATTEMPTS__RO")))
         .exchange()
-        .expectStatus().isNotFound
+        .expectStatus()
+        .isOk
         .expectBody()
-        .jsonPath("$.developerMessage")
-        .isEqualTo("No crime batch found with id: 00000000-0000-0000-0000-000000000001")
-        .jsonPath("$.userMessage").isEqualTo("Not Found")
-    }
+        .returnResult()
+        .responseBody!!
+      val formatted = String(body, StandardCharsets.UTF_8)
 
-    @Test
-    fun `it should return a 404 if the crime version does not exist`() {
-      createCrimeBatchWithCrimeVersion()
-
-      webTestClient.post()
-        .uri("/crime-matching-run")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW")))
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue("create-crime-matching-run-request-missing-crime-version".loadJson())
-        .exchange()
-        .expectStatus().isNotFound
-        .expectBody()
-        .jsonPath("$.developerMessage")
-        .isEqualTo("No crime version found with id: 00000000-0000-0000-0000-000000000001")
-        .jsonPath("$.userMessage").isEqualTo("Not Found")
-    }
-
-    @Test
-    fun `it should create a crime matching run and return 201 with run id`() {
-      val (crimeBatchId, _) = createCrimeBatchWithCrimeVersion()
-
-      webTestClient.post()
-        .uri("/crime-matching-run")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW")))
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue("create-crime-matching-run-request".loadJson())
-        .exchange()
-        .expectStatus().isCreated
-        .expectBody()
-        .jsonPath("$.data.id").exists()
-        .jsonPath("$.data.id").isNotEmpty
-
-      assertThat(crimeMatchingRunRepository.count()).isEqualTo(1)
-
-      val run = crimeMatchingRunRepository.findAll().first()
-      assertThat(run.algorithmVersion).isEqualTo("e83c5163316f89bfbde7d9ab23ca2e25604af290")
-      assertThat(run.crimeBatch.id).isEqualTo(crimeBatchId)
-      assertThat(run.triggerType.name).isEqualTo("AUTO")
-      assertThat(run.status.name).isEqualTo("SUCCESS")
+      println("finished")
     }
   }
 
   // Creates a CrimeBatch, plus a Crime + CrimeVersion, and returns their IDs.
-  private fun createCrimeBatchWithCrimeVersion(): Pair<UUID, UUID> {
+  private fun createCrimeBatchWithCrimeVersion(): CrimeBatchIngestionAttempt {
+    // Create a crime batch
     val crimeBatchIngestionAttempt = CrimeBatchIngestionAttemptBuilder.aCrimeBatchIngestionAttempt()
 
     val crimeBatchEmail = CrimeBatchEmailBuilder.aCrimeBatchEmail(crimeBatchIngestionAttempt)
 
     val crimeBatchEmailAttachment = CrimeBatchEmailAttachmentBuilder.aCrimeBatchEmailAttachment(crimeBatchEmail)
 
-    crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
-    val crimeBatchId = UUID.fromString("242a9a57-337f-4208-908b-2874b75fa10e")
-    val crimeBatch = CrimeBatchBuilder.aCrimeBatch(id = crimeBatchId, crimeBatchEmailAttachment)
+    repo.save(crimeBatchIngestionAttempt)
+
+    val crimeBatch = CrimeBatchBuilder.aCrimeBatch(crimeBatchEmailAttachment = crimeBatchEmailAttachment)
 
     val crime = CrimeBuilder.aCrime()
     crimeRepository.save(crime)
@@ -162,11 +135,40 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
       longitude = 0.060977,
       crimeText = "",
     )
+
     crimeVersionRepository.save(crimeVersion)
+    crimeBatch.crimeVersions.add(crimeVersion)
     crimeBatchRepository.save(crimeBatch)
 
-    return Pair(crimeBatchId, crimeVersionId)
-  }
+    // Matching results setup
+    val crimeMatchingRun = CrimeMatchingRunBuilder.aCrimeMatchingRun()
 
-  private fun String.loadJson(): String = CrimeMatchingRunControllerTest::class.java.getResource("$this.json")!!.readText()
+    val crimeMatchingResult = CrimeMatchingResultBuilder.aCrimeMatchingResult()
+
+    val deviceWearer = CrimeMatchingResultDeviceWearerBuilder.aCrimeMatchingResultDeviceWearer()
+
+    val positions = mutableListOf(
+      CrimeMatchingResultPositionBuilder.aCrimeMatchingResultPosition()
+    )
+
+    deviceWearer.positions = positions
+
+    val deviceWearers = mutableListOf(
+      deviceWearer
+    )
+
+    crimeMatchingResult.deviceWearers = deviceWearers
+
+    val results = mutableListOf(
+      crimeMatchingResult
+    )
+
+    crimeMatchingRun.results = results
+    crimeMatchingRun.crimeBatch = crimeBatch
+
+    crimeMatchingRunRepository.save(crimeMatchingRun)
+
+
+    return crimeBatchIngestionAttempt
+  }
 }

@@ -1,11 +1,15 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.IngestionAttemptSummary
+import java.time.LocalDateTime
 
 @Service
 class CrimeBatchEmailIngestionService(
@@ -30,5 +34,19 @@ class CrimeBatchEmailIngestionService(
     fileName = fileName,
     rowCount = recordCount,
     crimeBatchEmail = crimeBatchEmail,
+  )
+
+  fun getCrimeBatchIngestionAttempts(
+    batchId: String?,
+    policeForceArea: String?,
+    fromDate: LocalDateTime?,
+    toDate: LocalDateTime?,
+    pageable: Pageable,
+  ): Page<IngestionAttemptSummary> = crimeBatchIngestionAttemptRepository.findByBatchId(
+    batchId,
+    policeForceArea,
+    fromDate,
+    toDate,
+    pageable,
   )
 }

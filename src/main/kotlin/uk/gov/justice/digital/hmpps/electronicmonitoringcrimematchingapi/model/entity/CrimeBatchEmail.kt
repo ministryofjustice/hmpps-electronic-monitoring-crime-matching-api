@@ -26,10 +26,16 @@ data class CrimeBatchEmail(
   var crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
 
   @OneToMany(mappedBy = "crimeBatchEmail", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
-  var crimeBatchEmailAttachments: MutableList<CrimeBatchEmailAttachment> = mutableListOf(),
+  val crimeBatchEmailAttachments: MutableList<CrimeBatchEmailAttachment> = mutableListOf(),
 
   val sender: String,
   val originalSender: String,
   val subject: String,
   val sentAt: Date,
-)
+) {
+//  fun addAttachment(attachment: CrimeBatchEmailAttachment) {
+//    crimeBatchEmailAttachments.add(attachment)
+//    attachment.crimeBatchEmail = this
+//  }
+}
+

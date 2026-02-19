@@ -25,7 +25,7 @@ data class CrimeMatchingRun(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crime_batch_id", nullable = false)
-  val crimeBatch: CrimeBatch,
+  var crimeBatch: CrimeBatch,
 
   @Column(nullable = false)
   val algorithmVersion: String,
@@ -48,5 +48,5 @@ data class CrimeMatchingRun(
   val matchingEnded: LocalDateTime,
 
   @OneToMany(mappedBy = "crimeMatchingRun", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
-  val results: MutableList<CrimeMatchingResult> = mutableListOf(),
+  var results: MutableList<CrimeMatchingResult> = mutableListOf(),
 )

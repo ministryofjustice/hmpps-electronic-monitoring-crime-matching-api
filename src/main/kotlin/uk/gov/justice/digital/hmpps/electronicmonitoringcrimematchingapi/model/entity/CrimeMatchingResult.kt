@@ -37,5 +37,5 @@ data class CrimeMatchingResult(
   val createdAt: LocalDateTime = LocalDateTime.now(),
 
   @OneToMany(mappedBy = "crimeMatchingResult", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
-  val deviceWearers: MutableList<CrimeMatchingResultDeviceWearer> = mutableListOf(),
+  var deviceWearers: MutableList<CrimeMatchingResultDeviceWearer> = mutableListOf(),
 )
