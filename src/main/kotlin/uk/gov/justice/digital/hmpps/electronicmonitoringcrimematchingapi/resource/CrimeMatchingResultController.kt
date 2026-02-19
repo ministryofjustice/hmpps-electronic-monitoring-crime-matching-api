@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.resource
 
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.validation.constraints.NotEmpty
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -14,7 +15,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RO')")
-@RequestMapping("/crimes", produces = ["application/json"])
+@RequestMapping("/crime-matching-results", produces = ["application/json"])
 class CrimeMatchingResultController(
   val crimeMatchingResultsService: CrimeMatchingResultsService,
 ) {
@@ -23,17 +24,18 @@ class CrimeMatchingResultController(
     summary = "Get crime matching results",
   )
   @GetMapping(
-    consumes = [MediaType.APPLICATION_JSON_VALUE],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getCrimes(
-    @RequestParam("batchId") batchIds: List<String>,
+    @RequestParam("batchId")
+    @NotEmpty(message = "At least one batchId must be provided")
+    batchIds: List<String> = listOf(),
   ): ResponseEntity<Response<List<CrimeMatchingResultResponse>>> {
     val results = crimeMatchingResultsService.getCrimesMatchingResultsForBatches(batchIds)
 
-    return ResponseEntity.status(201).body(
+    return ResponseEntity.status(200).body(
       Response(
-        listOf()
+        listOf(),
       ),
     )
   }

@@ -167,6 +167,4 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
       )
     }
   }
-
-  private fun String.loadJson(): String = CrimeBatchControllerTest::class.java.getResource("$this.json")!!.readText()
 }
