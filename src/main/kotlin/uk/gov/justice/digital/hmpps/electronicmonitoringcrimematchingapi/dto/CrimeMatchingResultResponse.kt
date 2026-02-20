@@ -10,7 +10,7 @@ data class CrimeMatchingResultResponse(
   val crimeLatitude: Double,
   val crimeLongitude: Double,
   val crimeText: String,
-  val deviceId: String,
+  val deviceId: Long,
   val deviceName: String,
   val subjectId: String,
   val subjectName: String,

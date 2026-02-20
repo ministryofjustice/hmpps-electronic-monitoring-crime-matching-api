@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -7,6 +8,7 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.CrimeMatchingFixtures
@@ -36,6 +38,36 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
+
+  @Autowired lateinit var jdbc: JdbcTemplate
+
+  fun dump(table: String) {
+    val rows = jdbc.queryForList("select * from $table")
+    println("=== $table (${rows.size}) ===")
+    rows.forEach { println(it) }
+  }
+
+  fun describeTable(table: String) {
+    val cols = jdbc.queryForList(
+      """
+    select column_name, type_name
+    from information_schema.columns
+    where upper(table_name) = upper(?)
+    order by ordinal_position
+      """.trimIndent(),
+      table,
+    )
+    println("=== columns for $table ===")
+    cols.forEach { println("${it["COLUMN_NAME"]} : ${it["TYPE_NAME"]}") }
+  }
+
+  @BeforeEach
+  fun setup() {
+    crimeMatchingRunRepository.deleteAll()
+//    crimeBatchRepository.deleteAll()
+//    crimeRepository.deleteAll()
+//    crimeBatchIngestionAttemptRepository.deleteAll()
+  }
 
   @Nested
   @DisplayName("GET /crime-matching-results")
@@ -113,6 +145,11 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
         }
       }
 
+      dump("crime_batch_crime_version")
+      dump("crime_matching_run")
+      dump("crime_matching_result")
+      dump("crime_matching_result_device_wearer")
+
       // When the client requests matching results
       val body = webTestClient.get()
         .uri("/crime-matching-results?batchId=" + batch.id)
@@ -176,6 +213,7 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
       )
     }
 
+    @Test
     fun `it should return matches for many crime batches`() {
       // Given 2 crime batches with 1 crime and 1 result
       val batch1 = fixtures.givenBatch("Batch1") {

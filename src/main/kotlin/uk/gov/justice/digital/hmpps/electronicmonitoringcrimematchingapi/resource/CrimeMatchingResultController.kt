@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeMatchingResultMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.CrimeMatchingResultsService
 
 @RestController
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 @RequestMapping("/crime-matching-results", produces = ["application/json"])
 class CrimeMatchingResultController(
   val crimeMatchingResultsService: CrimeMatchingResultsService,
+  val crimeMatchingResultMapper: CrimeMatchingResultMapper,
 ) {
   @Operation(
     tags = ["Crime Matching Results"],
@@ -26,7 +28,7 @@ class CrimeMatchingResultController(
   @GetMapping(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  fun getCrimes(
+  fun getCrimeMatchingResults(
     @RequestParam("batchId")
     @NotEmpty(message = "At least one batchId must be provided")
     batchIds: List<String> = listOf(),
@@ -35,7 +37,7 @@ class CrimeMatchingResultController(
 
     return ResponseEntity.status(200).body(
       Response(
-        listOf(),
+        results.map { crimeMatchingResultMapper.toDto(it) },
       ),
     )
   }
