@@ -56,7 +56,7 @@ class CrimeBatchIngestionAttemptController(
     @RequestParam(required = false)
     toDate: LocalDateTime? = null,
     @Parameter(
-      description = "Page number (0-based)",
+      description = "Page number (0-based). Defaults to 0.",
       example = "0",
     )
     @RequestParam(defaultValue = "0")
