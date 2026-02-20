@@ -143,12 +143,12 @@ class CrimeBatchIngestionAttemptControllerTest: IntegrationTestBase() {
     // Matching results setup
     val crimeMatchingRun = CrimeMatchingRunBuilder.aCrimeMatchingRun()
 
-    val crimeMatchingResult = CrimeMatchingResultBuilder.aCrimeMatchingResult()
+    val crimeMatchingResult = CrimeMatchingResultBuilder.aCrimeMatchingResult(crimeMatchingRun = crimeMatchingRun, crimeVersion = crimeVersion)
 
-    val deviceWearer = CrimeMatchingResultDeviceWearerBuilder.aCrimeMatchingResultDeviceWearer()
+    val deviceWearer = CrimeMatchingResultDeviceWearerBuilder.aCrimeMatchingResultDeviceWearer(crimeMatchingResult = crimeMatchingResult)
 
     val positions = mutableListOf(
-      CrimeMatchingResultPositionBuilder.aCrimeMatchingResultPosition()
+      CrimeMatchingResultPositionBuilder.aCrimeMatchingResultPosition(deviceWearer = deviceWearer)
     )
 
     deviceWearer.positions = positions
