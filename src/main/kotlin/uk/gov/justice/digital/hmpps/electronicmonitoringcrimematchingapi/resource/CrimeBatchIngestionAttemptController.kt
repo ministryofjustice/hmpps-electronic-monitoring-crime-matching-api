@@ -29,7 +29,7 @@ class CrimeBatchIngestionAttemptController(
   )
   fun getCrimeBatchIngestionAttemptSummaries(
     @Parameter(
-      description = "Batch ID to filter results",
+      description = "Filters results to the specified batch ID. If omitted, results for all batch IDs are returned.",
       required = false,
     )
     @RequestParam(required = false)
