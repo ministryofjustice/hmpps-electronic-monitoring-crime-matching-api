@@ -62,7 +62,7 @@ class CrimeBatchIngestionAttemptController(
     @RequestParam(defaultValue = "0")
     page: Int = 0,
     @Parameter(
-      description = "Number of items per page",
+      description = "Number of items per page. Defaults to 30.",
       example = "30",
     )
     @RequestParam(defaultValue = "30")
