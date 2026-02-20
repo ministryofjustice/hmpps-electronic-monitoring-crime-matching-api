@@ -74,8 +74,8 @@ class CrimeBatchService(
   }
 
   fun getCrimeBatchIngestionAttemptSummaries(
-    batchId: String,
-    policeForceArea: String,
+    batchId: String?,
+    policeForceArea: String?,
     fromDate: LocalDateTime?,
     toDate: LocalDateTime?,
     page: Int,

@@ -33,13 +33,13 @@ class CrimeBatchIngestionAttemptController(
       required = false,
     )
     @RequestParam(required = false)
-    batchId: String = "",
+    batchId: String? = null,
     @Parameter(
       description = "Filters results to the specified police force area. If omitted, results for all areas are returned",
       required = false,
     )
     @RequestParam(required = false)
-    policeForceArea: String = "",
+    policeForceArea: String? = null,
     @Parameter(
       description = "Inclusive start of the batch creation timestamp filter (ISO-8601). If omitted, no lower bound is applied.",
 
