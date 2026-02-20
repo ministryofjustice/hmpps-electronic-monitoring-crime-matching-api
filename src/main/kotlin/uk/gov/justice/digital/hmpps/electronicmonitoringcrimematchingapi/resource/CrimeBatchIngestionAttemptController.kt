@@ -49,7 +49,7 @@ class CrimeBatchIngestionAttemptController(
     @RequestParam(required = false)
     fromDate: LocalDateTime? = null,
     @Parameter(
-      description = "End of batch creation date range",
+      description = "Inclusive end of the batch creation timestamp filter (ISO-8601). If omitted, no upper bound is applied.",
       required = false,
       example = "2025-01-31T23:59:59",
     )
