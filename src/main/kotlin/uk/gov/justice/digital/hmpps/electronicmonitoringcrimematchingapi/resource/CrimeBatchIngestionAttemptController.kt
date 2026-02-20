@@ -35,7 +35,7 @@ class CrimeBatchIngestionAttemptController(
     @RequestParam(required = false)
     batchId: String? = null,
     @Parameter(
-      description = "Police force area to filter results",
+      description = "Filters results to the specified police force area. If omitted, results for all areas are returned",
       required = false,
     )
     @RequestParam(required = false)
