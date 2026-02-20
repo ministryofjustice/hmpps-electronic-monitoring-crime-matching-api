@@ -41,7 +41,8 @@ class CrimeBatchIngestionAttemptController(
     @RequestParam(required = false)
     policeForceArea: String? = null,
     @Parameter(
-      description = "Start of batch creation date range",
+      description = "Inclusive start of the batch creation timestamp filter (ISO-8601). If omitted, no lower bound is applied.",
+
       required = false,
       example = "2025-01-01T00:00:00",
     )
