@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -7,6 +8,7 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.CrimeMatchingFixtures
@@ -36,6 +38,14 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
+
+  @BeforeEach
+  fun setup() {
+    crimeMatchingRunRepository.deleteAll()
+//    crimeBatchRepository.deleteAll()
+//    crimeRepository.deleteAll()
+//    crimeBatchIngestionAttemptRepository.deleteAll()
+  }
 
   @Nested
   @DisplayName("GET /crime-matching-results")
@@ -176,6 +186,7 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
       )
     }
 
+    @Test
     fun `it should return matches for many crime batches`() {
       // Given 2 crime batches with 1 crime and 1 result
       val batch1 = fixtures.givenBatch("Batch1") {
