@@ -1,14 +1,18 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.TestFixturesConfig
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.UUID
@@ -51,6 +55,32 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isBadRequest
+    }
+
+    @Test
+    fun `it should return a 400 if an invalid batch id in query parameters`() {
+      val exampleId = UUID.randomUUID()
+      val result = webTestClient.get()
+        .uri("/crime-matching-results?batchId=$exampleId&batchId=abc")
+        .headers(
+          setAuthorisation(
+            roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RO"),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result).isEqualTo(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "The provided value '{$exampleId, abc}' is the incorrect type for the 'batchId' parameter.",
+          developerMessage = "The provided value '{$exampleId, abc}' is the incorrect type for the 'batchId' parameter.",
+        ),
+      )
     }
 
     @Test

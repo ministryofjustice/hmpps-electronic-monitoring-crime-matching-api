@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.util.ObjectUtils
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
@@ -37,8 +38,8 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
     .body(
       ErrorResponse(
         status = BAD_REQUEST,
-        userMessage = "The provided value '${e.value}' is the incorrect type for the '${e.name}' parameter.",
-        developerMessage = "The provided value '${e.value}' is the incorrect type for the '${e.name}' parameter.",
+        userMessage = "The provided value '${ObjectUtils.nullSafeToString(e.value)}' is the incorrect type for the '${e.name}' parameter.",
+        developerMessage = "The provided value '${ObjectUtils.nullSafeToString(e.value)}' is the incorrect type for the '${e.name}' parameter.",
       ),
     ).also { log.info("MethodArgumentTypeMismatchException: {}", e.message) }
 

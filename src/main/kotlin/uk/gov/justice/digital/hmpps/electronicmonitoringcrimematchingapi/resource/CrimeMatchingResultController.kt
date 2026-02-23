@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeMatchingResultMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.CrimeMatchingResultsService
+import java.util.UUID
 
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RO')")
@@ -31,7 +32,7 @@ class CrimeMatchingResultController(
   fun getCrimeMatchingResults(
     @RequestParam("batchId")
     @NotEmpty(message = "At least one batchId must be provided")
-    batchIds: List<String> = listOf(),
+    batchIds: List<UUID> = listOf(),
   ): ResponseEntity<Response<List<CrimeMatchingResultResponse>>> {
     val results = crimeMatchingResultsService.getCrimesMatchingResultsForBatches(batchIds)
 
