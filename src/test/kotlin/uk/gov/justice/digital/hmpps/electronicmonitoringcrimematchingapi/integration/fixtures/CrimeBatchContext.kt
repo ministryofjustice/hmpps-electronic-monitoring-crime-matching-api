@@ -5,22 +5,22 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.time.LocalDateTime
+import java.util.UUID
 
 class CrimeBatchContext(
   private val batch: CrimeBatch,
   private val policeForce: PoliceForce,
   private val crimeRepository: CrimeRepository,
   private val crimeVersionRepository: CrimeVersionRepository,
-  private val crimeBatchRepository: CrimeBatchRepository,
   private val crimeMatchingRunRepository: CrimeMatchingRunRepository,
 ) {
   fun withCrime(
     crimeRef: String,
+    id: UUID = UUID.randomUUID(),
     crimeType: CrimeType = CrimeType.AB,
     crimeDateTimeFrom: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
     crimeDateTimeTo: LocalDateTime = LocalDateTime.of(2025, 1, 1, 1, 0),
@@ -38,6 +38,7 @@ class CrimeBatchContext(
 
     val version = crimeVersionRepository.save(
       CrimeVersion(
+        id = id,
         crime = crime,
         crimeTypeId = crimeType,
         crimeDateTimeFrom = crimeDateTimeFrom,
@@ -49,12 +50,9 @@ class CrimeBatchContext(
         crimeText = crimeText,
       ),
     )
-
-    crime.crimeVersions.add(version)
     crimeRepository.save(crime)
 
     batch.crimeVersions.add(version)
-    crimeBatchRepository.save(batch)
 
     CrimeContext(
       batch = batch,

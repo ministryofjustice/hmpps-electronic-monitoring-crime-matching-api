@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures
 
+import org.springframework.jdbc.core.JdbcTemplate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
@@ -10,15 +11,25 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
-import java.util.Date
+import java.util.*
 
 class CrimeMatchingFixtures(
+  private val jdbcTemplate: JdbcTemplate,
   private val crimeRepository: CrimeRepository,
   private val crimeVersionRepository: CrimeVersionRepository,
   private val crimeBatchRepository: CrimeBatchRepository,
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
   private val crimeMatchingRunRepository: CrimeMatchingRunRepository,
 ) {
+
+  fun deleteAll() {
+    jdbcTemplate.execute("TRUNCATE TABLE crime_batch_crime_version RESTART IDENTITY")
+    crimeMatchingRunRepository.deleteAll()
+    crimeBatchRepository.deleteAll()
+    crimeRepository.deleteAll()
+    crimeBatchIngestionAttemptRepository.deleteAll()
+  }
+
   fun givenBatch(
     batchId: String,
     policeForce: PoliceForce = PoliceForce.METROPOLITAN,
@@ -58,9 +69,10 @@ class CrimeMatchingFixtures(
       policeForce,
       crimeRepository = crimeRepository,
       crimeVersionRepository = crimeVersionRepository,
-      crimeBatchRepository = crimeBatchRepository,
       crimeMatchingRunRepository = crimeMatchingRunRepository,
     ).block()
+
+    crimeBatchRepository.save(batch)
 
     return batch
   }

@@ -1,51 +1,21 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.CrimeMatchingFixtures
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.TestFixturesConfig
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
 import java.util.UUID
 
 @ActiveProfiles("integration")
 @Import(TestFixturesConfig::class)
 class CrimeMatchingResultControllerTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var fixtures: CrimeMatchingFixtures
-
-  @Autowired
-  lateinit var crimeMatchingRunRepository: CrimeMatchingRunRepository
-
-  @Autowired
-  lateinit var crimeBatchRepository: CrimeBatchRepository
-
-  @Autowired
-  lateinit var crimeRepository: CrimeRepository
-
-  @Autowired
-  lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
-
-  @BeforeEach
-  fun setup() {
-    crimeMatchingRunRepository.deleteAll()
-//    crimeBatchRepository.deleteAll()
-//    crimeRepository.deleteAll()
-//    crimeBatchIngestionAttemptRepository.deleteAll()
-  }
 
   @Nested
   @DisplayName("GET /crime-matching-results")
@@ -111,7 +81,7 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
       // Given a crime batch with 2 crimes
       // - crime 1 has 2 matched device wearers
       // - crime 2 has 0 matched device wearers
-      val batch = fixtures.givenBatch("Batch1") {
+      val batch = crimeMatchingFixtures.givenBatch("Batch1") {
         withCrime("crime1") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
@@ -149,14 +119,16 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return the latest matching result for each crime`() {
       // Given a crime batch with 1 crime and 2 matching runs
-      // - Matching run 1 (older) matched 2 device wearers
-      // - Matching run 2 (newer) matched 1 device wearer
-      val batch = fixtures.givenBatch("Batch1") {
+      // - Matching run 1 matched 1 device wearers
+      // - Matching run 2 matched 2 device wearer
+      val batch = crimeMatchingFixtures.givenBatch("Batch1") {
         withCrime("crime1") {
-          withMatchingRun {
+          // Older
+          withMatchingRun(matchingEnded = LocalDateTime.of(2025, 1, 1, 0, 0)) {
             withMatchedDeviceWearer(deviceId = 1)
           }
-          withMatchingRun {
+          // Newer
+          withMatchingRun(matchingEnded = LocalDateTime.of(2025, 1, 2, 0, 0)) {
             withMatchedDeviceWearer(deviceId = 2)
             withMatchedDeviceWearer(deviceId = 3)
           }
@@ -189,14 +161,14 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return matches for many crime batches`() {
       // Given 2 crime batches with 1 crime and 1 result
-      val batch1 = fixtures.givenBatch("Batch1") {
+      val batch1 = crimeMatchingFixtures.givenBatch("Batch1") {
         withCrime("crime1") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
           }
         }
       }
-      val batch2 = fixtures.givenBatch("Batch2") {
+      val batch2 = crimeMatchingFixtures.givenBatch("Batch2") {
         withCrime("crime2") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 2)
