@@ -60,6 +60,6 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
     nativeQuery = true,
   )
   fun findLatestCrimeMatchesByBatchIds(
-    batchIds: Array<String>,
+    batchIds: Array<UUID>,
   ): List<CrimeMatchingResultProjection>
 }
