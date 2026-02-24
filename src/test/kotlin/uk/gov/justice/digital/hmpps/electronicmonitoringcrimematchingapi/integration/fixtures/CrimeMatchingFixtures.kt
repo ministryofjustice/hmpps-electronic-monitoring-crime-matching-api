@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.time.LocalDateTime
-import java.util.Date
-import java.util.UUID
+import java.util.*
+
 
 class CrimeMatchingFixtures(
   private val jdbcTemplate: JdbcTemplate,
@@ -78,6 +78,8 @@ class CrimeMatchingFixtures(
       crimeVersionRepository = crimeVersionRepository,
       crimeMatchingRunRepository = crimeMatchingRunRepository,
     ).block()
+
+    crimeBatchRepository.save(batch)
 
     return batch
   }

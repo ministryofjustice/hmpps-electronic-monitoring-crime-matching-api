@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "policeForce": "METROPOLITAN",
+      "batchId": "Batch1",
+      "crimeRef": "crime1",
+      "crimeType": "AB",
+      "crimeDateTimeFrom": "2025-01-01T00:00",
+      "crimeDateTimeTo": "2025-01-01T01:00",
+      "crimeLatitude": 0.0,
+      "crimeLongitude": 0.0,
+      "crimeText": "text",
+      "deviceId": 1,
+      "deviceName": "",
+      "subjectId": "",
+      "subjectName": "name",
+      "subjectNomisId": "nomisId",
+      "subjectPncRef": "",
+      "subjectAddress": "",
+      "subjectDateOfBirth": "",
+      "subjectManager": ""
+    },
+    {
+      "policeForce": "METROPOLITAN",
+      "batchId": "Batch2",
+      "crimeRef": "crime2",
+      "crimeType": "AB",
+      "crimeDateTimeFrom": "2025-01-01T00:00",
+      "crimeDateTimeTo": "2025-01-01T01:00",
+      "crimeLatitude": 0.0,
+      "crimeLongitude": 0.0,
+      "crimeText": "text",
+      "deviceId": 2,
+      "deviceName": "",
+      "subjectId": "",
+      "subjectName": "name",
+      "subjectNomisId": "nomisId",
+      "subjectPncRef": "",
+      "subjectAddress": "",
+      "subjectDateOfBirth": "",
+      "subjectManager": ""
+    }
+  ]
+}
