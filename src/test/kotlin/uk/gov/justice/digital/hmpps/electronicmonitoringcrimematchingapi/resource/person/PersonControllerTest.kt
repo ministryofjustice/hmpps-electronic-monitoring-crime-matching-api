@@ -10,7 +10,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.server.ResponseStatusException
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
@@ -34,7 +34,7 @@ class PersonControllerTest {
       val personsQueryCriteria = PersonsQueryCriteria(name = "name")
 
       val expectedResult = listOf(
-        PersonDto(
+        PersonResponse(
           1,
           name = "name",
           nomisId = "nomis",

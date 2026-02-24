@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 
-data class PersonDto(
+data class PersonResponse(
   val personId: Long,
   val name: String,
   val nomisId: String,
@@ -10,7 +10,7 @@ data class PersonDto(
   val dateOfBirth: String,
   val probationPractitioner: String,
   val address: String,
-  val deviceActivations: List<DeviceActivationDto>,
+  val deviceActivations: List<DeviceActivationResponse>,
 ) {
   constructor(entity: Person) : this(
     personId = entity.personId,
@@ -21,7 +21,7 @@ data class PersonDto(
     probationPractitioner = entity.probationPractitioner,
     address = "${entity.street} ${entity.city} ${entity.zip}",
     deviceActivations = entity.deviceActivations.map {
-      DeviceActivationDto(it)
+      DeviceActivationResponse(it)
     },
   )
 }

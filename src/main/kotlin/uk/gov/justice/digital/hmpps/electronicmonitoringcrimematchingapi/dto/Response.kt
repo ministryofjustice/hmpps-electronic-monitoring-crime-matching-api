@@ -1,5 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
-data class ResponseDto<T>(
+data class Response<T>(
   val data: T,
 )

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 
@@ -33,11 +33,11 @@ class CrimeBatchController(
   )
   fun getCrimeBatch(
     @PathVariable crimeBatchId: String,
-  ): ResponseEntity<ResponseDto<CrimeBatchDto>> {
+  ): ResponseEntity<Response<CrimeBatchResponse>> {
     val batch = this.crimeBatchService.getCrimeBatch(crimeBatchId)
 
     return ResponseEntity.ok(
-      ResponseDto(
+      Response(
         crimeBatchMapper.toDto(batch),
       ),
     )

@@ -187,6 +187,4 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
 
     return Pair(crimeBatchId, crimeVersionId)
   }
-
-  private fun String.loadJson(): String = CrimeMatchingRunControllerTest::class.java.getResource("$this.json")!!.readText()
 }

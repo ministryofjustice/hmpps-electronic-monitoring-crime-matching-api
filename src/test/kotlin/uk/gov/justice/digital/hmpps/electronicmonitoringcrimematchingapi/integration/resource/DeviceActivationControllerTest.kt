@@ -8,9 +8,9 @@ import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -81,12 +81,12 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<DeviceActivationDto>>()
+        .expectBody<Response<DeviceActivationResponse>>()
         .returnResult()
         .responseBody!!
 
       assertThat(result.data).isEqualTo(
-        DeviceActivationDto(
+        DeviceActivationResponse(
           deviceActivationId = 12345,
           deviceId = 54321,
           deviceName = "",
@@ -114,12 +114,12 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<DeviceActivationDto>>()
+        .expectBody<Response<DeviceActivationResponse>>()
         .returnResult()
         .responseBody!!
 
       assertThat(result.data).isEqualTo(
-        DeviceActivationDto(
+        DeviceActivationResponse(
           deviceActivationId = 12345,
           deviceId = 54321,
           deviceName = "",
@@ -259,7 +259,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<List<PositionDto>>>()
+        .expectBody<Response<List<PositionResponse>>>()
         .returnResult()
         .responseBody!!
 
@@ -281,13 +281,13 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<List<PositionDto>>>()
+        .expectBody<Response<List<PositionResponse>>>()
         .returnResult()
         .responseBody!!
 
       assertThat(result.data).isEqualTo(
         listOf(
-          PositionDto(
+          PositionResponse(
             positionId = 1,
             latitude = 51.574865,
             longitude = 0.060977,
@@ -297,7 +297,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
             timestamp = "2025-09-10T07:51:08",
             geolocationMechanism = "GPS",
           ),
-          PositionDto(
+          PositionResponse(
             positionId = 2,
             latitude = 51.574153,
             longitude = 0.058536,
@@ -307,7 +307,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
             timestamp = "2025-09-08T17:30:07",
             geolocationMechanism = "RF",
           ),
-          PositionDto(
+          PositionResponse(
             positionId = 3,
             latitude = 51.573248244162706,
             longitude = 0.05111371418603764,
@@ -317,7 +317,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
             timestamp = "2025-09-08T17:30:08",
             geolocationMechanism = "LBS",
           ),
-          PositionDto(
+          PositionResponse(
             positionId = 4,
             latitude = 51.574622,
             longitude = 0.048643,
@@ -430,7 +430,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<List<PositionDto>>>()
+        .expectBody<Response<List<PositionResponse>>>()
         .returnResult()
         .responseBody!!
 
@@ -456,7 +456,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<List<PositionDto>>>()
+        .expectBody<Response<List<PositionResponse>>>()
         .returnResult()
         .responseBody!!
 
@@ -482,7 +482,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<ResponseDto<List<PositionDto>>>()
+        .expectBody<Response<List<PositionResponse>>>()
         .returnResult()
         .responseBody!!
 

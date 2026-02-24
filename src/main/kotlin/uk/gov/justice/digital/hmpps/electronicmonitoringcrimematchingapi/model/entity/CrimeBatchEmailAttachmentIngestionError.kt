@@ -28,7 +28,8 @@ data class CrimeBatchEmailAttachmentIngestionError(
   @Enumerated(EnumType.STRING)
   val crimeTypeId: CrimeType?,
 
-  @ManyToOne
-  @JoinColumn(name = "crime_batch_email_attachment_id")
+  //@ManyToOne
+  @OneToOne
+  @JoinColumn(name = "crime_batch_email_attachment_id", nullable = false)
   val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 )

@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDeviceWearerDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultPositionDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingRunDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CreateCrimeMatchingRunRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultDeviceWearerRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultPositionRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultDeviceWearer
@@ -27,7 +27,7 @@ class CrimeMatchingRunService(
 ) {
 
   @Transactional
-  fun createCrimeMatchingRun(runDto: CrimeMatchingRunDto): CrimeMatchingRun {
+  fun createCrimeMatchingRun(runDto: CreateCrimeMatchingRunRequest): CrimeMatchingRun {
     validateMatchingWindow(runDto.matchingStarted, runDto.matchingEnded)
 
     val crimeBatch = findCrimeBatch(runDto.crimeBatchId)
@@ -65,7 +65,7 @@ class CrimeMatchingRunService(
   private fun findCrimeVersion(id: UUID): CrimeVersion = crimeVersionRepository.findById(id)
     .orElseThrow { EntityNotFoundException("No crime version found with id: $id") }
 
-  private fun createResult(run: CrimeMatchingRun, crimeVersion: CrimeVersion, resultDto: CrimeMatchingResultDto): CrimeMatchingResult {
+  private fun createResult(run: CrimeMatchingRun, crimeVersion: CrimeVersion, resultDto: CrimeMatchingResultRequest): CrimeMatchingResult {
     val result = CrimeMatchingResult(
       crimeVersion = crimeVersion,
       crimeMatchingRun = run,
@@ -80,7 +80,7 @@ class CrimeMatchingRunService(
     return result
   }
 
-  private fun createDeviceWearer(result: CrimeMatchingResult, wearerDto: CrimeMatchingResultDeviceWearerDto): CrimeMatchingResultDeviceWearer {
+  private fun createDeviceWearer(result: CrimeMatchingResult, wearerDto: CrimeMatchingResultDeviceWearerRequest): CrimeMatchingResultDeviceWearer {
     val wearer = CrimeMatchingResultDeviceWearer(
       crimeMatchingResult = result,
       deviceId = wearerDto.deviceId,
@@ -96,7 +96,7 @@ class CrimeMatchingRunService(
     return wearer
   }
 
-  private fun createPosition(wearer: CrimeMatchingResultDeviceWearer, positionDto: CrimeMatchingResultPositionDto): CrimeMatchingResultPosition = CrimeMatchingResultPosition(
+  private fun createPosition(wearer: CrimeMatchingResultDeviceWearer, positionDto: CrimeMatchingResultPositionRequest): CrimeMatchingResultPosition = CrimeMatchingResultPosition(
     crimeMatchingResultDeviceWearer = wearer,
     latitude = positionDto.latitude,
     longitude = positionDto.longitude,

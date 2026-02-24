@@ -22,7 +22,7 @@ data class CrimeBatchEmailAttachment(
 
   @Schema(hidden = true)
   @ManyToOne
-  @JoinColumn(name = "crime_batch_email_id")
+  @JoinColumn(name = "crime_batch_email_id", nullable = false)
   var crimeBatchEmail: CrimeBatchEmail,
 
   @OneToOne(mappedBy = "crimeBatchEmailAttachment", cascade = [CascadeType.ALL], orphanRemoval = true)

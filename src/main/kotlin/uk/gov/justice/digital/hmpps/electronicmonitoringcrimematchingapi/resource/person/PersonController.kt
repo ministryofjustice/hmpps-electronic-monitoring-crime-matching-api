@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponseDto
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ResponseDto
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
 
 @RestController
@@ -35,7 +35,7 @@ class PersonController(
   fun getPersons(
     @Parameter(description = "The search criteria for the query", required = true)
     personsQueryCriteria: PersonsQueryCriteria,
-  ): ResponseEntity<PagedResponseDto<PersonDto>> {
+  ): ResponseEntity<PagedResponse<PersonResponse>> {
     if (!personsQueryCriteria.isValid()) {
       throw ResponseStatusException(
         HttpStatus.BAD_REQUEST,
@@ -43,7 +43,7 @@ class PersonController(
       )
     }
     val result = personService.getPersons(personsQueryCriteria)
-    return ResponseEntity.ok(PagedResponseDto(result.map { PersonDto(it) }))
+    return ResponseEntity.ok(PagedResponse(result.map { PersonResponse(it) }))
   }
 
   @Operation(
@@ -59,12 +59,12 @@ class PersonController(
   )
   fun getPerson(
     @PathVariable personId: Long,
-  ): ResponseEntity<ResponseDto<PersonDto>> {
+  ): ResponseEntity<Response<PersonResponse>> {
     val person = personService.getPerson(personId)
 
     return ResponseEntity.ok(
-      ResponseDto(
-        PersonDto(person),
+      Response(
+        PersonResponse(person),
       ),
     )
   }

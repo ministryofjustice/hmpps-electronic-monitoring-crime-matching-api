@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import java.time.LocalDateTime
 import java.util.UUID
 
-data class CrimeMatchingRunDto(
+data class CreateCrimeMatchingRunRequest(
   @field:NotNull(message = "crimeBatchId is required")
   val crimeBatchId: UUID,
 
@@ -28,5 +28,5 @@ data class CrimeMatchingRunDto(
   val matchingEnded: LocalDateTime,
 
   @field:Valid
-  val results: List<CrimeMatchingResultDto>,
+  val results: List<CrimeMatchingResultRequest>,
 )

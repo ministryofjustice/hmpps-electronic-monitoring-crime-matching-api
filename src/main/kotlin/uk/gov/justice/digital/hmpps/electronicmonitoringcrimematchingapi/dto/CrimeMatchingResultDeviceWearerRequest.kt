@@ -4,7 +4,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
-data class CrimeMatchingResultDeviceWearerDto(
+data class CrimeMatchingResultDeviceWearerRequest(
   @field:NotNull(message = "deviceId is required")
   val deviceId: Long,
 
@@ -15,5 +15,5 @@ data class CrimeMatchingResultDeviceWearerDto(
   val nomisId: String,
 
   @field:Valid
-  val positions: List<CrimeMatchingResultPositionDto>,
+  val positions: List<CrimeMatchingResultPositionRequest>,
 )

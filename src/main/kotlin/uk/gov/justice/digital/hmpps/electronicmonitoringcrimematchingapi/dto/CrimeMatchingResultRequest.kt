@@ -4,10 +4,10 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import java.util.UUID
 
-data class CrimeMatchingResultDto(
+data class CrimeMatchingResultRequest(
   @field:NotNull(message = "crimeVersionId is required")
   val crimeVersionId: UUID,
 
   @field:Valid
-  val deviceWearers: List<CrimeMatchingResultDeviceWearerDto>,
+  val deviceWearers: List<CrimeMatchingResultDeviceWearerRequest>,
 )
