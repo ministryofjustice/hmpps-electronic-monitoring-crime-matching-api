@@ -83,7 +83,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
       AND (cmru.matching_ended IS NOT NULL OR (COALESCE(cvcount.version_count, 0) = 0 AND cbea.row_count > 0))
 
   """,
-    nativeQuery = true
+    nativeQuery = true,
   )
   fun findCrimeBatchIngestionAttempts(
     @Param("batchId") batchId: String?,

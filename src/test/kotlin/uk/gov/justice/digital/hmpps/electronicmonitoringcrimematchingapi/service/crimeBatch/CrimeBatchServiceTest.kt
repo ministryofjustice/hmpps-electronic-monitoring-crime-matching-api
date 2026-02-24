@@ -27,8 +27,8 @@ import java.time.LocalDateTime
 
 @ActiveProfiles("test")
 class CrimeBatchServiceTest {
-  private lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
   private lateinit var crimeBatchRepository: CrimeBatchRepository
+  private lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
   private lateinit var crimeRepository: CrimeRepository
   private lateinit var crimeVersionRepository: CrimeVersionRepository
   private lateinit var service: CrimeBatchService
@@ -40,12 +40,13 @@ class CrimeBatchServiceTest {
     crimeRepository = Mockito.mock(CrimeRepository::class.java)
     crimeVersionRepository = Mockito.mock(CrimeVersionRepository::class.java)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
+    crimeBatchIngestionAttemptRepository = Mockito.mock(CrimeBatchIngestionAttemptRepository::class.java)
     service = CrimeBatchService(
-        crimeBatchRepository,
-        crimeRepository,
-        crimeVersionRepository,
-        matchingNotificationService,
-        crimeBatchIngestionAttemptRepository
+      crimeBatchRepository,
+      crimeRepository,
+      crimeVersionRepository,
+      matchingNotificationService,
+      crimeBatchIngestionAttemptRepository,
     )
   }
 

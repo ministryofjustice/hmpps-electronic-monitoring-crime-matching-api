@@ -98,7 +98,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
       crimeMatchingFixtures.givenBatch(
         ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb572046a6f"),
         ingestionCreatedAt = LocalDateTime.of(2024, 1, 1, 0, 0),
-        batchId = "Batch2"
+        batchId = "Batch2",
       ) {
         withCrime("crime2") {
           withMatchingRun {

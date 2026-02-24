@@ -2,11 +2,11 @@
   "data" : [
     {
       "batchId" : "Batch2",
-      "createdAt" : "2024-01-01T00:00:00",
+      "createdAt" : "2024-01-01T00:00",
       "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb572046a6f",
       "matches" : 1,
       "policeForceArea" : "METROPOLITAN",
-      "status" : "SUCCESSFUL"
+      "ingestionStatus" : "SUCCESSFUL"
     }
   ],
   "pageCount" : 2,

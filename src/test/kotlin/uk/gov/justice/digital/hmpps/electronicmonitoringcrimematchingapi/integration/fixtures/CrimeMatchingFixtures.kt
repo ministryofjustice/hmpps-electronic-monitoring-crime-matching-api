@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import java.time.LocalDateTime
 import java.util.*
 
-
 class CrimeMatchingFixtures(
   private val jdbcTemplate: JdbcTemplate,
   private val crimeRepository: CrimeRepository,
