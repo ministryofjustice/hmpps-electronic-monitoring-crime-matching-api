@@ -2,17 +2,16 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mapper
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultResponse
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.Osgb36ToWgs84Converter
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.Wgs84
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.CoordinateResolver
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeMatchingResultProjection
 
 @Component
 class CrimeMatchingResultMapper(
-  val converter: Osgb36ToWgs84Converter,
+  val coordinateResolver: CoordinateResolver,
 ) {
 
   fun toDto(matchingResult: CrimeMatchingResultProjection): CrimeMatchingResultResponse {
-    val coords = getLatLng(matchingResult)
+    val coords = coordinateResolver.toWgs84(matchingResult.crimeLatitude, matchingResult.crimeLongitude, matchingResult.crimeEasting, matchingResult.crimeNorthing)
 
     return CrimeMatchingResultResponse(
       policeForce = matchingResult.policeForceArea,
@@ -34,18 +33,5 @@ class CrimeMatchingResultMapper(
       subjectDateOfBirth = "",
       subjectManager = "",
     )
-  }
-
-  private fun getLatLng(matchingResult: CrimeMatchingResultProjection): Wgs84 {
-    val hasWgs84 = matchingResult.crimeLatitude != null && matchingResult.crimeLongitude != null
-    val hasOsgb36 = matchingResult.crimeEasting != null && matchingResult.crimeNorthing != null
-
-    return when {
-      hasWgs84 && !hasOsgb36 -> Wgs84(longitude = matchingResult.crimeLongitude!!, latitude = matchingResult.crimeLatitude!!)
-      hasOsgb36 && !hasWgs84 -> converter.convert(matchingResult.crimeEasting!!, matchingResult.crimeNorthing!!)
-      else -> throw IllegalStateException(
-        "Crime must have either (lat,lon) or (easting,northing). Got lat=${matchingResult.crimeLatitude} lon=${matchingResult.crimeLongitude} e=${matchingResult.crimeEasting} n=${matchingResult.crimeNorthing}",
-      )
-    }
   }
 }
