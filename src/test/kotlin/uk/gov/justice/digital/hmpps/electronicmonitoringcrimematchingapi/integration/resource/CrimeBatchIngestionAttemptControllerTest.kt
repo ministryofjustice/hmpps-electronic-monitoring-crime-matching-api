@@ -19,7 +19,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @ActiveProfiles("integration")
-@Import(TestFixturesConfig::class)
 class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
 
   @Nested
