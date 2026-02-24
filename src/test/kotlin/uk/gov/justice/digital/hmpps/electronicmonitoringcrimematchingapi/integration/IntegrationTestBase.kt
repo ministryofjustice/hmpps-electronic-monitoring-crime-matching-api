@@ -62,7 +62,6 @@ abstract class IntegrationTestBase {
       registry.add("spring.flyway.user") { postgresContainer.username }
       registry.add("spring.flyway.password") { postgresContainer.password }
     }
-
   }
 
   @Autowired
