@@ -6,19 +6,16 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.TestFixturesConfig
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.UUID
 
 @ActiveProfiles("integration")
-@Import(TestFixturesConfig::class)
 class CrimeMatchingResultControllerTest : IntegrationTestBase() {
 
   @Nested
