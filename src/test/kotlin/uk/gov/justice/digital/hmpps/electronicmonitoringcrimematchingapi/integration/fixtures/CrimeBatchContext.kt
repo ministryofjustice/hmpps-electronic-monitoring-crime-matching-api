@@ -24,8 +24,10 @@ class CrimeBatchContext(
     crimeType: CrimeType = CrimeType.AB,
     crimeDateTimeFrom: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
     crimeDateTimeTo: LocalDateTime = LocalDateTime.of(2025, 1, 1, 1, 0),
-    latitude: Double = 0.0,
-    longitude: Double = 0.0,
+    latitude: Double? = 0.0,
+    longitude: Double? = 0.0,
+    easting: Double? = null,
+    northing: Double? = null,
     crimeText: String = "text",
     block: CrimeContext.() -> Unit,
   ) {
@@ -45,8 +47,8 @@ class CrimeBatchContext(
         crimeDateTimeTo = crimeDateTimeTo,
         latitude = latitude,
         longitude = longitude,
-        easting = null,
-        northing = null,
+        easting = easting,
+        northing = northing,
         crimeText = crimeText,
       ),
     )
