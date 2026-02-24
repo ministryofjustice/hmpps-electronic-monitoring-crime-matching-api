@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
+import java.time.LocalDateTime
 import java.util.*
 
 class CrimeMatchingFixtures(
@@ -32,10 +33,15 @@ class CrimeMatchingFixtures(
 
   fun givenBatch(
     batchId: String,
+    ingestionAttemptId: UUID = UUID.randomUUID(),
+    ingestionCreatedAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
+    rowCount: Int = 1,
     policeForce: PoliceForce = PoliceForce.METROPOLITAN,
     block: CrimeBatchContext.() -> Unit,
   ): CrimeBatch {
     val ingestionAttempt = CrimeBatchIngestionAttempt(
+      id = ingestionAttemptId,
+      createdAt = ingestionCreatedAt,
       bucket = "bucket",
       objectName = "objectName",
     )
@@ -52,7 +58,7 @@ class CrimeMatchingFixtures(
     val attachment = CrimeBatchEmailAttachment(
       crimeBatchEmail = email,
       fileName = "test.csv",
-      rowCount = 1,
+      rowCount = rowCount,
     )
     email.crimeBatchEmailAttachments.add(attachment)
 

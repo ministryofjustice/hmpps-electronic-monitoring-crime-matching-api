@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
@@ -27,6 +28,7 @@ import java.time.LocalDateTime
 @ActiveProfiles("test")
 class CrimeBatchServiceTest {
   private lateinit var crimeBatchRepository: CrimeBatchRepository
+  private lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
   private lateinit var crimeRepository: CrimeRepository
   private lateinit var crimeVersionRepository: CrimeVersionRepository
   private lateinit var service: CrimeBatchService
@@ -38,7 +40,14 @@ class CrimeBatchServiceTest {
     crimeRepository = Mockito.mock(CrimeRepository::class.java)
     crimeVersionRepository = Mockito.mock(CrimeVersionRepository::class.java)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
-    service = CrimeBatchService(crimeBatchRepository, crimeRepository, crimeVersionRepository, matchingNotificationService)
+    crimeBatchIngestionAttemptRepository = Mockito.mock(CrimeBatchIngestionAttemptRepository::class.java)
+    service = CrimeBatchService(
+      crimeBatchRepository,
+      crimeRepository,
+      crimeVersionRepository,
+      matchingNotificationService,
+      crimeBatchIngestionAttemptRepository,
+    )
   }
 
   @Nested
