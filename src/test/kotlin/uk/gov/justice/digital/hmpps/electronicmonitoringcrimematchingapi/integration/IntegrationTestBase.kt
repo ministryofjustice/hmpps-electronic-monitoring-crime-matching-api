@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +16,10 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.testcontainers.containers.PostgreSQLContainer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.CrimeMatchingFixtures
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.TestFixturesConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AwsApiExtension
@@ -31,6 +35,35 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 @AutoConfigureWebTestClient
 @Import(TestFixturesConfig::class)
 abstract class IntegrationTestBase {
+
+  companion object {
+    @JvmStatic
+    private val postgresContainer = PostgreSQLContainer<Nothing>("postgres:18")
+      .apply {
+        withUsername("postgres")
+        withPassword("postgres")
+        withDatabaseName("testdb")
+        withReuse(true)
+      }
+
+    @BeforeAll
+    @JvmStatic
+    fun startContainers() {
+      postgresContainer.start()
+    }
+
+    @JvmStatic
+    @DynamicPropertySource
+    fun properties(registry: DynamicPropertyRegistry) {
+      registry.add("spring.datasource.url") { postgresContainer.jdbcUrl }
+      registry.add("spring.datasource.username") { postgresContainer.username }
+      registry.add("spring.datasource.password") { postgresContainer.password }
+      registry.add("spring.flyway.url") { postgresContainer.jdbcUrl }
+      registry.add("spring.flyway.user") { postgresContainer.username }
+      registry.add("spring.flyway.password") { postgresContainer.password }
+    }
+
+  }
 
   @Autowired
   lateinit var cacheEntryRepository: CacheEntryRepository

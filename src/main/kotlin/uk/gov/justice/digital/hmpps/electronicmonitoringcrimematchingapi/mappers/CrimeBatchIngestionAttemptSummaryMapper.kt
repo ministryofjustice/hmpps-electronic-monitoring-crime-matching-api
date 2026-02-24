@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptProjection
 
 @Component
-class IngestionAttemptSummaryMapper {
+class CrimeBatchIngestionAttemptSummaryMapper {
   fun toDto(summary: CrimeBatchIngestionAttemptProjection): CrimeBatchIngestionAttemptSummaryResponse = CrimeBatchIngestionAttemptSummaryResponse(
     ingestionAttemptId = summary.ingestionAttemptId,
     ingestionStatus = summary.ingestionStatus.name,

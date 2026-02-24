@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchIngestionAttemptSummaryResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.IngestionAttemptSummaryMapper
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchIngestionAttemptSummaryMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 import java.time.LocalDateTime
 
@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 @RequestMapping("/ingestion-attempts", produces = ["application/json"])
 class CrimeBatchIngestionAttemptController(
   val crimeBatchService: CrimeBatchService,
-  val ingestionAttemptSummaryMapper: IngestionAttemptSummaryMapper,
+  val crimeBatchIngestionAttemptSummaryMapper: CrimeBatchIngestionAttemptSummaryMapper,
 ) {
   @Operation(
     tags = ["Crime Batch Ingestion Attempt"],
@@ -81,7 +81,7 @@ class CrimeBatchIngestionAttemptController(
 
     return ResponseEntity.status(200).body(
       PagedResponse(
-        results.content.map { ingestionAttemptSummaryMapper.toDto(it) },
+        results.content.map { crimeBatchIngestionAttemptSummaryMapper.toDto(it) },
         results.totalPages,
         results.number,
         results.size,

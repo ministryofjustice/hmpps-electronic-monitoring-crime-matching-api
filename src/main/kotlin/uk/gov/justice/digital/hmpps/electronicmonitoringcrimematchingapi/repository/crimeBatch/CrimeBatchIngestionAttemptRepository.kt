@@ -17,7 +17,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
   @Query(
     value = """
       SELECT
-      CAST(cbia.id AS VARCHAR(36)) AS ingestionAttemptId, -- This casting is currently only used due to DB in tests treating UUID casting differently TODO
+      cbia.id AS ingestionAttemptId,
       cbia.created_at     AS createdAt,
       cb.batch_id         AS batchId,
       c.police_force_area AS policeForceArea,
