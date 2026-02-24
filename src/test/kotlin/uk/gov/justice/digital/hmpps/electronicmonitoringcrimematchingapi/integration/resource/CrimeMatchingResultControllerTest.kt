@@ -152,7 +152,7 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
       // - Matching run 1 matched 1 device wearers
       // - Matching run 2 matched 2 device wearer
       val batch = crimeMatchingFixtures.givenBatch("Batch1") {
-        withCrime("crime1") {
+        withCrime("crime1", latitude = null, longitude = null, easting = 529381.0, northing = 179534.0) {
           // Older
           withMatchingRun(matchingEnded = LocalDateTime.of(2025, 1, 1, 0, 0)) {
             withMatchedDeviceWearer(deviceId = 1)

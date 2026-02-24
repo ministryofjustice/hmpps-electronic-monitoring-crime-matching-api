@@ -47,6 +47,8 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
         lpv.crime_date_time_to         AS crimeDateTimeTo,
         lpv.crime_latitude             AS crimeLatitude,
         lpv.crime_longitude            AS crimeLongitude,
+        lpv.crime_easting              AS crimeEasting,
+        lpv.crime_northing             AS crimeNorthing,
         lpv.crime_text                 AS crimeText,
         dw.device_id                   AS deviceId,
         dw.name                        AS name,
