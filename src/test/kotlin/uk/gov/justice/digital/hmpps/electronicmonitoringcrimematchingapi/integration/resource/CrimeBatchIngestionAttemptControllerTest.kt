@@ -95,6 +95,8 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return the second page of ingestion attempt summaries`() {
       createBatch()
+
+      // Create older batch to be returned on 2nd page due to default sorting
       crimeMatchingFixtures.givenBatch(
         ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb572046a6f"),
         ingestionCreatedAt = LocalDateTime.of(2024, 1, 1, 0, 0),
@@ -132,13 +134,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     fun `it should filter ingestion attempt summaries by batchId`() {
       createBatch()
 
-      crimeMatchingFixtures.givenBatch(batchId = "Batch2") {
-        withCrime("crime2") {
-          withMatchingRun {
-            withMatchedDeviceWearer(deviceId = 2)
-          }
-        }
-      }
+      crimeMatchingFixtures.givenBatch(batchId = "Batch2") {}
 
       val body = webTestClient.get()
         .uri("/ingestion-attempts?batchId=Batch1")
@@ -164,13 +160,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     @Test
     fun `it should filter ingestion attempt summaries by policeForce`() {
       createBatch()
-      crimeMatchingFixtures.givenBatch(batchId = "Batch2", policeForce = PoliceForce.BEDFORDSHIRE) {
-        withCrime("crime2") {
-          withMatchingRun {
-            withMatchedDeviceWearer(deviceId = 2)
-          }
-        }
-      }
+      crimeMatchingFixtures.givenBatch(batchId = "Batch2", policeForce = PoliceForce.BEDFORDSHIRE) {}
 
       val body = webTestClient.get()
         .uri("/ingestion-attempts?policeForceArea=METROPOLITAN")
@@ -197,13 +187,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     fun `it should filter ingestion attempt summaries by fromDate`() {
       createBatch()
 
-      crimeMatchingFixtures.givenBatch(batchId = "Batch2", ingestionCreatedAt = LocalDateTime.of(2024, 1, 1, 0, 0)) {
-        withCrime("crime2") {
-          withMatchingRun {
-            withMatchedDeviceWearer(deviceId = 2)
-          }
-        }
-      }
+      crimeMatchingFixtures.givenBatch(batchId = "Batch2", ingestionCreatedAt = LocalDateTime.of(2024, 1, 1, 0, 0)) {}
 
       val body = webTestClient.get()
         .uri("/ingestion-attempts?fromDate=2025-01-01T00:00:00")
@@ -230,13 +214,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     fun `it should filter ingestion attempt summaries by toDate`() {
       createBatch()
 
-      crimeMatchingFixtures.givenBatch(batchId = "Batch2", ingestionCreatedAt = LocalDateTime.of(2026, 1, 1, 0, 0)) {
-        withCrime("crime2") {
-          withMatchingRun {
-            withMatchedDeviceWearer(deviceId = 2)
-          }
-        }
-      }
+      crimeMatchingFixtures.givenBatch(batchId = "Batch2", ingestionCreatedAt = LocalDateTime.of(2026, 1, 1, 0, 0)) {}
 
       val body = webTestClient.get()
         .uri("/ingestion-attempts?toDate=2025-01-02T00:00:00")
