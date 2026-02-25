@@ -17,18 +17,18 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
   @Query(
     value = """
       SELECT
-      cbia.id AS ingestionAttemptId,
-      cbia.created_at     AS createdAt,
-      cb.batch_id         AS batchId,
-      c.police_force_area AS policeForceArea,
-      cmru.matches        AS matches,
-      CASE
-        WHEN cbea.row_count = 0 THEN 'SUCCESSFUL'
-        WHEN cvcount.version_count = cbea.row_count THEN 'SUCCESSFUL'
-        WHEN COALESCE(cvcount.version_count, 0) = 0 AND cbea.row_count > 0 THEN 'FAILURE'
-        WHEN COALESCE(cvcount.version_count, 0) > 0 AND COALESCE(cvcount.version_count, 0) < cbea.row_count THEN 'PARTIAL'
-        ELSE 'UNKNOWN'
-      END AS ingestionStatus
+        cbia.id AS ingestionAttemptId,
+        cbia.created_at     AS createdAt,
+        cb.batch_id         AS batchId,
+        cv.police_force_area AS policeForceArea,
+        cmru.matches        AS matches,
+        CASE
+          WHEN cbea.row_count = 0 THEN 'SUCCESSFUL'
+          WHEN cv.version_count = cbea.row_count THEN 'SUCCESSFUL'
+          WHEN COALESCE(cv.version_count, 0) = 0 AND cbea.row_count > 0 THEN 'FAILED'
+          WHEN COALESCE(cv.version_count, 0) > 0 AND COALESCE(cv.version_count, 0) < cbea.row_count THEN 'PARTIAL'
+          ELSE 'UNKNOWN'
+        END AS ingestionStatus
 
       FROM crime_batch_ingestion_attempt cbia
       JOIN crime_batch_email cbe 
@@ -37,21 +37,22 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
           ON cbe.id = cbea.crime_batch_email_id
       LEFT JOIN crime_batch cb
           ON cbea.id = cb.crime_batch_email_attachment_id
-      LEFT JOIN crime_batch_crime_version cbcv 
-          ON cb.id = cbcv.crime_batch_id
-      LEFT JOIN crime_version cv 
-          ON cbcv.crime_version_id = cv.id
-      LEFT JOIN crime c 
-          ON cv.crime_id = c.id
 
-      -- Get crime version count
+      -- Get crime version details
       LEFT JOIN (
-          SELECT crime_batch_id, COUNT(*) AS version_count
-          FROM crime_batch_crime_version
-          GROUP BY crime_batch_id
-      ) cvcount ON cvcount.crime_batch_id = cb.id
+          SELECT crime_batch_id,
+            c.police_force_area,
+            COUNT(*) AS version_count
+          FROM crime_batch_crime_version cbcv
+          LEFT JOIN crime_version cv
+            ON cbcv.crime_version_id = cv.id
+          LEFT JOIN crime c
+            ON cv.crime_id = c.id
+          GROUP BY crime_batch_id,
+            c.police_force_area
+      ) cv ON cv.crime_batch_id = cb.id
 
-      -- Get count of matches per batch by latest crime matching
+      -- Get count of matched device_wearers per batch by latest crime matching
       LEFT JOIN (
           SELECT r.id,
                  r.crime_batch_id,
@@ -75,12 +76,12 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
 
       -- Filtering
       WHERE (:batchId IS NULL OR LOWER(cb.batch_id) LIKE '%' || LOWER(:batchId) || '%')
-        AND (:policeForceArea IS NULL OR LOWER(c.police_force_area) LIKE '%' || LOWER(:policeForceArea) || '%')
+        AND (:policeForceArea IS NULL OR LOWER(cv.police_force_area) LIKE '%' || LOWER(:policeForceArea) || '%')
         AND (cbia.created_at >= COALESCE(:fromDate, cbia.created_at))
         AND (cbia.created_at <= COALESCE(:toDate, cbia.created_at))
 
       -- To handle only returning completed matches or failed ingestion attempts
-      AND (cmru.matching_ended IS NOT NULL OR (COALESCE(cvcount.version_count, 0) = 0 AND cbea.row_count > 0))
+      AND (cmru.matching_ended IS NOT NULL OR (COALESCE(cv.version_count, 0) = 0 AND cbea.row_count > 0))
 
   """,
     nativeQuery = true,
