@@ -3,6 +3,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 enum class IngestionStatus {
   SUCCESSFUL,
   PARTIAL,
-  FAILURE,
+  FAILED,
   UNKNOWN,
 }
