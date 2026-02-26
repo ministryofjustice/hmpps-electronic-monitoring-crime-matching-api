@@ -15,6 +15,21 @@ fun createCsvRow(
   crimeText: String = "",
 ) = "$policeForce,$crimeTypeId,crimeDesc,$batchId,$crimeReference,$crimeDateTimeFrom,$crimeDateTimeTo,$easting,$northing,$latitude,$longitude,$datum,$crimeText"
 
+fun createInvalidCsvRow(
+  policeForce: String = "invalid",
+  crimeTypeId: String = "TOMV",
+  batchId: String = "MPS20250126",
+  crimeReference: String = "",
+  crimeDateTimeFrom: String = "20250125083000",
+  crimeDateTimeTo: String = "20250125083000",
+  easting: String = "",
+  northing: String = "",
+  latitude: String = "54.732410000000002",
+  longitude: String = "-1.38542",
+  datum: String = "WGS84",
+  crimeText: String = "",
+) = "$policeForce,$crimeTypeId,crimeDesc,$batchId,$crimeReference,$crimeDateTimeFrom,$crimeDateTimeTo,$easting,$northing,$latitude,$longitude,$datum,$crimeText"
+
 fun createEmailFile(
   csvContent: String = "test",
   subject: String = "Crime Mapping Request",

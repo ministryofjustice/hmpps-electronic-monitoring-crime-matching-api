@@ -39,6 +39,8 @@ CREATE TABLE crime_batch_email_attachment
     crime_batch_email_id UUID    NOT NULL,
     file_name            VARCHAR(255),
     row_count            INTEGER NOT NULL,
+    success_count        INTEGER NOT NULL DEFAULT 0,
+    failed_count         INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT pk_crime_batch_email_attachment PRIMARY KEY (id)
 );
 

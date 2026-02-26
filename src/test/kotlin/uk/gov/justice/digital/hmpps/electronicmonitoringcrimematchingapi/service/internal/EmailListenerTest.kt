@@ -22,6 +22,7 @@ import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.emailIngestion.EmailIngestionProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createInvalidCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoRedirect
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithMultipleAttachments
@@ -119,6 +120,8 @@ class EmailListenerTest {
         crimeBatchEmail = crimeBatchEmail,
         fileName = "filename",
         rowCount = 1,
+        successCount = 1,
+        failedCount = 0,
       )
 
       val crimeBatch = CrimeBatch(
@@ -126,7 +129,7 @@ class EmailListenerTest {
         crimeBatchEmailAttachment = crimeBatchEmailAttachment,
       )
 
-      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any())).thenReturn(
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any(), any(), any())).thenReturn(
         crimeBatchEmailAttachment,
       )
 
@@ -326,6 +329,144 @@ class EmailListenerTest {
         listener.receiveEmailNotification(sqsMessage)
       }
       assertThat(exception.message).isEqualTo("Failed to process email: No redirect email")
+    }
+
+    @Test
+    fun `it should send a failed ingestion email when all records fail validation`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file"
+            }
+          }
+        }
+      """.trimIndent()
+
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+
+      val csvContent = listOf(
+        createInvalidCsvRow(),
+      ).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFile(encoded).byteInputStream(),
+      )
+
+      val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file",
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
+        crimeBatchIngestionAttempt,
+      )
+
+      val crimeBatchEmail = CrimeBatchEmail(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+      )
+
+      val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+        crimeBatchEmail = crimeBatchEmail,
+        fileName = "filename",
+        rowCount = 1,
+        successCount = 0,
+        failedCount = 1,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
+        crimeBatchEmail,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any(), any(), any())).thenReturn(
+        crimeBatchEmailAttachment,
+      )
+
+      assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
+      verify(emailNotificationService, times(1)).sendFailedIngestionEmail(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `it should send a partial ingestion email when some records are successfully ingested and some records fail validation`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file"
+            }
+          }
+        }
+      """.trimIndent()
+
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+
+      val csvContent = listOf(
+        createCsvRow(),
+        createInvalidCsvRow(),
+      ).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFile(encoded).byteInputStream(),
+      )
+
+      val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file",
+      )
+
+      whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
+        crimeBatchIngestionAttempt,
+      )
+
+      val crimeBatchEmail = CrimeBatchEmail(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+      )
+
+      val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+        crimeBatchEmail = crimeBatchEmail,
+        fileName = "filename",
+        rowCount = 2,
+        successCount = 1,
+        failedCount = 1,
+      )
+
+      val crimeBatch = CrimeBatch(
+        batchId = "batchId",
+        crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any(), any(), any())).thenReturn(
+        crimeBatchEmailAttachment,
+      )
+
+      whenever(crimeBatchService.createCrimeBatch(any(), any())).thenReturn(
+        crimeBatch,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
+        crimeBatchEmail,
+      )
+
+      assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
+      verify(emailNotificationService, times(1)).sendPartialIngestionEmail(any(), any(), any(), any(), any(), any(), any(), any(), any())      
     }
   }
 }
