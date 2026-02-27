@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchIngestionAttemptSummaryMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 import java.time.LocalDateTime
+import java.util.UUID
 
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO')")
@@ -110,7 +111,7 @@ class CrimeBatchIngestionAttemptController(
       required = true,
       example = "aefa6893-2bed-4e69-a69e-afb562046a6f",
     )
-    @PathVariable crimeBatchIngestionAttemptId: String,
+    @PathVariable crimeBatchIngestionAttemptId: UUID,
   ): ResponseEntity<Response<CrimeBatchIngestionAttemptResponse>> {
     val crimeBatchIngestionAttempt = crimeBatchService.getCrimeBatchIngestionAttempt(crimeBatchIngestionAttemptId)
 

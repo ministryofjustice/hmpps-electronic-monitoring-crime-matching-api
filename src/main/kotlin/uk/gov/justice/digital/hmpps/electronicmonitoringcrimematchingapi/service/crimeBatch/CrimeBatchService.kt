@@ -94,10 +94,10 @@ class CrimeBatchService(
   )
 
   fun getCrimeBatchIngestionAttempt(
-    id: String,
+    id: UUID,
   ): CrimeBatchIngestionAttemptProjection {
     val crimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository
-      .findCrimeBatchIngestionAttemptById(UUID.fromString(id))
+      .findCrimeBatchIngestionAttemptById(id)
       .orElseThrow {
         EntityNotFoundException("No crime batch ingestion attempt found with id: $id")
       }

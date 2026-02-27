@@ -402,6 +402,27 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
       )
     }
 
+    @Test
+    fun `it should return a BAD_REQUEST response if ingestion attempt id is not valid`() {
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts/abc")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(body).isEqualTo(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "The provided value 'abc' is the incorrect type for the 'crimeBatchIngestionAttemptId' parameter.",
+          developerMessage = "The provided value 'abc' is the incorrect type for the 'crimeBatchIngestionAttemptId' parameter.",
+        ),
+      )
+    }
+
     private fun createBatch() {
       val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
       crimeMatchingFixtures.givenBatch(ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {
