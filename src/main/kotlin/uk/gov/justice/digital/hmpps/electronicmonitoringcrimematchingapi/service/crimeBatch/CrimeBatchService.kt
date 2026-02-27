@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
 import java.util.UUID
@@ -84,13 +85,25 @@ class CrimeBatchService(
     toDate: LocalDateTime?,
     page: Int,
     pageSize: Int,
-  ): Page<CrimeBatchIngestionAttemptProjection> = crimeBatchIngestionAttemptRepository.findCrimeBatchIngestionAttempts(
+  ): Page<CrimeBatchIngestionAttemptSummaryProjection> = crimeBatchIngestionAttemptRepository.findCrimeBatchIngestionAttempts(
     batchId = batchId,
     policeForceArea = policeForceArea,
     fromDate = fromDate,
     toDate = toDate,
     pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt")),
   )
+
+  fun getCrimeBatchIngestionAttempt(
+    id: UUID,
+  ): CrimeBatchIngestionAttemptProjection {
+    val crimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository
+      .findCrimeBatchIngestionAttemptById(id)
+      .orElseThrow {
+        EntityNotFoundException("No crime batch ingestion attempt found with id: $id")
+      }
+
+    return crimeBatchIngestionAttempt
+  }
 
   private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime): CrimeVersion = CrimeVersion(
     crime = crime,

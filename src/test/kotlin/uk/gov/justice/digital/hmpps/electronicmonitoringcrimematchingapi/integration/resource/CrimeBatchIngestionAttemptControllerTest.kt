@@ -343,4 +343,95 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
       }
     }
   }
+
+  @Nested
+  @DisplayName("GET /ingestion-attempts/{ingestionAttemptId}")
+  inner class GetCrimeBatchIngestionAttempt {
+    @Test
+    fun `it should return a 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri("/ingestion-attempts/1")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri("/ingestion-attempts/" + UUID.randomUUID())
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return a 404 if the ingestion attempt does not exist`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/ingestion-attempts/$id")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+        .expectBody()
+        .jsonPath("$.developerMessage").isEqualTo("No crime batch ingestion attempt found with id: $id")
+        .jsonPath("$.userMessage").isEqualTo("Not Found")
+    }
+
+    @Test
+    fun `it should return an ingestion attempt if it exists`() {
+      createBatch()
+
+      // Validate ingestion attempt is retrieved successfully
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts/aefa6993-2bed-4e69-a96e-afb562046a6f")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-ingestion-attempt-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
+    fun `it should return a BAD_REQUEST response if ingestion attempt id is not valid`() {
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts/abc")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(body).isEqualTo(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "The provided value 'abc' is the incorrect type for the 'crimeBatchIngestionAttemptId' parameter.",
+          developerMessage = "The provided value 'abc' is the incorrect type for the 'crimeBatchIngestionAttemptId' parameter.",
+        ),
+      )
+    }
+
+    private fun createBatch() {
+      val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
+      crimeMatchingFixtures.givenBatch(ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {
+        withCrime("crime1") {
+          withMatchingRun {
+            withMatchedDeviceWearer(deviceId = 1)
+          }
+        }
+      }
+    }
+  }
 }
