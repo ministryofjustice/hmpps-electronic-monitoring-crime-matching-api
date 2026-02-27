@@ -6,11 +6,15 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchIngestionAttemptResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchIngestionAttemptSummaryResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchIngestionAttemptMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchIngestionAttemptSummaryMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 import java.time.LocalDateTime
@@ -21,6 +25,7 @@ import java.time.LocalDateTime
 class CrimeBatchIngestionAttemptController(
   val crimeBatchService: CrimeBatchService,
   val crimeBatchIngestionAttemptSummaryMapper: CrimeBatchIngestionAttemptSummaryMapper,
+  val crimeBatchIngestionAttemptMapper: CrimeBatchIngestionAttemptMapper,
 ) {
   @Operation(
     tags = ["Crime Batch Ingestion Attempt"],
@@ -85,6 +90,33 @@ class CrimeBatchIngestionAttemptController(
         results.totalPages,
         results.number,
         results.size,
+      ),
+    )
+  }
+
+  @Operation(
+    tags = ["Crime Batch Ingestion Attempt"],
+    summary = "Get crime batch ingestion attempt",
+  )
+  @GetMapping(
+    path = [
+      "/{crimeBatchIngestionAttemptId}",
+    ],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  fun getCrimeBatchIngestionAttempt(
+    @Parameter(
+      description = "The ID of the ingestion attempt",
+      required = true,
+      example = "aefa6893-2bed-4e69-a69e-afb562046a6f",
+    )
+    @PathVariable crimeBatchIngestionAttemptId: String,
+  ): ResponseEntity<Response<CrimeBatchIngestionAttemptResponse>> {
+    val crimeBatchIngestionAttempt = crimeBatchService.getCrimeBatchIngestionAttempt(crimeBatchIngestionAttemptId)
+
+    return ResponseEntity.status(200).body(
+      Response(
+        data = crimeBatchIngestionAttemptMapper.toDto(crimeBatchIngestionAttempt),
       ),
     )
   }

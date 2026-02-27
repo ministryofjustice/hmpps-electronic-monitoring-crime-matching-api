@@ -5,9 +5,10 @@ import java.time.LocalDateTime
 
 interface CrimeBatchIngestionAttemptProjection {
   val ingestionAttemptId: String
-  val createdAt: LocalDateTime
-  val batchId: String?
-  val policeForceArea: String?
-  val matches: Long?
   val ingestionStatus: IngestionStatus
+  val policeForceArea: String?
+  val batchId: String?
+  val matches: Long?
+  val createdAt: LocalDateTime
+  val fileName: String?
 }
