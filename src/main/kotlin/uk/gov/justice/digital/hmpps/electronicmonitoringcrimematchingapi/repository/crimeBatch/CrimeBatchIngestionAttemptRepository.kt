@@ -100,7 +100,8 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
     value = """
       WITH ingestion_attempt AS (
         SELECT
-          cbia.id AS ingestionAttemptId,
+          cbia.id,
+          cbia.created_at,
           cb.id AS crime_batch_id
         FROM crime_batch_ingestion_attempt cbia
         LEFT JOIN crime_batch_email cbe ON cbia.id = cbe.crime_batch_ingestion_attempt_id
@@ -159,7 +160,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
           ELSE 'UNKNOWN'
         END AS ingestionStatus
 
-      FROM crime_batch_ingestion_attempt cbia
+      FROM ingestion_attempt cbia
       JOIN crime_batch_email cbe ON cbia.id = cbe.crime_batch_ingestion_attempt_id
       LEFT JOIN crime_batch_email_attachment cbea ON cbe.id = cbea.crime_batch_email_id
       LEFT JOIN crime_batch cb ON cbea.id = cb.crime_batch_email_attachment_id
