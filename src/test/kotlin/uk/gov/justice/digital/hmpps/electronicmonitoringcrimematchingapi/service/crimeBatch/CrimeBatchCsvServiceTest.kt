@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createInvalidCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.time.LocalDateTime
@@ -51,16 +52,19 @@ class CrimeBatchCsvServiceTest {
       ),
     )
     assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.failedRecords).hasSize(0)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
   @Test
-  fun `it should ignore an empty row`() {
+  fun `it should return an error for an empty CSV file`() {
     val crimeData = "".byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.errors).hasSize(1)
+    assertThat(parseResult.errors.first()).isEqualTo("The submitted CSV is empty. Please provide a CSV file containing at least one record.")
+    assertThat(parseResult.failedRecords).hasSize(0)
     assertThat(parseResult.recordCount).isEqualTo(0)
   }
 
@@ -70,6 +74,9 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.failedRecords).hasSize(1)
+    assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(1)
+    assertThat(parseResult.failedRecords.first().errorMessage).isEqualTo("Incorrect number of columns on row 1.")
     assertThat(parseResult.errors).isEqualTo(
       listOf("Incorrect number of columns on row 1."),
     )
@@ -82,6 +89,9 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.failedRecords).hasSize(1)
+    assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(1)
+    assertThat(parseResult.failedRecords.first().errorMessage).isEqualTo("Incorrect number of columns on row 1.")
     assertThat(parseResult.errors).isEqualTo(
       listOf("Incorrect number of columns on row 1."),
     )
@@ -97,6 +107,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(1)
     assertThat(parseResult.records[0].policeForce).isEqualTo(enumValue)
     assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.failedRecords).hasSize(0)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -107,8 +118,11 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1."),
+      listOf("Police Force must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
+    assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(1)
+    assertThat(parseResult.failedRecords.first().originalCsvRow).isNotEmpty()
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -133,6 +147,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(1)
     assertThat(parseResult.records[0].crimeTypeId).isEqualTo(enumValue)
     assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.failedRecords).hasSize(0)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -145,6 +160,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
   }
 
   @Test
@@ -157,6 +173,7 @@ class CrimeBatchCsvServiceTest {
       listOf("A valid batch id must be provided"),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
+    assertThat(parseResult.failedRecords).hasSize(1)
   }
 
   @Test
@@ -168,6 +185,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("Invalid Batch ID format on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -180,6 +198,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("Invalid date in Batch ID on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -204,6 +223,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("A crime reference must be provided"),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -216,6 +236,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -228,6 +249,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -243,6 +265,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("Crime date time to must be after crime date time from on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -258,6 +281,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf("Crime date time window must not exceed 12 hours on row 1."),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -274,12 +298,16 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.",
+        "Police Force must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.",
         "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
         "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
       ),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
+    assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(1)
+    assertThat(parseResult.failedRecords.first().errorMessage).contains("Police Force must be one of")
+    assertThat(parseResult.failedRecords.first().errorMessage).contains("crimeType must be one of")
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -299,6 +327,11 @@ class CrimeBatchCsvServiceTest {
         "dateFrom must be a date with format yyyyMMddHHmmss but was 'invalid' on row 3.",
       ),
     )
+    assertThat(parseResult.failedRecords).hasSize(2)
+    assertThat(parseResult.failedRecords.get(0).rowNumber).isEqualTo(2)
+    assertThat(parseResult.failedRecords.get(1).rowNumber).isEqualTo(3)
+    assertThat(parseResult.failedRecords.get(0).originalCsvRow).isNotEmpty()
+    assertThat(parseResult.failedRecords.get(1).originalCsvRow).isNotEmpty()
     assertThat(parseResult.recordCount).isEqualTo(3)
   }
 
@@ -315,6 +348,7 @@ class CrimeBatchCsvServiceTest {
         "Only one location data type should be provided on row 1.",
       ),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
@@ -327,7 +361,50 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).isEqualTo(
       listOf(errorMessage),
     )
+    assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.recordCount).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should capture originalCsvRow for failedRecords`() {
+    val crimeData = createCsvRow(policeForce = "invalid").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.errors).hasSize(1)
+    assertThat(parseResult.failedRecords).hasSize(1)
+    assertThat(parseResult.recordCount).isEqualTo(1)
+    assertThat(parseResult.failedRecords.first().originalCsvRow).isNotEmpty()
+    assertThat(parseResult.failedRecords.first().originalCsvRow).contains("invalid")
+  }
+
+  @Test
+  fun `it should populate failedRecords for a mix of valid and invalid record rows`() {
+    val crimeData = listOf(
+      createCsvRow(),
+      createCsvRow(crimeTypeId = "invalid"),
+      createCsvRow(crimeReference = "CRI00000008"),
+    ).joinToString("\n").byteInputStream()
+
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(2)
+    assertThat(parseResult.failedRecords).hasSize(1)
+    assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(2)
+    assertThat(parseResult.failedRecords.first().errorMessage).contains("crimeType must be one of")
+    assertThat(parseResult.failedRecords.first().originalCsvRow).isNotEmpty()
+    assertThat(parseResult.recordCount).isEqualTo(3)
+  }
+
+  @Test
+  fun `it should capture invalid policeForce as FailedRecord`() {
+    val crimeData = createCsvRow(policeForce = "INVALID_FORCE").byteInputStream()
+
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).isEmpty()
+    assertThat(parseResult.failedRecords).hasSize(1)
+    assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(1)
+    assertThat(parseResult.failedRecords.first().errorMessage).contains("policeForce")
   }
 
   companion object {

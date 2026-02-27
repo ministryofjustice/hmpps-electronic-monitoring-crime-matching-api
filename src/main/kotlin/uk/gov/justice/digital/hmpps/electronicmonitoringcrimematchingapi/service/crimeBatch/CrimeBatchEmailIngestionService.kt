@@ -26,9 +26,11 @@ class CrimeBatchEmailIngestionService(
     crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
   )
 
-  fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+  fun createCrimeBatchEmailAttachment(fileName: String, recordCount: Int, successCount: Int, failedCount: Int, crimeBatchEmail: CrimeBatchEmail): CrimeBatchEmailAttachment = CrimeBatchEmailAttachment(
     fileName = fileName,
     rowCount = recordCount,
+    successCount = successCount,
+    failedCount = failedCount,
     crimeBatchEmail = crimeBatchEmail,
   )
 }

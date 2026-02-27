@@ -28,4 +28,6 @@ data class CrimeBatchEmailAttachment(
 
   val fileName: String,
   val rowCount: Int,
+  val successCount: Int = 0,
+  val failedCount: Int = 0,
 )

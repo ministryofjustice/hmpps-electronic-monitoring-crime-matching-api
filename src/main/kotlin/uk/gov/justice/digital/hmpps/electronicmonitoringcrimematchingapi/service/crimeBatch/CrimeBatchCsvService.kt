@@ -8,6 +8,7 @@ import org.apache.commons.csv.CSVRecord
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.CsvConfig.CrimeBatchCsvConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.FailedRecord
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.ParseResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
@@ -30,15 +31,32 @@ class CrimeBatchCsvService(
   fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordRequest>()
     val errors = mutableListOf<String>()
+    val failedRecords = mutableListOf<FailedRecord>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
     var recordCount = 0
-
+ 
     for (record in records) {
       recordCount++
       when (val result = parseRecord(record)) {
-        is ValidationResult.Success -> crimes.add(result.value)
-        is ValidationResult.Failure -> errors.addAll(result.errors)
+        is ValidationResult.Success -> {
+          crimes.add(result.value)
+        }
+        is ValidationResult.Failure -> {
+          errors.addAll(result.errors)
+          failedRecords.add(
+            FailedRecord(
+              rowNumber = record.recordNumber.toInt(),
+              errorMessage = result.errors.joinToString("; "),
+              originalCsvRow = record.toList().joinToString(",")
+            ),
+          )
+        }
       }
+    }
+
+    if (recordCount == 0) {
+      errors.add("The submitted CSV is empty. Please provide a CSV file containing at least one record.")
+      return ParseResult(recordCount, crimes, errors, failedRecords)
     }
 
     if (crimes.isNotEmpty() && crimes.map { it.policeForce }.distinct().size != 1) {
@@ -49,7 +67,7 @@ class CrimeBatchCsvService(
       throw ValidationException("Multiple batch Ids found in csv file")
     }
 
-    return ParseResult(recordCount, crimes, errors)
+    return ParseResult(recordCount, crimes, errors, failedRecords)
   }
 
   private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordRequest> {
