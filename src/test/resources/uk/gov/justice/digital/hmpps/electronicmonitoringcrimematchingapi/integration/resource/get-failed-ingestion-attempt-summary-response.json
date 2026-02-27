@@ -6,7 +6,7 @@
       "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb562046a6f",
       "matches" : null,
       "policeForceArea" : "",
-      "ingestionStatus" : "FAILURE"
+      "ingestionStatus" : "FAILED"
     }
   ],
   "pageCount" : 1,
