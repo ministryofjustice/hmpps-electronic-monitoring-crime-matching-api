@@ -125,7 +125,7 @@ class EmailNotificationServiceTest {
     val failedRecords = listOf(
       FailedRecord(
         rowNumber = 1,
-        errorMessage = "Police Force must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.\n",
+        errorMessage = "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.\n",
         originalCsvRow = "invalid,TOMV,TOMV,MPS20260126,CRI00000006,20260126083000,20260126103000,,,,54.73241,-1.38542,WGS84,\n",
       )
     )
@@ -145,7 +145,7 @@ class EmailNotificationServiceTest {
       "totalRecords" to 1,
       "failedCount" to 1,
       "batchId" to "batchId",
-      "policeForce" to "METROPOLITAN",
+      "policeForce" to "Unknown",
       "linkToFile" to uploadFile,
       "errorSummary" to errorSummary,
       "ingestionDate" to LocalDate.now().toString(),

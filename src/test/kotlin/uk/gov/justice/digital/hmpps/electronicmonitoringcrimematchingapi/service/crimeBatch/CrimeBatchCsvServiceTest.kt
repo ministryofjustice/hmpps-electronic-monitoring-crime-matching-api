@@ -13,7 +13,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createInvalidCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.time.LocalDateTime
@@ -54,18 +53,6 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.errors).hasSize(0)
     assertThat(parseResult.failedRecords).hasSize(0)
     assertThat(parseResult.recordCount).isEqualTo(1)
-  }
-
-  @Test
-  fun `it should return an error for an empty CSV file`() {
-    val crimeData = "".byteInputStream()
-    val parseResult = service.parseCsvFile(crimeData)
-
-    assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).hasSize(1)
-    assertThat(parseResult.errors.first()).isEqualTo("The submitted CSV is empty. Please provide a CSV file containing at least one record.")
-    assertThat(parseResult.failedRecords).hasSize(0)
-    assertThat(parseResult.recordCount).isEqualTo(0)
   }
 
   @Test
@@ -118,7 +105,7 @@ class CrimeBatchCsvServiceTest {
 
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
-      listOf("Police Force must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1."),
+      listOf("policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1."),
     )
     assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(1)
@@ -298,7 +285,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.records).hasSize(0)
     assertThat(parseResult.errors).isEqualTo(
       listOf(
-        "Police Force must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.",
+        "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.",
         "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.",
         "dateFrom must be a date with format yyyyMMddHHmmss but was '' on row 1.",
         "dateTo must be a date with format yyyyMMddHHmmss but was '' on row 1.",
@@ -306,7 +293,7 @@ class CrimeBatchCsvServiceTest {
     )
     assertThat(parseResult.failedRecords).hasSize(1)
     assertThat(parseResult.failedRecords.first().rowNumber).isEqualTo(1)
-    assertThat(parseResult.failedRecords.first().errorMessage).contains("Police Force must be one of")
+    assertThat(parseResult.failedRecords.first().errorMessage).contains("policeForce must be one of")
     assertThat(parseResult.failedRecords.first().errorMessage).contains("crimeType must be one of")
     assertThat(parseResult.recordCount).isEqualTo(1)
   }

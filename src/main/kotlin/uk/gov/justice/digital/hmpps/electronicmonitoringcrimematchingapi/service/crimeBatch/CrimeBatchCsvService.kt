@@ -54,11 +54,6 @@ class CrimeBatchCsvService(
       }
     }
 
-    if (recordCount == 0) {
-      errors.add("The submitted CSV is empty. Please provide a CSV file containing at least one record.")
-      return ParseResult(recordCount, crimes, errors, failedRecords)
-    }
-
     if (crimes.isNotEmpty() && crimes.map { it.policeForce }.distinct().size != 1) {
       throw ValidationException("Multiple police forces found in csv file")
     }

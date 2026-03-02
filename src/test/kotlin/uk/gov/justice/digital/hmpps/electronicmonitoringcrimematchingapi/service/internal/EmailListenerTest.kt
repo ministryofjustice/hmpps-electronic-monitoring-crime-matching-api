@@ -22,7 +22,6 @@ import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.emailIngestion.EmailIngestionProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createInvalidCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoRedirect
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithMultipleAttachments
@@ -348,7 +347,7 @@ class EmailListenerTest {
       val sqsMessage = SqsMessage("Notification", message, messageId)
 
       val csvContent = listOf(
-        createInvalidCsvRow(),
+        createCsvRow(crimeTypeId="invalid"),
       ).joinToString("\n")
       val encoded = Base64.encode(csvContent.toByteArray())
 
@@ -413,7 +412,7 @@ class EmailListenerTest {
 
       val csvContent = listOf(
         createCsvRow(),
-        createInvalidCsvRow(),
+        createCsvRow(crimeTypeId="invalid"),
       ).joinToString("\n")
       val encoded = Base64.encode(csvContent.toByteArray())
 
