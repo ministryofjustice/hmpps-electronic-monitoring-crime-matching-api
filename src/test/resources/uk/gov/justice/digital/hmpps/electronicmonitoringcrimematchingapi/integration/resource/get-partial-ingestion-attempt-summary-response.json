@@ -4,7 +4,7 @@
       "batchId" : "Batch1",
       "createdAt" : "2025-01-01T00:00",
       "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb562046a6f",
-      "matches" : 1,
+      "matches" : "1",
       "policeForceArea" : "METROPOLITAN",
       "ingestionStatus" : "PARTIAL"
     }

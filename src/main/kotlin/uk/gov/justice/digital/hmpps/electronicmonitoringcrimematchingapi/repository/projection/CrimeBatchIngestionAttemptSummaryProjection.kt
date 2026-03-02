@@ -8,6 +8,6 @@ interface CrimeBatchIngestionAttemptSummaryProjection {
   val createdAt: LocalDateTime
   val batchId: String?
   val policeForceArea: String?
-  val matches: Long?
+  val matches: String
   val ingestionStatus: IngestionStatus
 }
