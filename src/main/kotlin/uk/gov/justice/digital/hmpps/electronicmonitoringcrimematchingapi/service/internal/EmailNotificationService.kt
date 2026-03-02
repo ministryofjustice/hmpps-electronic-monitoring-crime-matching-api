@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
@@ -9,7 +10,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.P
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.service.notify.NotificationClient
 import java.time.LocalDate
-import org.slf4j.LoggerFactory 
 
 @Service
 class EmailNotificationService(
@@ -17,7 +17,7 @@ class EmailNotificationService(
   private val properties: NotifyProperties,
 ) {
 
-   private val log = LoggerFactory.getLogger(this::class.java)
+  private val log = LoggerFactory.getLogger(this::class.java)
 
   fun sendSuccessfulIngestionEmail(
     batchId: String,
@@ -77,7 +77,6 @@ class EmailNotificationService(
     totalRecords: Int,
     errorSummary: String,
   ) {
-
     val csvBytes = buildFailedRecordsCsv(parseResult.failedRecords).toByteArray()
     val originalFileName = emailData.attachment.name
     val errorFileName = "failed_ingestion_$originalFileName"
@@ -145,7 +144,7 @@ class EmailNotificationService(
     personalisation: Map<String, Any>,
     reference: String,
   ) {
-     if (properties.enabled) {
+    if (properties.enabled) {
       notifyClient.sendEmail(
         templateId,
         emailAddress,

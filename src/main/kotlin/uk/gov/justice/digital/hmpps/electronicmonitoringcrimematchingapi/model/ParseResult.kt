@@ -7,5 +7,5 @@ class ParseResult(
   val recordCount: Int,
   val records: List<CrimeRecordRequest>,
   val errors: List<String>,
-  val failedRecords: List<FailedRecord> = emptyList()
+  val failedRecords: List<FailedRecord> = emptyList(),
 )

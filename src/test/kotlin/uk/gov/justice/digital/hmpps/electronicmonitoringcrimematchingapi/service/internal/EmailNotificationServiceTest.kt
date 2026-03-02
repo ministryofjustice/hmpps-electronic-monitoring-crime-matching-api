@@ -127,7 +127,7 @@ class EmailNotificationServiceTest {
         rowNumber = 1,
         errorMessage = "policeForce must be one of AVON_AND_SOMERSET, BEDFORDSHIRE, CHESHIRE, CITY_OF_LONDON, CUMBRIA, DERBYSHIRE, DURHAM, ESSEX, GLOUCESTERSHIRE, GWENT, HAMPSHIRE, HERTFORDSHIRE, HUMBERSIDE, KENT, METROPOLITAN, NORTH_WALES, NOTTINGHAMSHIRE, SUSSEX, WEST_MIDLANDS but was 'invalid police force' on row 1.\n",
         originalCsvRow = "invalid,TOMV,TOMV,MPS20260126,CRI00000006,20260126083000,20260126103000,,,,54.73241,-1.38542,WGS84,\n",
-      )
+      ),
     )
 
     val parseResult = ParseResult(
@@ -193,7 +193,7 @@ class EmailNotificationServiceTest {
         rowNumber = 1,
         errorMessage = "Invalid Batch ID format row 1.",
         originalCsvRow = "Metropolitan,TOMV,TOMV,invalid,CRI00000007,20260126083000,20260126103000,,,,54.73241,-1.38542,WGS84,\n",
-      )
+      ),
     )
 
     val parseResult = ParseResult(
@@ -237,7 +237,7 @@ class EmailNotificationServiceTest {
         rowNumber = 2,
         errorMessage = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.\n",
         originalCsvRow = "Metropolitan,invalid,invalid,MPS20260126,CRI00000008,20260126083000,20260126103000,,,,54.73241,-1.38542,WGS84,\n",
-      )
+      ),
     )
 
     val parseResult = ParseResult(
@@ -308,7 +308,7 @@ class EmailNotificationServiceTest {
         rowNumber = 2,
         errorMessage = "crimeType must be one of RB, BIAD, AB, BOTD, TOMV, TFP, TFMV but was 'invalid crime type' on row 1.\n",
         originalCsvRow = "Metropolitan,invalid,invalid,MPS20260126,CRI00000008,20260126083000,20260126103000,,,,54.73241,-1.38542,WGS84,\n",
-      )
+      ),
     )
 
     val parseResult = ParseResult(

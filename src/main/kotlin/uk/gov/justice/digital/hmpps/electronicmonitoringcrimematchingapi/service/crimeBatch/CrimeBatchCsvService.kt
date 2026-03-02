@@ -34,7 +34,7 @@ class CrimeBatchCsvService(
     val failedRecords = mutableListOf<FailedRecord>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
     var recordCount = 0
- 
+
     for (record in records) {
       recordCount++
       when (val result = parseRecord(record)) {
@@ -47,7 +47,7 @@ class CrimeBatchCsvService(
             FailedRecord(
               rowNumber = record.recordNumber.toInt(),
               errorMessage = result.errors.joinToString("; "),
-              originalCsvRow = record.toList().joinToString(",")
+              originalCsvRow = record.toList().joinToString(","),
             ),
           )
         }

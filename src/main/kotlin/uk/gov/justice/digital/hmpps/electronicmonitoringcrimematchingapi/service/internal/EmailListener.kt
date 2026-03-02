@@ -7,7 +7,6 @@ import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.FailedRecord
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.ParseResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
@@ -65,7 +64,7 @@ class EmailListener(
         parseResult.recordCount,
         successCount,
         failedCount,
-        crimeBatchEmail
+        crimeBatchEmail,
       )
       crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
 
@@ -74,7 +73,7 @@ class EmailListener(
       if (parseResult.errors.isEmpty() && parseResult.records.isNotEmpty()) {
         val crimeBatch = crimeBatchService.createCrimeBatch(parseResult.records, crimeBatchEmailAttachment)
         val policeForce = parseResult.records.first().policeForce
-        
+
         emailNotificationService.sendSuccessfulIngestionEmail(
           crimeBatch.batchId,
           policeForce,

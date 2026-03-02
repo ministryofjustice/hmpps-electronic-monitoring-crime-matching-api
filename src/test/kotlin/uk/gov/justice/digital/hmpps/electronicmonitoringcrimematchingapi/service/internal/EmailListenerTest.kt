@@ -347,7 +347,7 @@ class EmailListenerTest {
       val sqsMessage = SqsMessage("Notification", message, messageId)
 
       val csvContent = listOf(
-        createCsvRow(crimeTypeId="invalid"),
+        createCsvRow(crimeTypeId = "invalid"),
       ).joinToString("\n")
       val encoded = Base64.encode(csvContent.toByteArray())
 
@@ -412,7 +412,7 @@ class EmailListenerTest {
 
       val csvContent = listOf(
         createCsvRow(),
-        createCsvRow(crimeTypeId="invalid"),
+        createCsvRow(crimeTypeId = "invalid"),
       ).joinToString("\n")
       val encoded = Base64.encode(csvContent.toByteArray())
 
@@ -465,7 +465,7 @@ class EmailListenerTest {
       )
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
-      verify(emailNotificationService, times(1)).sendPartialIngestionEmail(any(), any(), any(), any(), any(), any(), any(), any(), any())      
+      verify(emailNotificationService, times(1)).sendPartialIngestionEmail(any(), any(), any(), any(), any(), any(), any(), any(), any())
     }
   }
 }
