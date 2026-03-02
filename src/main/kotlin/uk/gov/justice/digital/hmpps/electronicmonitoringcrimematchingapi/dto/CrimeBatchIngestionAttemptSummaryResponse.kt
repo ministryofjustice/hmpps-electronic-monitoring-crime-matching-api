@@ -5,6 +5,6 @@ data class CrimeBatchIngestionAttemptSummaryResponse(
   val ingestionStatus: String,
   val policeForceArea: String,
   val batchId: String,
-  val matches: String,
+  val matches: Long?,
   val createdAt: String,
 )

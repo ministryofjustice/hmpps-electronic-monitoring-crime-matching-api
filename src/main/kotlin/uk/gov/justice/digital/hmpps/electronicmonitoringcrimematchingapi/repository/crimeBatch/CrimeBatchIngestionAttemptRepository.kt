@@ -30,13 +30,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
           WHEN cv.version_count = cbea.row_count THEN 'SUCCESSFUL'
           WHEN COALESCE(cv.version_count, 0) < cbea.row_count THEN 'PARTIAL'
           ELSE 'UNKNOWN'
-        END AS ingestionStatus,
-        CASE
-          WHEN cbea IS NULL THEN 'N/A'
-          WHEN COALESCE(cv.version_count, 0) = 0 AND cbea.row_count > 0 THEN 'N/A'
-          WHEN cmru.matches IS NULL THEN 'In progress'
-          ELSE cmru.matches::text
-        END AS matches
+        END AS ingestionStatus
 
       FROM crime_batch_ingestion_attempt cbia
       JOIN crime_batch_email cbe 
@@ -154,19 +148,14 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
         cb.batch_id AS batchId,
         cv.police_force_area AS policeForceArea,
         cbea.file_name AS fileName,
+        lrwc.matches AS matches,
         CASE
           WHEN cbea IS NULL THEN 'FAILED'
           WHEN COALESCE(cv.version_count, 0) = 0 AND cbea.row_count > 0 THEN 'ERROR'
           WHEN cv.version_count = cbea.row_count THEN 'SUCCESSFUL'
           WHEN COALESCE(cv.version_count, 0) < cbea.row_count THEN 'PARTIAL'
           ELSE 'UNKNOWN'
-        END AS ingestionStatus,
-        CASE
-            WHEN cbea IS NULL THEN 'N/A'
-            WHEN COALESCE(cv.version_count, 0) = 0 AND cbea.row_count > 0 THEN 'N/A'
-            WHEN lrwc.matches IS NULL THEN 'In progress'
-            ELSE lrwc.matches::text
-        END AS matches
+        END AS ingestionStatus
 
       FROM ingestion_attempt cbia
       JOIN crime_batch_email cbe ON cbia.id = cbe.crime_batch_ingestion_attempt_id
