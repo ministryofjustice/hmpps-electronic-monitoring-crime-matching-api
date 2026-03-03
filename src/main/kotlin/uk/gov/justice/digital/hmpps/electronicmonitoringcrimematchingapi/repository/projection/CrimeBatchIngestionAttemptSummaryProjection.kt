@@ -3,12 +3,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import java.time.LocalDateTime
 
-interface CrimeBatchIngestionAttemptProjection {
+interface CrimeBatchIngestionAttemptSummaryProjection {
   val ingestionAttemptId: String
-  val ingestionStatus: IngestionStatus
-  val policeForceArea: String?
-  val batchId: String?
-  val matches: Long?
   val createdAt: LocalDateTime
-  val fileName: String?
+  val batchId: String?
+  val policeForceArea: String?
+  val matches: Long?
+  val ingestionStatus: IngestionStatus
 }
