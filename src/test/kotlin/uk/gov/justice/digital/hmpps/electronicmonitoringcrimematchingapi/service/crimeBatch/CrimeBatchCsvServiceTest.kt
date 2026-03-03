@@ -67,14 +67,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = null,
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
-        field = null,
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = null,
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
+          field = null,
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -85,14 +87,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = null,
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
-        field = null
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = null,
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
+          field = null,
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -115,14 +119,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
-        field = "policeForce"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+          field = "policeForce",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -145,14 +151,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
-        field = "crimeType"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+          field = "crimeType",
+        ),
+      ),
     )
   }
 
@@ -162,14 +170,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
-        field = "batchId"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
+          field = "batchId",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -180,14 +190,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
-        field = "batchId"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
+          field = "batchId",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -198,14 +210,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
-        field = "batchId"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
+          field = "batchId",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -216,14 +230,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = null,
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
-        field = "crimeReference"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = null,
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+          field = "crimeReference",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -234,14 +250,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
-        field = "dateFrom"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
+          field = "dateFrom",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -252,14 +270,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
-        field = "dateTo"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
+          field = "dateTo",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -273,14 +293,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM,
-        field = "dateTo"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM,
+          field = "dateTo",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -294,14 +316,16 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
-        field = "dateTo"
-      )
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
+          field = "dateTo",
+        ),
+      ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -317,35 +341,37 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
-        field = "policeForce"
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+          field = "policeForce",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+          field = "crimeType",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
+          field = "dateFrom",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
+          field = "dateTo",
+        ),
       ),
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
-        field = "crimeType"
-      ),
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
-        field = "dateFrom"
-      ),
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
-        field = "dateTo"
-      )
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
@@ -360,20 +386,22 @@ class CrimeBatchCsvServiceTest {
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(1)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 2,
-        crimeReference = "CRI00000001",
-        crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
-        field = "crimeType"
-      ),
-      EmailAttachmentIngestionError(
-        rowNumber = 3,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
-        field = "dateFrom"
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 2,
+          crimeReference = "CRI00000001",
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+          field = "crimeType",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 3,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
+          field = "dateFrom",
+        ),
       ),
     )
     assertThat(parseResult.recordCount).isEqualTo(3)
@@ -405,18 +433,20 @@ class CrimeBatchCsvServiceTest {
     latitude: String,
     longitude: String,
     field: String?,
-    errorType: CrimeBatchEmailAttachmentIngestionErrorType
+    errorType: CrimeBatchEmailAttachmentIngestionErrorType,
   ) {
     val crimeData = createCsvRow(easting = easting, northing = northing, latitude = latitude, longitude = longitude).byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
     assertThat(parseResult.records).hasSize(0)
-    assertThat(parseResult.errors).contains(
-      EmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = "CRI00000001",
-        crimeTypeId = CrimeType.TOMV,
-        errorType = errorType,
-        field = field,
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = errorType,
+          field = field,
+        ),
       ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)

@@ -8,10 +8,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailIngestionError
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.BatchIngestionErrorType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.BatchIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
@@ -53,13 +54,9 @@ class EmailListener(
       val crimeBatchEmail = crimeBatchEmailIngestionService.createCrimeBatchEmail(emailData, crimeBatchIngestionAttempt)
       crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
 
-      val ingestionErrors = mutableListOf<BatchIngestionError>()
-
       if (emailData.attachments.isEmpty() || emailData.attachments.size > 1) {
-        val error = BatchIngestionError(
-          errorType = BatchIngestionErrorType.INVALID_ATTACHMENT,
-        )
-        ingestionErrors.add(error)
+        processError(BatchIngestionErrorType.INVALID_ATTACHMENT, crimeBatchEmail, crimeBatchIngestionAttempt)
+        return
       }
 
       // Parse csv rows
@@ -67,28 +64,12 @@ class EmailListener(
       val parseResult = csvData.use { crimeBatchCsvService.parseCsvFile(it) }
 
       if (parseResult.records.isNotEmpty() && parseResult.records.map { it.policeForce }.distinct().size != 1) {
-        val error = BatchIngestionError(
-          errorType = BatchIngestionErrorType.MULTIPLE_POLICE_FORCES,
-        )
-        ingestionErrors.add(error)
+        processError(BatchIngestionErrorType.MULTIPLE_POLICE_FORCES, crimeBatchEmail, crimeBatchIngestionAttempt)
+        return
       }
 
       if (parseResult.records.isNotEmpty() && parseResult.records.map { it.batchId }.distinct().size != 1) {
-        val error = BatchIngestionError(
-          errorType = BatchIngestionErrorType.MULTIPLE_BATCH_IDS,
-        )
-        ingestionErrors.add(error)
-      }
-
-      if (ingestionErrors.isNotEmpty()) {
-        val crimeBatchEmailIngestionError = CrimeBatchEmailIngestionError(
-          errorType = ingestionErrors[0].errorType,
-          crimeBatchEmail = crimeBatchEmail,
-        )
-        crimeBatchEmail.crimeBatchEmailIngestionError = crimeBatchEmailIngestionError
-        crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
-        crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt)
-        // Emit failure email
+        processError(BatchIngestionErrorType.MULTIPLE_BATCH_IDS, crimeBatchEmail, crimeBatchIngestionAttempt)
         return
       }
 
@@ -131,5 +112,16 @@ class EmailListener(
     } catch (e: Exception) {
       throw ValidationException("Failed to process email: ${e.message}")
     }
+  }
+
+  private fun processError(errorType: BatchIngestionErrorType, crimeBatchEmail: CrimeBatchEmail, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt) {
+    val crimeBatchEmailIngestionError = CrimeBatchEmailIngestionError(
+      errorType = errorType,
+      crimeBatchEmail = crimeBatchEmail,
+    )
+    crimeBatchEmail.crimeBatchEmailIngestionError = crimeBatchEmailIngestionError
+    crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
+    crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt)
+    // Emit failure email
   }
 }

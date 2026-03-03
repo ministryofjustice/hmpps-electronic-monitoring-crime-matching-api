@@ -183,7 +183,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.INVALID_ATTACHMENT
+        BatchIngestionErrorType.INVALID_ATTACHMENT,
       )
 
       // Check that notification to start algo was not generated
@@ -205,7 +205,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.INVALID_ATTACHMENT
+        BatchIngestionErrorType.INVALID_ATTACHMENT,
       )
 
       // Check that notification to start algo was not generated
@@ -233,7 +233,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.MULTIPLE_POLICE_FORCES
+        BatchIngestionErrorType.MULTIPLE_POLICE_FORCES,
       )
 
       // Check that notification to start algo was not generated
@@ -261,7 +261,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.MULTIPLE_BATCH_IDS
+        BatchIngestionErrorType.MULTIPLE_BATCH_IDS,
       )
 
       // Check that notification to start algo was not generated
