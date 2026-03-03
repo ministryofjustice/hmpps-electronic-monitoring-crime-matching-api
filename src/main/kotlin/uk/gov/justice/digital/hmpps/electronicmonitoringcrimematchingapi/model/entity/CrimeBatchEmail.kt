@@ -28,6 +28,9 @@ data class CrimeBatchEmail(
   @OneToMany(mappedBy = "crimeBatchEmail", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
   var crimeBatchEmailAttachments: MutableList<CrimeBatchEmailAttachment> = mutableListOf(),
 
+  @OneToOne(mappedBy = "crimeBatchEmail", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  var crimeBatchEmailIngestionError: CrimeBatchEmailIngestionError? = null,
+
   val sender: String,
   val originalSender: String,
   val subject: String,

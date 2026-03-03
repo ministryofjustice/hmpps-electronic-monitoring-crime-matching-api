@@ -20,9 +20,6 @@ data class CrimeBatchIngestionAttempt(
   @OneToOne(mappedBy = "crimeBatchIngestionAttempt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   var crimeBatchEmail: CrimeBatchEmail? = null,
 
-  @OneToOne(mappedBy = "crimeBatchIngestionAttempt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-  var crimeBatchIngestionError: CrimeBatchIngestionError? = null,
-
   val bucket: String,
   val objectName: String,
   val createdAt: LocalDateTime = LocalDateTime.now(),

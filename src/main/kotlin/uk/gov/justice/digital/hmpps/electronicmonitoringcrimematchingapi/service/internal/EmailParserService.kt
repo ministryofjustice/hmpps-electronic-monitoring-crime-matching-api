@@ -29,14 +29,14 @@ class EmailParserService(
     val redirectAddress = message.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
 
     validateMetadata(subject, sender, redirectAddress)
-    val attachment = extractCsvAttachment(message)
+    val attachments = extractCsvAttachment(message)
 
     return EmailData(
       sender,
       redirectAddress,
       subject,
       sentAt,
-      attachment,
+      attachments,
     )
   }
 
@@ -48,9 +48,10 @@ class EmailParserService(
     if (!properties.validEmails.values.contains(sender.lowercase())) throw ValidationException("Invalid sender email")
   }
 
-  private fun extractCsvAttachment(message: MimeMessage): DataSource {
+  private fun extractCsvAttachment(message: MimeMessage): List<DataSource> {
+    val attachments = mutableListOf<DataSource>()
     // Type has to be multipart for attachments
-    val multipart = message.content as? Multipart ?: throw NoSuchElementException("No CSV attachment found in email")
+    val multipart = message.content as? Multipart ?: return attachments
 
     // Parse multipart for valid csv attachments
     val csvParts = (0 until multipart.count)
@@ -60,19 +61,19 @@ class EmailParserService(
           part.fileName?.endsWith(".csv", ignoreCase = true) == true
       }
 
-    val part = when {
-      csvParts.isEmpty() -> throw NoSuchElementException("No CSV attachment found in email")
-      csvParts.size > 1 -> throw ValidationException("Multiple CSV attachments found")
-      else -> csvParts.single()
+    for (part in csvParts) {
+      val fileName = part.fileName
+      val contentType = part.contentType
+      val bytes = part.inputStream.use { it.readAllBytes() }
+
+      val dataSource = ByteArrayDataSource(bytes, contentType).apply {
+        name = fileName
+      }
+      attachments.add(
+        dataSource,
+      )
     }
 
-    // Construct datasource from valid csv part
-    val fileName = part.fileName
-    val contentType = part.contentType
-    val bytes = part.inputStream.use { it.readAllBytes() }
-
-    return ByteArrayDataSource(bytes, contentType).apply {
-      name = fileName
-    }
+    return attachments
   }
 }

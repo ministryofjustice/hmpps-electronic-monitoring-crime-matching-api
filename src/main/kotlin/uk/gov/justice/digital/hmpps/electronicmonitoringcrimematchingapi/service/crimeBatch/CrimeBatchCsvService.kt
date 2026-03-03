@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
-import jakarta.validation.ValidationException
-import jakarta.validation.Validator
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
@@ -12,7 +10,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.P
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.FieldValidationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.ValidationResult
@@ -26,9 +23,7 @@ import java.time.format.DateTimeParseException
 private const val CRIME_DATE_WINDOW_HOURS = 12
 
 @Service
-class CrimeBatchCsvService(
-  private val validator: Validator,
-) {
+class CrimeBatchCsvService {
 
   fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordRequest>()
@@ -44,14 +39,6 @@ class CrimeBatchCsvService(
       }
     }
 
-    if (crimes.isNotEmpty() && crimes.map { it.policeForce }.distinct().size != 1) {
-      throw ValidationException("Multiple police forces found in csv file")
-    }
-
-    if (crimes.isNotEmpty() && crimes.map { it.batchId }.distinct().size != 1) {
-      throw ValidationException("Multiple batch Ids found in csv file")
-    }
-
     return ParseResult(recordCount, crimes, errors)
   }
 
@@ -64,8 +51,8 @@ class CrimeBatchCsvService(
 
     val policeForce = parseEnumValue<PoliceForce>("policeForce", record.policeForce())
     val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId())
-    val batchId = parseBatchId("batchId", record.batchId().trim())
-    val crimeReference = parseStringValue("crimeReference", record.crimeReference().trim())
+    val batchId = parseBatchId(record.batchId().trim(), policeForce.value)
+    val crimeReference = parseCrimeReference(record.crimeReference().trim())
     val crimeDateFrom = parseDateValue("dateFrom", record.crimeDateTimeFrom())
     val crimeDateTo = parseCrimeDateTo(record.crimeDateTimeTo(), crimeDateFrom)
     val easting = parseLocationValue(record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..600000.0)
@@ -89,8 +76,9 @@ class CrimeBatchCsvService(
       crimeText,
       locationValidation,
     )
-      .mapNotNull { it.errorType }
-      .map { EmailAttachmentIngestionError(rowNumber = record.recordNumber, crimeReference = crimeReference.value, crimeTypeId = crimeTypeId.value, errorType = it) }
+      .map { it }
+      .filter { it.errorType != null }
+      .map { EmailAttachmentIngestionError(rowNumber = record.recordNumber, crimeReference = crimeReference.value, crimeTypeId = crimeTypeId.value, errorType = it.errorType!!, field = it.field) }
 
     if (errors.isNotEmpty()) {
       return ValidationResult.Failure(errors)
@@ -110,33 +98,28 @@ class CrimeBatchCsvService(
       crimeText.value!!,
     )
 
-    val violations = validator.validate(crimeRecordDto)
-
-    if (violations.isNotEmpty()) {
-      return ValidationResult.Failure(violations.map {
-        EmailAttachmentIngestionError(
-          rowNumber = record.recordNumber,
-          crimeReference = crimeReference.value,
-          crimeTypeId = crimeTypeId.value,
-          //TODO correct usage here or ditch validate
-          errorType = CrimeBatchEmailAttachmentIngestionErrorType.MANDATORY_PLACEHOLDER,
-        )
-      })
-    }
-
     return ValidationResult.Success(crimeRecordDto)
   }
 
-  private fun parseBatchId(recordNumber: Long, value: String, policeForce: PoliceForce?): FieldValidationResult<String> {
+  private fun parseBatchId(value: String, policeForce: PoliceForce?): FieldValidationResult<String> {
+    val fieldName = "batchId"
     // String validity
-    val parsed = parseStringValue(recordNumber, "batchId", value)
+    val parsed = parseStringValue(fieldName, value)
 
-    if (parsed.value.isNullOrBlank() || (policeForce == null)) return parsed
+    if (policeForce == null) return parsed
+
+    if (parsed.value.isNullOrBlank()) {
+      return FieldValidationResult(
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
+        field = fieldName,
+      )
+    }
 
     // Batch id pattern validity
     val regex = Regex("^${policeForce.code}(\\d{8})")
     val match = regex.find(parsed.value) ?: return FieldValidationResult(
-      errorMessage = "Invalid Batch ID format on row $recordNumber.",
+      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
+      field = fieldName,
     )
 
     // Batch id date validity
@@ -147,9 +130,24 @@ class CrimeBatchCsvService(
       return parsed
     } catch (e: DateTimeParseException) {
       return FieldValidationResult(
-        errorMessage = "Invalid date in Batch ID on row $recordNumber.",
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
+        field = fieldName,
       )
     }
+  }
+
+  private fun parseCrimeReference(value: String): FieldValidationResult<String> {
+    val fieldName = "crimeReference"
+    val parsed = parseStringValue(fieldName, value)
+
+    if (parsed.value.isNullOrBlank()) {
+      return FieldValidationResult(
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+        field = fieldName,
+      )
+    }
+
+    return parsed
   }
 
   private fun parseStringValue(fieldName: String, value: String): FieldValidationResult<String> = try {
@@ -192,7 +190,8 @@ class CrimeBatchCsvService(
     crimeDateTo: String,
     crimeDateFrom: FieldValidationResult<LocalDateTime>,
   ): FieldValidationResult<LocalDateTime> {
-    val parsedDate = parseDateValue("dateTo", crimeDateTo)
+    val fieldName = "dateTo"
+    val parsedDate = parseDateValue(fieldName, crimeDateTo)
 
     val dateTo = parsedDate.value ?: return parsedDate
     val dateFrom = crimeDateFrom.value ?: return parsedDate
@@ -200,15 +199,14 @@ class CrimeBatchCsvService(
     if (dateTo.isBefore(dateFrom)) {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM,
-        field = "dateTo",
+        field = fieldName,
       )
     }
 
     if (Duration.between(dateFrom, dateTo).toHours() > CRIME_DATE_WINDOW_HOURS) {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
-        field = "dateTo",
-//        errorType = "Crime date time window must not exceed $CRIME_DATE_WINDOW_HOURS hours on row $recordNumber.",
+        field = fieldName,
       )
     }
 
@@ -226,7 +224,6 @@ class CrimeBatchCsvService(
     FieldValidationResult(
       errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
       field = fieldName,
-//      errorType = "$fieldName must be one of ${enumValues<T>().joinToString { it.name }} but was '$value' on row $recordNumber.",
     )
   }
 
@@ -244,7 +241,6 @@ class CrimeBatchCsvService(
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA,
         field = fieldName,
-//        errorType = "Dependent location data field must be provided when using $fieldName on row $recordNumber.",
       )
     }
 

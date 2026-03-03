@@ -7,8 +7,8 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import java.util.UUID
 
@@ -23,13 +23,16 @@ data class CrimeBatchEmailAttachmentIngestionError(
 
   val crimeReference: String?,
 
-  val errorType: String,
+  val fieldName: String?,
+  
+  val value: String?,
+
+  val errorType: CrimeBatchEmailAttachmentIngestionErrorType,
 
   @Enumerated(EnumType.STRING)
   val crimeTypeId: CrimeType?,
 
-  //@ManyToOne
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "crime_batch_email_attachment_id", nullable = false)
   val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 )

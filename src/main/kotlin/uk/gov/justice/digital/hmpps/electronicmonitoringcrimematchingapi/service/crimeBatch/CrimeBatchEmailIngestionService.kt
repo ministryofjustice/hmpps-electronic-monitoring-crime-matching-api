@@ -34,12 +34,16 @@ class CrimeBatchEmailIngestionService(
     crimeBatchEmail = crimeBatchEmail,
   )
 
-  fun createCrimeBatchEmailAttachmentIngestionError(error: EmailAttachmentIngestionError, crimeBatchEmailAttachment: CrimeBatchEmailAttachment): CrimeBatchEmailAttachmentIngestionError =
-    CrimeBatchEmailAttachmentIngestionError(
-      rowNumber = error.rowNumber,
-      crimeReference = error.crimeReference,
-      crimeTypeId = error.crimeTypeId,
-      errorType = error.errorType,
-      crimeBatchEmailAttachment = crimeBatchEmailAttachment
-    )
+  fun createCrimeBatchEmailAttachmentIngestionError(
+    error: EmailAttachmentIngestionError,
+    crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
+  ): CrimeBatchEmailAttachmentIngestionError = CrimeBatchEmailAttachmentIngestionError(
+    rowNumber = error.rowNumber,
+    crimeReference = error.crimeReference,
+    crimeTypeId = error.crimeTypeId,
+    errorType = error.errorType,
+    fieldName = error.field,
+    value = error.value,
+    crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+  )
 }

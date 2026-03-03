@@ -28,8 +28,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
@@ -186,29 +184,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
-    }
-
-    @Test
-    fun `it should move the message to the dead letter queue when the email contains invalid batch data`() {
-      val message = getMessage(OBJECT_KEY)
-
-      val encoded = Base64.encode(createCsvRow(policeForce = "invalid").toByteArray())
-      val email = createEmailFile(encoded)
-
-      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
-
-      sendDomainSqsMessage(message)
-
-      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
-
-      val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
-      assertThat(dlqMessage.body()).isEqualTo(message)
-
-      // Check that notification to start algo was not generated
-      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
-
-      val errors = crimeBatchIngestionErrorRepository.findAll()
-      assertThat(errors).hasSize(1)
     }
 
     @Test

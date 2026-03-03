@@ -9,4 +9,5 @@ data class EmailAttachmentIngestionError(
   val crimeTypeId: CrimeType?,
   val errorType: CrimeBatchEmailAttachmentIngestionErrorType,
   val field: String? = null,
+  val value: String? = null,
 )
