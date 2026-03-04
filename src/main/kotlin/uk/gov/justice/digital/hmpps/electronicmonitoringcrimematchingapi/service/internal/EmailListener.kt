@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.S
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.BatchIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
@@ -56,7 +56,7 @@ class EmailListener(
         .also { crimeBatchIngestionAttempt.crimeBatchEmail = it }
 
       validateAttachment(emailData)?.let {
-        return saveIngestionAttemptError(BatchIngestionErrorType.INVALID_ATTACHMENT, crimeBatchIngestionAttempt, crimeBatchEmail)
+        return saveIngestionAttemptError(CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT, crimeBatchIngestionAttempt, crimeBatchEmail)
       }
 
       // Parse csv rows
@@ -104,23 +104,23 @@ class EmailListener(
     }
   }
 
-  private fun validateAttachment(emailData: EmailData): BatchIngestionErrorType? = when (emailData.attachments.size) {
+  private fun validateAttachment(emailData: EmailData): CrimeBatchEmailIngestionErrorType? = when (emailData.attachments.size) {
     1 -> null
-    0 -> BatchIngestionErrorType.INVALID_ATTACHMENT
-    else -> BatchIngestionErrorType.INVALID_ATTACHMENT
+    0 -> CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT
+    else -> CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT
   }
 
-  private fun validateBatch(parseResult: ParseResult): BatchIngestionErrorType? {
+  private fun validateBatch(parseResult: ParseResult): CrimeBatchEmailIngestionErrorType? {
     val forces = parseResult.records.map { it.policeForce }.distinct()
-    if (forces.size > 1) return BatchIngestionErrorType.MULTIPLE_POLICE_FORCES
+    if (forces.size > 1) return CrimeBatchEmailIngestionErrorType.MULTIPLE_POLICE_FORCES
 
     val batchIds = parseResult.records.map { it.batchId }.distinct()
-    if (batchIds.size > 1) return BatchIngestionErrorType.MULTIPLE_BATCH_IDS
+    if (batchIds.size > 1) return CrimeBatchEmailIngestionErrorType.MULTIPLE_BATCH_IDS
 
     return null
   }
 
-  private fun saveIngestionAttemptError(errorType: BatchIngestionErrorType, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt, crimeBatchEmail: CrimeBatchEmail) {
+  private fun saveIngestionAttemptError(errorType: CrimeBatchEmailIngestionErrorType, crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt, crimeBatchEmail: CrimeBatchEmail) {
     val crimeBatchEmailIngestionError = CrimeBatchEmailIngestionError(
       errorType = errorType,
       crimeBatchEmail = crimeBatchEmail,

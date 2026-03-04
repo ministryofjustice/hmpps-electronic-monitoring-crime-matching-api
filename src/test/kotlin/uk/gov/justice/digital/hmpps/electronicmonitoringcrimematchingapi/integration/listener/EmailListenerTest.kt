@@ -31,7 +31,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.BatchIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
@@ -174,7 +174,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.INVALID_ATTACHMENT,
+        CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
       )
 
       // Check that notification to start algo was not generated
@@ -196,7 +196,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.INVALID_ATTACHMENT,
+        CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
       )
 
       // Check that notification to start algo was not generated
@@ -224,7 +224,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.MULTIPLE_POLICE_FORCES,
+        CrimeBatchEmailIngestionErrorType.MULTIPLE_POLICE_FORCES,
       )
 
       // Check that notification to start algo was not generated
@@ -252,7 +252,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        BatchIngestionErrorType.MULTIPLE_BATCH_IDS,
+        CrimeBatchEmailIngestionErrorType.MULTIPLE_BATCH_IDS,
       )
 
       // Check that notification to start algo was not generated
