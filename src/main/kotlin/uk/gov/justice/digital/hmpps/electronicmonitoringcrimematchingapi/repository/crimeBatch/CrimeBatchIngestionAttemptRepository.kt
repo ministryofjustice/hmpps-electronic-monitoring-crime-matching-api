@@ -8,7 +8,9 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
 import java.time.LocalDateTime
+import java.util.Optional
 import java.util.UUID
 
 @Repository
@@ -92,5 +94,82 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
     @Param("fromDate") fromDate: LocalDateTime?,
     @Param("toDate") toDate: LocalDateTime?,
     pageable: Pageable,
-  ): Page<CrimeBatchIngestionAttemptProjection>
+  ): Page<CrimeBatchIngestionAttemptSummaryProjection>
+
+  @Query(
+    value = """
+      WITH ingestion_attempt AS (
+        SELECT
+          cbia.id,
+          cbia.created_at,
+          cb.id AS crime_batch_id
+        FROM crime_batch_ingestion_attempt cbia
+        LEFT JOIN crime_batch_email cbe ON cbia.id = cbe.crime_batch_ingestion_attempt_id
+        LEFT JOIN crime_batch_email_attachment cbea ON cbe.id = cbea.crime_batch_email_id
+        LEFT JOIN crime_batch cb ON cbea.id = cb.crime_batch_email_attachment_id
+        WHERE cbia.id = :crimeBatchIngestionAttemptId
+      ),
+
+      crime_versions AS (
+        SELECT
+          cbcv.crime_batch_id,
+          c.police_force_area,
+          COUNT(*) AS version_count
+        FROM crime_batch_crime_version cbcv
+        LEFT JOIN crime_version cv ON cbcv.crime_version_id = cv.id
+        LEFT JOIN crime c ON cv.crime_id = c.id
+        JOIN ingestion_attempt ia ON ia.crime_batch_id = cbcv.crime_batch_id
+        GROUP BY cbcv.crime_batch_id, c.police_force_area
+      ),
+
+      latest_runs AS (
+        SELECT
+          r.id AS run_id,
+          r.crime_batch_id,
+          ROW_NUMBER() OVER (
+            PARTITION BY r.crime_batch_id
+            ORDER BY r.matching_ended DESC, r.id DESC
+          ) AS rn
+        FROM crime_matching_run r
+        JOIN ingestion_attempt ia ON ia.crime_batch_id = r.crime_batch_id
+      ),
+
+      latest_run_with_counts AS (
+        SELECT
+         lr.crime_batch_id,
+         COUNT(cmrdw.*) AS matches
+        FROM latest_runs lr
+        LEFT JOIN crime_matching_result cmre ON cmre.crime_matching_run_id = lr.run_id
+        LEFT JOIN crime_matching_result_device_wearer cmrdw ON cmre.id = cmrdw.crime_matching_result_id
+        WHERE lr.rn = 1
+        GROUP BY lr.crime_batch_id
+      )
+
+      SELECT
+        cbia.id AS ingestionAttemptId,
+        cbia.created_at AS createdAt,
+        cb.batch_id AS batchId,
+        cv.police_force_area AS policeForceArea,
+        cbea.file_name AS fileName,
+        lrwc.matches AS matches,
+        CASE
+          WHEN cbea.row_count = 0 THEN 'SUCCESSFUL'
+          WHEN cv.version_count = cbea.row_count THEN 'SUCCESSFUL'
+          WHEN COALESCE(cv.version_count, 0) = 0 AND cbea.row_count > 0 THEN 'FAILED'
+          WHEN COALESCE(cv.version_count, 0) < cbea.row_count THEN 'PARTIAL'
+          ELSE 'UNKNOWN'
+        END AS ingestionStatus
+
+      FROM ingestion_attempt cbia
+      JOIN crime_batch_email cbe ON cbia.id = cbe.crime_batch_ingestion_attempt_id
+      LEFT JOIN crime_batch_email_attachment cbea ON cbe.id = cbea.crime_batch_email_id
+      LEFT JOIN crime_batch cb ON cbea.id = cb.crime_batch_email_attachment_id
+      LEFT JOIN crime_versions cv ON cv.crime_batch_id = cb.id
+      LEFT JOIN latest_run_with_counts lrwc ON lrwc.crime_batch_id = cb.id
+    """,
+    nativeQuery = true,
+  )
+  fun findCrimeBatchIngestionAttemptById(
+    @Param("crimeBatchIngestionAttemptId") crimeBatchIngestionAttemptId: UUID,
+  ): Optional<CrimeBatchIngestionAttemptProjection>
 }
