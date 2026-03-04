@@ -83,6 +83,7 @@ class CrimeBatchCsvService {
           crimeTypeId.value,
           it,
           validation.field,
+          validation.input,
         )
       }
     }
@@ -127,6 +128,7 @@ class CrimeBatchCsvService {
     val match = regex.find(parsed.value) ?: return FieldValidationResult(
       errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
       field = fieldName,
+      input = value,
     )
 
     // Batch id date validity
@@ -139,6 +141,7 @@ class CrimeBatchCsvService {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
         field = fieldName,
+        input = value,
       )
     }
   }
@@ -165,6 +168,7 @@ class CrimeBatchCsvService {
     FieldValidationResult(
       errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TEXT,
       field = fieldName,
+      input = value,
     )
   }
 
@@ -176,6 +180,7 @@ class CrimeBatchCsvService {
     FieldValidationResult(
       errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_NUMBER,
       field = fieldName,
+      input = value,
     )
   }
 
@@ -190,6 +195,7 @@ class CrimeBatchCsvService {
     FieldValidationResult(
       errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
       field = fieldName,
+      input = value,
     )
   }
 
@@ -207,13 +213,17 @@ class CrimeBatchCsvService {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM,
         field = fieldName,
+        input = crimeDateTo,
       )
     }
 
-    if (Duration.between(dateFrom, dateTo).toHours() > CRIME_DATE_WINDOW_HOURS) {
+    val crimeDateWindow = Duration.between(dateFrom, dateTo).toHours()
+
+    if (crimeDateWindow > CRIME_DATE_WINDOW_HOURS) {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
         field = fieldName,
+        input = crimeDateWindow.toString(),
       )
     }
 
@@ -231,6 +241,7 @@ class CrimeBatchCsvService {
     FieldValidationResult(
       errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
       field = fieldName,
+      input = value,
     )
   }
 
@@ -248,6 +259,7 @@ class CrimeBatchCsvService {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA,
         field = fieldName,
+        input = recordValue,
       )
     }
 
@@ -262,6 +274,7 @@ class CrimeBatchCsvService {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE,
         field = fieldName,
+        input = parsedDoubleValue.toString(),
       )
     }
 

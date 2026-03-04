@@ -6,4 +6,5 @@ data class FieldValidationResult<T>(
   val value: T? = null,
   val errorType: CrimeBatchEmailAttachmentIngestionErrorType? = null,
   val field: String? = null,
+  val input: String? = null,
 )

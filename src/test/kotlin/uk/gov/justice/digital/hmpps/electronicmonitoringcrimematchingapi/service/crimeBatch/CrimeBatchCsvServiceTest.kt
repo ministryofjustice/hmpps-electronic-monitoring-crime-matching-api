@@ -127,6 +127,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
           field = "policeForce",
+          value = "invalid police force",
         ),
       ),
     )
@@ -159,6 +160,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
           field = "crimeType",
+          value = "invalid crime type",
         ),
       ),
     )
@@ -198,6 +200,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
           field = "batchId",
+          value = "MPS20250101",
         ),
       ),
     )
@@ -218,6 +221,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
           field = "batchId",
+          value = "MPS20253001",
         ),
       ),
     )
@@ -258,6 +262,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
           field = "dateFrom",
+          value = "",
         ),
       ),
     )
@@ -278,6 +283,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
           field = "dateTo",
+          value = "",
         ),
       ),
     )
@@ -301,6 +307,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM,
           field = "dateTo",
+          value = "20250125083000",
         ),
       ),
     )
@@ -324,6 +331,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
           field = "dateTo",
+          value = "1416",
         ),
       ),
     )
@@ -349,6 +357,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
           field = "policeForce",
+          value = "invalid police force",
         ),
         EmailAttachmentIngestionError(
           rowNumber = 1,
@@ -356,6 +365,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
           field = "crimeType",
+          value = "invalid crime type",
         ),
         EmailAttachmentIngestionError(
           rowNumber = 1,
@@ -363,6 +373,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
           field = "dateFrom",
+          value = "",
         ),
         EmailAttachmentIngestionError(
           rowNumber = 1,
@@ -370,6 +381,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
           field = "dateTo",
+          value = "",
         ),
       ),
     )
@@ -394,6 +406,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
           field = "crimeType",
+          value = "invalid",
         ),
         EmailAttachmentIngestionError(
           rowNumber = 3,
@@ -401,6 +414,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
           field = "dateFrom",
+          value = "invalid",
         ),
       ),
     )
@@ -425,7 +439,7 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
-  @ParameterizedTest(name = "easting={0}, northing={1}, lat={2}, long={3}, field={4}, errorType={5}")
+  @ParameterizedTest(name = "easting={0}, northing={1}, lat={2}, long={3}, field={4}, errorType={5}, value={6}")
   @MethodSource("invalidLocationValues")
   fun `it should not parse invalid location data`(
     easting: String,
@@ -434,6 +448,7 @@ class CrimeBatchCsvServiceTest {
     longitude: String,
     field: String?,
     errorType: CrimeBatchEmailAttachmentIngestionErrorType,
+    value: String?,
   ) {
     val crimeData = createCsvRow(easting = easting, northing = northing, latitude = latitude, longitude = longitude).byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
@@ -446,6 +461,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = errorType,
           field = field,
+          value = value,
         ),
       ),
     )
@@ -489,19 +505,19 @@ class CrimeBatchCsvServiceTest {
 
     @JvmStatic
     fun invalidLocationValues() = listOf(
-      Arguments.of("-1", "1", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("600001", "1", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("1", "", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA),
-      Arguments.of("1", "-1", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("1", "1300001", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("", "1", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA),
-      Arguments.of("", "", "62", "1", "latitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("", "", "49", "1", "latitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("", "", "50", "", "latitude", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA),
-      Arguments.of("", "", "50", "-9.0", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("", "", "50", "3", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE),
-      Arguments.of("", "", "", "1", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA),
-      Arguments.of("", "", "", "", null, CrimeBatchEmailAttachmentIngestionErrorType.MISSING_LOCATION_DATA),
+      Arguments.of("-1", "1", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "-1.0"),
+      Arguments.of("600001", "1", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "600001.0"),
+      Arguments.of("1", "", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA, "1"),
+      Arguments.of("1", "-1", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "-1.0"),
+      Arguments.of("1", "1300001", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "1300001.0"),
+      Arguments.of("", "1", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA, "1"),
+      Arguments.of("", "", "62", "1", "latitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "62.0"),
+      Arguments.of("", "", "49", "1", "latitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "49.0"),
+      Arguments.of("", "", "50", "", "latitude", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA, "50"),
+      Arguments.of("", "", "50", "-9.0", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "-9.0"),
+      Arguments.of("", "", "50", "3", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "3.0"),
+      Arguments.of("", "", "", "1", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA, "1"),
+      Arguments.of("", "", "", "", null, CrimeBatchEmailAttachmentIngestionErrorType.MISSING_LOCATION_DATA, null),
     )
   }
 }
