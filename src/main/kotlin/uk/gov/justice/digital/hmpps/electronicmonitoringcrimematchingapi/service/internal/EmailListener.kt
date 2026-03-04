@@ -99,7 +99,7 @@ class EmailListener(
           )
         }
       }
-    } catch (e: ValidationException) {
+    } catch (e: Exception) {
       throw ValidationException("Failed to process email: ${e.message}")
     }
   }
