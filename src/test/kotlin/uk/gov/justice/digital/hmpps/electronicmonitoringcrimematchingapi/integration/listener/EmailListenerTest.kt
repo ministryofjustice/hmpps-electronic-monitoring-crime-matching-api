@@ -157,7 +157,7 @@ class EmailListenerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should move the message to the dead letter queue when the message content is missing s3 object details`() {
+    fun `it should not move the message to the dead letter queue when the message content is missing s3 object details`() {
       val message = """
         {
           "Type" : "Notification",
