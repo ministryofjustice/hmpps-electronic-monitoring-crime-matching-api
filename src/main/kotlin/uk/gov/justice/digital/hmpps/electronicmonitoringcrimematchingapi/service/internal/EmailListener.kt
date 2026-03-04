@@ -85,8 +85,8 @@ class EmailListener(
         val errorSummary = buildErrorSummary(parseResult)
 
         emailNotificationService.sendFailedIngestionEmail(
-          "batchId",
-          "Unknown",
+          "Unknown due to an error",
+          "Unknown Force",
           emailData,
           parseResult,
           errorSummary,
@@ -120,14 +120,14 @@ class EmailListener(
       return parseResult.errors.take(5).joinToString("\n") { "-$it" }
     }
 
-    val top_5_errors = parseResult.failedRecords.take(5).joinToString("\n") { record ->
+    val top5errors = parseResult.failedRecords.take(5).joinToString("\n") { record ->
       "* Row ${record.rowNumber}: ${record.errorMessage}"
     }
 
     return if (parseResult.failedRecords.size > 5) {
-      "$top_5_errors\n\nThere are ${parseResult.failedRecords.size} errors in total. Check the attached CSV for full details."
+      "$top5errors\n\nThere are ${parseResult.failedRecords.size} errors in total. Check the attached CSV for full details."
     } else {
-      top_5_errors
+      top5errors
     }
   }
 }
