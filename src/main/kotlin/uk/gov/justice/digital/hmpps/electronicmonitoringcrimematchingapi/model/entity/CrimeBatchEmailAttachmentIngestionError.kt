@@ -19,10 +19,14 @@ data class CrimeBatchEmailAttachmentIngestionError(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
+  @Column(nullable = false)
   val rowNumber: Long,
   val crimeReference: String?,
   val fieldName: String?,
   val value: String?,
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   val errorType: CrimeBatchEmailAttachmentIngestionErrorType,
 
   @Enumerated(EnumType.STRING)

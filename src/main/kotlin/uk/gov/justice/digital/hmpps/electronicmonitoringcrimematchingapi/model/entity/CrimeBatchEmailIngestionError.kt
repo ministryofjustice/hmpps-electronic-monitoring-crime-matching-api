@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
@@ -16,10 +18,9 @@ data class CrimeBatchEmailIngestionError(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   val errorType: BatchIngestionErrorType,
-
-  // This will be for the emitted email when a failure occurs
-//  val emailSubject: String,
 
   @OneToOne
   @JoinColumn(name = "crime_batch_ingestion_attempt_id")
