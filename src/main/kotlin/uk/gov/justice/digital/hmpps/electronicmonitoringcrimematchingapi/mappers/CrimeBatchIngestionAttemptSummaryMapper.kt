@@ -10,6 +10,7 @@ class CrimeBatchIngestionAttemptSummaryMapper {
     ingestionAttemptId = summary.ingestionAttemptId,
     ingestionStatus = summary.ingestionStatus.name,
     policeForceArea = summary.policeForceArea ?: "",
+    crimeBatchId = summary.crimeBatchId ?: "",
     batchId = summary.batchId ?: "",
     matches = summary.matches,
     createdAt = summary.createdAt.toString(),
