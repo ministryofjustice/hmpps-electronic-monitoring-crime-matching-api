@@ -31,9 +31,11 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchEmailAttachmentIngestionErrorRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
@@ -75,6 +77,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchEmailAttachmentIngestionErrorRepository: CrimeBatchEmailAttachmentIngestionErrorRepository
 
   val emailQueueConfig by lazy {
     hmppsQueueService.findByQueueId("email")
@@ -154,6 +159,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val crimeVersions = crimeVersionRepository.findAll()
       assertThat(crimeVersions).hasSize(2)
+
+      val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
+      assertThat(attachmentIngestionErrors).isEmpty()
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
@@ -298,11 +306,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
-      assertThat(crimeBatchIngestionAttempts).hasSize(1)
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
-
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
 
@@ -311,6 +314,10 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val crimeVersions = crimeVersionRepository.findAll()
       assertThat(crimeVersions).hasSize(2)
+
+      val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
+      assertThat(attachmentIngestionErrors).hasSize(1)
+      assertThat(attachmentIngestionErrors.first().errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
