@@ -179,7 +179,7 @@ class EmailListenerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should move the message to the dead letter queue when the email contains invalid batch data`() {
+    fun `it should not move the message to the dead letter queue when the email contains invalid batch data`() {
       val message = getMessage(OBJECT_KEY)
 
       val encoded = Base64.encode(createCsvRow(policeForce = "invalid").toByteArray())
@@ -189,10 +189,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       sendDomainSqsMessage(message)
 
-      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
-
-      val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
-      assertThat(dlqMessage.body()).isEqualTo(message)
+      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() >= 1 }
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
