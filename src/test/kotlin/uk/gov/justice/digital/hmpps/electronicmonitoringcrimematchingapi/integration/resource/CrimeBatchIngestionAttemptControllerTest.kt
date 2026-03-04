@@ -95,6 +95,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
 
       // Create older batch to be returned on 2nd page due to default sorting
       crimeMatchingFixtures.givenBatch(
+        crimeBatchId = UUID.fromString("c3c8a0e8-46da-4bd2-beee-601701989b8b"),
         ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb572046a6f"),
         ingestionCreatedAt = LocalDateTime.of(2024, 1, 1, 0, 0),
         batchId = "Batch2",
@@ -236,7 +237,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a failed ingestion attempt summary`() {
-      crimeMatchingFixtures.givenBatch(ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"), batchId = "Batch1") {}
+      crimeMatchingFixtures.givenBatch(crimeBatchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036"), ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"), batchId = "Batch1") {}
 
       val body = webTestClient.get()
         .uri("/ingestion-attempts")
@@ -261,7 +262,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a partially failed ingestion attempt summary`() {
-      crimeMatchingFixtures.givenBatch(ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"), batchId = "Batch1", rowCount = 2) {
+      crimeMatchingFixtures.givenBatch(crimeBatchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036"), ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"), batchId = "Batch1", rowCount = 2) {
         withCrime("crime1") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
@@ -333,8 +334,9 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     }
 
     private fun createBatch() {
+      val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
       val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
-      crimeMatchingFixtures.givenBatch(ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {
+      crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {
         withCrime("crime1") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
@@ -424,8 +426,9 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     }
 
     private fun createBatch() {
+      val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
       val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
-      crimeMatchingFixtures.givenBatch(ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {
+      crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {
         withCrime("crime1") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)

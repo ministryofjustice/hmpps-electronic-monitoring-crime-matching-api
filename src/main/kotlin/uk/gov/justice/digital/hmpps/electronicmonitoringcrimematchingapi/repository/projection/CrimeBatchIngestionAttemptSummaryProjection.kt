@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 interface CrimeBatchIngestionAttemptSummaryProjection {
   val ingestionAttemptId: String
   val createdAt: LocalDateTime
+  val crimeBatchId: String?
   val batchId: String?
   val policeForceArea: String?
   val matches: Long?

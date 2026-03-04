@@ -1,6 +1,7 @@
 {
   "data" : [
     {
+      "crimeBatchId": "c3c8a0e8-46da-4bd2-beee-601701989b8b",
       "batchId" : "Batch2",
       "createdAt" : "2024-01-01T00:00",
       "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb572046a6f",

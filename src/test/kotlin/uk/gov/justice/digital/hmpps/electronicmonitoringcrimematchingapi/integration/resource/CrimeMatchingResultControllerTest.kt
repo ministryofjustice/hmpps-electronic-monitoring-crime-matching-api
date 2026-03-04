@@ -108,7 +108,7 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
       // Given a crime batch with 2 crimes
       // - crime 1 has 2 matched device wearers
       // - crime 2 has 0 matched device wearers
-      val batch = crimeMatchingFixtures.givenBatch("Batch1") {
+      val batch = crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
         withCrime("crime1") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
@@ -148,7 +148,7 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
       // Given a crime batch with 1 crime and 2 matching runs
       // - Matching run 1 matched 1 device wearers
       // - Matching run 2 matched 2 device wearer
-      val batch = crimeMatchingFixtures.givenBatch("Batch1") {
+      val batch = crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
         withCrime("crime1", latitude = null, longitude = null, easting = 529381.0, northing = 179534.0) {
           // Older
           withMatchingRun(matchingEnded = LocalDateTime.of(2025, 1, 1, 0, 0)) {
@@ -188,14 +188,14 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return matches for many crime batches`() {
       // Given 2 crime batches with 1 crime and 1 result
-      val batch1 = crimeMatchingFixtures.givenBatch("Batch1") {
+      val batch1 = crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
         withCrime("crime1") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
           }
         }
       }
-      val batch2 = crimeMatchingFixtures.givenBatch("Batch2") {
+      val batch2 = crimeMatchingFixtures.givenBatch(batchId = "Batch2") {
         withCrime("crime2") {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 2)

@@ -21,6 +21,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
       SELECT
         cbia.id AS ingestionAttemptId,
         cbia.created_at     AS createdAt,
+        cb.id               AS crimeBatchId,
         cb.batch_id         AS batchId,
         cv.police_force_area AS policeForceArea,
         cmru.matches        AS matches,
