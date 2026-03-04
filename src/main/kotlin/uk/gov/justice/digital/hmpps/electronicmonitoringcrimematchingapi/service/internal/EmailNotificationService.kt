@@ -23,11 +23,11 @@ class EmailNotificationService(
     val csvBytes = records.toCsv().toByteArray()
 
     val personalisation = hashMapOf<String, Any>()
-    personalisation["fileName"] = emailData.attachments[0].name
+    personalisation["fileName"] = emailData.attachments.single().name
     personalisation["ingestionDate"] = LocalDate.now().toString()
     personalisation["batchId"] = batchId
     personalisation["policeForce"] = policeForce.name
-    personalisation["linkToFile"] = NotificationClient.prepareUpload(csvBytes, emailData.attachments[0].name)
+    personalisation["linkToFile"] = NotificationClient.prepareUpload(csvBytes, emailData.attachments.single().name)
 
     for (emailAddress in emailAddresses) {
       sendEmail(properties.successfulIngestionTemplateId, emailAddress, personalisation, batchId)

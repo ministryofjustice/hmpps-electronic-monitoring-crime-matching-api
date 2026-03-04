@@ -66,10 +66,12 @@ erDiagram
     CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ERROR {
         uuid id pk
         uuid crime-batch-email-attachment-id fk
-        int rowNumber
+        long rowNumber
         string crimeReference
-        string crimeTypeId
+        string fieldName
+        string value
         string errorType
+        string crimeTypeId
     }
 
     CRIME {

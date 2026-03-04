@@ -75,10 +75,17 @@ class CrimeBatchCsvService {
       longitude,
       crimeText,
       locationValidation,
-    )
-      .map { it }
-      .filter { it.errorType != null }
-      .map { EmailAttachmentIngestionError(rowNumber = record.recordNumber, crimeReference = crimeReference.value, crimeTypeId = crimeTypeId.value, errorType = it.errorType!!, field = it.field) }
+    ).mapNotNull { validation ->
+      validation.errorType?.let {
+        EmailAttachmentIngestionError(
+          record.recordNumber,
+          crimeReference.value,
+          crimeTypeId.value,
+          it,
+          validation.field,
+        )
+      }
+    }
 
     if (errors.isNotEmpty()) {
       return ValidationResult.Failure(errors)

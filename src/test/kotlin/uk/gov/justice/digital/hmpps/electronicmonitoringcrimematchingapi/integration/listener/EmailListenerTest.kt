@@ -32,12 +32,9 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integra
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.BatchIngestionErrorType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchEmailAttachmentIngestionErrorRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionErrorRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
@@ -78,12 +75,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
-
-  @MockitoSpyBean
-  lateinit var crimeBatchEmailAttachmentIngestionErrorRepository: CrimeBatchEmailAttachmentIngestionErrorRepository
-
-  @MockitoSpyBean
-  lateinit var crimeBatchIngestionErrorRepository: CrimeBatchIngestionErrorRepository
 
   val emailQueueConfig by lazy {
     hmppsQueueService.findByQueueId("email")
@@ -320,10 +311,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val crimeVersions = crimeVersionRepository.findAll()
       assertThat(crimeVersions).hasSize(2)
-
-      val errors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
-      assertThat(errors).hasSize(1)
-      assertThat(errors[0].errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
