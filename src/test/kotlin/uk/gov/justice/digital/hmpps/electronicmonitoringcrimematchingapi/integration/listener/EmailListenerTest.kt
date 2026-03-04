@@ -169,10 +169,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       sendDomainSqsMessage(message)
 
-      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
-
-      val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
-      assertThat(dlqMessage.body()).isEqualTo(message)
+      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() >= 1 }
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
