@@ -97,7 +97,7 @@ class EmailListenerTest {
         objectName = "email-file",
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file", "emails")).thenReturn(responseStream)
       whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
         crimeBatchIngestionAttempt,
       )
@@ -161,14 +161,6 @@ class EmailListenerTest {
       }
     }
 
-//    @Test
-//    fun `it should save an ingestion error when the email file contains no attachments`() {
-//    }
-
-//    @Test
-//    fun `it should save an ingestion error when the email file contains multiple attachments`() {
-//    }
-
     @Test
     fun `it should throw an exception when the email file contains has an invalid subject`() {
       val message = """
@@ -188,7 +180,7 @@ class EmailListenerTest {
         createEmailFile(subject = "invalid").byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-subject", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-invalid-subject", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
@@ -215,7 +207,7 @@ class EmailListenerTest {
         createEmailFile(fromAddress = "invalid@email.com").byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-from", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-invalid-from", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
@@ -242,7 +234,7 @@ class EmailListenerTest {
         createEmailFile(resentFrom = "invalid").byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-redirect", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-invalid-redirect", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
@@ -269,7 +261,7 @@ class EmailListenerTest {
         createEmailFileNoRedirect().byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-no-redirect", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-no-redirect", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
