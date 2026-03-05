@@ -2,9 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import jakarta.validation.Validation
 import jakarta.validation.ValidationException
-import jakarta.validation.Validator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -24,8 +22,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoRedirect
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithMultipleAttachments
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
@@ -50,7 +46,6 @@ class EmailListenerTest {
   private lateinit var emailParserService: EmailParserService
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
-  private val validator: Validator = Validation.buildDefaultValidatorFactory().validator
   private val emailIngestionProperties: EmailIngestionProperties = EmailIngestionProperties(
     mailboxAddress = "shared-mailbox@email.com",
     validEmails = mapOf(
@@ -61,7 +56,7 @@ class EmailListenerTest {
   @BeforeEach
   fun setup() {
     s3Service = Mockito.mock(S3Service::class.java)
-    crimeBatchCsvService = CrimeBatchCsvService(validator)
+    crimeBatchCsvService = CrimeBatchCsvService()
     crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
     emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
@@ -102,7 +97,7 @@ class EmailListenerTest {
         objectName = "email-file",
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file", "emails")).thenReturn(responseStream)
       whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
         crimeBatchIngestionAttempt,
       )
@@ -167,60 +162,6 @@ class EmailListenerTest {
     }
 
     @Test
-    fun `it should throw an exception when the email file contains no attachments`() {
-      val message = """
-        {
-          "receipt" : {
-            "action" : {
-              "bucketName" : "emails",
-              "objectKey" : "email-file-no-attachment"
-            }
-          }
-        }
-      """.trimIndent()
-      val messageId = UUID.randomUUID()
-      val sqsMessage = SqsMessage("Notification", message, messageId)
-      val responseStream = ResponseInputStream(
-        GetObjectResponse.builder().build(),
-        createEmailFileWithoutAttachment().byteInputStream(),
-      )
-
-      whenever(s3Service.getObject(messageId.toString(), "email-file-no-attachment", "emails")).thenReturn(responseStream)
-
-      val exception = assertThrows<ValidationException> {
-        listener.receiveEmailNotification(sqsMessage)
-      }
-      assertThat(exception.message).isEqualTo("Failed to process email: No CSV attachment found in email")
-    }
-
-    @Test
-    fun `it should throw an exception when the email file contains multiple attachments`() {
-      val message = """
-        {
-          "receipt" : {
-            "action" : {
-              "bucketName" : "emails",
-              "objectKey" : "email-file-multiple-attachments"
-            }
-          }
-        }
-      """.trimIndent()
-      val messageId = UUID.randomUUID()
-      val sqsMessage = SqsMessage("Notification", message, messageId)
-      val responseStream = ResponseInputStream(
-        GetObjectResponse.builder().build(),
-        createEmailFileWithMultipleAttachments().byteInputStream(),
-      )
-
-      whenever(s3Service.getObject(messageId.toString(), "email-file-multiple-attachments", "emails")).thenReturn(responseStream)
-
-      val exception = assertThrows<ValidationException> {
-        listener.receiveEmailNotification(sqsMessage)
-      }
-      assertThat(exception.message).isEqualTo("Failed to process email: Multiple CSV attachments found")
-    }
-
-    @Test
     fun `it should throw an exception when the email file contains has an invalid subject`() {
       val message = """
         {
@@ -239,7 +180,7 @@ class EmailListenerTest {
         createEmailFile(subject = "invalid").byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-subject", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-invalid-subject", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
@@ -266,7 +207,7 @@ class EmailListenerTest {
         createEmailFile(fromAddress = "invalid@email.com").byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-from", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-invalid-from", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
@@ -293,7 +234,7 @@ class EmailListenerTest {
         createEmailFile(resentFrom = "invalid").byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-invalid-redirect", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-invalid-redirect", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
@@ -320,7 +261,7 @@ class EmailListenerTest {
         createEmailFileNoRedirect().byteInputStream(),
       )
 
-      whenever(s3Service.getObject(messageId.toString(), "email-file-no-redirect", "emails")).thenReturn(responseStream)
+      whenever(s3Service.getObject(messageId, "email-file-no-redirect", "emails")).thenReturn(responseStream)
 
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)

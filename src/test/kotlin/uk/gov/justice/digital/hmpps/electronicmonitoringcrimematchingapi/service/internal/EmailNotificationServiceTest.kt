@@ -45,7 +45,7 @@ class EmailNotificationServiceTest {
       originalSender = "originalSender",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
-      attachment = attachment,
+      attachments = listOf(attachment),
     )
 
     val uploadFile = JSONObject()
@@ -90,7 +90,7 @@ class EmailNotificationServiceTest {
       originalSender = "originalSender",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
-      attachment = attachment,
+      attachments = listOf(attachment),
     )
 
     val personalisation = mutableMapOf(
