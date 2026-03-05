@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import software.amazon.awssdk.services.s3.model.S3Exception
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.util.UUID
 
 @ActiveProfiles("test")
 class S3ServiceTest {
@@ -42,7 +43,7 @@ class S3ServiceTest {
         client.getObject(any<GetObjectRequest>()),
       ).thenReturn(responseStream)
 
-      val res = service.getObject("messageId", "objectKey", "bucketName")
+      val res = service.getObject(UUID.randomUUID(), "objectKey", "bucketName")
 
       assert(res.readAllBytes().decodeToString().contentEquals(fileData))
     }
@@ -55,7 +56,7 @@ class S3ServiceTest {
     ).thenThrow(S3Exception.builder().build())
 
     assertThrows<IOException> {
-      service.getObject("messageId", "objectKey", "bucketName")
+      service.getObject(UUID.randomUUID(), "objectKey", "bucketName")
     }
   }
 }

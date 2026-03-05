@@ -32,6 +32,7 @@ class CrimeMatchingFixtures(
   }
 
   fun givenBatch(
+    crimeBatchId: UUID = UUID.randomUUID(),
     batchId: String,
     ingestionAttemptId: UUID = UUID.randomUUID(),
     ingestionCreatedAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
@@ -63,6 +64,7 @@ class CrimeMatchingFixtures(
     email.crimeBatchEmailAttachments.add(attachment)
 
     val batch = CrimeBatch(
+      id = crimeBatchId,
       batchId = batchId,
       crimeBatchEmailAttachment = attachment,
     )

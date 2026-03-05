@@ -26,11 +26,16 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithMultipleAttachments
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchEmailAttachmentIngestionErrorRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
@@ -72,6 +77,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
+
+  @MockitoSpyBean
+  lateinit var crimeBatchEmailAttachmentIngestionErrorRepository: CrimeBatchEmailAttachmentIngestionErrorRepository
 
   val emailQueueConfig by lazy {
     hmppsQueueService.findByQueueId("email")
@@ -152,8 +160,111 @@ class EmailListenerTest : IntegrationTestBase() {
       val crimeVersions = crimeVersionRepository.findAll()
       assertThat(crimeVersions).hasSize(2)
 
+      val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
+      assertThat(attachmentIngestionErrors).isEmpty()
+
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+    }
+
+    @Test
+    fun `it should save an ingestion attempt with an error when the email is missing an attachment`() {
+      val email = createEmailFileWithoutAttachment()
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
+        CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      )
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
+    fun `it should save an ingestion attempt with an error when the email has multiple attachments`() {
+      val email = createEmailFileWithMultipleAttachments()
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
+        CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      )
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
+    fun `it should save an ingestion attempt with an error when the csv has multiple police forces`() {
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.name, batchId = "BFD20250126"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
+        CrimeBatchEmailIngestionErrorType.MULTIPLE_POLICE_FORCES,
+      )
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
+    fun `it should save an ingestion attempt with an error when the csv has multiple batch IDs`() {
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(batchId = "MPS20260126"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
+        CrimeBatchEmailIngestionErrorType.MULTIPLE_BATCH_IDS,
+      )
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
     }
 
     @Test
@@ -166,26 +277,6 @@ class EmailListenerTest : IntegrationTestBase() {
           "Message" : "{ \"notificationType\": \"Received\", \"receipt\": { \"action\": { \"bucketName\": \"$BUCKET_NAME\" }}}"
         }
       """.trimIndent()
-
-      sendDomainSqsMessage(message)
-
-      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
-
-      val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
-      assertThat(dlqMessage.body()).isEqualTo(message)
-
-      // Check that notification to start algo was not generated
-      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
-    }
-
-    @Test
-    fun `it should move the message to the dead letter queue when the email contains invalid batch data`() {
-      val message = getMessage(OBJECT_KEY)
-
-      val encoded = Base64.encode(createCsvRow(policeForce = "invalid").toByteArray())
-      val email = createEmailFile(encoded)
-
-      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
 
       sendDomainSqsMessage(message)
 
@@ -215,11 +306,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
-      assertThat(crimeBatchIngestionAttempts).hasSize(1)
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
-
       val crimeBatches = crimeBatchRepository.findAll()
       assertThat(crimeBatches).hasSize(1)
 
@@ -228,6 +314,10 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val crimeVersions = crimeVersionRepository.findAll()
       assertThat(crimeVersions).hasSize(2)
+
+      val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
+      assertThat(attachmentIngestionErrors).hasSize(1)
+      assertThat(attachmentIngestionErrors.first().errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)

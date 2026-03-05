@@ -2,10 +2,14 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToOne
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import java.util.UUID
 
 @Entity
@@ -15,13 +19,20 @@ data class CrimeBatchEmailAttachmentIngestionError(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  val rowNumber: Int,
+  @Column(nullable = false)
+  val rowNumber: Long,
+  val crimeReference: String?,
+  val fieldName: String?,
+  val value: String?,
 
-  val crimeReference: String,
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  val errorType: CrimeBatchEmailAttachmentIngestionErrorType,
 
-  val errorType: String,
+  @Enumerated(EnumType.STRING)
+  val crimeTypeId: CrimeType?,
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "crime_batch_email_attachment_id", nullable = false)
   val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 )

@@ -8,5 +8,5 @@ class EmailData(
   val originalSender: String,
   val subject: String,
   val sentAt: Date,
-  val attachment: DataSource,
+  val attachments: List<DataSource>,
 )

@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
-import jakarta.validation.ValidationException
-import jakarta.validation.Validator
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
@@ -9,8 +7,10 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.data.CsvConfig.CrimeBatchCsvConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.ParseResult
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.FieldValidationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.ValidationResult
 import java.io.InputStream
@@ -23,13 +23,11 @@ import java.time.format.DateTimeParseException
 private const val CRIME_DATE_WINDOW_HOURS = 12
 
 @Service
-class CrimeBatchCsvService(
-  private val validator: Validator,
-) {
+class CrimeBatchCsvService {
 
   fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordRequest>()
-    val errors = mutableListOf<String>()
+    val errors = mutableListOf<EmailAttachmentIngestionError>()
     val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
     var recordCount = 0
 
@@ -41,36 +39,28 @@ class CrimeBatchCsvService(
       }
     }
 
-    if (crimes.isNotEmpty() && crimes.map { it.policeForce }.distinct().size != 1) {
-      throw ValidationException("Multiple police forces found in csv file")
-    }
-
-    if (crimes.isNotEmpty() && crimes.map { it.batchId }.distinct().size != 1) {
-      throw ValidationException("Multiple batch Ids found in csv file")
-    }
-
     return ParseResult(recordCount, crimes, errors)
   }
 
   private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordRequest> {
     if (record.size() != CrimeBatchCsvConfig.COLUMN_COUNT) {
       return ValidationResult.Failure(
-        listOf("Incorrect number of columns on row ${record.recordNumber}."),
+        listOf(EmailAttachmentIngestionError(rowNumber = record.recordNumber, crimeReference = null, crimeTypeId = null, errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT)),
       )
     }
 
-    val policeForce = parseEnumValue<PoliceForce>(record.recordNumber, "policeForce", record.policeForce())
-    val crimeTypeId = parseEnumValue<CrimeType>(record.recordNumber, "crimeType", record.crimeTypeId())
-    val batchId = parseBatchId(record.recordNumber, record.batchId().trim(), policeForce.value)
-    val crimeReference = parseStringValue(record.recordNumber, "crimeReference", record.crimeReference().trim())
-    val crimeDateFrom = parseDateValue(record.recordNumber, "dateFrom", record.crimeDateTimeFrom())
-    val crimeDateTo = parseCrimeDateTo(record.recordNumber, record.crimeDateTimeTo(), crimeDateFrom)
-    val easting = parseLocationValue(record.recordNumber, record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..600000.0)
-    val northing = parseLocationValue(record.recordNumber, record.northing(), "northing", record.easting(), Pair(record.latitude(), record.longitude()), 0.0..1300000.0)
-    val latitude = parseLocationValue(record.recordNumber, record.latitude(), "latitude", record.longitude(), Pair(record.easting(), record.northing()), 49.5..61.5)
-    val longitude = parseLocationValue(record.recordNumber, record.longitude(), "longitude", record.latitude(), Pair(record.easting(), record.northing()), -8.5..2.6)
-    val crimeText = parseStringValue(record.recordNumber, "crimeText", record.crimeText())
-    val locationValidation = validateLocationData(record.recordNumber, listOf(record.easting(), record.northing(), record.latitude(), record.longitude()))
+    val policeForce = parseEnumValue<PoliceForce>("policeForce", record.policeForce())
+    val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId())
+    val batchId = parseBatchId(record.batchId().trim(), policeForce.value)
+    val crimeReference = parseCrimeReference(record.crimeReference().trim())
+    val crimeDateFrom = parseDateValue("dateFrom", record.crimeDateTimeFrom())
+    val crimeDateTo = parseCrimeDateTo(record.crimeDateTimeTo(), crimeDateFrom)
+    val easting = parseLocationValue(record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..600000.0)
+    val northing = parseLocationValue(record.northing(), "northing", record.easting(), Pair(record.latitude(), record.longitude()), 0.0..1300000.0)
+    val latitude = parseLocationValue(record.latitude(), "latitude", record.longitude(), Pair(record.easting(), record.northing()), 49.5..61.5)
+    val longitude = parseLocationValue(record.longitude(), "longitude", record.latitude(), Pair(record.easting(), record.northing()), -8.5..2.6)
+    val crimeText = parseStringValue("crimeText", record.crimeText())
+    val locationValidation = validateLocationData(listOf(record.easting(), record.northing(), record.latitude(), record.longitude()))
 
     val errors = listOf(
       policeForce,
@@ -85,8 +75,18 @@ class CrimeBatchCsvService(
       longitude,
       crimeText,
       locationValidation,
-    )
-      .mapNotNull { it.errorMessage }
+    ).mapNotNull { validation ->
+      validation.errorType?.let {
+        EmailAttachmentIngestionError(
+          record.recordNumber,
+          crimeReference.value,
+          crimeTypeId.value,
+          it,
+          validation.field,
+          validation.input,
+        )
+      }
+    }
 
     if (errors.isNotEmpty()) {
       return ValidationResult.Failure(errors)
@@ -106,25 +106,29 @@ class CrimeBatchCsvService(
       crimeText.value!!,
     )
 
-    val violations = validator.validate(crimeRecordDto)
-
-    if (violations.isNotEmpty()) {
-      return ValidationResult.Failure(violations.map { it.message })
-    }
-
     return ValidationResult.Success(crimeRecordDto)
   }
 
-  private fun parseBatchId(recordNumber: Long, value: String, policeForce: PoliceForce?): FieldValidationResult<String> {
+  private fun parseBatchId(value: String, policeForce: PoliceForce?): FieldValidationResult<String> {
+    val fieldName = "batchId"
     // String validity
-    val parsed = parseStringValue(recordNumber, "batchId", value)
+    val parsed = parseStringValue(fieldName, value)
 
-    if (parsed.value.isNullOrBlank() || (policeForce == null)) return parsed
+    if (policeForce == null) return parsed
+
+    if (parsed.value.isNullOrBlank()) {
+      return FieldValidationResult(
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
+        field = fieldName,
+      )
+    }
 
     // Batch id pattern validity
     val regex = Regex("^${policeForce.code}(\\d{8})")
     val match = regex.find(parsed.value) ?: return FieldValidationResult(
-      errorMessage = "Invalid Batch ID format on row $recordNumber.",
+      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
+      field = fieldName,
+      input = value,
     )
 
     // Batch id date validity
@@ -135,33 +139,52 @@ class CrimeBatchCsvService(
       return parsed
     } catch (e: DateTimeParseException) {
       return FieldValidationResult(
-        errorMessage = "Invalid date in Batch ID on row $recordNumber.",
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
+        field = fieldName,
+        input = value,
       )
     }
   }
 
-  private fun parseStringValue(recordNumber: Long, fieldName: String, value: String): FieldValidationResult<String> = try {
+  private fun parseCrimeReference(value: String): FieldValidationResult<String> {
+    val fieldName = "crimeReference"
+    val parsed = parseStringValue(fieldName, value)
+
+    if (parsed.value.isNullOrBlank()) {
+      return FieldValidationResult(
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+        field = fieldName,
+      )
+    }
+
+    return parsed
+  }
+
+  private fun parseStringValue(fieldName: String, value: String): FieldValidationResult<String> = try {
     FieldValidationResult(
       value = value.trim(),
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be text but was '$value' on row $recordNumber.",
+      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TEXT,
+      field = fieldName,
+      input = value,
     )
   }
 
-  private fun parseDoubleValue(recordNumber: Long, fieldName: String, value: String): FieldValidationResult<Double> = try {
+  private fun parseDoubleValue(fieldName: String, value: String): FieldValidationResult<Double> = try {
     FieldValidationResult(
       value = if (value.trim().isBlank()) null else value.trim().toDouble(),
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be a number but was '$value' on row $recordNumber.",
+      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_NUMBER,
+      field = fieldName,
+      input = value,
     )
   }
 
   private fun parseDateValue(
-    recordNumber: Long,
     fieldName: String,
     value: String,
   ): FieldValidationResult<LocalDateTime> = try {
@@ -170,29 +193,37 @@ class CrimeBatchCsvService(
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be a date with format yyyyMMddHHmmss but was '$value' on row $recordNumber.",
+      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
+      field = fieldName,
+      input = value,
     )
   }
 
   private fun parseCrimeDateTo(
-    recordNumber: Long,
     crimeDateTo: String,
     crimeDateFrom: FieldValidationResult<LocalDateTime>,
   ): FieldValidationResult<LocalDateTime> {
-    val parsedDate = parseDateValue(recordNumber, "dateTo", crimeDateTo)
+    val fieldName = "dateTo"
+    val parsedDate = parseDateValue(fieldName, crimeDateTo)
 
     val dateTo = parsedDate.value ?: return parsedDate
     val dateFrom = crimeDateFrom.value ?: return parsedDate
 
     if (dateTo.isBefore(dateFrom)) {
       return FieldValidationResult(
-        errorMessage = "Crime date time to must be after crime date time from on row $recordNumber.",
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM,
+        field = fieldName,
+        input = crimeDateTo,
       )
     }
 
-    if (Duration.between(dateFrom, dateTo).toHours() > CRIME_DATE_WINDOW_HOURS) {
+    val crimeDateWindow = Duration.between(dateFrom, dateTo).toHours()
+
+    if (crimeDateWindow > CRIME_DATE_WINDOW_HOURS) {
       return FieldValidationResult(
-        errorMessage = "Crime date time window must not exceed $CRIME_DATE_WINDOW_HOURS hours on row $recordNumber.",
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
+        field = fieldName,
+        input = crimeDateWindow.toString(),
       )
     }
 
@@ -200,7 +231,6 @@ class CrimeBatchCsvService(
   }
 
   private inline fun <reified T : Enum<T>> parseEnumValue(
-    recordNumber: Long,
     fieldName: String,
     value: String,
   ): FieldValidationResult<T> = try {
@@ -209,45 +239,51 @@ class CrimeBatchCsvService(
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorMessage = "$fieldName must be one of ${enumValues<T>().joinToString { it.name }} but was '$value' on row $recordNumber.",
+      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+      field = fieldName,
+      input = value,
     )
   }
 
   private fun parseLocationValue(
-    recordNumber: Long,
     recordValue: String,
     fieldName: String,
     dependentField: String,
     opposingFields: Pair<String, String>,
     range: ClosedFloatingPointRange<Double>,
   ): FieldValidationResult<Double> {
-    val parsedDouble = parseDoubleValue(recordNumber, fieldName, recordValue)
+    val parsedDouble = parseDoubleValue(fieldName, recordValue)
     val parsedDoubleValue = parsedDouble.value ?: return parsedDouble
 
     if (dependentField.isBlank()) {
       return FieldValidationResult(
-        errorMessage = "Dependent location data field must be provided when using $fieldName on row $recordNumber.",
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA,
+        field = fieldName,
+        input = recordValue,
       )
     }
 
     if (!opposingFields.first.isBlank() || !opposingFields.second.isBlank()) {
       return FieldValidationResult(
-        errorMessage = "Only one location data type should be provided on row $recordNumber.",
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MULTIPLE_LOCATION_DATA_TYPES,
+        field = fieldName,
       )
     }
 
     if (parsedDoubleValue !in range) {
       return FieldValidationResult(
-        errorMessage = "$fieldName value '$parsedDoubleValue' outside of valid range on row $recordNumber.",
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE,
+        field = fieldName,
+        input = parsedDoubleValue.toString(),
       )
     }
 
     return parsedDouble
   }
 
-  private fun validateLocationData(recordNumber: Long, locationValues: List<String>): FieldValidationResult<Double> {
+  private fun validateLocationData(locationValues: List<String>): FieldValidationResult<Double> {
     if (locationValues.all { it.trim().isBlank() }) {
-      return FieldValidationResult(errorMessage = "No location data present on row $recordNumber.")
+      return FieldValidationResult(errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_LOCATION_DATA)
     }
 
     return FieldValidationResult()
