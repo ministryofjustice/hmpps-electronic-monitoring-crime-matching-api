@@ -4,7 +4,6 @@ import java.time.LocalDateTime
 
 interface CrimeVersionSummaryProjection {
   val crimeVersionId: String
-  val crimeBatchId: String
   val crimeReference: String
   val policeForceArea: String
   val crimeTypeId: String

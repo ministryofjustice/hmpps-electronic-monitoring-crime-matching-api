@@ -89,7 +89,7 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
         JOIN crime_batch cb ON cb.id = cbcv.crime_batch_id
         JOIN crime_version cv ON cv.id = cbcv.crime_version_id
         JOIN crime c ON c.id = cv.crime_id
-        WHERE (:crimeReference IS NULL OR LOWER(c.crime_reference) LIKE LOWER(:crimeReference) || '%')
+        WHERE LOWER(c.crime_reference) LIKE LOWER(:crimeReference) || '%'      
       )
 
       SELECT
@@ -137,7 +137,7 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
       JOIN crime_batch cb ON cb.id = cbcv.crime_batch_id
       JOIN crime_version cv ON cv.id = cbcv.crime_version_id
       JOIN crime c ON c.id = cv.crime_id
-      WHERE (:crimeReference IS NULL OR LOWER(c.crime_reference) LIKE LOWER(:crimeReference) || '%')
+      WHERE LOWER(c.crime_reference) LIKE LOWER(:crimeReference) || '%'
     """,
     nativeQuery = true,
   )
