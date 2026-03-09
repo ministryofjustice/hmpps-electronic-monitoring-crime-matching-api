@@ -83,7 +83,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-ingestion-attempt-summary-response".loadJson(),
+        "get-ingestion-attempts-successful-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -122,7 +122,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-ingestion-attempt-summary-second-page-response".loadJson(),
+        "get-ingestion-attempts-second-page-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -149,7 +149,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-ingestion-attempt-summary-response".loadJson(),
+        "get-ingestion-attempts-successful-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -175,7 +175,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-ingestion-attempt-summary-response".loadJson(),
+        "get-ingestion-attempts-successful-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -202,7 +202,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-ingestion-attempt-summary-response".loadJson(),
+        "get-ingestion-attempts-successful-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -229,7 +229,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-ingestion-attempt-summary-response".loadJson(),
+        "get-ingestion-attempts-successful-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -254,7 +254,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-failed-ingestion-attempt-summary-response".loadJson(),
+        "get-ingestion-attempts-failed-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -398,7 +398,30 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-ingestion-attempt-response".loadJson(),
+        "get-ingestion-attempt-successful-ingestion-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
+    fun `it should return a failed ingestion attempt`() {
+      val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
+      val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
+      crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {}
+
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts/aefa6993-2bed-4e69-a96e-afb562046a6f")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-ingestion-attempt-failed-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )

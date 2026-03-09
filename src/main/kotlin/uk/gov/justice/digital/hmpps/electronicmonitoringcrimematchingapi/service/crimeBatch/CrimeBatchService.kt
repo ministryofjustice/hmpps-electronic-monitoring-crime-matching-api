@@ -10,12 +10,12 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttemptSummary
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
@@ -95,14 +95,18 @@ class CrimeBatchService(
 
   fun getCrimeBatchIngestionAttempt(
     id: UUID,
-  ): CrimeBatchIngestionAttemptProjection {
+  ): CrimeBatchIngestionAttemptSummary {
     val crimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository
       .findCrimeBatchIngestionAttemptById(id)
       .orElseThrow {
         EntityNotFoundException("No crime batch ingestion attempt found with id: $id")
       }
 
-    return crimeBatchIngestionAttempt
+    return CrimeBatchIngestionAttemptSummary(
+      ingestionAttempt = crimeBatchIngestionAttempt,
+      validationErrors = crimeBatchIngestionAttemptRepository.findIngestionAttemptValidationErrors(id),
+      crimesByCrimeType = crimeBatchIngestionAttemptRepository.findIngestionAttemptCrimesByType(id),
+    )
   }
 
   private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime): CrimeVersion = CrimeVersion(
