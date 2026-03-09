@@ -1,0 +1,11 @@
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.view
+
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchEmailAttachmentErrorProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.IngestionAttemptCrimesByTypeProjection
+
+data class CrimeBatchIngestionAttemptView(
+  val ingestionAttempt: CrimeBatchIngestionAttemptProjection,
+  val validationErrors: List<CrimeBatchEmailAttachmentErrorProjection>,
+  val crimesByCrimeType: List<IngestionAttemptCrimesByTypeProjection>,
+)

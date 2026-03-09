@@ -11,4 +11,7 @@ interface CrimeBatchIngestionAttemptProjection {
   val matches: Long?
   val createdAt: LocalDateTime
   val fileName: String?
+  val submitted: Int?
+  val successful: Int?
+  val failed: Int?
 }

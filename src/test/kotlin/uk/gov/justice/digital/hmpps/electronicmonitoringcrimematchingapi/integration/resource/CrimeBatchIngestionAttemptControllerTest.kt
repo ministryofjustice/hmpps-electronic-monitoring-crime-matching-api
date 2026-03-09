@@ -405,6 +405,29 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return a failed ingestion attempt`() {
+      val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
+      val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
+      crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttemptId = ingestionAttemptId, batchId = "Batch1") {}
+
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts/aefa6993-2bed-4e69-a96e-afb562046a6f")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-failed-ingestion-attempt-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
     fun `it should return a BAD_REQUEST response if ingestion attempt id is not valid`() {
       val body = webTestClient.get()
         .uri("/ingestion-attempts/abc")
