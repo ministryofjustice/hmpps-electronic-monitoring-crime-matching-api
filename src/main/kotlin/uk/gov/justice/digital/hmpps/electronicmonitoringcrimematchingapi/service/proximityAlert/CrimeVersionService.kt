@@ -15,9 +15,8 @@ class CrimeVersionService(
     crimeRef: String,
     page: Int,
     pageSize: Int,
-  ): Page<CrimeVersionSummaryProjection> =
-    crimeVersionRepository.findCrimeVersionsByCrimeReference(
-      crimeReference = crimeRef,
-      pageable = PageRequest.of(page, pageSize),
-    )
+  ): Page<CrimeVersionSummaryProjection> = crimeVersionRepository.findCrimeVersionsByCrimeReference(
+    crimeReference = crimeRef,
+    pageable = PageRequest.of(page, pageSize),
+  )
 }
