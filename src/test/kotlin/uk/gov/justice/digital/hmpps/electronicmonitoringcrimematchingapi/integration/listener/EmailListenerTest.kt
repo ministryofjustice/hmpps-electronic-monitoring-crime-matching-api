@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailNotificationService
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
@@ -47,6 +48,11 @@ import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.io.encoding.Base64
+import.org.mockito.kotlin.any
+import.org.mockito.kotlin.anyOrNull
+import.org.mockito.kotlin.doNothing
+import.org.mockito.kotlin.verify
+import.org.mockito.kotlin.whenever
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @ActiveProfiles("integration")
@@ -427,6 +433,100 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+    }
+
+    @Test
+    fun `it should save a batch and attachment errors when the CSV has valid and invalid rows`() {
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(crimeTypeId = "invalid"),
+        createCsvRow(crimeReference = "CRI00000006"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      assertThat(crimeBatchRepository.findAll()).hasSize(1) 
+      
+      val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
+      assertThat(attachmentIngestionErrors).hasSize(1)
+      assertThat(attachmentIngestionErrors.first().errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+    }
+
+    @Test
+    fun `it should save an ingestion attempt with an error and attempt failed notification when the email is missing an attachment`() {
+      val email = createEmailFileWithoutAttachment()
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+      
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT)
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
+    fun `it should save an ingestion attempt with an error and attempt failed notification when the CSV has multiple police forces`() {
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(policeForce = policeForce.METROPOLITAN.name, batchId = "MPS20260126"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(CrimeBatchEmailIngestionErrorType.MULTIPLE_POLICE_FORCES)
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
+    fun `it should save an ingestion attempt with an error and attempt failed notification when the CSV has multiple batch IDS`() {
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(batchId = "MPS20260126"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      assertThat(crimeBatchIngestionAttempts).hasSize(1)
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(CrimeBatchEmailIngestionErrorType.MULTIPLE_BATCH_IDS)
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
     }
 
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(
