@@ -5,5 +5,5 @@ data class CrimeBatchEmailAttachmentErrorResponse(
   val fieldName: String,
   val value: String,
   val crimeReference: String,
-  val rowNumber: String,
+  val rowNumber: Long,
 )

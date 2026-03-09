@@ -4,9 +4,9 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 
 interface CrimeBatchEmailAttachmentErrorProjection {
   val errorType: CrimeBatchEmailAttachmentIngestionErrorType
-  val fieldName: String
-  val value: String
-  val crimeReference: String
-  val rowNumber: String
-  val crimeType: String
+  val fieldName: String?
+  val value: String?
+  val crimeReference: String?
+  val rowNumber: Long
+  val crimeType: String?
 }
