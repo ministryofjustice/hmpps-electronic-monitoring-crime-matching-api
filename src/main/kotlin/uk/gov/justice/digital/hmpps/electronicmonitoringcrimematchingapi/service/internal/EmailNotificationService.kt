@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.service.notify.NotificationClient
 import java.time.LocalDate
 
@@ -22,6 +23,9 @@ class EmailNotificationService(
     emailData: EmailData,
     records: List<CrimeRecordRequest>,
   ) {
+
+    if (properties.enabled != true) return
+
     val emailAddresses = listOf(emailData.sender, emailData.originalSender)
     val csvBytes = records.toCsv().toByteArray()
 
@@ -39,28 +43,24 @@ class EmailNotificationService(
 
   fun sendFailedIngestionEmail(
     emailData: EmailData,
-    rowErrors: List<CrimeBatchEmailAttachmentIngestionError> = emptyList(),
     errorType: CrimeBatchEmailIngestionErrorType? = null,
   ) {
+
+    if (properties.enabled != true) return
+
     val emailAddresses = listOf(emailData.sender, emailData.originalSender)
-    val policeForceArea = emailData.sender.substringAfter("@").substringBefore(".")
-
-    val errorSummary = when {
-      rowErrors.isNotEmpty() -> buildTop5ErrorSummary(rowErrors)
-      errorType != null -> errorType.message
-      else -> "Unknown error"
-    }
+    val errorSummary = errorType?.message ?: "Unknown error"
     
-    val personalisation = hashMapOf<String, Any>()
+    val personalisation = mapOf<String, Any>(
+      "ingestionDate" to LocalDate.now().toString(),
+      "batchId" to "Unknown due to an error",
+      "policeForce" to "METROPOLITAN",
+      "errorSummary" to errorSummary,
+      "totalCount" to 0,
+      "successCount" to 0,
+      "failedCount" to 0,
+    )
     
-    personalisation["batchId"] = "Unknown due to error"
-    personalisation["policeForce"] = policeForceArea
-    personalisation["ingestionDate"] = LocalDate.now().toString()
-    personalisation["errorSummary"] = errorSummary
-    personalisation["totalCount"] = rowErrors.size
-    personalisation["successCount"] = 0
-    personalisation["failedCount"] = rowErrors.size
-
     for (emailAddress in emailAddresses) {
       sendEmail(properties.failedIngestionTemplateId, emailAddress, personalisation, "batchId")
     }
@@ -71,30 +71,29 @@ class EmailNotificationService(
     policeForce: PoliceForce,
     emailData: EmailData,
     records: List<CrimeRecordRequest>,
-    errors: List<CrimeBatchEmailIngestionError>,
-    successCount: Int,
+    errors: List<EmailAttachmentIngestionError>,
   ) {
-    val emailAddresses = listOf(emailData.sender, emailData.originalSender)
-    val errorSummary = "Table"
-    val totalCount = Int
 
-    
-    val personalisation = hashMapOf<String, Any>()
-    personalisation["fileName"] = emailData.attachments.single().name
-    personalisation["ingestionDate"] = LocalDate.now().toString()
-    personalisation["batchId"] = batchId
-    personalisation["policeForce"] = policeForce.name
-    personalisation[errorSummary] = buildTop5ErrorSummary(errors)
-    personalisation[totalCount] = successCount + errors.size
-    personalisation[successCount] = successCount
-    personalisation[failedCount] = errors.size
+    if (properties.enabled != true) return
+
+    val emailAddresses = listOf(emailData.sender, emailData.originalSender)
+    val personalisation = mapOf(
+      "fileName" to emailData.attachments.single().name,
+      "ingestionDate" to LocalDate.now().toString(),
+      "batchId" to "batchId",
+      "policeForce" to policeForce.name,
+      "errorSummary" to buildInLineErrorSummary(errors),
+      "totalCount" to records.size + errors.size,
+      "successCount" to records.size,
+      "failedCount" to errors.size,
+    )
 
     if (errors.size > 5) {
-      personalisation["linkToErrorFile"] = NotificationClient.prepareUpload(buildErrorCsv, false)
+      "linkToErrorFile" to NotificationClient.prepareUpload(buildErrorCsv(errors), "partial_ingestion_errors.csv")
     }
 
     for (emailAddress in emailAddresses) {
-      sendEmail(properties.partialIngestionTemplateId, emailAddress, personalisation, batchId)
+      sendEmail(properties.partialIngestionTemplateId, emailAddress, personalisation, "batchId")
     }
   }
 
@@ -124,22 +123,58 @@ class EmailNotificationService(
     append("\n")
   }
 
-  private fun buildTop5ErrorSummary(errors: List<CrimeBatchEmailIngestionError>): String =
-    errors.take(5).joinToString(separator = "\n") { error ->
-      buildString {
-        append("Row ${error.rowNumber}: [${error.errorType}] ${error.errorType.message}")
-        if (error.fieldName != null) append(" (field: ${error.fieldName})")
-        if (error.value != null) append(" (value: ${error.value})")
-      }
+  private fun buildInLineErrorSummary(errors: List<EmailAttachmentIngestionError>): String =
+    errors.take(5).joinToString("\n") { error ->
+      "Row ${error.rowNumber}: ${error.errorType.message}" +
+        (if (error.field != null) " (${error.field})" else "")
     }
   
-  private fun buildErrorCsv(errors: List<CrimeBatchEmailIngestionError>): ByteArray = 
+  private fun buildErrorCsv(errors: List<EmailAttachmentIngestionError>): ByteArray = 
     buildString {
-      appendLine("Row Number,Crime Reference,Error Type,Field Name,Value")
+      appendLine("Reference,Status,Error,Action Required")
       errors.forEach { error ->
-        appendLine("${error.rowNumber},${error.crimeReference ?: ""},${error.errorType},${error.fieldName ?: ""},${error.value ?: ""}")
+        val reference = error.crimeReference ?: ""
+        val status = "Failed"
+        val errorMessage = error.errorType.message
+        val action = actionRequired(error.errorType, error.field)
+        appendLine("$reference,$status,$errorMessage,$action")
       }
     }.toByteArray(Charsets.UTF_8)
+  
+  private fun actionRequired(
+    errorType: CrimeBatchEmailAttachmentIngestionErrorType,
+    field: String?,
+  ): String = when (errorType) {
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM ->
+      if (field?.lowercase()?.contains("policeForce") == true)
+        "Amend police force to a registered force"
+      else
+        "Amend crime type to a registered crime type"
+    CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE ->
+      "Provide the missing test reference"
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT ->
+      if (field?.lowercase()?.contains("from") == true)
+        "Amend from date/time to format yyyyMMddHHmmss"
+      else
+        "Amend to date/time to format yyyyMMddHHmmss"
+    CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM ->
+      "Ensure from date/time precedes to date/time"
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE ->
+      "Co-ordinates outside of valid range"
+    CrimeBatchEmailAttachmentIngestionErrorType.MISSING_LOCATION_DATA ->
+      "Provide location data"
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TEXT,
+    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_NUMBER,
+    CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
+    CrimeBatchEmailAttachmentIngestionErrorType.MULTIPLE_LOCATION_DATA_TYPES,
+    CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW ->
+      "Amend formatting issues"
+    else ->
+      if (field != null) "Provide the missing field value" else "Review and amend the record"
+  }
 
   private fun sendEmail(
     templateId: String,
