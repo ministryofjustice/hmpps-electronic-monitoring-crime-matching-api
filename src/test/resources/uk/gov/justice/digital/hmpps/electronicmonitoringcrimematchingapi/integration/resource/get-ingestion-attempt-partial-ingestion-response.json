@@ -1,0 +1,36 @@
+{
+  "data" : {
+    "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb562046a6f",
+    "ingestionStatus" : "PARTIAL",
+    "policeForceArea" : "METROPOLITAN",
+    "batchId" : "22134a17-c192-4475-88ab-39d90c92f036",
+    "matches" : null,
+    "createdAt" : "2025-01-01T00:00",
+    "fileName" : "test.csv",
+    "submitted" : 2,
+    "successful" : 1,
+    "failed" : 1,
+    "crimesByCrimeType" : [
+      {
+        "crimeType" : "MISSING",
+        "submitted" : 1,
+        "failed" : 1,
+        "successful" : 0
+      }, {
+        "crimeType" : "AB",
+        "submitted" : 1,
+        "failed" : 0,
+        "successful" : 1
+      }
+    ],
+    "validationErrors" : [
+      {
+        "errorType" : "MISSING_CRIME_REFERENCE",
+        "fieldName" : "crimeReference",
+        "value" : "",
+        "crimeReference" : "",
+        "rowNumber" : 1
+      }
+    ]
+  }
+}

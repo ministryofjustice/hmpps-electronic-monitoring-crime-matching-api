@@ -31,18 +31,15 @@ class CrimeMatchingFixtures(
     crimeBatchIngestionAttemptRepository.deleteAll()
   }
 
-  fun givenBatch(
-    crimeBatchId: UUID = UUID.randomUUID(),
-    batchId: String,
-    ingestionAttemptId: UUID = UUID.randomUUID(),
-    ingestionCreatedAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
+  fun givenIngestionAttempt(
+    id: UUID = UUID.randomUUID(),
+    createdAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
     rowCount: Int = 1,
-    policeForce: PoliceForce = PoliceForce.METROPOLITAN,
-    block: CrimeBatchContext.() -> Unit,
-  ): CrimeBatch {
+    block: CrimeBatchIngestionAttemptContext.() -> Unit = {},
+  ): CrimeBatchIngestionAttempt {
     val ingestionAttempt = CrimeBatchIngestionAttempt(
-      id = ingestionAttemptId,
-      createdAt = ingestionCreatedAt,
+      id = id,
+      createdAt = createdAt,
       bucket = "bucket",
       objectName = "objectName",
     )
@@ -61,8 +58,25 @@ class CrimeMatchingFixtures(
       fileName = "test.csv",
       rowCount = rowCount,
     )
-    email.crimeBatchEmailAttachments.add(attachment)
 
+    CrimeBatchIngestionAttemptContext(
+      crimeBatchEmailAttachment = attachment,
+    ).block()
+
+    email.crimeBatchEmailAttachments.add(attachment)
+    crimeBatchIngestionAttemptRepository.save(ingestionAttempt)
+
+    return ingestionAttempt
+  }
+
+  fun givenBatch(
+    crimeBatchId: UUID = UUID.randomUUID(),
+    batchId: String = "batch1",
+    policeForce: PoliceForce = PoliceForce.METROPOLITAN,
+    ingestionAttempt: CrimeBatchIngestionAttempt = givenIngestionAttempt(),
+    block: CrimeBatchContext.() -> Unit = {},
+  ): CrimeBatch {
+    val attachment = ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first()
     val batch = CrimeBatch(
       id = crimeBatchId,
       batchId = batchId,
