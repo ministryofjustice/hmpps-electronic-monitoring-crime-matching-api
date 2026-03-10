@@ -255,10 +255,41 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return an error ingestion attempt summary`() {
+      crimeMatchingFixtures.givenIngestionAttempt(id = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")) {
+        withAttachment {
+          withAttachmentIngestionError()
+        }
+      }
+
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts")
+        .headers(
+          setAuthorisation(
+            roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO"),
+          ),
+        )
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-ingestion-attempts-error-ingestion-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
     fun `it should return a partially failed ingestion attempt summary`() {
       val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
       val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
-      val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(rowCount = 2, id = ingestionAttemptId)
+      val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(id = ingestionAttemptId) {
+        withAttachment(rowCount = 2)
+      }
 
       crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttempt = ingestionAttempt, batchId = "Batch1") {
         withCrime("crime1") {}
@@ -408,12 +439,38 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return an error ingestion attempt`() {
+      crimeMatchingFixtures.givenIngestionAttempt(id = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")) {
+        withAttachment {
+          withAttachmentIngestionError()
+        }
+      }
+
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts/aefa6993-2bed-4e69-a96e-afb562046a6f")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-ingestion-attempt-error-ingestion-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
     fun `it should return a partial ingestion attempt`() {
       val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(
-        rowCount = 2,
         id = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"),
       ) {
-        withAttachmentIngestionError()
+        withAttachment(rowCount = 2) {
+          withAttachmentIngestionError()
+        }
       }
 
       val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
@@ -464,7 +521,9 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     ingestionAttemptId: UUID = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"),
     batchId: UUID = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036"),
   ) {
-    val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(id = ingestionAttemptId)
+    val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(id = ingestionAttemptId) {
+      withAttachment()
+    }
 
     crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttempt = ingestionAttempt, batchId = "Batch1") {
       withCrime("crime1") {

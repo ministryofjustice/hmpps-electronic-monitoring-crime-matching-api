@@ -1,23 +1,25 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures
 
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 
 class CrimeBatchIngestionAttemptContext(
-  private val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
+  private val crimeBatchEmail: CrimeBatchEmail,
 ) {
-  fun withAttachmentIngestionError() {
-    crimeBatchEmailAttachment.crimeBatchEmailAttachmentIngestionErrors.add(
-      CrimeBatchEmailAttachmentIngestionError(
-        rowNumber = 1,
-        crimeReference = null,
-        fieldName = "crimeReference",
-        value = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
-        crimeTypeId = null,
-        crimeBatchEmailAttachment = crimeBatchEmailAttachment,
-      ),
+  fun withAttachment(
+    rowCount: Int = 1,
+    block: CrimeBatchEmailAttachmentContext.() -> Unit = {},
+  ) {
+    val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+      crimeBatchEmail = crimeBatchEmail,
+      fileName = "test.csv",
+      rowCount = rowCount,
+    )
+
+    CrimeBatchEmailAttachmentContext(crimeBatchEmailAttachment).block()
+
+    crimeBatchEmail.crimeBatchEmailAttachments.add(
+      crimeBatchEmailAttachment,
     )
   }
 }

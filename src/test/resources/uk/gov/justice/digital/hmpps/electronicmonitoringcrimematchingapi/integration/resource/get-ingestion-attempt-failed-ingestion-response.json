@@ -1,15 +1,15 @@
 {
   "data" : {
     "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb562046a6f",
-    "ingestionStatus" : "ERROR",
+    "ingestionStatus" : "FAILED",
     "policeForceArea" : "",
     "batchId" : "",
     "matches" : null,
     "createdAt" : "2025-01-01T00:00",
-    "fileName" : "test.csv",
-    "submitted" : 1,
+    "fileName" : null,
+    "submitted" : 0,
     "successful" : 0,
-    "failed" : 1,
+    "failed" : 0,
     "crimesByCrimeType" : [],
     "validationErrors" : []
   }

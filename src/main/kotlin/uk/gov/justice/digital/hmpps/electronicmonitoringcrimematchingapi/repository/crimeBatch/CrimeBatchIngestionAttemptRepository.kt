@@ -232,7 +232,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
           e.crime_type_id AS crimeType,
           COUNT(*)        AS failed
         FROM ingestion_attempt ia
-        RIGHT JOIN crime_batch_email_attachment_ingestion_error e 
+        JOIN crime_batch_email_attachment_ingestion_error e 
             ON ia.attachment_id = e.crime_batch_email_attachment_id
         GROUP BY ia.ingestion_attempt_id, ia.crime_batch_id, e.crime_type_id
       ),
