@@ -190,6 +190,36 @@ class EmailListenerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should save an ingestion attempt with an error when a Batch ID is reused`() {
+      val crimeBatchIngestionAttempt = crimeMatchingFixtures.givenIngestionAttempt()
+      crimeMatchingFixtures.givenBatch(ingestionAttempt = crimeBatchIngestionAttempt, batchId = "MPS20250126")
+
+      val csvContent = listOf(
+        createCsvRow(),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
+      val ingestionAttempt = crimeBatchIngestionAttempts.first { it.id != crimeBatchIngestionAttempt.id }
+      assertThat(ingestionAttempt.crimeBatchEmail).isNotNull()
+      assertThat(ingestionAttempt.crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
+      assertThat(ingestionAttempt.crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
+        CrimeBatchEmailIngestionErrorType.DUPLICATE_BATCH_ID,
+      )
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
     fun `it should save an ingestion attempt with an error when the email has multiple attachments`() {
       val email = createEmailFileWithMultipleAttachments()
 

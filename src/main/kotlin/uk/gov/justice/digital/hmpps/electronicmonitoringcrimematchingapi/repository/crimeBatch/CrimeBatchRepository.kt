@@ -6,4 +6,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import java.util.UUID
 
 @Repository
-interface CrimeBatchRepository : JpaRepository<CrimeBatch, UUID>
+interface CrimeBatchRepository : JpaRepository<CrimeBatch, UUID> {
+  fun existsByBatchId(batchId: String): Boolean
+}

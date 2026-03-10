@@ -109,6 +109,8 @@ class CrimeBatchService(
     )
   }
 
+  fun batchIdExists(batchId: String): Boolean = crimeBatchRepository.existsByBatchId(batchId = batchId)
+
   private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime): CrimeVersion = CrimeVersion(
     crime = crime,
     crimeTypeId = record.crimeTypeId,

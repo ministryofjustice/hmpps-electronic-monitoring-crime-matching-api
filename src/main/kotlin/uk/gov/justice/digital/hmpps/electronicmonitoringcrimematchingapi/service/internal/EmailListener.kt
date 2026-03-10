@@ -117,6 +117,8 @@ class EmailListener(
     val batchIds = parseResult.records.map { it.batchId }.distinct()
     if (batchIds.size > 1) return CrimeBatchEmailIngestionErrorType.MULTIPLE_BATCH_IDS
 
+    if (crimeBatchService.batchIdExists(batchIds.first())) return CrimeBatchEmailIngestionErrorType.DUPLICATE_BATCH_ID
+
     return null
   }
 
