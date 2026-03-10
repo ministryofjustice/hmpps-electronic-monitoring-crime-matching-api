@@ -32,14 +32,14 @@ class CrimeMatchingFixtures(
   }
 
   fun givenIngestionAttempt(
-    ingestionAttemptId: UUID = UUID.randomUUID(),
-    ingestionCreatedAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
+    id: UUID = UUID.randomUUID(),
+    createdAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
     rowCount: Int = 1,
     block: CrimeBatchIngestionAttemptContext.() -> Unit = {},
   ): CrimeBatchIngestionAttempt {
     val ingestionAttempt = CrimeBatchIngestionAttempt(
-      id = ingestionAttemptId,
-      createdAt = ingestionCreatedAt,
+      id = id,
+      createdAt = createdAt,
       bucket = "bucket",
       objectName = "objectName",
     )

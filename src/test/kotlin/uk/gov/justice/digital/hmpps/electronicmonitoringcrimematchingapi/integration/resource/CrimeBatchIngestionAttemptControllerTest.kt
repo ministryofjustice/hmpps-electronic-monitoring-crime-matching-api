@@ -94,7 +94,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
       createIngestionAttemptWithBatch()
 
       crimeMatchingFixtures.givenIngestionAttempt(
-        ingestionCreatedAt = LocalDateTime.of(2026, 1, 2, 0, 0),
+        createdAt = LocalDateTime.of(2026, 1, 2, 0, 0),
       )
 
       val body = webTestClient.get()
@@ -175,7 +175,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
       createIngestionAttemptWithBatch()
 
       crimeMatchingFixtures.givenIngestionAttempt(
-        ingestionCreatedAt = LocalDateTime.of(2024, 1, 1, 0, 0),
+        createdAt = LocalDateTime.of(2024, 1, 1, 0, 0),
       )
 
       val body = webTestClient.get()
@@ -204,7 +204,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
       createIngestionAttemptWithBatch()
 
       crimeMatchingFixtures.givenIngestionAttempt(
-        ingestionCreatedAt = LocalDateTime.of(2026, 1, 1, 0, 0),
+        createdAt = LocalDateTime.of(2026, 1, 1, 0, 0),
       )
 
       val body = webTestClient.get()
@@ -231,7 +231,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a failed ingestion attempt summary`() {
       val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
-      crimeMatchingFixtures.givenIngestionAttempt(ingestionAttemptId = ingestionAttemptId)
+      crimeMatchingFixtures.givenIngestionAttempt(id = ingestionAttemptId)
 
       val body = webTestClient.get()
         .uri("/ingestion-attempts")
@@ -258,7 +258,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     fun `it should return a partially failed ingestion attempt summary`() {
       val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
       val ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f")
-      val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(rowCount = 2, ingestionAttemptId = ingestionAttemptId)
+      val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(rowCount = 2, id = ingestionAttemptId)
 
       crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttempt = ingestionAttempt, batchId = "Batch1") {
         withCrime("crime1") {}
@@ -388,7 +388,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a failed ingestion attempt`() {
-      crimeMatchingFixtures.givenIngestionAttempt(ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"))
+      crimeMatchingFixtures.givenIngestionAttempt(id = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"))
 
       val body = webTestClient.get()
         .uri("/ingestion-attempts/aefa6993-2bed-4e69-a96e-afb562046a6f")
@@ -411,7 +411,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     fun `it should return a partial ingestion attempt`() {
       val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(
         rowCount = 2,
-        ingestionAttemptId = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"),
+        id = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"),
       ) {
         withAttachmentIngestionError()
       }
@@ -464,7 +464,7 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
     ingestionAttemptId: UUID = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"),
     batchId: UUID = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036"),
   ) {
-    val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(ingestionAttemptId = ingestionAttemptId)
+    val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(id = ingestionAttemptId)
 
     crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttempt = ingestionAttempt, batchId = "Batch1") {
       withCrime("crime1") {
