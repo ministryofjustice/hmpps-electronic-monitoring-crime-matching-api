@@ -40,7 +40,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailNotificationService
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
@@ -48,11 +47,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.io.encoding.Base64
-import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.doNothing
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @ActiveProfiles("integration")
@@ -175,7 +169,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
     @Test
     fun `it should save an ingestion attempt with an error when the email is missing an attachment`() {
-
       val email = createEmailFileWithoutAttachment()
 
       s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
@@ -204,15 +197,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       sendDomainSqsMessage(getMessage(OBJECT_KEY))
 
-      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 && crimeBatchIngestionAttemptRepository.findAll().isNotEmpty()}
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 && crimeBatchIngestionAttemptRepository.findAll().isNotEmpty() }
 
       val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType)
-        .isEqualTo(CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
-      )
+        .isEqualTo(
+          CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+        )
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
@@ -449,14 +443,13 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      assertThat(crimeBatchRepository.findAll()).hasSize(1) 
-      
+      assertThat(crimeBatchRepository.findAll()).hasSize(1)
+
       val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
       assertThat(attachmentIngestionErrors).hasSize(1)
       assertThat(attachmentIngestionErrors.first().errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM)
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
     }
-
 
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(
       SendMessageRequest.builder().queueUrl(

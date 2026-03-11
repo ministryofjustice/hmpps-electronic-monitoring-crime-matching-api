@@ -9,24 +9,21 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.isNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.ParseResult
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.service.notify.NotificationClient
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Date
-import org.mockito.kotlin.eq
 
 @ActiveProfiles("test")
 class EmailNotificationServiceTest {
@@ -126,16 +123,18 @@ class EmailNotificationServiceTest {
     )
 
     val personalisation = mapOf(
+      "fileName" to (emailData.attachments.firstOrNull()?.name ?: "" as String),
       "ingestionDate" to LocalDate.now().toString(),
       "batchId" to "Unknown due to an error",
-      "policeForce" to "METROPOLITAN",
+      "policeForce" to "Unknown Force",
       "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
       "totalCount" to 0,
-      "successCount" to 0,
-      "failedCount" to 0,
     )
 
-    service.sendFailedIngestionEmail(emailData, CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT)
+    service.sendFailedIngestionEmail(
+      emailData,
+      CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
+    )
 
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "batchId")
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "batchId")
@@ -152,14 +151,25 @@ class EmailNotificationServiceTest {
       sentAt = Date.from(Instant.now()),
       attachments = emptyList(),
     )
-    
+
     assertDoesNotThrow { service.sendFailedIngestionEmail(emailData) }
     verify(notifyClient, times(0)).sendEmail(any(), any(), any(), any())
   }
 
   @Test
-  fun `it should send a partial ingestion email when notify is enabled`() {
+  fun `it should send a partial ingestion email with errorSummary and CSV attachment when notify is enabled`() {
     whenever(notifyProperties.enabled).thenReturn(true)
+
+    val errors = (1..7).map { i ->
+      EmailAttachmentIngestionError(
+        rowNumber = i.toLong(),
+        crimeReference = "CRI0000000$i",
+        crimeTypeId = null,
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+        field = "crimeTypeId",
+        value = "INVALID_$i",
+      )
+    }
     val attachment = ByteArrayDataSource("data", "message/rfc822")
     attachment.name = "attachment.csv"
 
@@ -171,64 +181,54 @@ class EmailNotificationServiceTest {
       attachments = listOf(attachment),
     )
 
-    val rowErrors = listOf(
-      crimeBatchEmailAttachmentIngestionError(
-        rowNumber = 2L,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
-        crimeReference = "CRI00000001",
-        fieldName = "crimeTypeId",
-        value = "BADVALUE",
-        crimeBatchEmailAttachment = mock(),
-      ),
-    )
-    
-    val personalisation = mapOf(
-      "fileName" to "attachment.csv",
-      "ingestionDate" to LocalDate.now().toString(),
-      "batchId" to "batchId",
-      "policeForce" to "METROPOLITAN",
-      "errorSummary" to buildInLineErrorSummary(errors),
-      "totalCount" to records.size + errors.size,
-      "successCount" to records.size,
-      "failedCount" to errors.size,
-    )
+    val uploadFile = JSONObject()
 
-    service.sendPartialIngestionEmail(
-      "batchId", 
-      PoliceForce.METROPOLITAN, 
-      emailData, 
-      emptyList(),
-      emptyList(),
-    )
+    mockStatic(NotificationClient::class.java).use { staticMock ->
+      staticMock
+        .`when`<Any> {
+          NotificationClient.prepareUpload(
+            any(),
+            any(),
+          )
+        }
+        .thenReturn(uploadFile)
 
-    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "sender", personalisation, "batchId")
-    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "originalSender", personalisation, "batchId")
+      service.sendPartialIngestionEmail(
+        "batchId",
+        PoliceForce.METROPOLITAN,
+        emailData,
+        errors,
+        totalCount = 10,
+      )
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(1))
+
+      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("sender"), any(), eq("batchId"))
+      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq("batchId"))
+    }
   }
 
   @Test
   fun `it should not send a partial ingestion email when notify is not enabled`() {
     whenever(notifyProperties.enabled).thenReturn(false)
-    val attachment = ByteArrayDataSource("data", "message/rfc822")
-    attachment.name = "attachment.csv"
 
     val emailData = EmailData(
       sender = "sender",
       originalSender = "originalSender",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
-      attachments = listOf(attachment),
+      attachments = emptyList(),
     )
 
-    assertDoesNotThrow { 
+    assertDoesNotThrow {
       service.sendPartialIngestionEmail(
-        "batchId", 
-        PoliceForce.METROPOLITAN, 
-        emailData, 
+        "batchId",
+        PoliceForce.METROPOLITAN,
+        emailData,
         emptyList(),
-        emptyList(),
+        0,
       )
     }
-    
-    verify(notifyClient, times(0)).sendEmail(any(), any(), any(), any())
+
+    verify(notifyClient, times(0)).sendEmail(any(), any(), any(), any(), any())
   }
 }
