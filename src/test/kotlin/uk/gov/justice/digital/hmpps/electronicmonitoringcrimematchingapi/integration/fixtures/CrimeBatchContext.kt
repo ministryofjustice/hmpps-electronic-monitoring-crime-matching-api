@@ -31,7 +31,6 @@ class CrimeBatchContext(
     crimeText: String = "text",
     block: CrimeContext.() -> Unit,
   ) {
-
     // Reuse existing crime if it already exists (prevents unique constraint violation)
     val crime =
       crimeRepository

@@ -51,7 +51,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return an empty result when no crime versions exist`() {
-
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=CRI")
         .headers(setAuthorisation())
@@ -71,7 +70,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should generate version labels and detect duplicates correctly`() {
-
       val crimeRef = "01/7298583/25"
 
       val version1 = UUID.fromString("33333333-3333-3333-3333-333333333333")
@@ -155,7 +153,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should detect location updates`() {
-
       val crimeRef = "01/1234567/25"
 
       val version1 = UUID.fromString("55555555-5555-5555-5555-555555555555")
@@ -216,7 +213,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return YES when a crime version has matching results`() {
-
       val crimeRef = "01/8888888/25"
       val version = UUID.fromString("66666666-6666-6666-6666-666666666666")
 
@@ -261,7 +257,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should support pagination`() {
-
       val crimeRef = "01/9999999/25"
 
       val version1 = UUID.fromString("77777777-7777-7777-7777-777777777777")
@@ -320,22 +315,21 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
       )
     }
 
-// This verifies:
-//
-// 1. Duplicate ingestions do not increment version numbers
-// 2. Version numbering continues correctly after a duplicate
-// 3. Multiple fields can appear in the updates list
-// 4. Results are returned newest first
-//
-// Expected order:
-//
-// Latest version
-// Version 2
-// Duplicate
-// Version 1
+    // This verifies:
+    //
+    // 1. Duplicate ingestions do not increment version numbers
+    // 2. Version numbering continues correctly after a duplicate
+    // 3. Multiple fields can appear in the updates list
+    // 4. Results are returned newest first
+    //
+    // Expected order:
+    //
+    // Latest version
+    // Version 2
+    // Duplicate
+    // Version 1
     @Test
     fun `it should continue version numbering after duplicates and detect multiple field changes`() {
-
       val crimeRef = "01/7777777/25"
 
       val version1 = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")

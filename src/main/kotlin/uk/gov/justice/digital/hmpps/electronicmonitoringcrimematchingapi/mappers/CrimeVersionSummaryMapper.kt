@@ -7,17 +7,16 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 @Component
 class CrimeVersionSummaryMapper {
 
-  fun toDto(summary: CrimeVersionSummaryProjection): CrimeVersionSummaryResponse =
-    CrimeVersionSummaryResponse(
-      crimeVersionId = summary.crimeVersionId,
-      crimeReference = summary.crimeReference,
-      policeForceArea = summary.policeForceArea,
-      crimeType = summary.crimeTypeId,
-      crimeDate = summary.crimeDateTimeFrom.toLocalDate().toString(),
-      batchId = summary.batchId,
-      ingestionDateTime = summary.ingestionDateTime.toString(),
-      matched = if (summary.matched) "YES" else "NO",
-      versionLabel = summary.versionLabel,
-      updates = summary.updates,
-    )
+  fun toDto(summary: CrimeVersionSummaryProjection): CrimeVersionSummaryResponse = CrimeVersionSummaryResponse(
+    crimeVersionId = summary.crimeVersionId,
+    crimeReference = summary.crimeReference,
+    policeForceArea = summary.policeForceArea,
+    crimeType = summary.crimeTypeId,
+    crimeDate = summary.crimeDateTimeFrom.toLocalDate().toString(),
+    batchId = summary.batchId,
+    ingestionDateTime = summary.ingestionDateTime.toString(),
+    matched = if (summary.matched) "YES" else "NO",
+    versionLabel = summary.versionLabel,
+    updates = summary.updates,
+  )
 }
