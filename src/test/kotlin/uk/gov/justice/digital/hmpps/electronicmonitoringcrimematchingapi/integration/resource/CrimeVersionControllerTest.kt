@@ -20,7 +20,8 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
   private val crimeDateFrom = LocalDateTime.of(2025, 3, 15, 0, 0)
   private val crimeDateTo = LocalDateTime.of(2025, 3, 15, 1, 0)
 
-  // Use non-null values for all location fields to avoid null/default/coalesce issues in SQL comparisons
+  // Explicitly set location fields so they remain identical across versions
+  // unless a test intentionally changes them.
   private val latitude = 51.5
   private val longitude = -0.12
   private val easting = 530000.0
