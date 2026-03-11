@@ -64,6 +64,7 @@ class CrimeMatchingFixtures(
     crimeBatchId: UUID = UUID.randomUUID(),
     batchId: String = "batch1",
     policeForce: PoliceForce = PoliceForce.METROPOLITAN,
+    ingestionCreatedAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
     ingestionAttempt: CrimeBatchIngestionAttempt = givenIngestionAttempt { withAttachment() },
     block: CrimeBatchContext.() -> Unit = {},
   ): CrimeBatch {
