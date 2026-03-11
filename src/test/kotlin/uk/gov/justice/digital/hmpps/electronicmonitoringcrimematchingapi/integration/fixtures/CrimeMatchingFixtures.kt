@@ -67,6 +67,7 @@ class CrimeMatchingFixtures(
       id = crimeBatchId,
       batchId = batchId,
       crimeBatchEmailAttachment = attachment,
+      createdAt = ingestionCreatedAt,
     )
     attachment.crimeBatch = batch
 

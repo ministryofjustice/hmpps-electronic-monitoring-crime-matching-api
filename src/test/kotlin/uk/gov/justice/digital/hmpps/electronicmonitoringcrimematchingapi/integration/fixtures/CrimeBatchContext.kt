@@ -31,12 +31,19 @@ class CrimeBatchContext(
     crimeText: String = "text",
     block: CrimeContext.() -> Unit,
   ) {
-    val crime = crimeRepository.save(
-      Crime(
-        policeForceArea = policeForce,
-        crimeReference = crimeRef,
-      ),
-    )
+
+    // Reuse existing crime if it already exists (prevents unique constraint violation)
+    val crime =
+      crimeRepository
+        .findByCrimeReferenceAndPoliceForceArea(crimeRef, policeForce)
+        .orElseGet {
+          crimeRepository.save(
+            Crime(
+              policeForceArea = policeForce,
+              crimeReference = crimeRef,
+            ),
+          )
+        }
 
     val version = crimeVersionRepository.save(
       CrimeVersion(
@@ -52,7 +59,6 @@ class CrimeBatchContext(
         crimeText = crimeText,
       ),
     )
-    crimeRepository.save(crime)
 
     batch.crimeVersions.add(version)
 

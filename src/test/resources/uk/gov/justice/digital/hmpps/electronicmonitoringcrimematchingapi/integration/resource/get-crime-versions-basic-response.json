@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "crimeVersionId": "11111111-1111-1111-1111-111111111111",
+      "crimeReference": "01/7298583/25",
+      "policeForceArea": "HAMPSHIRE",
+      "crimeType": "BOTD",
+      "crimeDate": "2025-03-15",
+      "batchId": "HAM20251030",
+      "ingestionDateTime": "2025-10-30T04:03:01",
+      "matched": "NO",
+      "versionLabel": "Duplicate",
+      "updates": "None"
+    },
+    {
+      "crimeVersionId": "22222222-2222-2222-2222-222222222222",
+      "crimeReference": "01/7298583/25",
+      "policeForceArea": "HAMPSHIRE",
+      "crimeType": "BOTD",
+      "crimeDate": "2025-03-15",
+      "batchId": "HAM20251029",
+      "ingestionDateTime": "2025-10-29T10:03:01",
+      "matched": "YES",
+      "versionLabel": "Latest version",
+      "updates": "Crime type"
+    },
+    {
+      "crimeVersionId": "33333333-3333-3333-3333-333333333333",
+      "crimeReference": "01/7298583/25",
+      "policeForceArea": "HAMPSHIRE",
+      "crimeType": "AB",
+      "crimeDate": "2025-03-15",
+      "batchId": "HAM20251028",
+      "ingestionDateTime": "2025-10-28T04:03:01",
+      "matched": "NO",
+      "versionLabel": "Version 1",
+      "updates": "N/A"
+    }
+  ],
+  "pageCount": 1,
+  "pageNumber": 0,
+  "pageSize": 30
+}
