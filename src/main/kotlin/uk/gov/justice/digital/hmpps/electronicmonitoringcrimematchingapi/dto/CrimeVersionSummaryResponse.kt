@@ -8,7 +8,7 @@ data class CrimeVersionSummaryResponse(
   val crimeDate: String,
   val batchId: String,
   val ingestionDateTime: String,
-  val matched: Boolean,
+  val matched: String,
   val versionLabel: String,
   val updates: String,
 )
