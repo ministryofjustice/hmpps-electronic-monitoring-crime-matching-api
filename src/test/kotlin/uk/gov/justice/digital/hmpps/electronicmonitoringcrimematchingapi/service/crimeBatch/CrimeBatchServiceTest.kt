@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @ActiveProfiles("test")
 class CrimeBatchServiceTest {
@@ -71,8 +72,8 @@ class CrimeBatchServiceTest {
             crimeTypeId = CrimeType.AB,
             batchId = "batchId",
             crimeReference = "crimeRef",
-            crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-            crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+            crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+            crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
             easting = null,
             northing = null,
             latitude = 54.73241,

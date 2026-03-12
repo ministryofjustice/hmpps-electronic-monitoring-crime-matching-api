@@ -9,8 +9,8 @@
         "crimeTypeDescription": "Aggravated Burglary",
         "crimeReference": "CRI00000001",
         "policeForce": "METROPOLITAN",
-        "crimeDateTimeFrom": "2025-01-25T08:30",
-        "crimeDateTimeTo": "2025-01-25T08:30",
+        "crimeDateTimeFrom": "2025-01-25T08:30:00Z",
+        "crimeDateTimeTo": "2025-01-25T08:30:00Z",
         "latitude": 51.574865,
         "longitude": 0.060977,
         "crimeText": ""
@@ -21,8 +21,8 @@
         "crimeTypeDescription": "Burglary in a building other than a dwelling",
         "crimeReference": "CRI00000001",
         "policeForce": "METROPOLITAN",
-        "crimeDateTimeFrom": "2025-01-01T00:30",
-        "crimeDateTimeTo": "2025-01-01T01:30",
+        "crimeDateTimeFrom": "2025-01-01T00:30:00Z",
+        "crimeDateTimeTo": "2025-01-01T01:30:00Z",
         "latitude": 51.499945,
         "longitude": -0.137438,
         "crimeText": ""

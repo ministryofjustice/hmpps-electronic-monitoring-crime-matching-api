@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.UUID
 
@@ -173,8 +174,8 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         id = crimeVersionId,
         crime = crime,
         crimeTypeId = CrimeType.AB,
-        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
         easting = null,
         northing = null,
         latitude = 51.574865,

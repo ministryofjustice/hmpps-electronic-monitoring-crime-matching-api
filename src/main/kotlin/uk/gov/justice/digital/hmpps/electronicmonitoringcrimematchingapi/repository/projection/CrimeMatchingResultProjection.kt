@@ -1,14 +1,14 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 interface CrimeMatchingResultProjection {
   val policeForceArea: String
   val batchId: String
   val crimeReference: String
   val crimeTypeId: String
-  val crimeDateTimeFrom: LocalDateTime
-  val crimeDateTimeTo: LocalDateTime
+  val crimeDateTimeFrom: Instant
+  val crimeDateTimeTo: Instant
   val crimeLatitude: Double?
   val crimeLongitude: Double?
   val crimeEasting: Double?

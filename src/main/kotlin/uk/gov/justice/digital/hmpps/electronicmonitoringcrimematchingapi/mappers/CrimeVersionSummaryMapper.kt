@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mapper
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeVersionSummaryResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionSummaryProjection
+import java.time.ZoneOffset
 
 @Component
 class CrimeVersionSummaryMapper {
@@ -12,7 +13,7 @@ class CrimeVersionSummaryMapper {
     crimeReference = summary.crimeReference,
     policeForceArea = summary.policeForceArea,
     crimeType = summary.crimeTypeId,
-    crimeDate = summary.crimeDateTimeFrom.toLocalDate().toString(),
+    crimeDate = summary.crimeDateTimeFrom.atZone(ZoneOffset.UTC).toLocalDate().toString(),
     batchId = summary.batchId,
     ingestionDateTime = summary.ingestionDateTime.toString(),
     matched = if (summary.matched) "YES" else "NO",

@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.UUID
 
@@ -125,8 +126,8 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
           crime = crime,
           crimeTypeId = CrimeType.AB,
-          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
           easting = null,
           northing = null,
           latitude = 51.574865,
@@ -137,8 +138,8 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           id = UUID.fromString("8d595ab3-d4ef-4975-93ef-24570f6f0f61"),
           crime = crime,
           crimeTypeId = CrimeType.BOTD,
-          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 1, 0, 30),
-          crimeDateTimeTo = LocalDateTime.of(2025, 1, 1, 1, 30),
+          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 1, 0, 30).toInstant(ZoneOffset.UTC),
+          crimeDateTimeTo = LocalDateTime.of(2025, 1, 1, 1, 30).toInstant(ZoneOffset.UTC),
           easting = 529381.toDouble(),
           northing = 179534.toDouble(),
           latitude = null,

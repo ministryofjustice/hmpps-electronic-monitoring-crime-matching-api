@@ -11,14 +11,15 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 @ActiveProfiles("integration")
 class CrimeVersionControllerTest : IntegrationTestBase() {
 
   // Make compared fields explicit and identical across versions unless a test changes them
-  private val crimeDateFrom = LocalDateTime.of(2025, 3, 15, 0, 0)
-  private val crimeDateTo = LocalDateTime.of(2025, 3, 15, 1, 0)
+  private val crimeDateFrom = LocalDateTime.of(2025, 3, 15, 0, 0).toInstant(ZoneOffset.UTC)
+  private val crimeDateTo = LocalDateTime.of(2025, 3, 15, 1, 0).toInstant(ZoneOffset.UTC)
 
   // Explicitly set location fields so they remain identical across versions
   // unless a test intentionally changes them.
