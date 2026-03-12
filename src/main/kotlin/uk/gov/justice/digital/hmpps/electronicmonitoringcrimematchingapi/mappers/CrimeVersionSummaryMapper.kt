@@ -15,7 +15,7 @@ class CrimeVersionSummaryMapper {
     crimeDate = summary.crimeDateTimeFrom.toLocalDate().toString(),
     batchId = summary.batchId,
     ingestionDateTime = summary.ingestionDateTime.toString(),
-    matched = if (summary.matched) "YES" else "NO",
+    matched = summary.matched,
     versionLabel = summary.versionLabel,
     updates = summary.updates,
   )
