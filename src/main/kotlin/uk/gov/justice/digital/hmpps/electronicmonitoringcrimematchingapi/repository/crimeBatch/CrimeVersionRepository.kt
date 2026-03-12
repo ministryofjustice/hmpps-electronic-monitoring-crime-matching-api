@@ -96,8 +96,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
     
       -- Partial crime reference search
       -- LOWER() for case-insensitive matching
-      -- '%' matches any trailing characters
-      WHERE LOWER(c.crime_reference) LIKE LOWER(:crimeReference) || '%'
+      -- '%' before and after the search term allows matching anywhere in the string
+      WHERE LOWER(c.crime_reference) LIKE '%' || LOWER(:crimeReference) || '%'
     
       WINDOW crime_versions AS (
         PARTITION BY c.police_force_area, c.crime_reference
@@ -323,7 +323,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
      JOIN crime_batch cb ON cb.id = cbcv.crime_batch_id
      JOIN crime_version cv ON cv.id = cbcv.crime_version_id
      JOIN crime c ON c.id = cv.crime_id
-     WHERE LOWER(c.crime_reference) LIKE LOWER(:crimeReference) || '%'
+     WHERE (:crimeReference IS NULL
+            OR LOWER(c.crime_reference) LIKE '%' || LOWER(:crimeReference) || '%')
     """,
 
     nativeQuery = true,
