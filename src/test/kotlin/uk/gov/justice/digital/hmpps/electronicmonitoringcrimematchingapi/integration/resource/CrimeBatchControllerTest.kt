@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Date
 import java.util.UUID
@@ -166,6 +167,56 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
+    }
+
+    @Test
+    fun `it should return a crime batch with a BST crime dates in UTC format`() {
+      val bstDate = LocalDateTime.of(2025, 4, 1, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val batch = crimeMatchingFixtures.givenBatch {
+        withCrime(
+          crimeRef = "crimeRef",
+          crimeDateTimeFrom = bstDate,
+          crimeDateTimeTo = bstDate,
+        ) {}
+      }
+
+      webTestClient.get()
+        .uri("/crime-batches/${batch.id}")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data.crimes[0].crimeDateTimeFrom").isEqualTo("2025-04-01T00:00:00Z")
+        .jsonPath("$.data.crimes[0].crimeDateTimeTo").isEqualTo("2025-04-01T00:00:00Z")
+    }
+
+    @Test
+    fun `it should return a crime batch with a GMT crime dates in UTC format`() {
+      val gmtDate = LocalDateTime.of(2025, 1, 30, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val batch = crimeMatchingFixtures.givenBatch {
+        withCrime(
+          crimeRef = "crimeRef",
+          crimeDateTimeFrom = gmtDate,
+          crimeDateTimeTo = gmtDate,
+        ) {}
+      }
+
+      webTestClient.get()
+        .uri("/crime-batches/${batch.id}")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data.crimes[0].crimeDateTimeFrom").isEqualTo("2025-01-30T01:00:00Z")
+        .jsonPath("$.data.crimes[0].crimeDateTimeTo").isEqualTo("2025-01-30T01:00:00Z")
     }
   }
 }

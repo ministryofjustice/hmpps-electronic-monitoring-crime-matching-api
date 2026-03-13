@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.UUID
 
@@ -151,6 +152,54 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
+    }
+
+    @Test
+    fun `it should return a crime version with a BST crime date in UTC format`() {
+      val bstDate = LocalDateTime.of(2025, 4, 1, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val crimeRef = "01/7298583/25"
+      crimeMatchingFixtures.givenBatch {
+        withCrime(
+          crimeRef = crimeRef,
+          crimeDateTimeFrom = bstDate,
+        ) {}
+      }
+
+      webTestClient.get()
+        .uri("/crime-versions?crimeRef=$crimeRef")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data[0].crimeDate").isEqualTo("2025-04-01T00:00:00Z")
+    }
+
+    @Test
+    fun `it should return a crime version with a GMT crime date in UTC format`() {
+      val gmtDate = LocalDateTime.of(2025, 1, 30, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val crimeRef = "01/7298583/25"
+      crimeMatchingFixtures.givenBatch {
+        withCrime(
+          crimeRef = crimeRef,
+          crimeDateTimeFrom = gmtDate,
+        ) {}
+      }
+
+      webTestClient.get()
+        .uri("/crime-versions?crimeRef=$crimeRef")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data[0].crimeDate").isEqualTo("2025-01-30T01:00:00Z")
     }
 
     @Test
