@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionSummaryProjection
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.Optional
 import java.util.UUID
 
@@ -17,8 +17,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
   fun findByCrimeIdAndCrimeTypeIdAndCrimeDateTimeFromAndCrimeDateTimeToAndEastingAndNorthingAndLatitudeAndLongitudeAndCrimeText(
     crimeId: UUID,
     crimeTypeId: CrimeType,
-    crimeDateTimeFrom: LocalDateTime,
-    crimeDateTimeTo: LocalDateTime,
+    crimeDateTimeFrom: Instant,
+    crimeDateTimeTo: Instant,
     easting: Double?,
     northing: Double?,
     latitude: Double?,

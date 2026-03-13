@@ -8,7 +8,9 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class CrimeBatchContext(
@@ -22,8 +24,8 @@ class CrimeBatchContext(
     crimeRef: String,
     id: UUID = UUID.randomUUID(),
     crimeType: CrimeType = CrimeType.AB,
-    crimeDateTimeFrom: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
-    crimeDateTimeTo: LocalDateTime = LocalDateTime.of(2025, 1, 1, 1, 0),
+    crimeDateTimeFrom: Instant = LocalDateTime.of(2025, 1, 1, 0, 0).toInstant(ZoneOffset.UTC),
+    crimeDateTimeTo: Instant = LocalDateTime.of(2025, 1, 1, 1, 0).toInstant(ZoneOffset.UTC),
     latitude: Double? = 0.0,
     longitude: Double? = 0.0,
     easting: Double? = null,
