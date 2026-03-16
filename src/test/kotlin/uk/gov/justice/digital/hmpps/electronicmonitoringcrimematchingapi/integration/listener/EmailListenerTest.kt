@@ -44,6 +44,7 @@ import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.io.encoding.Base64
@@ -335,8 +336,8 @@ class EmailListenerTest : IntegrationTestBase() {
         id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
         crime = crime,
         crimeTypeId = CrimeType.AB,
-        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
         easting = null,
         northing = null,
         latitude = 51.574865,
@@ -388,8 +389,8 @@ class EmailListenerTest : IntegrationTestBase() {
         id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
         crime = crime,
         crimeTypeId = CrimeType.TOMV,
-        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
         easting = null,
         northing = null,
         latitude = 54.73241,

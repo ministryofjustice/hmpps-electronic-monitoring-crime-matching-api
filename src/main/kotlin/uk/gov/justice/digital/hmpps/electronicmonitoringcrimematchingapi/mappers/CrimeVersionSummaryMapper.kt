@@ -12,7 +12,7 @@ class CrimeVersionSummaryMapper {
     crimeReference = summary.crimeReference,
     policeForceArea = summary.policeForceArea,
     crimeType = summary.crimeTypeId,
-    crimeDate = summary.crimeDateTimeFrom.toLocalDate().toString(),
+    crimeDate = summary.crimeDateTimeFrom.toString(),
     batchId = summary.batchId,
     ingestionDateTime = summary.ingestionDateTime.toString(),
     matched = summary.matched,

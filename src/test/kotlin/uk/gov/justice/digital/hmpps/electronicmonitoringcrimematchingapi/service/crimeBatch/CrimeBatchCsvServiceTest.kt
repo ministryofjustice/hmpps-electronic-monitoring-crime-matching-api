@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import kotlin.collections.listOf
 
 @ActiveProfiles("test")
@@ -37,8 +38,8 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           batchId = "MPS20250126",
           crimeReference = "CRI00000001",
-          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
           easting = null,
           northing = null,
           latitude = 54.73241,

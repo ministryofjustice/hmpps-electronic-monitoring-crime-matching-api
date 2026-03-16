@@ -52,7 +52,7 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
         lpv.crime_text                 AS crimeText,
         dw.device_id                   AS deviceId,
         dw.name                        AS name,
-        dw.nomis_id                     AS nomisId
+        dw.nomis_id                    AS nomisId
       FROM latest_per_version lpv
       JOIN crime_matching_result_device_wearer dw
         ON dw.crime_matching_result_id = lpv.matching_result_id

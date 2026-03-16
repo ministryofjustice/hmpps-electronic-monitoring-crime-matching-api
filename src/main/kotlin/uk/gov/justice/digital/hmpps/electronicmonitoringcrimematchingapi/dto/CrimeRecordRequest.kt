@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import java.time.LocalDateTime
+import java.time.Instant
 
 data class CrimeRecordRequest(
   val policeForce: PoliceForce,
@@ -13,9 +13,9 @@ data class CrimeRecordRequest(
 
   val crimeReference: String,
 
-  val crimeDateTimeFrom: LocalDateTime,
+  val crimeDateTimeFrom: Instant,
 
-  val crimeDateTimeTo: LocalDateTime,
+  val crimeDateTimeTo: Instant,
 
   val easting: Double?,
 

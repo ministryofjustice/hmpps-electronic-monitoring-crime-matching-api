@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integra
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.UUID
 
 @ActiveProfiles("integration")
@@ -224,6 +225,58 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
+    }
+
+    @Test
+    fun `it should return crime matches with BST crime dates in UTC format`() {
+      val bstDate = LocalDateTime.of(2025, 4, 1, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val batch = crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", crimeDateTimeTo = bstDate, crimeDateTimeFrom = bstDate) {
+          withMatchingRun {
+            withMatchedDeviceWearer(deviceId = 1)
+          }
+        }
+      }
+
+      // When the client requests matching results
+      webTestClient.get()
+        .uri("/crime-matching-results?batchId=" + batch.id)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data[0].crimeDateTimeFrom").isEqualTo("2025-04-01T00:00:00Z")
+        .jsonPath("$.data[0].crimeDateTimeTo").isEqualTo("2025-04-01T00:00:00Z")
+    }
+
+    @Test
+    fun `it should return crime matches with GMT crime dates in UTC format`() {
+      val gmtDate = LocalDateTime.of(2025, 1, 30, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val batch = crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", crimeDateTimeTo = gmtDate, crimeDateTimeFrom = gmtDate) {
+          withMatchingRun {
+            withMatchedDeviceWearer(deviceId = 1)
+          }
+        }
+      }
+
+      // When the client requests matching results
+      webTestClient.get()
+        .uri("/crime-matching-results?batchId=" + batch.id)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data[0].crimeDateTimeFrom").isEqualTo("2025-01-30T01:00:00Z")
+        .jsonPath("$.data[0].crimeDateTimeTo").isEqualTo("2025-01-30T01:00:00Z")
     }
   }
 }

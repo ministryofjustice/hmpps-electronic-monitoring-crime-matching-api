@@ -23,6 +23,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.UUID
 
@@ -125,8 +127,8 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
           crime = crime,
           crimeTypeId = CrimeType.AB,
-          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30),
-          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30),
+          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+          crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
           easting = null,
           northing = null,
           latitude = 51.574865,
@@ -137,8 +139,8 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           id = UUID.fromString("8d595ab3-d4ef-4975-93ef-24570f6f0f61"),
           crime = crime,
           crimeTypeId = CrimeType.BOTD,
-          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 1, 0, 30),
-          crimeDateTimeTo = LocalDateTime.of(2025, 1, 1, 1, 30),
+          crimeDateTimeFrom = LocalDateTime.of(2025, 1, 1, 0, 30).toInstant(ZoneOffset.UTC),
+          crimeDateTimeTo = LocalDateTime.of(2025, 1, 1, 1, 30).toInstant(ZoneOffset.UTC),
           easting = 529381.toDouble(),
           northing = 179534.toDouble(),
           latitude = null,
@@ -165,6 +167,56 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
+    }
+
+    @Test
+    fun `it should return a crime batch with a BST crime dates in UTC format`() {
+      val bstDate = LocalDateTime.of(2025, 4, 1, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val batch = crimeMatchingFixtures.givenBatch {
+        withCrime(
+          crimeRef = "crimeRef",
+          crimeDateTimeFrom = bstDate,
+          crimeDateTimeTo = bstDate,
+        ) {}
+      }
+
+      webTestClient.get()
+        .uri("/crime-batches/${batch.id}")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data.crimes[0].crimeDateTimeFrom").isEqualTo("2025-04-01T00:00:00Z")
+        .jsonPath("$.data.crimes[0].crimeDateTimeTo").isEqualTo("2025-04-01T00:00:00Z")
+    }
+
+    @Test
+    fun `it should return a crime batch with a GMT crime dates in UTC format`() {
+      val gmtDate = LocalDateTime.of(2025, 1, 30, 1, 0)
+        .atZone(ZoneId.of("Europe/London"))
+        .toInstant()
+
+      val batch = crimeMatchingFixtures.givenBatch {
+        withCrime(
+          crimeRef = "crimeRef",
+          crimeDateTimeFrom = gmtDate,
+          crimeDateTimeTo = gmtDate,
+        ) {}
+      }
+
+      webTestClient.get()
+        .uri("/crime-batches/${batch.id}")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data.crimes[0].crimeDateTimeFrom").isEqualTo("2025-01-30T01:00:00Z")
+        .jsonPath("$.data.crimes[0].crimeDateTimeTo").isEqualTo("2025-01-30T01:00:00Z")
     }
   }
 }
