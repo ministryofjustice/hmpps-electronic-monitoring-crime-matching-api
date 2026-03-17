@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection
 
-<<<<<<< Updated upstream
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 
 interface CrimeBatchEmailAttachmentErrorProjection {
@@ -10,13 +9,4 @@ interface CrimeBatchEmailAttachmentErrorProjection {
   val crimeReference: String?
   val rowNumber: Long
   val crimeType: String?
-=======
-interface CrimeBatchEmailAttachmentErrorProjection {
-  fun getErrorType(): String
-  fun getFieldName(): String?
-  fun getValue(): String?
-  fun getCrimeReference(): String?
-  fun getRowNumber(): Long
-  fun getCrimeType(): String?
->>>>>>> Stashed changes
 }

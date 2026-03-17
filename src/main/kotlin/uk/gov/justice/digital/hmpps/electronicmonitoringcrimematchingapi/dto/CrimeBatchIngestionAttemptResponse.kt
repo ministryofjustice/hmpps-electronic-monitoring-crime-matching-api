@@ -9,32 +9,9 @@ data class CrimeBatchIngestionAttemptResponse(
   val matches: Long?,
   val createdAt: String,
   val fileName: String?,
-<<<<<<< Updated upstream
   val submitted: Int,
   val successful: Int,
   val failed: Int,
   val crimesByCrimeType: List<IngestionAttemptCrimesByTypeResponse>,
   val validationErrors: List<CrimeBatchEmailAttachmentErrorResponse>,
-=======
-  val isCrimeBatch: Boolean,
-  val failureSubCategory: String?,
-  val submittedCount: Long?,
-  val ingestedCount: Long?,
-  val failedCount: Long?,
-  val breakdownByCrimeType: List<BreakdownByCrimeTypeResponse>,
-  val validationErrors: List<ValidationErrorResponse>,
-)
-
-data class BreakdownByCrimeTypeResponse(
-  val crimeType: String,
-  val submitted: Long,
-  val ingested: Long,
-  val failedValidation: Long,
-)
-
-data class ValidationErrorResponse(
-  val crimeReference: String,
-  val errorType: String,
-  val requiredAction: String,
->>>>>>> Stashed changes
 )

@@ -93,13 +93,7 @@ class CrimeBatchService(
     pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt")),
   )
 
-<<<<<<< Updated upstream
-  fun getCrimeBatchIngestionAttempt(
-    id: UUID,
-  ): CrimeBatchIngestionAttemptSummary {
-=======
   fun getCrimeBatchIngestionAttempt(id: UUID): CrimeBatchIngestionAttemptSummary {
->>>>>>> Stashed changes
     val crimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository
       .findCrimeBatchIngestionAttemptById(id)
       .orElseThrow {
