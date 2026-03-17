@@ -21,7 +21,6 @@ class EmailNotificationService(
     emailData: EmailData,
     records: List<CrimeRecordRequest>,
   ) {
-
     val emailAddresses = listOf(emailData.sender, emailData.originalSender)
     val csvBytes = records.toCsv().toByteArray()
 
@@ -41,7 +40,6 @@ class EmailNotificationService(
     emailData: EmailData,
     errorType: String? = null,
   ) {
-
     val personalisation = hashMapOf<String, Any>()
     personalisation["fileName"] = (emailData.attachments.firstOrNull()?.name ?: "" as String)
     personalisation["ingestionDate"] = LocalDate.now().toString()
@@ -63,7 +61,6 @@ class EmailNotificationService(
     errors: List<EmailAttachmentIngestionError>,
     totalCount: Int,
   ) {
-
     val successCount = totalCount - errors.size
 
     val personalisation = hashMapOf<String, Any>()

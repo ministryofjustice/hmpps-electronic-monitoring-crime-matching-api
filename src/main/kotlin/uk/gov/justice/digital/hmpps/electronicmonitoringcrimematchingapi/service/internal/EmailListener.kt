@@ -154,7 +154,6 @@ class EmailListener(
     crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
     crimeBatchEmail: CrimeBatchEmail,
   ) {
-
     val crimeBatchEmailIngestionError = CrimeBatchEmailIngestionError(
       errorType = errorType,
       crimeBatchEmail = crimeBatchEmail,
