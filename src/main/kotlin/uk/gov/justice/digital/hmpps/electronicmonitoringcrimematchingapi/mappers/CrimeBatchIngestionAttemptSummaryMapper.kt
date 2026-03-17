@@ -6,13 +6,13 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 
 @Component
 class CrimeBatchIngestionAttemptSummaryMapper {
-  fun toDto(summary: CrimeBatchIngestionAttemptSummaryProjection): CrimeBatchIngestionAttemptSummaryResponse = CrimeBatchIngestionAttemptSummaryResponse(
-    ingestionAttemptId = summary.ingestionAttemptId,
-    ingestionStatus = summary.ingestionStatus.name,
-    policeForceArea = summary.policeForceArea ?: "",
-    crimeBatchId = summary.crimeBatchId ?: "",
-    batchId = summary.batchId ?: "",
-    matches = summary.matches,
-    createdAt = summary.createdAt.toString(),
+  fun toDto(projection: CrimeBatchIngestionAttemptSummaryProjection): CrimeBatchIngestionAttemptSummaryResponse = CrimeBatchIngestionAttemptSummaryResponse(
+    ingestionAttemptId = projection.getIngestionAttemptId().toString(),
+    ingestionStatus = projection.getIngestionStatus(),
+    policeForceArea = projection.getPoliceForceArea(),
+    crimeBatchId = projection.getCrimeBatchId()?.toString(),
+    batchId = projection.getBatchId(),
+    matches = projection.getMatches(),
+    createdAt = projection.getCreatedAt().toString(),
   )
 }

@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeBatchIngestionAttemptSummaryResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ValidationErrorResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchIngestionAttemptMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeBatchIngestionAttemptSummaryMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
@@ -120,5 +121,49 @@ class CrimeBatchIngestionAttemptController(
         data = crimeBatchIngestionAttemptMapper.toDto(crimeBatchIngestionAttempt),
       ),
     )
+  }
+
+  @Operation(
+    tags = ["Crime Batch Ingestion Attempt"],
+    summary = "Export validation errors as CSV for a crime batch ingestion attempt",
+  )
+  @GetMapping(
+    path = [
+      "/{crimeBatchIngestionAttemptId}/validation-errors",
+    ],
+    produces = [MediaType.TEXT_PLAIN_VALUE],
+  )
+  fun getValidationErrorCsv(
+    @Parameter(
+      description = "The ID of the ingestion attempt",
+      required = true,
+      example = "aefa6893-2bed-a69e-afb562046a6f",
+    )
+    @PathVariable crimeBatchIngestionAttemptId: UUID,
+  ): ResponseEntity<String> {
+    val summary = crimeBatchService.getCrimeBatchIngestionAttempt(crimeBatchIngestionAttemptId)
+    val dto = crimeBatchIngestionAttemptMapper.toDto(summary)
+
+    if (!dto.isCrimeBatch) {
+      return ResponseEntity.status(403)
+        .body("Forbidden: validation error export is only available for crime batch ingestion attempts")
+    }
+
+    val csv = buildValidationErrorsCsv(dto.validationErrors)
+
+    return ResponseEntity.ok()
+      .contentType(MediaType.parseMediaType("text/csv"))
+      .header("Content-Disposition", "attachment; filename=\"validation-errors-" + crimeBatchIngestionAttemptId + ".csv\"")
+      .body(csv)
+  }
+
+  private fun buildValidationErrorsCsv(errors: List<ValidationErrorResponse>): String = buildString {
+    appendLine("\"Crime reference\", \"Error type\", \"Required action\"")
+    for (error in errors) {
+      val ref = error.crimeReference.replace("\"", "\"\"")
+      val errType = error.errorType.replace("\"", "\"\"")
+      val action = error.requiredAction.replace("\"", "\"\"")
+      appendLine("\"$ref\",\"$errType\",\"$action\"")
+    }
   }
 }

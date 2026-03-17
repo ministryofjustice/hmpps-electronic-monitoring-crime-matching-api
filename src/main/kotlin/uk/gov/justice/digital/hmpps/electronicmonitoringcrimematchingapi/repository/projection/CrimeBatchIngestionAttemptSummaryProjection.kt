@@ -1,14 +1,14 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection
 
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import java.time.LocalDateTime
+import java.util.UUID
 
 interface CrimeBatchIngestionAttemptSummaryProjection {
-  val ingestionAttemptId: String
-  val createdAt: LocalDateTime
-  val crimeBatchId: String?
-  val batchId: String?
-  val policeForceArea: String?
-  val matches: Long?
-  val ingestionStatus: IngestionStatus
+  fun getIngestionAttemptId(): UUID
+  fun getCreatedAt(): LocalDateTime
+  fun getCrimeBatchId(): UUID?
+  fun getBatchId(): String?
+  fun getPoliceForceArea(): String?
+  fun getMatches(): Long?
+  fun getIngestionStatus(): String
 }
