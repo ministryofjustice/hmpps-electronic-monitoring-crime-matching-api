@@ -154,10 +154,6 @@ class EmailListener(
     crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
     crimeBatchEmail: CrimeBatchEmail,
   ) {
-    println("====saveIngestionAttemptError====")
-    println("attempt id: ${crimeBatchIngestionAttempt.id}")
-    println("email id: ${crimeBatchEmail.id}")
-    println("email.crimeBatchIngestionAttempt id: ${crimeBatchEmail.crimeBatchIngestionAttempt.id}")
 
     val crimeBatchEmailIngestionError = CrimeBatchEmailIngestionError(
       errorType = errorType,

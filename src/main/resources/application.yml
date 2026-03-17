@@ -69,7 +69,7 @@ services:
     mfa: ${MFA_REQUIRED}
 
 notify:
-  enabled: false
+  enabled: true
   apikey: ${NOTIFY_API_KEY}
   successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11
   failedIngestionTemplateId: 57f34eb4-7fc6-4b2b-806b-f64d7b27a497
