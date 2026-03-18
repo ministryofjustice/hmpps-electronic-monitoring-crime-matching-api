@@ -6,5 +6,5 @@ data class CrimeVersionResponse(
   val crimeDateTimeFrom: String,
   val crimeDateTimeTo: String,
   val crimeText: String,
-  val deviceWearers: List<DeviceWearerResponse>,
+  val matching: MatchingResponse?,
 )

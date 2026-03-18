@@ -535,7 +535,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       JSONAssert.assertEquals(
-        "get-crime-version-response".loadJson(),
+        "get-crime-version-no-matching-result-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
@@ -571,6 +571,32 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       JSONAssert.assertEquals(
         "get-crime-version-matching-result-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
+
+    @Test
+    fun `it should return a crime version with a zero return matching result`() {
+      val versionId = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", id = versionId) {
+          withMatchingRun {}
+        }
+      }
+
+      val body = webTestClient.get()
+        .uri("/crime-versions/$versionId")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-version-zero-return-matching-result-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.STRICT,
       )

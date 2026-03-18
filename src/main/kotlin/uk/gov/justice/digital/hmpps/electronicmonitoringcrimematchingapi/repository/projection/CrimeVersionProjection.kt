@@ -10,6 +10,7 @@ interface CrimeVersionProjection {
   val crimeDateTimeFrom: Instant
   val crimeDateTimeTo: Instant
   val crimeText: String
+  val matchingResultId: String?
   val deviceWearerId: String?
   val name: String?
   val deviceId: Long?

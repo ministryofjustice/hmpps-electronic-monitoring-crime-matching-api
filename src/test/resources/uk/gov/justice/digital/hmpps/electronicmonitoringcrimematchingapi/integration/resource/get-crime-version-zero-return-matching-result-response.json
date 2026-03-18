@@ -5,6 +5,8 @@
     "crimeDateTimeFrom" : "2025-01-01T00:00:00Z",
     "crimeDateTimeTo" : "2025-01-01T01:00:00Z",
     "crimeText" : "text",
-    "deviceWearers" : []
+    "matching" : {
+      "deviceWearers": []
+    }
   }
 }

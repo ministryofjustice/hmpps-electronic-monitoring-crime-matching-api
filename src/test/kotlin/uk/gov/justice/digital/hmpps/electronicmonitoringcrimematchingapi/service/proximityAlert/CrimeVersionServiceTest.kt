@@ -43,6 +43,7 @@ class CrimeVersionServiceTest {
         on { crimeDateTimeFrom } doReturn LocalDateTime.now().toInstant(ZoneOffset.UTC)
         on { crimeDateTimeTo } doReturn LocalDateTime.now().toInstant(ZoneOffset.UTC)
         on { crimeText } doReturn "crimeText"
+        on { matchingResultId } doReturn "4321"
         on { deviceWearerId } doReturn "1234"
         on { name } doReturn "name"
         on { nomisId } doReturn "nomis"
@@ -57,8 +58,8 @@ class CrimeVersionServiceTest {
 
       val res = service.getCrimeVersion(UUID.randomUUID())
       assertThat(res).isInstanceOf(CrimeVersionResponse::class.java)
-      assertThat(res.deviceWearers.size).isEqualTo(1)
-      assertThat(res.deviceWearers.first().positions.size).isEqualTo(1)
+      assertThat(res.matching?.deviceWearers?.size).isEqualTo(1)
+      assertThat(res.matching?.deviceWearers?.first()?.positions?.size).isEqualTo(1)
     }
   }
 }

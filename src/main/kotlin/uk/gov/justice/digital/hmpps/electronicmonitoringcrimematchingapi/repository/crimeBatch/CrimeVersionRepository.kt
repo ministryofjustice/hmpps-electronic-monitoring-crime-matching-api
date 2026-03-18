@@ -343,6 +343,7 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
         cv.crime_date_time_from AS crimeDateTimeFrom,
         cv.crime_date_time_to AS crimeDateTimeTo,
         cv.crime_text AS crimeText,
+        cmr.id AS matchingResultId,
         cmrdw.id AS deviceWearerId,
         cmrdw.name AS name,
         cmrdw.device_id AS deviceId,

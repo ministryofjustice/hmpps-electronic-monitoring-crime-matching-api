@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeVersionResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceWearerPositionResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceWearerResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.MatchingResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionSummaryProjection
 import java.util.UUID
@@ -55,13 +56,15 @@ class CrimeVersionService(
       }
     }
 
+    val matchingResponse = MatchingResponse(deviceWearers = deviceWearerMap.values.toList())
+
     val crimeVersionResponse = CrimeVersionResponse(
       crimeReference = crimeVersion.crimeReference,
       crimeType = crimeVersion.crimeType.value,
       crimeDateTimeFrom = crimeVersion.crimeDateTimeFrom.toString(),
       crimeDateTimeTo = crimeVersion.crimeDateTimeTo.toString(),
       crimeText = crimeVersion.crimeText,
-      deviceWearers = deviceWearerMap.values.toList(),
+      matching = if (crimeVersion.matchingResultId != null) matchingResponse else null,
     )
 
     return crimeVersionResponse
