@@ -102,6 +102,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
           cbia.id,
           cbia.created_at,
           cb.id AS crime_batch_id,
+          cb.batch_id AS batch_id,
           cbea.file_name,
           cbea.row_count
         FROM crime_batch_ingestion_attempt cbia
@@ -158,7 +159,7 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
     SELECT
       ia.id AS ingestionAttemptId,
       ia.created_at AS createdAt,
-      ia.crime_batch_id AS batchId,
+      ia.batch_id AS batchId,
       cv.police_force_area AS policeForceArea,
       ia.file_name AS fileName,
       lrwc.matches AS matches,
