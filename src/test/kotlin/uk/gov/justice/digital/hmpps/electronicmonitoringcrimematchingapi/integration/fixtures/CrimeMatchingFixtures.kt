@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 import org.springframework.jdbc.core.JdbcTemplate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
@@ -31,18 +30,14 @@ class CrimeMatchingFixtures(
     crimeBatchIngestionAttemptRepository.deleteAll()
   }
 
-  fun givenBatch(
-    crimeBatchId: UUID = UUID.randomUUID(),
-    batchId: String,
-    ingestionAttemptId: UUID = UUID.randomUUID(),
-    ingestionCreatedAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
-    rowCount: Int = 1,
-    policeForce: PoliceForce = PoliceForce.METROPOLITAN,
-    block: CrimeBatchContext.() -> Unit,
-  ): CrimeBatch {
+  fun givenIngestionAttempt(
+    id: UUID = UUID.randomUUID(),
+    createdAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
+    block: CrimeBatchIngestionAttemptContext.() -> Unit = {},
+  ): CrimeBatchIngestionAttempt {
     val ingestionAttempt = CrimeBatchIngestionAttempt(
-      id = ingestionAttemptId,
-      createdAt = ingestionCreatedAt,
+      id = id,
+      createdAt = createdAt,
       bucket = "bucket",
       objectName = "objectName",
     )
@@ -56,17 +51,29 @@ class CrimeMatchingFixtures(
     )
     ingestionAttempt.crimeBatchEmail = email
 
-    val attachment = CrimeBatchEmailAttachment(
+    CrimeBatchIngestionAttemptContext(
       crimeBatchEmail = email,
-      fileName = "test.csv",
-      rowCount = rowCount,
-    )
-    email.crimeBatchEmailAttachments.add(attachment)
+    ).block()
 
+    crimeBatchIngestionAttemptRepository.save(ingestionAttempt)
+
+    return ingestionAttempt
+  }
+
+  fun givenBatch(
+    crimeBatchId: UUID = UUID.randomUUID(),
+    batchId: String = "batch1",
+    policeForce: PoliceForce = PoliceForce.METROPOLITAN,
+    ingestionCreatedAt: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
+    ingestionAttempt: CrimeBatchIngestionAttempt = givenIngestionAttempt { withAttachment() },
+    block: CrimeBatchContext.() -> Unit = {},
+  ): CrimeBatch {
+    val attachment = ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first()
     val batch = CrimeBatch(
       id = crimeBatchId,
       batchId = batchId,
       crimeBatchEmailAttachment = attachment,
+      createdAt = ingestionCreatedAt,
     )
     attachment.crimeBatch = batch
 

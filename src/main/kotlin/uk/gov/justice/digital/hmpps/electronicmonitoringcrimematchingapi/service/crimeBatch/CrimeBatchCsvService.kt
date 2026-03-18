@@ -15,8 +15,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.v
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.ValidationResult
 import java.io.InputStream
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
@@ -187,9 +189,10 @@ class CrimeBatchCsvService {
   private fun parseDateValue(
     fieldName: String,
     value: String,
-  ): FieldValidationResult<LocalDateTime> = try {
+  ): FieldValidationResult<Instant> = try {
+    val parsedDate = LocalDateTime.parse(value.trim(), DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
     FieldValidationResult(
-      value = LocalDateTime.parse(value.trim(), DateTimeFormatter.ofPattern("yyyyMMddHHmmss")),
+      value = parsedDate.toInstant(ZoneOffset.UTC),
     )
   } catch (_: Exception) {
     FieldValidationResult(
@@ -201,8 +204,8 @@ class CrimeBatchCsvService {
 
   private fun parseCrimeDateTo(
     crimeDateTo: String,
-    crimeDateFrom: FieldValidationResult<LocalDateTime>,
-  ): FieldValidationResult<LocalDateTime> {
+    crimeDateFrom: FieldValidationResult<Instant>,
+  ): FieldValidationResult<Instant> {
     val fieldName = "dateTo"
     val parsedDate = parseDateValue(fieldName, crimeDateTo)
 

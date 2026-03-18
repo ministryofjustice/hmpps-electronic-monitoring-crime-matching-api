@@ -8,4 +8,9 @@ data class CrimeBatchIngestionAttemptResponse(
   val matches: Long?,
   val createdAt: String,
   val fileName: String?,
+  val submitted: Int,
+  val successful: Int,
+  val failed: Int,
+  val crimesByCrimeType: List<IngestionAttemptCrimesByTypeResponse>,
+  val validationErrors: List<CrimeBatchEmailAttachmentErrorResponse>,
 )

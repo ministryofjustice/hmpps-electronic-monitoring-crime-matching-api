@@ -1,0 +1,31 @@
+{
+  "data": [
+    {
+      "crimeVersionId": "44444444-4444-4444-4444-444444444444",
+      "crimeReference": "01/1234567/25",
+      "policeForceArea": "HAMPSHIRE",
+      "crimeType": "AB",
+      "crimeDate": "2025-03-15T00:00:00Z",
+      "batchId": "HAM20251029",
+      "ingestionDateTime": "2025-10-29T04:03:01",
+      "matched": false,
+      "versionLabel": "Latest version",
+      "updates": "Crime location"
+    },
+    {
+      "crimeVersionId": "55555555-5555-5555-5555-555555555555",
+      "crimeReference": "01/1234567/25",
+      "policeForceArea": "HAMPSHIRE",
+      "crimeType": "AB",
+      "crimeDate": "2025-03-15T00:00:00Z",
+      "batchId": "HAM20251028",
+      "ingestionDateTime": "2025-10-28T04:03:01",
+      "matched": false,
+      "versionLabel": "Version 1",
+      "updates": "N/A"
+    }
+  ],
+  "pageCount": 1,
+  "pageNumber": 0,
+  "pageSize": 30
+}

@@ -1,13 +1,13 @@
 {
   "data" : [
     {
-      "crimeBatchId": "22134a17-c192-4475-88ab-39d90c92f036",
-      "batchId" : "Batch1",
-      "createdAt" : "2025-01-01T00:00",
       "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb562046a6f",
-      "matches" : null,
+      "ingestionStatus" : "FAILED",
       "policeForceArea" : "",
-      "ingestionStatus" : "FAILED"
+      "crimeBatchId" : "",
+      "batchId" : "",
+      "matches" : null,
+      "createdAt" : "2025-01-01T00:00"
     }
   ],
   "pageCount" : 1,

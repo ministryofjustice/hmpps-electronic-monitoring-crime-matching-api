@@ -4,5 +4,6 @@ enum class IngestionStatus {
   SUCCESSFUL,
   PARTIAL,
   FAILED,
+  ERROR,
   UNKNOWN,
 }

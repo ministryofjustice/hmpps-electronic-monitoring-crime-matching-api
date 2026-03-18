@@ -1,0 +1,16 @@
+{
+  "data" : [
+    {
+      "ingestionAttemptId" : "aefa6993-2bed-4e69-a96e-afb562046a6f",
+      "ingestionStatus" : "SUCCESSFUL",
+      "policeForceArea" : "METROPOLITAN",
+      "crimeBatchId" : "22134a17-c192-4475-88ab-39d90c92f036",
+      "batchId" : "Batch1",
+      "matches" : 1,
+      "createdAt" : "2025-01-01T00:00"
+    }
+  ],
+  "pageCount" : 2,
+  "pageNumber" : 1,
+  "pageSize" : 1
+}

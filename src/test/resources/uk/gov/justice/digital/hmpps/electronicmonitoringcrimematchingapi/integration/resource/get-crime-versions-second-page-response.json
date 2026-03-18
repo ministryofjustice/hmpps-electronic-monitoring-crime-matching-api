@@ -1,0 +1,19 @@
+{
+  "data": [
+    {
+      "crimeVersionId": "77777777-7777-7777-7777-777777777777",
+      "crimeReference": "01/9999999/25",
+      "policeForceArea": "HAMPSHIRE",
+      "crimeType": "AB",
+      "crimeDate": "2025-03-15T00:00:00Z",
+      "batchId": "HAM20251028",
+      "ingestionDateTime": "2025-10-28T04:03:01",
+      "matched": false,
+      "versionLabel": "Latest version",
+      "updates": "N/A"
+    }
+  ],
+  "pageCount": 2,
+  "pageNumber": 1,
+  "pageSize": 1
+}

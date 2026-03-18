@@ -10,14 +10,19 @@ class CrimeMatchingRunContext(
     deviceId: Long,
     name: String = "name",
     nomisId: String = "nomisId",
+    block: CrimeMatchingResultDeviceWearerContext.() -> Unit = {},
   ) {
+    val deviceWearer = CrimeMatchingResultDeviceWearer(
+      crimeMatchingResult = result,
+      deviceId = deviceId,
+      name = name,
+      nomisId = nomisId,
+    )
+
+    CrimeMatchingResultDeviceWearerContext(deviceWearer).block()
+
     result.deviceWearers.add(
-      CrimeMatchingResultDeviceWearer(
-        crimeMatchingResult = result,
-        deviceId = deviceId,
-        name = name,
-        nomisId = nomisId,
-      ),
+      deviceWearer,
     )
   }
 }
