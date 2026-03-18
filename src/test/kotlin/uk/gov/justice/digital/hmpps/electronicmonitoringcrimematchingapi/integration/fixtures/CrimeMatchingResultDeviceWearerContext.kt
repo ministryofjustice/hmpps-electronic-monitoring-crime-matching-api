@@ -7,14 +7,17 @@ import java.time.LocalDateTime
 class CrimeMatchingResultDeviceWearerContext(
   private val crimeMatchingResultDeviceWearer: CrimeMatchingResultDeviceWearer,
 ) {
-  fun withPosition() {
+  fun withPosition(
+    capturedDateTime: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
+    sequenceLabel: String = "A1",
+  ) {
     crimeMatchingResultDeviceWearer.positions.add(
       CrimeMatchingResultPosition(
         crimeMatchingResultDeviceWearer = crimeMatchingResultDeviceWearer,
         latitude = 10.0,
         longitude = 10.0,
-        capturedDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
-        sequenceLabel = "A1",
+        capturedDateTime = capturedDateTime,
+        sequenceLabel = sequenceLabel,
         confidenceCircle = 10,
       ),
     )

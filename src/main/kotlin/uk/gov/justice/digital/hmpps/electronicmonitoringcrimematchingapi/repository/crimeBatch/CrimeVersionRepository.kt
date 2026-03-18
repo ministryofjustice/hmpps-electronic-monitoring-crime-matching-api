@@ -364,6 +364,7 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
       LEFT JOIN crime_matching_result_device_wearer cmrdw on cmrdw.crime_matching_result_id = cmr.id
       LEFT JOIN crime_matching_result_position cmrp on cmrp.crime_matching_result_device_wearer_id = cmrdw.id
       WHERE cv.id = :crimeVersionId
+      ORDER BY cmrp.captured_date_time
     """,
     nativeQuery = true,
   )

@@ -548,9 +548,11 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         withCrime("crime1", id = versionId) {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1) {
+              withPosition(sequenceLabel = "A2", capturedDateTime = LocalDateTime.of(2025, 1, 1, 2, 0))
               withPosition()
             }
             withMatchedDeviceWearer(deviceId = 2) {
+              withPosition(sequenceLabel = "A2", capturedDateTime = LocalDateTime.of(2025, 1, 1, 2, 0))
               withPosition()
             }
           }
@@ -570,7 +572,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
       JSONAssert.assertEquals(
         "get-crime-version-matching-result-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
-        JSONCompareMode.NON_EXTENSIBLE,
+        JSONCompareMode.STRICT,
       )
     }
   }
