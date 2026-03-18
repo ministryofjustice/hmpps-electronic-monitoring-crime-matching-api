@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionSummaryProjection
 import java.time.Instant
 import java.util.Optional
@@ -333,4 +334,38 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
     crimeReference: String?,
     pageable: Pageable,
   ): Page<CrimeVersionSummaryProjection>
+
+  @Query(
+    value = """
+      SELECT
+        c.crime_reference AS crimeReference,
+        cv.crime_type_id AS crimeType,
+        cv.crime_date_time_from AS crimeDateTimeFrom,
+        cv.crime_date_time_to AS crimeDateTimeTo,
+        cv.crime_text AS crimeText,
+        cmrdw.id AS deviceWearerId,
+        cmrdw.name AS name,
+        cmrdw.device_id AS deviceId,
+        cmrdw.nomis_id AS nomisId,
+        cmrp.latitude AS latitude,
+        cmrp.longitude AS longitude,
+        cmrp.sequence_label AS sequenceLabel,
+        cmrp.confidence_circle AS confidence,
+        cmrp.captured_date_time AS capturedDateTime
+      FROM crime_version cv
+      JOIN crime c ON c.id = cv.crime_id
+      LEFT JOIN crime_matching_result cmr ON cmr.id = (
+        SELECT id
+        FROM crime_matching_result
+        WHERE crime_version_id = cv.id
+        ORDER BY created_at DESC
+        LIMIT 1
+      )
+      LEFT JOIN crime_matching_result_device_wearer cmrdw on cmrdw.crime_matching_result_id = cmr.id
+      LEFT JOIN crime_matching_result_position cmrp on cmrp.crime_matching_result_device_wearer_id = cmrdw.id
+      WHERE cv.id = :crimeVersionId
+    """,
+    nativeQuery = true,
+  )
+  fun findCrimeVersionMatchingResult(crimeVersionId: UUID): List<CrimeVersionProjection>
 }

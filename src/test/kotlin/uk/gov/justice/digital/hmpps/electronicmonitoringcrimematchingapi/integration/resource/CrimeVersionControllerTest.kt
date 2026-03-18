@@ -480,4 +480,98 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
       )
     }
   }
+
+  @Nested
+  @DisplayName("GET /crime-versions/{crimeVersionId}")
+  inner class GetCrimeVersion {
+    @Test
+    fun `it should return a 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri("/crime-versions/1")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri("/crime-versions/" + UUID.randomUUID())
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return a 404 response if crime version doesn't exist`() {
+      val id = UUID.randomUUID()
+      webTestClient.get()
+        .uri("/crime-versions/$id")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+        .expectBody()
+        .jsonPath("$.developerMessage").isEqualTo("No crime version found with id: $id")
+        .jsonPath("$.userMessage").isEqualTo("Not Found")
+    }
+
+    @Test
+    fun `it should return a crime version with no matching results`() {
+      val versionId = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", id = versionId) {}
+      }
+
+      val body = webTestClient.get()
+        .uri("/crime-versions/$versionId")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-version-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
+    fun `it should return a crime version with matching results`() {
+      val versionId = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", id = versionId) {
+          withMatchingRun {
+            withMatchedDeviceWearer(deviceId = 1) {
+              withPosition()
+            }
+            withMatchedDeviceWearer(deviceId = 2) {
+              withPosition()
+            }
+          }
+        }
+      }
+
+      val body = webTestClient.get()
+        .uri("/crime-versions/$versionId")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-version-matching-result-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+  }
 }
