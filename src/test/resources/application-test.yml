@@ -55,7 +55,7 @@ datastore:
   retry-interval-ms: 10
 
 notify:
-  enabled: true
+  enabled: false
   apikey: test-key
   successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11
   failedIngestionTemplateId: 57f34eb4-7fc6-4b2b-806b-f64d7b27a497
