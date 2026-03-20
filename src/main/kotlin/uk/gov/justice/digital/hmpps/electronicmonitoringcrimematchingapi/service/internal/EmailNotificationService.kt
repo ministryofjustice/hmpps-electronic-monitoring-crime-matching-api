@@ -3,9 +3,10 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.service.notify.NotificationClient
 import java.time.LocalDate
@@ -15,69 +16,61 @@ class EmailNotificationService(
   private val notifyClient: NotificationClient,
   private val properties: NotifyProperties,
 ) {
-  fun sendSuccessfulIngestionEmail(
-    batchId: String,
-    policeForce: PoliceForce,
-    emailData: EmailData,
-    records: List<CrimeRecordRequest>,
+  fun sendEmails(
+    ingestionOutcome: EmailIngestionOutcome,
   ) {
-    val emailAddresses = listOf(emailData.sender, emailData.originalSender)
-    val csvBytes = records.toCsv().toByteArray()
+    val templateId = emailTemplateId(ingestionOutcome.ingestionStatus)
 
-    val personalisation = hashMapOf<String, Any>()
-    personalisation["fileName"] = emailData.attachments.single().name
-    personalisation["ingestionDate"] = LocalDate.now().toString()
-    personalisation["batchId"] = batchId
-    personalisation["policeForce"] = policeForce.name
-    personalisation["linkToFile"] = NotificationClient.prepareUpload(csvBytes, emailData.attachments.single().name)
+    val personalisation = buildPersonalisation(
+      status = ingestionOutcome.ingestionStatus,
+      fileName = ingestionOutcome.emailData.attachments.firstOrNull()?.name ?: "Invalid File",
+      batchId = ingestionOutcome.batchId,
+      policeForce = ingestionOutcome.policeForce,
+      errorType = ingestionOutcome.errorType,
+      records = ingestionOutcome.records,
+      errors = ingestionOutcome.errors,
+      recordCount = ingestionOutcome.recordCount,
+    )
+
+    val emailAddresses = listOf(
+      ingestionOutcome.emailData.sender,
+      ingestionOutcome.emailData.originalSender,
+    )
 
     for (emailAddress in emailAddresses) {
-      sendEmail(properties.successfulIngestionTemplateId, emailAddress, personalisation, batchId)
+      sendEmail(
+        templateId = templateId,
+        emailAddress = emailAddress,
+        personalisation = personalisation,
+        reference = ingestionOutcome.batchId,
+      )
     }
   }
 
-  fun sendFailedIngestionEmail(
-    emailData: EmailData,
-    errorType: String? = null,
+  private fun sendEmail(
+    templateId: String,
+    emailAddress: String,
+    personalisation: Map<String, Any>,
+    reference: String,
   ) {
-    val personalisation = hashMapOf<String, Any>()
-    personalisation["fileName"] = (emailData.attachments.firstOrNull()?.name ?: "" as String)
-    personalisation["ingestionDate"] = LocalDate.now().toString()
-    personalisation["batchId"] = "Unknown due to an error"
-    personalisation["policeForce"] = "Unknown Force"
-    personalisation["errorSummary"] = errorType ?: "Unknown error"
-    personalisation["totalCount"] = 0
-
-    val emailAddresses = listOf(emailData.sender)
-    for (emailAddress in emailAddresses) {
-      sendEmail(properties.failedIngestionTemplateId, emailAddress, personalisation, "batchId")
+    if (properties.enabled) {
+      notifyClient.sendEmail(
+        templateId,
+        emailAddress,
+        personalisation,
+        reference,
+      )
     }
   }
 
-  fun sendPartialIngestionEmail(
-    batchId: String,
-    policeForce: PoliceForce,
-    emailData: EmailData,
-    errors: List<EmailAttachmentIngestionError>,
-    totalCount: Int,
-  ) {
-    val successCount = totalCount - errors.size
-
-    val personalisation = hashMapOf<String, Any>()
-    personalisation["fileName"] = emailData.attachments.firstOrNull()?.name ?: ""
-    personalisation["ingestionDate"] = LocalDate.now().toString()
-    personalisation["batchId"] = batchId
-    personalisation["policeForce"] = policeForce.name
-    personalisation["errorSummary"] = buildInLineErrorSummary(errors)
-    personalisation["totalCount"] = totalCount
-    personalisation["successCount"] = totalCount - errors.size
-    personalisation["failedCount"] = errors.size
-    personalisation["linkToFile"] = NotificationClient.prepareUpload(buildErrorCsv(errors), "partial_ingestion_errors.csv")
-
-    val emailAddresses = listOf(emailData.sender, emailData.originalSender)
-    for (emailAddress in emailAddresses) {
-      sendEmail(properties.partialIngestionTemplateId, emailAddress, personalisation, "batchId")
-    }
+  private fun emailTemplateId(
+    status: IngestionStatus,
+  ): String = when (status) {
+    IngestionStatus.FAILED -> properties.failedIngestionTemplateId
+    IngestionStatus.SUCCESSFUL -> properties.successfulIngestionTemplateId
+    IngestionStatus.PARTIAL -> properties.partialIngestionTemplateId
+    IngestionStatus.ERROR -> properties.failedIngestionTemplateId
+    IngestionStatus.UNKNOWN -> properties.failedIngestionTemplateId
   }
 
   private fun List<CrimeRecordRequest>.toCsv(): String = buildString {
@@ -158,19 +151,41 @@ class EmailNotificationService(
       if (field != null) "Provide the missing field value" else "Review and amend the record"
   }
 
-  private fun sendEmail(
-    templateId: String,
-    emailAddress: String,
-    personalisation: Map<String, Any>,
-    reference: String,
-  ) {
-    if (properties.enabled) {
-      notifyClient.sendEmail(
-        templateId,
-        emailAddress,
-        personalisation,
-        reference,
-      )
+  private fun buildPersonalisation(
+    status: IngestionStatus,
+    fileName: String,
+    batchId: String,
+    policeForce: String,
+    errorType: CrimeBatchEmailIngestionErrorType,
+    errors: List<EmailAttachmentIngestionError>,
+    records: List<CrimeRecordRequest>,
+    recordCount: Int = 0,
+  ): Map<String, Any> {
+    val personalisation = hashMapOf<String, Any>()
+    personalisation["fileName"] = fileName
+    personalisation["ingestionDate"] = LocalDate.now().toString()
+    personalisation["batchId"] = batchId
+    personalisation["policeForce"] = policeForce
+
+    when (status) {
+      IngestionStatus.SUCCESSFUL -> {
+        personalisation["linkToFile"] = NotificationClient.prepareUpload(records.toCsv().toByteArray(), fileName)
+      }
+      IngestionStatus.FAILED -> {
+        personalisation["errorSummary"] = errorType.message
+        personalisation["totalCount"] = recordCount
+      }
+      IngestionStatus.PARTIAL -> {
+        personalisation["errorSummary"] = buildInLineErrorSummary(errors)
+        personalisation["totalCount"] = recordCount
+        personalisation["successCount"] = records.size
+        personalisation["failedCount"] = errors.size
+        personalisation["linkToFile"] = NotificationClient.prepareUpload(buildErrorCsv(errors), "partial_ingestion_errors.csv")
+      }
+      IngestionStatus.ERROR -> {}
+      IngestionStatus.UNKNOWN -> {}
     }
+
+    return personalisation
   }
 }

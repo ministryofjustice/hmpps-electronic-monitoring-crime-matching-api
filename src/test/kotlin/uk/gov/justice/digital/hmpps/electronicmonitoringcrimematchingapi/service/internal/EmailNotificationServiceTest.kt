@@ -16,8 +16,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.service.notify.NotificationClient
@@ -74,12 +76,14 @@ class EmailNotificationServiceTest {
         }
         .thenReturn(uploadFile)
 
-      service.sendSuccessfulIngestionEmail(
-        "batchId",
-        PoliceForce.BEDFORDSHIRE,
-        emailData,
-        emptyList(),
+      val ingestionOutcome = EmailIngestionOutcome(
+        batchId = "batchId",
+        policeForce = "BEDFORDSHIRE",
+        emailData = emailData,
+        ingestionStatus = IngestionStatus.SUCCESSFUL,
       )
+
+      service.sendEmails(ingestionOutcome)
     }
 
     verify(notifyClient, times(1)).sendEmail("templateId", "sender", personalisation, "batchId")
@@ -90,6 +94,7 @@ class EmailNotificationServiceTest {
   fun `it should not send a successful ingestion email when notify is not enabled`() {
     val attachment = ByteArrayDataSource("data", "message/rfc822")
     attachment.name = "attachment.csv"
+    val batchId = "batchId"
 
     val emailData = EmailData(
       sender = "sender",
@@ -102,12 +107,19 @@ class EmailNotificationServiceTest {
     val personalisation = mutableMapOf(
       "fileName" to "attachment.csv",
       "ingestionDate" to LocalDate.now().toString(),
-      "batchId" to "batchId",
+      "batchId" to batchId,
       "policeForce" to "BEDFORDSHIRE",
     )
 
-    assertDoesNotThrow { service.sendSuccessfulIngestionEmail("batchId", PoliceForce.BEDFORDSHIRE, emailData, emptyList()) }
-    verify(notifyClient, times(0)).sendEmail("templateId", "sender", personalisation, "batchId")
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = batchId,
+      policeForce = PoliceForce.BEDFORDSHIRE.name,
+      emailData = emailData,
+      ingestionStatus = IngestionStatus.SUCCESSFUL,
+    )
+
+    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
+    verify(notifyClient, times(0)).sendEmail("templateId", "sender", personalisation, batchId)
   }
 
   @Test
@@ -123,37 +135,26 @@ class EmailNotificationServiceTest {
     )
 
     val personalisation = mapOf(
-      "fileName" to (emailData.attachments.firstOrNull()?.name ?: "" as String),
+      "fileName" to "Invalid File",
       "ingestionDate" to LocalDate.now().toString(),
       "batchId" to "Unknown due to an error",
-      "policeForce" to "Unknown Force",
+      "policeForce" to "Unknown due to an error",
       "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
       "totalCount" to 0,
     )
 
-    service.sendFailedIngestionEmail(
-      emailData,
-      CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = "Unknown due to an error",
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
     )
 
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "batchId")
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "batchId")
-  }
+    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
 
-  @Test
-  fun `it should not send a failed ingestion email when notify is not enabled`() {
-    whenever(notifyProperties.enabled).thenReturn(false)
-
-    val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
-      subject = "subject",
-      sentAt = Date.from(Instant.now()),
-      attachments = emptyList(),
-    )
-
-    assertDoesNotThrow { service.sendFailedIngestionEmail(emailData) }
-    verify(notifyClient, times(0)).sendEmail(any(), any(), any(), any())
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
   }
 
   @Test
@@ -183,6 +184,8 @@ class EmailNotificationServiceTest {
 
     val uploadFile = JSONObject()
 
+    val batchId = "batchId"
+
     mockStatic(NotificationClient::class.java).use { staticMock ->
       staticMock
         .`when`<Any> {
@@ -193,42 +196,20 @@ class EmailNotificationServiceTest {
         }
         .thenReturn(uploadFile)
 
-      service.sendPartialIngestionEmail(
-        "batchId",
-        PoliceForce.METROPOLITAN,
-        emailData,
-        errors,
-        totalCount = 10,
+      val ingestionOutcome = EmailIngestionOutcome(
+        batchId = batchId,
+        policeForce = PoliceForce.METROPOLITAN.name,
+        emailData = emailData,
+        errors = errors,
+        ingestionStatus = IngestionStatus.PARTIAL,
+        recordCount = 10,
       )
+
+      service.sendEmails(ingestionOutcome)
       staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(1))
 
-      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("sender"), any(), eq("batchId"))
-      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq("batchId"))
+      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("sender"), any(), eq(batchId))
+      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq(batchId))
     }
-  }
-
-  @Test
-  fun `it should not send a partial ingestion email when notify is not enabled`() {
-    whenever(notifyProperties.enabled).thenReturn(false)
-
-    val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
-      subject = "subject",
-      sentAt = Date.from(Instant.now()),
-      attachments = emptyList(),
-    )
-
-    assertDoesNotThrow {
-      service.sendPartialIngestionEmail(
-        "batchId",
-        PoliceForce.METROPOLITAN,
-        emailData,
-        emptyList(),
-        0,
-      )
-    }
-
-    verify(notifyClient, times(0)).sendEmail(any(), any(), any(), any(), any())
   }
 }

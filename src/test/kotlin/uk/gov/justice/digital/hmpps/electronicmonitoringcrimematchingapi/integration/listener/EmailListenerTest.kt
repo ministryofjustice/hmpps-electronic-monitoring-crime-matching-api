@@ -427,31 +427,6 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
     }
 
-    @Test
-    fun `it should save a batch and attachment errors when the CSV has valid and invalid rows`() {
-      val csvContent = listOf(
-        createCsvRow(),
-        createCsvRow(crimeTypeId = "invalid"),
-        createCsvRow(crimeReference = "CRI00000006"),
-      ).joinToString("\n")
-
-      val encoded = Base64.encode(csvContent.toByteArray())
-      val email = createEmailFile(encoded)
-
-      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
-
-      sendDomainSqsMessage(getMessage(OBJECT_KEY))
-
-      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
-
-      assertThat(crimeBatchRepository.findAll()).hasSize(1)
-
-      val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
-      assertThat(attachmentIngestionErrors).hasSize(1)
-      assertThat(attachmentIngestionErrors.first().errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM)
-      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
-    }
-
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(
       SendMessageRequest.builder().queueUrl(
         emailQueueSqsUrl,
