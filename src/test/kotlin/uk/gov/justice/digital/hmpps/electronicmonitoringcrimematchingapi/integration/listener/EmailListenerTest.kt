@@ -176,7 +176,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       sendDomainSqsMessage(getMessage(OBJECT_KEY))
 
-      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 && crimeBatchIngestionAttemptRepository.findAll().isNotEmpty() }
 
       val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
@@ -198,15 +198,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       sendDomainSqsMessage(getMessage(OBJECT_KEY))
 
-      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 && crimeBatchIngestionAttemptRepository.findAll().isNotEmpty() }
 
       val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
-      )
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType)
+        .isEqualTo(
+          CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+        )
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
@@ -218,7 +219,6 @@ class EmailListenerTest : IntegrationTestBase() {
         createCsvRow(),
         createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.name, batchId = "BFD20250126"),
       ).joinToString("\n")
-
       val encoded = Base64.encode(csvContent.toByteArray())
       val email = createEmailFile(encoded)
 
@@ -232,9 +232,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        CrimeBatchEmailIngestionErrorType.MULTIPLE_POLICE_FORCES,
-      )
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(CrimeBatchEmailIngestionErrorType.MULTIPLE_POLICE_FORCES)
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
@@ -244,7 +242,7 @@ class EmailListenerTest : IntegrationTestBase() {
     fun `it should save an ingestion attempt with an error when the csv has multiple batch IDs`() {
       val csvContent = listOf(
         createCsvRow(),
-        createCsvRow(batchId = "MPS20260126"),
+        createCsvRow(batchId = "MPS20260123"),
       ).joinToString("\n")
 
       val encoded = Base64.encode(csvContent.toByteArray())
@@ -260,9 +258,8 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimeBatchIngestionAttempts).hasSize(1)
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
       assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType).isEqualTo(
-        CrimeBatchEmailIngestionErrorType.MULTIPLE_BATCH_IDS,
-      )
+      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailIngestionError?.errorType)
+        .isEqualTo(CrimeBatchEmailIngestionErrorType.MULTIPLE_BATCH_IDS)
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)

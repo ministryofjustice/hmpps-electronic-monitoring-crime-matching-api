@@ -56,9 +56,11 @@ datastore:
 
 notify:
   enabled: false
-  successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11
   apikey: test-key
-
+  successfulIngestionTemplateId: c3df947e-2473-11f1-8dc8-2246b06f42bf
+  failedIngestionTemplateId: ccd9f27c-2473-11f1-9dfb-2246b06f42bf
+  partialIngestionTemplateId: def0238c-2473-11f1-8c78-2246b06f42bf
+  
 email-ingestion:
   valid-emails:
     metropolitan: "test@email.com"
