@@ -84,12 +84,6 @@ class EmailListener(
     val attachment = emailData.attachments.single()
     val parseResult = attachment.inputStream.use { crimeBatchCsvService.parseCsvFile(it) }
 
-    val crimeBatchEmailAttachment = crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(
-      attachment.name,
-      parseResult.recordCount,
-      crimeBatchEmail,
-    )
-
     validateBatch(parseResult)?.let {
       saveIngestionAttemptError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
       return EmailIngestionOutcome(
@@ -98,6 +92,12 @@ class EmailListener(
         errorType = it,
       )
     }
+
+    val crimeBatchEmailAttachment = crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(
+      attachment.name,
+      parseResult.recordCount,
+      crimeBatchEmail,
+    )
 
     val attachmentIngestionErrors = parseResult.errors.map { error ->
       crimeBatchEmailIngestionService.createCrimeBatchEmailAttachmentIngestionError(
