@@ -38,6 +38,7 @@ class EmailNotificationServiceTest {
     whenever(notifyProperties.successfulIngestionTemplateId).thenReturn("templateId")
     whenever(notifyProperties.failedIngestionTemplateId).thenReturn("failedTemplateId")
     whenever(notifyProperties.partialIngestionTemplateId).thenReturn("partialTemplateId")
+    whenever(notifyProperties.errorIngestionTemplateId).thenReturn("errorTemplateId")
     notifyClient = Mockito.mock(NotificationClient::class.java)
     service = EmailNotificationService(notifyClient, notifyProperties)
   }
@@ -212,4 +213,60 @@ class EmailNotificationServiceTest {
       verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq(batchId))
     }
   }
+
+    @Test
+    fun `it should send an error ingestion email with errorSummary and CSV attachment when notify is enabled`() {
+      whenever(notifyProperties.enabled).thenReturn(true)
+
+      val errors = listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+          field = "crimeTypeId",
+          value = "",
+        )
+      )
+      val attachment = ByteArrayDataSource("data", "message/rfc822")
+      attachment.name = "attachment.csv"
+
+      val emailData = EmailData(
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+        attachments = listOf(attachment),
+      )
+
+      val uploadFile = JSONObject()
+
+      val batchId = "batchId"
+
+      mockStatic(NotificationClient::class.java).use { staticMock ->
+        staticMock
+          .`when`<Any> {
+            NotificationClient.prepareUpload(
+              any(),
+              any(),
+            )
+          }
+          .thenReturn(uploadFile)
+
+        val ingestionOutcome = EmailIngestionOutcome(
+          batchId = batchId,
+          policeForce = PoliceForce.METROPOLITAN.name,
+          emailData = emailData,
+          errors = errors,
+          ingestionStatus = IngestionStatus.ERROR,
+          recordCount = 1,
+        )
+
+        service.sendEmails(ingestionOutcome)
+        staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(1))
+
+        verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("sender"), any(), eq(batchId))
+        verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("originalSender"), any(), eq(batchId))
+      }
+    }
 }

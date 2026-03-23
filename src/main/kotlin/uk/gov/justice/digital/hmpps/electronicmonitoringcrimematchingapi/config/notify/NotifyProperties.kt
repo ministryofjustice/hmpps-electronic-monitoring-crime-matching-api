@@ -8,5 +8,6 @@ data class NotifyProperties(
   val successfulIngestionTemplateId: String,
   val failedIngestionTemplateId: String,
   val partialIngestionTemplateId: String,
+  val errorIngestionTemplateId: String,
   val apikey: String,
 )

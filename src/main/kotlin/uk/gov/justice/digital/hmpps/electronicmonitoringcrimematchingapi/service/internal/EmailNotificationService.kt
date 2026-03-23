@@ -69,7 +69,7 @@ class EmailNotificationService(
     IngestionStatus.FAILED -> properties.failedIngestionTemplateId
     IngestionStatus.SUCCESSFUL -> properties.successfulIngestionTemplateId
     IngestionStatus.PARTIAL -> properties.partialIngestionTemplateId
-    IngestionStatus.ERROR -> properties.failedIngestionTemplateId
+    IngestionStatus.ERROR -> properties.errorIngestionTemplateId
     IngestionStatus.UNKNOWN -> properties.failedIngestionTemplateId
   }
 
@@ -175,14 +175,13 @@ class EmailNotificationService(
         personalisation["errorSummary"] = errorType.message
         personalisation["totalCount"] = recordCount
       }
-      IngestionStatus.PARTIAL -> {
+      IngestionStatus.PARTIAL, IngestionStatus.ERROR -> {
         personalisation["errorSummary"] = buildInLineErrorSummary(errors)
         personalisation["totalCount"] = recordCount
         personalisation["successCount"] = records.size
-        personalisation["failedCount"] = errors.size
-        personalisation["linkToFile"] = NotificationClient.prepareUpload(buildErrorCsv(errors), "partial_ingestion_errors.csv")
+        personalisation["failedCount"] = recordCount - records.size
+        personalisation["linkToFile"] = NotificationClient.prepareUpload(buildErrorCsv(errors), "ingestion_errors.csv")
       }
-      IngestionStatus.ERROR -> {}
       IngestionStatus.UNKNOWN -> {}
     }
 
