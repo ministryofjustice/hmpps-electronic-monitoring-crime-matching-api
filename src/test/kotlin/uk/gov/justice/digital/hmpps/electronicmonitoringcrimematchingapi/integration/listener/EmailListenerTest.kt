@@ -322,6 +322,33 @@ class EmailListenerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should process an email with only invalid crime data`() {
+      val csvContent = listOf(
+        createCsvRow(latitude = "invalid"),
+        createCsvRow(crimeTypeId = "invalid"),
+        createCsvRow(crimeReference = ""),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val crimeBatches = crimeBatchRepository.findAll()
+      assertThat(crimeBatches).isEmpty()
+
+      val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
+      assertThat(attachmentIngestionErrors).hasSize(3)
+
+      // Check that notification to start algo was generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
     fun `it should process an email with new crime versions`() {
       val crime = Crime(
         policeForceArea = PoliceForce.METROPOLITAN,

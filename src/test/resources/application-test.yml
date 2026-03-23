@@ -60,6 +60,7 @@ notify:
   successfulIngestionTemplateId: c3df947e-2473-11f1-8dc8-2246b06f42bf
   failedIngestionTemplateId: ccd9f27c-2473-11f1-9dfb-2246b06f42bf
   partialIngestionTemplateId: def0238c-2473-11f1-8c78-2246b06f42bf
+  errorIngestionTemplateId: eat1238d-2473-11f1-8c78-2246b06f42bf
   
 email-ingestion:
   valid-emails:
