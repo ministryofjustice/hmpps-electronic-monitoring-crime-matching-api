@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.4"
-  kotlin("plugin.spring") version "2.3.0"
-  kotlin("plugin.jpa") version "2.3.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.1.0"
+  kotlin("plugin.spring") version "2.3.20"
+  kotlin("plugin.jpa") version "2.3.20"
   jacoco
 }
 
@@ -10,22 +10,22 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.1.0")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.2.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
-  implementation("software.amazon.awssdk:athena:2.41.28")
-  implementation("software.amazon.awssdk:s3:2.41.28")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+  implementation("software.amazon.awssdk:athena:2.42.18")
+  implementation("software.amazon.awssdk:s3:2.42.18")
   implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20251224")
   implementation("io.zeko:zeko-sql-builder:1.5.6")
   implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
-  implementation("org.locationtech.proj4j:proj4j:1.2.3")
-  implementation("org.locationtech.proj4j:proj4j-epsg:1.2.3")
+  implementation("org.locationtech.proj4j:proj4j:1.4.1")
+  implementation("org.locationtech.proj4j:proj4j-epsg:1.4.1")
 
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
