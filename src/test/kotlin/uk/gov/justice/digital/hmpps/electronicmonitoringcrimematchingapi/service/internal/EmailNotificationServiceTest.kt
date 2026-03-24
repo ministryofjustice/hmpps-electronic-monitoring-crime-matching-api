@@ -167,7 +167,7 @@ class EmailNotificationServiceTest {
         rowNumber = i.toLong(),
         crimeReference = "CRI0000000$i",
         crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
         field = "crimeTypeId",
         value = "INVALID_$i",
       )
@@ -223,7 +223,7 @@ class EmailNotificationServiceTest {
         rowNumber = 1,
         crimeReference = "CRI00000001",
         crimeTypeId = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
         field = "crimeTypeId",
         value = "",
       ),

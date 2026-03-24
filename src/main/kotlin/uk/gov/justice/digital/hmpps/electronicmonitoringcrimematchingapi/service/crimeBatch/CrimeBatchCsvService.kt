@@ -51,11 +51,11 @@ class CrimeBatchCsvService {
       )
     }
 
-    val policeForce = parseEnumValue<PoliceForce>("policeForce", record.policeForce())
-    val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId())
+    val policeForce = parseEnumValue<PoliceForce>("policeForce", record.policeForce(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_POLICE_FORCE)
+    val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE)
     val batchId = parseBatchId(record.batchId().trim(), policeForce.value)
     val crimeReference = parseCrimeReference(record.crimeReference().trim())
-    val crimeDateFrom = parseDateValue("dateFrom", record.crimeDateTimeFrom())
+    val crimeDateFrom = parseDateValue("dateFrom", record.crimeDateTimeFrom(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_FROM_DATE_FORMAT)
     val crimeDateTo = parseCrimeDateTo(record.crimeDateTimeTo(), crimeDateFrom)
     val easting = parseLocationValue(record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..600000.0)
     val northing = parseLocationValue(record.northing(), "northing", record.easting(), Pair(record.latitude(), record.longitude()), 0.0..1300000.0)
@@ -189,6 +189,7 @@ class CrimeBatchCsvService {
   private fun parseDateValue(
     fieldName: String,
     value: String,
+    errorType: CrimeBatchEmailAttachmentIngestionErrorType,
   ): FieldValidationResult<Instant> = try {
     val parsedDate = LocalDateTime.parse(value.trim(), DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
     FieldValidationResult(
@@ -196,7 +197,7 @@ class CrimeBatchCsvService {
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT,
+      errorType = errorType,
       field = fieldName,
       input = value,
     )
@@ -207,7 +208,7 @@ class CrimeBatchCsvService {
     crimeDateFrom: FieldValidationResult<Instant>,
   ): FieldValidationResult<Instant> {
     val fieldName = "dateTo"
-    val parsedDate = parseDateValue(fieldName, crimeDateTo)
+    val parsedDate = parseDateValue(fieldName, crimeDateTo, CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TO_DATE_FORMAT)
 
     val dateTo = parsedDate.value ?: return parsedDate
     val dateFrom = crimeDateFrom.value ?: return parsedDate
@@ -236,13 +237,14 @@ class CrimeBatchCsvService {
   private inline fun <reified T : Enum<T>> parseEnumValue(
     fieldName: String,
     value: String,
+    errorType: CrimeBatchEmailAttachmentIngestionErrorType,
   ): FieldValidationResult<T> = try {
     FieldValidationResult(
       value = enumValueOf<T>(value.trim().uppercase()),
     )
   } catch (_: Exception) {
     FieldValidationResult(
-      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM,
+      errorType = errorType,
       field = fieldName,
       input = value,
     )

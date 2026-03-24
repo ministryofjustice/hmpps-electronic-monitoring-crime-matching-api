@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
@@ -108,48 +107,10 @@ class EmailNotificationService(
     appendLine("Reference,Status,Error,Action Required")
     errors.forEach { error ->
       appendLine(
-        "${error.crimeReference ?: ""},Failed, ${error.errorType.message},${actionRequired(error.errorType, error.field)}",
+        "${error.crimeReference ?: ""},Failed, ${error.errorType.message},${error.errorType.requiredAction}",
       )
     }
   }.toByteArray(Charsets.UTF_8)
-
-  private fun actionRequired(
-    errorType: CrimeBatchEmailAttachmentIngestionErrorType,
-    field: String?,
-  ): String = when (errorType) {
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM ->
-      if (field?.lowercase()?.contains("policeForce") == true) {
-        "Amend police force to a registered force"
-      } else {
-        "Amend crime type to a registered crime type"
-      }
-    CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE ->
-      "Provide the missing test reference"
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_DATE_FORMAT ->
-      if (field?.lowercase()?.contains("from") == true) {
-        "Amend from date/time to format yyyyMMddHHmmss"
-      } else {
-        "Amend to date/time to format yyyyMMddHHmmss"
-      }
-    CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM ->
-      "Ensure from date/time precedes to date/time"
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE ->
-      "Co-ordinates outside of valid range"
-    CrimeBatchEmailAttachmentIngestionErrorType.MISSING_LOCATION_DATA ->
-      "Provide location data"
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TEXT,
-    CrimeBatchEmailAttachmentIngestionErrorType.INVALID_NUMBER,
-    CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
-    CrimeBatchEmailAttachmentIngestionErrorType.MULTIPLE_LOCATION_DATA_TYPES,
-    CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
-    ->
-      "Amend formatting issues"
-    else ->
-      if (field != null) "Provide the missing field value" else "Review and amend the record"
-  }
 
   private fun buildPersonalisation(
     status: IngestionStatus,

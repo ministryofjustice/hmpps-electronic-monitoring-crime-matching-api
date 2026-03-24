@@ -25,11 +25,9 @@
     ],
     "validationErrors" : [
       {
-        "errorType" : "MISSING_CRIME_REFERENCE",
-        "fieldName" : "crimeReference",
-        "value" : "",
-        "crimeReference" : "",
-        "rowNumber" : 1
+        "crimeReference" : "Missing (line: 1)",
+        "errorType" : "Crime reference must be present",
+        "requiredAction" : "Provide the missing test reference"
       }
     ]
   }
