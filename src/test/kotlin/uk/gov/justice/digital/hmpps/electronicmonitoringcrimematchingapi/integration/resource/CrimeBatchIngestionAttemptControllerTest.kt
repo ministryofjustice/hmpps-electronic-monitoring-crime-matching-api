@@ -488,6 +488,8 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
+      val b = String(body, StandardCharsets.UTF_8)
+
       JSONAssert.assertEquals(
         "get-ingestion-attempt-partial-ingestion-response".loadJson(),
         String(body, StandardCharsets.UTF_8),

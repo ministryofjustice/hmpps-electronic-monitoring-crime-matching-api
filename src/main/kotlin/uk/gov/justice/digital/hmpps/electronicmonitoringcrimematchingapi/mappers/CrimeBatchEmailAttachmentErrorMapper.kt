@@ -7,10 +7,16 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 @Component
 class CrimeBatchEmailAttachmentErrorMapper {
   fun toDto(ingestionError: CrimeBatchEmailAttachmentErrorProjection): CrimeBatchEmailAttachmentErrorResponse = CrimeBatchEmailAttachmentErrorResponse(
+    crimeReference = getCrimeReference(ingestionError),
     errorType = ingestionError.errorType.message,
-    fieldName = ingestionError.fieldName ?: "",
-    value = ingestionError.value ?: "",
-    crimeReference = ingestionError.crimeReference ?: "",
-    rowNumber = ingestionError.rowNumber,
+    requiredAction = ingestionError.errorType.requiredAction,
   )
+
+  private fun getCrimeReference(ingestionError: CrimeBatchEmailAttachmentErrorProjection): String {
+    if (ingestionError.crimeReference == null || ingestionError.crimeReference === "") {
+      return "Missing (line: ${ingestionError.rowNumber})"
+    }
+
+    return ingestionError.crimeReference!!
+  }
 }
