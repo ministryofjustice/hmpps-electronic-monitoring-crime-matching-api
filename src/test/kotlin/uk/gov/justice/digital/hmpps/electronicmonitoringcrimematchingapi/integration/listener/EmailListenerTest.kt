@@ -288,6 +288,21 @@ class EmailListenerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should move the message to the dead letter queue when the email file is not present in S3`() {
+      val message = getMessage(OBJECT_KEY)
+
+      sendDomainSqsMessage(message)
+
+      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
+
+      val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
+      assertThat(dlqMessage.body()).isEqualTo(message)
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
     fun `it should process an email with valid and invalid crime data`() {
       val csvContent = listOf(
         createCsvRow(),
