@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 @Component
 class CrimeBatchEmailAttachmentErrorMapper {
   fun toDto(ingestionError: CrimeBatchEmailAttachmentErrorProjection): CrimeBatchEmailAttachmentErrorResponse = CrimeBatchEmailAttachmentErrorResponse(
-    errorType = ingestionError.errorType.name,
+    errorType = ingestionError.errorType.message,
     fieldName = ingestionError.fieldName ?: "",
     value = ingestionError.value ?: "",
     crimeReference = ingestionError.crimeReference ?: "",

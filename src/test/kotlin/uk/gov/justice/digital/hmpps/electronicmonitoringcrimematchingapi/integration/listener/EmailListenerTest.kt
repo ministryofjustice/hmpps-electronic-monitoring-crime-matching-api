@@ -315,7 +315,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val attachmentIngestionErrors = crimeBatchEmailAttachmentIngestionErrorRepository.findAll()
       assertThat(attachmentIngestionErrors).hasSize(1)
-      assertThat(attachmentIngestionErrors.first().errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_ENUM)
+      assertThat(attachmentIngestionErrors.first().errorType).isEqualTo(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
