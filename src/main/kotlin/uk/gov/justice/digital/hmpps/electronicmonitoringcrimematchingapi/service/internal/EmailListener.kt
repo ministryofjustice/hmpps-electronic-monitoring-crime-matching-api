@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
-import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
@@ -35,31 +34,27 @@ class EmailListener(
 
   @SqsListener("email", factory = "hmppsQueueContainerFactoryProxy")
   fun receiveEmailNotification(message: SqsMessage) {
+    // Map message contents
+    val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
+
+    // Get S3 details from message
+    val messageId = message.MessageId
+    val bucketName = emailReceivedMessage.receipt.action.bucketName
+    val objectKey = emailReceivedMessage.receipt.action.objectKey
+
+    // Get email file from S3
+    val emailFile = s3Service.getObject(messageId, objectKey, bucketName)
+
+    // Extract email details
+    val emailData = emailFile.use { emailParserService.extractEmailData(it) }
+
+    // Once basic email checks have completed, process the email contents
+    val ingestionOutcome = processEmail(emailData, bucketName, objectKey)
+
     try {
-      // Map message contents
-      val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
-
-      // Get S3 details from message
-      val messageId = message.MessageId
-      val bucketName = emailReceivedMessage.receipt.action.bucketName
-      val objectKey = emailReceivedMessage.receipt.action.objectKey
-
-      // Get email file from S3
-      val emailFile = s3Service.getObject(messageId, objectKey, bucketName)
-
-      // Extract email details
-      val emailData = emailFile.use { emailParserService.extractEmailData(it) }
-
-      // Once basic email checks have completed, process the email contents
-      val ingestionOutcome = processEmail(emailData, bucketName, objectKey)
-
-      try {
-        emailNotificationService.sendEmails(ingestionOutcome)
-      } catch (notifyEx: Exception) {
-        log.warn("Failed to send failed ingestion notification email: ${notifyEx.message}", notifyEx)
-      }
-    } catch (e: Exception) {
-      throw ValidationException("Failed to process email: ${e.message}")
+      emailNotificationService.sendEmails(ingestionOutcome)
+    } catch (notifyEx: Exception) {
+      log.warn("Failed to send failed ingestion notification email: ${notifyEx.message}", notifyEx)
     }
   }
 
@@ -84,7 +79,14 @@ class EmailListener(
     val attachment = emailData.attachments.single()
     val parseResult = attachment.inputStream.use { crimeBatchCsvService.parseCsvFile(it) }
 
+    val crimeBatchEmailAttachment = crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(
+      attachment.name,
+      parseResult.recordCount,
+      crimeBatchEmail,
+    )
+
     validateBatch(parseResult)?.let {
+      crimeBatchEmail.crimeBatchEmailAttachments += crimeBatchEmailAttachment
       saveIngestionAttemptError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
       return EmailIngestionOutcome(
         emailData = emailData,
@@ -92,12 +94,6 @@ class EmailListener(
         errorType = it,
       )
     }
-
-    val crimeBatchEmailAttachment = crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(
-      attachment.name,
-      parseResult.recordCount,
-      crimeBatchEmail,
-    )
 
     val attachmentIngestionErrors = parseResult.errors.map { error ->
       crimeBatchEmailIngestionService.createCrimeBatchEmailAttachmentIngestionError(
