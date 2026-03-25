@@ -51,7 +51,7 @@ class CrimeVersionService(
           longitude = row.longitude!!,
           sequenceLabel = row.sequenceLabel!!,
           confidence = row.confidence!!,
-          captureDateTime = row.capturedDateTime.toString(),
+          capturedDateTime = row.capturedDateTime.toString(),
         )
       }
     }
@@ -59,12 +59,14 @@ class CrimeVersionService(
     val matchingResponse = MatchingResponse(deviceWearers = deviceWearerMap.values.toList())
 
     val crimeVersionResponse = CrimeVersionResponse(
+      crimeVersionId = crimeVersion.crimeVersionId.toString(),
       crimeReference = crimeVersion.crimeReference,
       crimeType = crimeVersion.crimeType.value,
       crimeDateTimeFrom = crimeVersion.crimeDateTimeFrom.toString(),
       crimeDateTimeTo = crimeVersion.crimeDateTimeTo.toString(),
       crimeText = crimeVersion.crimeText,
       matching = if (crimeVersion.matchingResultId != null) matchingResponse else null,
+      versionLabel = "Latest version",
     )
 
     return crimeVersionResponse
