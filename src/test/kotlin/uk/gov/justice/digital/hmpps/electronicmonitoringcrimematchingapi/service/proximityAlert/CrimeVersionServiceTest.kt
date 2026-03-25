@@ -38,6 +38,7 @@ class CrimeVersionServiceTest {
     @Test
     fun `it should get a crime version`() {
       val mockProjection = mock<CrimeVersionProjection> {
+        on { crimeVersionId } doReturn UUID.randomUUID()
         on { crimeReference } doReturn "crimeRef"
         on { crimeType } doReturn CrimeType.AB
         on { crimeDateTimeFrom } doReturn LocalDateTime.now().toInstant(ZoneOffset.UTC)

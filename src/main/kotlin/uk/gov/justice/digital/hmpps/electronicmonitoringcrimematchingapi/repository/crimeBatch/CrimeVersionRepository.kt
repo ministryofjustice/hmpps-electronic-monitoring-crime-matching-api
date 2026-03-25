@@ -338,6 +338,7 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
   @Query(
     value = """
       SELECT
+        cv.id AS crimeVersionId,
         c.crime_reference AS crimeReference,
         cv.crime_type_id AS crimeType,
         cv.crime_date_time_from AS crimeDateTimeFrom,
