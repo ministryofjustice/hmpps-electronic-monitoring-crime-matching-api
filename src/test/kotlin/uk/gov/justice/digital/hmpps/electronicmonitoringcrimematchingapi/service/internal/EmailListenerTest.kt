@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinInvalidNullException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
@@ -156,7 +157,7 @@ class EmailListenerTest {
       """.trimIndent()
       val sqsMessage = SqsMessage("Notification", message, UUID.randomUUID())
 
-      assertThrows<ValidationException> {
+      assertThrows<KotlinInvalidNullException> {
         listener.receiveEmailNotification(sqsMessage)
       }
     }
@@ -185,7 +186,7 @@ class EmailListenerTest {
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
-      assertThat(exception.message).isEqualTo("Failed to process email: Invalid email subject")
+      assertThat(exception.message).isEqualTo("Invalid email subject")
     }
 
     @Test
@@ -212,7 +213,7 @@ class EmailListenerTest {
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
-      assertThat(exception.message).isEqualTo("Failed to process email: Invalid sender email")
+      assertThat(exception.message).isEqualTo("Invalid sender email")
     }
 
     @Test
@@ -239,7 +240,7 @@ class EmailListenerTest {
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
-      assertThat(exception.message).isEqualTo("Failed to process email: Invalid redirect email")
+      assertThat(exception.message).isEqualTo("Invalid redirect email")
     }
 
     @Test
@@ -266,7 +267,7 @@ class EmailListenerTest {
       val exception = assertThrows<ValidationException> {
         listener.receiveEmailNotification(sqsMessage)
       }
-      assertThat(exception.message).isEqualTo("Failed to process email: No redirect email")
+      assertThat(exception.message).isEqualTo("No redirect email")
     }
   }
 }
