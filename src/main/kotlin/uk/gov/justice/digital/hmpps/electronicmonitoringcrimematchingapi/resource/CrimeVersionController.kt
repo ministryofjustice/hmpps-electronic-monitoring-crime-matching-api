@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeVersionSummaryResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeVersionMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeVersionSummaryMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.proximityAlert.CrimeVersionService
 import java.util.UUID
@@ -26,6 +27,7 @@ import java.util.UUID
 class CrimeVersionController(
   private val crimeVersionService: CrimeVersionService,
   private val crimeVersionSummaryMapper: CrimeVersionSummaryMapper,
+  private val crimeVersionMapper: CrimeVersionMapper,
 ) {
 
   @Operation(
@@ -94,10 +96,10 @@ class CrimeVersionController(
     )
     @PathVariable crimeVersionId: UUID,
   ): ResponseEntity<Response<CrimeVersionResponse>> {
-    val crimeVersion = crimeVersionService.getCrimeVersion(crimeVersionId)
+    val result = crimeVersionService.getCrimeVersion(crimeVersionId)
 
     return ResponseEntity.ok(
-      Response(crimeVersion),
+      Response(crimeVersionMapper.toDto(result)),
     )
   }
 }
