@@ -7,6 +7,8 @@ data class CrimeVersionResponse(
   val crimeDateTimeFrom: String,
   val crimeDateTimeTo: String,
   val crimeText: String,
+  val longitude: Double,
+  val latitude: Double,
   val matching: MatchingResponse?,
   val versionLabel: String,
 )
