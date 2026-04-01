@@ -75,7 +75,7 @@ class EmailNotificationService(
   private fun List<CrimeRecordRequest>.toCsv(): String = buildString {
     this@toCsv.forEach { r ->
       appendCsvRow(
-        r.policeForce.value,
+        r.policeForce.label,
         r.crimeTypeId.name,
         r.crimeTypeId.value,
         r.batchId,

@@ -217,7 +217,7 @@ class EmailListenerTest : IntegrationTestBase() {
     fun `it should save an ingestion attempt with an error when the csv has multiple police forces`() {
       val csvContent = listOf(
         createCsvRow(),
-        createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.name, batchId = "BFD20250126"),
+        createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.identifier, batchId = "BFD20250126"),
       ).joinToString("\n")
       val encoded = Base64.encode(csvContent.toByteArray())
       val email = createEmailFile(encoded)
