@@ -115,6 +115,24 @@ class CrimeBatchCsvServiceTest {
   }
 
   @Test
+  fun `it should parse a valid police force preceded by a byte order mark`() {
+    val pfa = (
+      byteArrayOf(
+        0xEF.toByte(),
+        0xBB.toByte(),
+        0xBF.toByte(),
+      ) + "Hertfordshire".toByteArray(Charsets.UTF_8)
+      ).toString(Charsets.UTF_8)
+    val crimeData = createCsvRow(policeForce = pfa, batchId = "HRT20250109").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(1)
+    assertThat(parseResult.records[0].policeForce).isEqualTo(PoliceForce.HERTFORDSHIRE)
+    assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.recordCount).isEqualTo(1)
+  }
+
+  @Test
   fun `it should not parse an invalid police force`() {
     val crimeData = createCsvRow(policeForce = "invalid police force").byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)

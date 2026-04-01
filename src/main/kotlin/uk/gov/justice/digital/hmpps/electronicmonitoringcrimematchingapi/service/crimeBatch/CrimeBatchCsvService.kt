@@ -238,7 +238,7 @@ class CrimeBatchCsvService {
     value: String,
   ): FieldValidationResult<PoliceForce> = try {
     FieldValidationResult(
-      value = PoliceForce.from(value.trim()),
+      value = PoliceForce.from(value.trim().replace("\uFEFF", "")),
     )
   } catch (_: Exception) {
     FieldValidationResult(
