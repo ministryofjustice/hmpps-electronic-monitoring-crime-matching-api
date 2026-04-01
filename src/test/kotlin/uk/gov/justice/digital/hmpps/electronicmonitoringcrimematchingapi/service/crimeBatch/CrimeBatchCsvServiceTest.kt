@@ -189,7 +189,7 @@ class CrimeBatchCsvServiceTest {
 
   @Test
   fun `it should not parse an invalid Police Force in batch ID`() {
-    val crimeData = createCsvRow(batchId = "MPS20250101", policeForce = PoliceForce.BEDFORDSHIRE.value).byteInputStream()
+    val crimeData = createCsvRow(batchId = "MPS20250101", policeForce = PoliceForce.BEDFORDSHIRE.identifier).byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(0)
@@ -472,25 +472,25 @@ class CrimeBatchCsvServiceTest {
   companion object {
     @JvmStatic
     fun policeForceValues() = listOf(
-      Arguments.of("AVON_AND_SOMERSET", PoliceForce.AVON_AND_SOMERSET),
-      Arguments.of("BEDFORDSHIRE", PoliceForce.BEDFORDSHIRE),
-      Arguments.of("CHESHIRE", PoliceForce.CHESHIRE),
-      Arguments.of("CITY_OF_LONDON", PoliceForce.CITY_OF_LONDON),
-      Arguments.of("CUMBRIA", PoliceForce.CUMBRIA),
-      Arguments.of("DERBYSHIRE", PoliceForce.DERBYSHIRE),
-      Arguments.of("DURHAM", PoliceForce.DURHAM),
-      Arguments.of("ESSEX", PoliceForce.ESSEX),
-      Arguments.of("GLOUCESTERSHIRE", PoliceForce.GLOUCESTERSHIRE),
-      Arguments.of("GWENT", PoliceForce.GWENT),
-      Arguments.of("HAMPSHIRE", PoliceForce.HAMPSHIRE),
-      Arguments.of("HERTFORDSHIRE", PoliceForce.HERTFORDSHIRE),
-      Arguments.of("HUMBERSIDE", PoliceForce.HUMBERSIDE),
-      Arguments.of("KENT", PoliceForce.KENT),
-      Arguments.of("METROPOLITAN", PoliceForce.METROPOLITAN),
-      Arguments.of("NORTH_WALES", PoliceForce.NORTH_WALES),
-      Arguments.of("NOTTINGHAMSHIRE", PoliceForce.NOTTINGHAMSHIRE),
-      Arguments.of("SUSSEX", PoliceForce.SUSSEX),
-      Arguments.of("WEST_MIDLANDS", PoliceForce.WEST_MIDLANDS),
+      Arguments.of("AvonSomerset", PoliceForce.AVON_AND_SOMERSET),
+      Arguments.of("Bedfordshire", PoliceForce.BEDFORDSHIRE),
+      Arguments.of("Cheshire", PoliceForce.CHESHIRE),
+      Arguments.of("CoLP", PoliceForce.CITY_OF_LONDON),
+      Arguments.of("Cumbria", PoliceForce.CUMBRIA),
+      Arguments.of("Derbyshire", PoliceForce.DERBYSHIRE),
+      Arguments.of("Durham", PoliceForce.DURHAM),
+      Arguments.of("Essex", PoliceForce.ESSEX),
+      Arguments.of("Gloucestershire", PoliceForce.GLOUCESTERSHIRE),
+      Arguments.of("Gwent", PoliceForce.GWENT),
+      Arguments.of("Hampshire", PoliceForce.HAMPSHIRE),
+      Arguments.of("Hertfordshire", PoliceForce.HERTFORDSHIRE),
+      Arguments.of("Humberside", PoliceForce.HUMBERSIDE),
+      Arguments.of("Kent", PoliceForce.KENT),
+      Arguments.of("Metropolitan", PoliceForce.METROPOLITAN),
+      Arguments.of("NorthWales", PoliceForce.NORTH_WALES),
+      Arguments.of("Nottinghamshire", PoliceForce.NOTTINGHAMSHIRE),
+      Arguments.of("Sussex", PoliceForce.SUSSEX),
+      Arguments.of("WestMidlands", PoliceForce.WEST_MIDLANDS),
     )
 
     @JvmStatic

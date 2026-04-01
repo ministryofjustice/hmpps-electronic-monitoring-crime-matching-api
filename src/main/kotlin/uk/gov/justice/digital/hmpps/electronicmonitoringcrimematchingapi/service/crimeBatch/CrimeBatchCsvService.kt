@@ -51,7 +51,7 @@ class CrimeBatchCsvService {
       )
     }
 
-    val policeForce = parseEnumValue<PoliceForce>("policeForce", record.policeForce(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_POLICE_FORCE)
+    val policeForce = parsePoliceForce(record.policeForce())
     val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE)
     val batchId = parseBatchId(record.batchId().trim(), policeForce.value)
     val crimeReference = parseCrimeReference(record.crimeReference().trim())
@@ -232,6 +232,20 @@ class CrimeBatchCsvService {
     }
 
     return parsedDate
+  }
+
+  private fun parsePoliceForce(
+    value: String,
+  ): FieldValidationResult<PoliceForce> = try {
+    FieldValidationResult(
+      value = PoliceForce.from(value.trim()),
+    )
+  } catch (_: Exception) {
+    FieldValidationResult(
+      errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_POLICE_FORCE,
+      field = "policeForce",
+      input = value,
+    )
   }
 
   private inline fun <reified T : Enum<T>> parseEnumValue(
