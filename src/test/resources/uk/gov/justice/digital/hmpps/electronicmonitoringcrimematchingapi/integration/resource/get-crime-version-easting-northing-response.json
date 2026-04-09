@@ -3,6 +3,7 @@
     "crimeVersionId" : "11111111-1111-1111-1111-111111111111",
     "crimeReference" : "crime1",
     "crimeType" : "Aggravated Burglary",
+    "crimeTypeId" : "AB",
     "crimeDateTimeFrom" : "2025-01-01T00:00:00Z",
     "crimeDateTimeTo" : "2025-01-01T01:00:00Z",
     "crimeText" : "text",

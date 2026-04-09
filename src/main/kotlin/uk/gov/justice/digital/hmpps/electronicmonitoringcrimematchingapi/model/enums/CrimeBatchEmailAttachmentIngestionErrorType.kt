@@ -14,7 +14,7 @@ enum class CrimeBatchEmailAttachmentIngestionErrorType(val message: String, val 
   CRIME_DATE_TIME_EXCEEDS_WINDOW("Crime date time window must not exceed valid window", "Amend formatting issues"),
   MISSING_LOCATION_DATA("No location data present", "Provide location data"),
   MISSING_BATCH_ID("Batch ID must be present", "Amend formatting issues"),
-  MISSING_CRIME_REFERENCE("Crime reference must be present", "Provide the missing test reference"),
+  MISSING_CRIME_REFERENCE("Crime reference must be present", "Provide the missing crime reference"),
   DEPENDENT_LOCATION_DATA("Dependent location data field must be provided", "Provide the missing field value"),
   MULTIPLE_LOCATION_DATA_TYPES("Only one location data type should be provided", "Amend formatting issues"),
   INVALID_LOCATION_DATA_RANGE("Location data range exceeds valid range", "Co-ordinates outside of valid range"),
