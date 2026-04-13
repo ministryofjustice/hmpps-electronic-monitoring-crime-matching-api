@@ -44,7 +44,7 @@ class CrimeVersionMapper(
     return CrimeVersionResponse(
       crimeVersionId = crimeVersion.crimeVersionId.toString(),
       crimeReference = crimeVersion.crimeReference,
-      crimeType = crimeVersion.crimeType.value,
+      crimeTypeDescription = crimeVersion.crimeType.value,
       crimeTypeId = crimeVersion.crimeType.name,
       crimeDateTimeFrom = crimeVersion.crimeDateTimeFrom.toString(),
       crimeDateTimeTo = crimeVersion.crimeDateTimeTo.toString(),
