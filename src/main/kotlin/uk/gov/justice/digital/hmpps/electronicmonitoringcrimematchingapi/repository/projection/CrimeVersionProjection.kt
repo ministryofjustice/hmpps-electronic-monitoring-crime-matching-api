@@ -8,6 +8,7 @@ import java.util.UUID
 interface CrimeVersionProjection {
   val crimeVersionId: UUID
   val crimeReference: String
+  val batchId: String
   val crimeType: CrimeType
   val crimeDateTimeFrom: Instant
   val crimeDateTimeTo: Instant

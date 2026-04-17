@@ -340,6 +340,7 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
       SELECT
         cv.id AS crimeVersionId,
         c.crime_reference AS crimeReference,
+        cb.batch_id AS batchId,
         cv.crime_type_id AS crimeType,
         cv.crime_date_time_from AS crimeDateTimeFrom,
         cv.crime_date_time_to AS crimeDateTimeTo,
@@ -359,6 +360,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
         cmrp.confidence_circle AS confidence,
         cmrp.captured_date_time AS capturedDateTime
       FROM crime_version cv
+      JOIN crime_batch_crime_version bcv ON cv.id = bcv.crime_version_id
+      JOIN crime_batch cb ON bcv.crime_batch_id = cb.id
       JOIN crime c ON c.id = cv.crime_id
       LEFT JOIN crime_matching_result cmr ON cmr.id = (
         SELECT id
