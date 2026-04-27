@@ -20,6 +20,8 @@ class HubManagerService(
     ),
   )
 
+  fun deleteHubManager(id: UUID) = repository.deleteById(id)
+
   fun getHubManager(id: UUID): HubManager = repository.findById(id).orElseThrow { EntityNotFoundException("No hub manager found with id: $id") }
 
   fun getHubManagers(hasSignature: Boolean): List<HubManager> {

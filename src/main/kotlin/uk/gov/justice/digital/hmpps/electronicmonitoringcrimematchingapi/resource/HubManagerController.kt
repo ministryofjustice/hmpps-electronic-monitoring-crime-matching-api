@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -32,11 +31,15 @@ class HubManagerController(
 ) {
 
   @Operation(
-    tags = ["Hub Manager"],
+    tags = ["Hub Managers"],
     summary = "Create a hub manager",
+
   )
-  @PostMapping(
-    consumes = [MediaType.APPLICATION_JSON_VALUE],
+  @RequestMapping(
+    method = [RequestMethod.POST],
+    path = [
+      "/",
+    ],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun createHubManager(
@@ -54,20 +57,39 @@ class HubManagerController(
   }
 
   @Operation(
-    tags = ["Hub Manager"],
+    tags = ["Hub Managers"],
+    summary = "Delete a hub manager",
+  )
+  @RequestMapping(
+    method = [RequestMethod.DELETE],
+    path = [
+      "/{id}/",
+    ],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  fun deleteHubManager(
+    @PathVariable id: UUID,
+  ): ResponseEntity<Void> {
+    service.deleteHubManager(id)
+
+    return ResponseEntity.noContent().build()
+  }
+
+  @Operation(
+    tags = ["Hub Managers"],
     summary = "Get a hub manager",
   )
   @RequestMapping(
     method = [RequestMethod.GET],
     path = [
-      "/{managerId}",
+      "/{id}/",
     ],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getHubManager(
-    @PathVariable managerId: UUID,
+    @PathVariable id: UUID,
   ): ResponseEntity<Response<HubManagerResponse>> {
-    val manager = service.getHubManager(managerId)
+    val manager = service.getHubManager(id)
 
     return ResponseEntity.ok(
       Response(
@@ -77,23 +99,23 @@ class HubManagerController(
   }
 
   @Operation(
-    tags = ["Hub Manager"],
+    tags = ["Hub Managers"],
     summary = "Get a hub manager signature",
   )
   @RequestMapping(
     method = [RequestMethod.GET],
     path = [
-      "/{managerId}/signature",
+      "/{id}/signature",
     ],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getHubManagerSignature(
-    @PathVariable managerId: UUID,
+    @PathVariable id: UUID,
   ): ResponseEntity<ByteArray> {
-    val manager = service.getHubManager(managerId)
+    val manager = service.getHubManager(id)
 
     if (manager.signatureImage == null) {
-      throw EntityNotFoundException("No signature found for hub manager found with id: $managerId")
+      throw EntityNotFoundException("No signature found for hub manager found with id: $id")
     }
 
     return ResponseEntity.ok()
@@ -102,10 +124,11 @@ class HubManagerController(
   }
 
   @Operation(
-    tags = ["Hub Manager"],
+    tags = ["Hub Managers"],
     summary = "List hub managers",
   )
   @GetMapping(
+    path = ["/"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getHubManagers(
@@ -125,22 +148,22 @@ class HubManagerController(
   }
 
   @Operation(
-    tags = ["Hub Manager"],
+    tags = ["Hub Managers"],
     summary = "Update hub manager signature",
   )
   @RequestMapping(
     method = [RequestMethod.PUT],
     path = [
-      "/{managerId}/signature",
+      "/{id}/signature",
     ],
     consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun updateHubManagerSignature(
-    @PathVariable managerId: UUID,
+    @PathVariable id: UUID,
     @RequestParam("signature") signature: MultipartFile,
   ): ResponseEntity<Response<HubManagerResponse>> {
-    val manager = service.updateHubManagerSignature(managerId, signature)
+    val manager = service.updateHubManagerSignature(id, signature)
 
     return ResponseEntity.ok(
       Response(
