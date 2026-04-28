@@ -67,6 +67,7 @@ class EmDatastoreClient(
       var startQueryExecutionRequest = StartQueryExecutionRequest.builder()
         .queryString(query.queryString)
         .queryExecutionContext(queryExecutionContext)
+        .workGroup(properties.workgroup)
 
       if (query.parameters.isNotEmpty()) {
         startQueryExecutionRequest.executionParameters(*query.parameters)

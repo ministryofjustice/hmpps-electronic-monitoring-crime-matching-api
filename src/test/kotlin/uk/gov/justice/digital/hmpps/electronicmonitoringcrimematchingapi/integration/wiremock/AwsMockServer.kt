@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
@@ -65,6 +66,9 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
       post(
         urlPathEqualTo("/"),
       ).withHeader("X-Amz-Target", equalTo("AmazonAthena.StartQueryExecution"))
+        .withRequestBody(
+          matchingJsonPath("$.WorkGroup", equalTo("test-workgroup")),
+        )
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

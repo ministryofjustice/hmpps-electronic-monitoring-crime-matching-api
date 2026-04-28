@@ -53,6 +53,7 @@ spring:
 datastore:
   output-bucket-arn: test-output-bucket
   retry-interval-ms: 10
+  workgroup: test-workgroup
 
 notify:
   enabled: false
