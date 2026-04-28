@@ -331,10 +331,18 @@ class HubManagerControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("PUT /hub-managers/{id}/signature")
   inner class UpdateHubManagerSignature {
+    val multipartBody = MultipartBodyBuilder().apply {
+      part("signature", "new-signature".toByteArray())
+        .filename("signature.png")
+        .contentType(MediaType.IMAGE_PNG)
+    }.build()
+
     @Test
     fun `it should return 401 if the request is not authenticated`() {
       webTestClient.put()
         .uri("$path/${UUID.randomUUID()}/signature")
+        .contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(BodyInserters.fromMultipartData(multipartBody))
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -345,6 +353,8 @@ class HubManagerControllerTest : IntegrationTestBase() {
       webTestClient.put()
         .uri("$path/${UUID.randomUUID()}/signature")
         .headers(setAuthorisation(roles = listOf()))
+        .contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(BodyInserters.fromMultipartData(multipartBody))
         .exchange()
         .expectStatus()
         .isForbidden
@@ -355,6 +365,8 @@ class HubManagerControllerTest : IntegrationTestBase() {
       webTestClient.put()
         .uri("$path/${UUID.randomUUID()}/signature")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(BodyInserters.fromMultipartData(multipartBody))
         .exchange()
         .expectStatus()
         .isNotFound
@@ -364,16 +376,9 @@ class HubManagerControllerTest : IntegrationTestBase() {
     fun `it should update the hub manager's signature`() {
       createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", hasSignature = false)
 
-      val multipartBody = MultipartBodyBuilder().apply {
-        part("signature", "new-signature".toByteArray())
-          .filename("signature.png")
-          .contentType(MediaType.IMAGE_PNG)
-      }.build()
-
       webTestClient.put()
         .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
-        .contentType(MediaType.APPLICATION_JSON)
         .contentType(MediaType.MULTIPART_FORM_DATA)
         .body(BodyInserters.fromMultipartData(multipartBody))
         .exchange()
