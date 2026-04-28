@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.HubManager
@@ -115,12 +116,55 @@ class HubManagerControllerTest : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("POST /hub-managers")
+  inner class CreateHubManager {
+    @Test
+    fun `it should return 401 if the request is not authenticated`() {
+      webTestClient.post()
+        .uri(path)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("create-hub-manager-request".loadJson())
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.post()
+        .uri(path)
+        .headers(setAuthorisation(roles = listOf()))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("create-hub-manager-request".loadJson())
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should create a hub manager`() {
+      webTestClient.post()
+        .uri(path)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("create-hub-manager-request".loadJson())
+        .exchange()
+        .expectStatus()
+        .isCreated
+        .expectBody()
+        .jsonPath("$.data.id").exists()
+        .jsonPath("$.data.id").isNotEmpty
+        .jsonPath("$.data.name").isEqualTo("test manager 1")
+    }
+  }
+
+  @Nested
   @DisplayName("GET /hub-manager")
   inner class GetHubManager {
     @Test
     fun `it should return 401 if the request is not authenticated`() {
       webTestClient.get()
-        .uri("${path}/${UUID.randomUUID()}")
+        .uri("$path/${UUID.randomUUID()}")
         .exchange()
         .expectStatus()
         .isUnauthorized
@@ -129,7 +173,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a 403 if the client does not have a valid role`() {
       webTestClient.get()
-        .uri("${path}/${UUID.randomUUID()}")
+        .uri("$path/${UUID.randomUUID()}")
         .headers(setAuthorisation(roles = listOf()))
         .exchange()
         .expectStatus()
@@ -139,7 +183,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a 404 if the hub manager does not exist`() {
       webTestClient.get()
-        .uri("${path}/${UUID.randomUUID()}")
+        .uri("$path/${UUID.randomUUID()}")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
         .exchange()
         .expectStatus()
@@ -151,7 +195,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
       createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", hasSignature = false)
 
       val body = webTestClient.get()
-        .uri("${path}/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4")
+        .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
         .exchange()
         .expectStatus()
