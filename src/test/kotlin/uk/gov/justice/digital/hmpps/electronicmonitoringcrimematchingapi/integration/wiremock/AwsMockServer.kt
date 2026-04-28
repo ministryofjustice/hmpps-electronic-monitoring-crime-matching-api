@@ -67,7 +67,7 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
         urlPathEqualTo("/"),
       ).withHeader("X-Amz-Target", equalTo("AmazonAthena.StartQueryExecution"))
         .withRequestBody(
-          matchingJsonPath("$.WorkGroup", equalTo("default")),
+          matchingJsonPath("$.WorkGroup", equalTo("test-workgroup")),
         )
         .willReturn(
           aResponse()
