@@ -8,4 +8,5 @@ data class DatastoreProperties(
   val mdssDatabase: String,
   val outputBucketArn: String,
   val retryIntervalMs: Long = 1000,
+  val workgroup: String,
 )
