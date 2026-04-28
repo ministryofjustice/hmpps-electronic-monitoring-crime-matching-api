@@ -9,7 +9,9 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.HubManager
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.HubManagerRepository
@@ -323,6 +325,62 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
       assertThat(body).isNotEmpty()
       assertThat(body).isEqualTo("fake-signature-image".toByteArray())
+    }
+  }
+
+  @Nested
+  @DisplayName("PUT /hub-managers/{id}/signature")
+  inner class UpdateHubManagerSignature {
+    @Test
+    fun `it should return 401 if the request is not authenticated`() {
+      webTestClient.put()
+        .uri("$path/${UUID.randomUUID()}/signature")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.put()
+        .uri("$path/${UUID.randomUUID()}/signature")
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return a 404 if the hub manager does not exist`() {
+      webTestClient.put()
+        .uri("$path/${UUID.randomUUID()}/signature")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `it should update the hub manager's signature`() {
+      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", hasSignature = false)
+
+      val multipartBody = MultipartBodyBuilder().apply {
+        part("signature", "new-signature".toByteArray())
+          .filename("signature.png")
+          .contentType(MediaType.IMAGE_PNG)
+      }.build()
+
+      webTestClient.put()
+        .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(BodyInserters.fromMultipartData(multipartBody))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      assertThat(repo.findBySignatureImageIsNotNull()).hasSize(1)
     }
   }
 
