@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -155,11 +156,13 @@ class HubManagerControllerTest : IntegrationTestBase() {
         .jsonPath("$.data.id").exists()
         .jsonPath("$.data.id").isNotEmpty
         .jsonPath("$.data.name").isEqualTo("test manager 1")
+
+      assertThat(repo.findAll()).hasSize(1)
     }
   }
 
   @Nested
-  @DisplayName("GET /hub-manager")
+  @DisplayName("GET /hub-managers/{id}")
   inner class GetHubManager {
     @Test
     fun `it should return 401 if the request is not authenticated`() {
@@ -209,6 +212,117 @@ class HubManagerControllerTest : IntegrationTestBase() {
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
+    }
+  }
+
+  @Nested
+  @DisplayName("DELETE /hub-managers/{id}")
+  inner class DeleteHubManager {
+    @Test
+    fun `it should return 401 if the request is not authenticated`() {
+      webTestClient.delete()
+        .uri("$path/${UUID.randomUUID()}")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.delete()
+        .uri("$path/${UUID.randomUUID()}")
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return a 204 if the hub manager does not exist`() {
+      webTestClient.delete()
+        .uri("$path/${UUID.randomUUID()}")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .exchange()
+        .expectStatus()
+        .isNoContent
+    }
+
+    @Test
+    fun `it should delete a hub manager if it exists`() {
+      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", hasSignature = false)
+
+      webTestClient.delete()
+        .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      assertThat(repo.findAll()).hasSize(0)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /hub-managers/{id}/signature")
+  inner class GetHubManagerSignature {
+    @Test
+    fun `it should return 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri("$path/${UUID.randomUUID()}/signature")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri("$path/${UUID.randomUUID()}/signature")
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return a 404 if the hub manager does not exist`() {
+      webTestClient.get()
+        .uri("$path/${UUID.randomUUID()}/signature")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `it should return a 404 if the hub manager does not have a signature`() {
+      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", hasSignature = false)
+
+      webTestClient.get()
+        .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `it should return a signature if the hub manager has a signature`() {
+      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", hasSignature = true)
+
+      val body = webTestClient.get()
+        .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectHeader().contentType(MediaType.IMAGE_PNG)
+        .expectBody(ByteArray::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(body).isNotEmpty()
+      assertThat(body).isEqualTo("fake-signature-image".toByteArray())
     }
   }
 
