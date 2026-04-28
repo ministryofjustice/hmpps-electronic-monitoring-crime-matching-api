@@ -37,9 +37,6 @@ class HubManagerController(
   )
   @RequestMapping(
     method = [RequestMethod.POST],
-    path = [
-      "/",
-    ],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun createHubManager(
@@ -63,7 +60,7 @@ class HubManagerController(
   @RequestMapping(
     method = [RequestMethod.DELETE],
     path = [
-      "/{id}/",
+      "/{id}",
     ],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
@@ -82,7 +79,7 @@ class HubManagerController(
   @RequestMapping(
     method = [RequestMethod.GET],
     path = [
-      "/{id}/",
+      "/{id}",
     ],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
@@ -128,7 +125,6 @@ class HubManagerController(
     summary = "List hub managers",
   )
   @GetMapping(
-    path = ["/"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getHubManagers(

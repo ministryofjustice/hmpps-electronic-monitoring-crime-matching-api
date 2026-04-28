@@ -1,0 +1,19 @@
+{
+  "data": [
+    {
+      "id": "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4",
+      "name": "test manager 1",
+      "hasSignature": true
+    },
+    {
+      "id": "5b13bcd6-3e87-40d8-918a-cbf3b1620516",
+      "name": "test manager 2",
+      "hasSignature": true
+    },
+    {
+      "id": "a91734a6-f6d6-48ca-8bb5-4e56b3d50c1d",
+      "name": "test manager 3",
+      "hasSignature": false
+    }
+  ]
+}
