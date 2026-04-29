@@ -58,6 +58,7 @@ class CrimeBatchContext(
         easting = easting,
         northing = northing,
         crimeText = crimeText,
+        crimeBatch = batch,
       ),
     )
 

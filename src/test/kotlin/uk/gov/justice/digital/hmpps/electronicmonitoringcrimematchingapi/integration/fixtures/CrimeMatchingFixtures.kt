@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures
 
-import org.springframework.jdbc.core.JdbcTemplate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
@@ -14,7 +13,6 @@ import java.time.LocalDateTime
 import java.util.*
 
 class CrimeMatchingFixtures(
-  private val jdbcTemplate: JdbcTemplate,
   private val crimeRepository: CrimeRepository,
   private val crimeVersionRepository: CrimeVersionRepository,
   private val crimeBatchRepository: CrimeBatchRepository,
@@ -23,7 +21,6 @@ class CrimeMatchingFixtures(
 ) {
 
   fun deleteAll() {
-    jdbcTemplate.execute("TRUNCATE TABLE crime_batch_crime_version RESTART IDENTITY")
     crimeMatchingRunRepository.deleteAll()
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()

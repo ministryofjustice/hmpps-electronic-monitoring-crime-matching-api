@@ -42,7 +42,7 @@ class CrimeBatchService(
         .orElseGet { crimeRepository.save(Crime(policeForceArea = record.policeForce, crimeReference = record.crimeReference)) }
 
       // Add version to batch
-      crimeBatch.crimeVersions.add(createCrimeVersion(record, crime))
+      crimeBatch.crimeVersions.add(createCrimeVersion(record, crime, crimeBatch))
     }
 
     // Save batch
@@ -94,7 +94,7 @@ class CrimeBatchService(
     )
   }
 
-  private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime): CrimeVersion = CrimeVersion(
+  private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime, crimeBatch: CrimeBatch): CrimeVersion = CrimeVersion(
     crime = crime,
     crimeTypeId = record.crimeTypeId,
     crimeDateTimeFrom = record.crimeDateTimeFrom,
@@ -104,5 +104,6 @@ class CrimeBatchService(
     latitude = record.latitude,
     longitude = record.longitude,
     crimeText = record.crimeText,
+    crimeBatch = crimeBatch,
   )
 }

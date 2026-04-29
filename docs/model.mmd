@@ -5,8 +5,7 @@ erDiagram
     %% Domain
     CRIME 1 to 1+ CRIME-VERSION : "has 1 or more versions"
     CRIME-VERSION 1 to 0+ CRIME-MATCHING-RESULT : "has 0 or more matching results"
-    CRIME-BATCH 1 to 1+ CRIME-BATCH-CRIME-VERSION : "includes crime versions"
-    CRIME-VERSION 1 to 1+ CRIME-BATCH-CRIME-VERSION : "appears in batches"
+    CRIME-BATCH 1 to 1+ CRIME-VERSION : "has 1 or more versions"
 
     %% Ingestion
     CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or one CRIME-BATCH : "produces at most 1 crime batch"
@@ -26,12 +25,6 @@ erDiagram
         string batch-id
         datetime created-at
         uuid crime-batch-email-attachment fk
-    }
-
-    CRIME-BATCH-CRIME-VERSION {
-        uuid id pk
-        uuid crime-batch-id fk, uk "composite unique constraint"
-        uuid crime-version-id fk, uk "composite unique constraint"
     }
 
     CRIME-BATCH-INGESTION-ATTEMPT {
@@ -83,6 +76,7 @@ erDiagram
     CRIME-VERSION {
         uuid id pk
         uuid crime-id fk
+        uuid crime-batch-id fk
         string crimeTypeId
         datetime crimeDateTimeFrom
         datetime crimeDateTimeTo

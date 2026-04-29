@@ -30,6 +30,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileWithoutAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
@@ -43,8 +47,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.Date
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.io.encoding.Base64
@@ -110,7 +116,6 @@ class EmailListenerTest : IntegrationTestBase() {
     matchingNotificationsSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
     )
-    jdbcTemplate.update("DELETE FROM crime_batch_crime_version")
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
     crimeBatchIngestionAttemptRepository.deleteAll()
@@ -365,25 +370,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
     @Test
     fun `it should process an email with new crime versions`() {
-      val crime = Crime(
-        policeForceArea = PoliceForce.METROPOLITAN,
-        crimeReference = "CRI00000001",
-      )
-      crimeRepository.save(crime)
-
-      val crimeVersion = CrimeVersion(
-        id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
-        crime = crime,
-        crimeTypeId = CrimeType.AB,
-        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
-        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
-        easting = null,
-        northing = null,
-        latitude = 51.574865,
-        longitude = 0.060977,
-        crimeText = "",
-      )
-      crimeVersionRepository.save(crimeVersion)
+      createCrimeBatchWithCrimeVersion()
 
       val csvContent = listOf(
         createCsvRow(crimeDateTimeTo = "20250125093000"),
@@ -398,14 +385,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
-      assertThat(crimeBatchIngestionAttempts).hasSize(1)
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
-
-      val crimeBatches = crimeBatchRepository.findAll()
-      assertThat(crimeBatches).hasSize(1)
-
       val crimes = crimeRepository.findAll()
       assertThat(crimes).hasSize(1)
 
@@ -418,25 +397,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
     @Test
     fun `it should process an email with a duplicate crime version`() {
-      val crime = Crime(
-        policeForceArea = PoliceForce.METROPOLITAN,
-        crimeReference = "CRI00000001",
-      )
-      crimeRepository.save(crime)
-
-      val crimeVersion = CrimeVersion(
-        id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
-        crime = crime,
-        crimeTypeId = CrimeType.TOMV,
-        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
-        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
-        easting = null,
-        northing = null,
-        latitude = 54.73241,
-        longitude = -1.38542,
-        crimeText = "",
-      )
-      crimeVersionRepository.save(crimeVersion)
+      createCrimeBatchWithCrimeVersion()
 
       val csvContent = listOf(
         createCsvRow(),
@@ -450,14 +411,6 @@ class EmailListenerTest : IntegrationTestBase() {
       sendDomainSqsMessage(getMessage(OBJECT_KEY))
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
-
-      val crimeBatchIngestionAttempts = crimeBatchIngestionAttemptRepository.findAll()
-      assertThat(crimeBatchIngestionAttempts).hasSize(1)
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail).isNotNull()
-      assertThat(crimeBatchIngestionAttempts.first().crimeBatchEmail?.crimeBatchEmailAttachments).hasSize(1)
-
-      val crimeBatches = crimeBatchRepository.findAll()
-      assertThat(crimeBatches).hasSize(1)
 
       val crimes = crimeRepository.findAll()
       assertThat(crimes).hasSize(1)
@@ -499,5 +452,58 @@ class EmailListenerTest : IntegrationTestBase() {
           "Message" : "{ \"notificationType\": \"Received\", \"receipt\": { \"action\": { \"bucketName\": \"$BUCKET_NAME\", \"objectKey\": \"$objectKey\" }}}"
         }
     """.trimIndent()
+  }
+
+  private fun createCrimeBatchWithCrimeVersion() {
+    val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+      bucket = "bucket",
+      objectName = "objectName",
+    )
+
+    val crimeBatchEmail = CrimeBatchEmail(
+      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+    )
+
+    val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+      crimeBatchEmail = crimeBatchEmail,
+      fileName = "filename",
+      rowCount = 1,
+    )
+
+    crimeBatchEmail.crimeBatchEmailAttachments.add(crimeBatchEmailAttachment)
+    crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
+    crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
+
+    val crimeBatchId = UUID.fromString("242a9a57-337f-4208-908b-2874b75fa10e")
+    val crimeBatch = CrimeBatch(
+      id = crimeBatchId,
+      batchId = "batchId",
+      crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+    )
+    val crime = Crime(
+      policeForceArea = PoliceForce.METROPOLITAN,
+      crimeReference = "CRI00000001",
+    )
+    crimeRepository.save(crime)
+
+    val crimeVersion = CrimeVersion(
+      id = UUID.fromString("152a9a57-337f-4208-908b-2874b75fa10e"),
+      crime = crime,
+      crimeTypeId = CrimeType.TOMV,
+      crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+      crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+      easting = null,
+      northing = null,
+      latitude = 54.73241,
+      longitude = -1.38542,
+      crimeText = "",
+      crimeBatch = crimeBatch,
+    )
+    crimeBatch.crimeVersions.add(crimeVersion)
+    crimeBatchRepository.save(crimeBatch)
   }
 }

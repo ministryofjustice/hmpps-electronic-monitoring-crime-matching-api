@@ -44,15 +44,13 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
 
       -- Get crime version details
       LEFT JOIN (
-          SELECT crime_batch_id,
+          SELECT cv.crime_batch_id,
             c.police_force_area,
             COUNT(*) AS version_count
-          FROM crime_batch_crime_version cbcv
-          LEFT JOIN crime_version cv
-            ON cbcv.crime_version_id = cv.id
+          FROM crime_version cv
           LEFT JOIN crime c
             ON cv.crime_id = c.id
-          GROUP BY crime_batch_id,
+          GROUP BY cv.crime_batch_id,
             c.police_force_area
       ) cv ON cv.crime_batch_id = cb.id
 
@@ -117,17 +115,15 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
 
     crime_versions AS (
         SELECT
-           cbcv.crime_batch_id,
+           cv.crime_batch_id,
            c.police_force_area,
            COUNT(*) AS version_count
-        FROM crime_batch_crime_version cbcv
+        FROM crime_version cv
         JOIN ingestion_attempt ia 
-            ON ia.crime_batch_id = cbcv.crime_batch_id
-        LEFT JOIN crime_version cv 
-            ON cbcv.crime_version_id = cv.id
+            ON ia.crime_batch_id = cv.crime_batch_id
         LEFT JOIN crime c 
             ON cv.crime_id = c.id
-        GROUP BY cbcv.crime_batch_id, c.police_force_area
+        GROUP BY cv.crime_batch_id, c.police_force_area
     ),
 
     latest_runs AS (
@@ -241,15 +237,13 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
       crime_versions AS (
         SELECT
           ia.ingestion_attempt_id,
-          cbcv.crime_batch_id,
+          cv.crime_batch_id,
           cv.crime_type_id AS crimeType,
           COUNT(*) AS successful
         FROM ingestion_attempt ia
-        JOIN crime_batch_crime_version cbcv 
-            ON ia.crime_batch_id = cbcv.crime_batch_id
-        LEFT JOIN crime_version cv 
-            ON cbcv.crime_version_id = cv.id
-        GROUP BY ia.ingestion_attempt_id, cbcv.crime_batch_id, cv.crime_type_id
+        JOIN crime_version cv 
+            ON ia.crime_batch_id = cv.crime_batch_id
+        GROUP BY ia.ingestion_attempt_id, cv.crime_batch_id, cv.crime_type_id
       )
       
       SELECT

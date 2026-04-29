@@ -69,13 +69,10 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
         LAG(cv.latitude) OVER crime_versions AS previous_latitude,
         LAG(cv.longitude) OVER crime_versions AS previous_longitude
     
-      FROM crime_batch_crime_version cbcv
+      FROM crime_version cv
     
       JOIN crime_batch cb
-        ON cb.id = cbcv.crime_batch_id
-    
-      JOIN crime_version cv
-        ON cv.id = cbcv.crime_version_id
+        ON cb.id = cv.crime_batch_id 
     
       JOIN crime c
         ON c.id = cv.crime_id
@@ -305,9 +302,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
 
     countQuery = """
      SELECT COUNT(*)
-     FROM crime_batch_crime_version cbcv
-     JOIN crime_batch cb ON cb.id = cbcv.crime_batch_id
-     JOIN crime_version cv ON cv.id = cbcv.crime_version_id
+     FROM crime_batch cb
+     JOIN crime_version cv ON cv.crime_batch_id = cb.id
      JOIN crime c ON c.id = cv.crime_id
      WHERE (:crimeReference IS NULL
             OR LOWER(c.crime_reference) LIKE '%' || LOWER(:crimeReference) || '%')
@@ -345,8 +341,7 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
         cmrp.confidence_circle AS confidence,
         cmrp.captured_date_time AS capturedDateTime
       FROM crime_version cv
-      JOIN crime_batch_crime_version bcv ON cv.id = bcv.crime_version_id
-      JOIN crime_batch cb ON bcv.crime_batch_id = cb.id
+      JOIN crime_batch cb ON cb.id = cv.crime_batch_id
       JOIN crime c ON c.id = cv.crime_id
       LEFT JOIN crime_matching_result cmr ON cmr.id = (
         SELECT id
