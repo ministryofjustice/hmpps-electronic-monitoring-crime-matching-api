@@ -463,7 +463,7 @@ class EmailListenerTest : IntegrationTestBase() {
       assertThat(crimes).hasSize(1)
 
       val crimeVersions = crimeVersionRepository.findAll()
-      assertThat(crimeVersions).hasSize(1)
+      assertThat(crimeVersions).hasSize(2)
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
