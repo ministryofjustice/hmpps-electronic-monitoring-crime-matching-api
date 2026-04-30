@@ -29,9 +29,8 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
             PARTITION BY cb.id, cv.id
             ORDER BY run.matching_ended DESC, run.id DESC
           ) AS rn
-        FROM crime_batch_crime_version bcv
-        JOIN crime_batch cb ON cb.id = bcv.crime_batch_id
-        JOIN crime_version cv ON cv.id = bcv.crime_version_id
+        FROM crime_version cv
+        JOIN crime_batch cb ON cb.id = cv.crime_batch_id
         JOIN crime c ON c.id = cv.crime_id
         JOIN crime_matching_result mr ON mr.crime_version_id = cv.id
         JOIN crime_matching_run run ON run.id = mr.crime_matching_run_id

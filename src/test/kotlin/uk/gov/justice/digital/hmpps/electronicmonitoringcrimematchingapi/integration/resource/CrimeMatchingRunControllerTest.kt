@@ -169,21 +169,20 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
     )
 
     val crimeVersionId = UUID.fromString("252a9a57-337f-4208-908b-2874b75fa10f")
-    crimeVersionRepository.save(
-      CrimeVersion(
-        id = crimeVersionId,
-        crime = crime,
-        crimeTypeId = CrimeType.AB,
-        crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
-        crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
-        easting = null,
-        northing = null,
-        latitude = 51.574865,
-        longitude = 0.060977,
-        crimeText = "",
-      ),
+    val crimeVersion = CrimeVersion(
+      id = crimeVersionId,
+      crime = crime,
+      crimeTypeId = CrimeType.AB,
+      crimeDateTimeFrom = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+      crimeDateTimeTo = LocalDateTime.of(2025, 1, 25, 8, 30).toInstant(ZoneOffset.UTC),
+      easting = null,
+      northing = null,
+      latitude = 51.574865,
+      longitude = 0.060977,
+      crimeText = "",
+      crimeBatch = crimeBatch,
     )
-
+    crimeBatch.crimeVersions.add(crimeVersion)
     crimeBatchRepository.save(crimeBatch)
 
     return Pair(crimeBatchId, crimeVersionId)

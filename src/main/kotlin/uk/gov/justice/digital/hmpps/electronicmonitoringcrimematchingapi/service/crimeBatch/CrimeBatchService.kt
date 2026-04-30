@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
@@ -25,7 +24,6 @@ import java.util.UUID
 class CrimeBatchService(
   private val crimeBatchRepository: CrimeBatchRepository,
   private val crimeRepository: CrimeRepository,
-  private val crimeVersionRepository: CrimeVersionRepository,
   private val matchingNotificationService: MatchingNotificationService,
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
 ) {
@@ -43,21 +41,8 @@ class CrimeBatchService(
       val crime = crimeRepository.findByCrimeReferenceAndPoliceForceArea(record.crimeReference, record.policeForce)
         .orElseGet { crimeRepository.save(Crime(policeForceArea = record.policeForce, crimeReference = record.crimeReference)) }
 
-      // Check for duplicate version
-      val crimeVersion = crimeVersionRepository.findByCrimeIdAndCrimeTypeIdAndCrimeDateTimeFromAndCrimeDateTimeToAndEastingAndNorthingAndLatitudeAndLongitudeAndCrimeText(
-        crime.id,
-        record.crimeTypeId,
-        record.crimeDateTimeFrom,
-        record.crimeDateTimeTo,
-        record.easting,
-        record.northing,
-        record.latitude,
-        record.longitude,
-        record.crimeText,
-      ).orElseGet { createCrimeVersion(record, crime) }
-
       // Add version to batch
-      crimeBatch.crimeVersions.add(crimeVersion)
+      crimeBatch.crimeVersions.add(createCrimeVersion(record, crime, crimeBatch))
     }
 
     // Save batch
@@ -109,7 +94,7 @@ class CrimeBatchService(
     )
   }
 
-  private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime): CrimeVersion = CrimeVersion(
+  private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime, crimeBatch: CrimeBatch): CrimeVersion = CrimeVersion(
     crime = crime,
     crimeTypeId = record.crimeTypeId,
     crimeDateTimeFrom = record.crimeDateTimeFrom,
@@ -119,5 +104,6 @@ class CrimeBatchService(
     latitude = record.latitude,
     longitude = record.longitude,
     crimeText = record.crimeText,
+    crimeBatch = crimeBatch,
   )
 }

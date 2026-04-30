@@ -25,6 +25,10 @@ data class CrimeVersion(
   @JoinColumn(name = "crime_id", nullable = false)
   var crime: Crime,
 
+  @ManyToOne
+  @JoinColumn(name = "crime_batch_id")
+  var crimeBatch: CrimeBatch,
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   val crimeTypeId: CrimeType,

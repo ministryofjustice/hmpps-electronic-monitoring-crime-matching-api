@@ -15,13 +15,6 @@ CREATE TABLE crime_batch
     CONSTRAINT pk_crime_batch PRIMARY KEY (id)
 );
 
-CREATE TABLE crime_batch_crime_version
-(
-    crime_batch_id   UUID NOT NULL,
-    crime_version_id UUID NOT NULL,
-    CONSTRAINT pk_crime_batch_crime_version PRIMARY KEY (crime_batch_id, crime_version_id)
-);
-
 CREATE TABLE crime_batch_email
 (
     id                               UUID NOT NULL,
@@ -65,6 +58,7 @@ CREATE TABLE crime_version
 (
     id                   UUID NOT NULL,
     crime_id             UUID NOT NULL,
+    crime_batch_id       UUID NOT NULL,
     crime_type_id        VARCHAR(255) NOT NULL,
     crime_date_time_from TIMESTAMP WITHOUT TIME ZONE,
     crime_date_time_to   TIMESTAMP WITHOUT TIME ZONE,
@@ -79,9 +73,6 @@ CREATE TABLE crime_version
 
 ALTER TABLE crime
     ADD CONSTRAINT uc_crime_reference_police_force_area UNIQUE (crime_reference, police_force_area);
-
-ALTER TABLE crime_batch_crime_version
-    ADD CONSTRAINT uc_crime_batch_id_crime_version_id UNIQUE (crime_batch_id, crime_version_id);
 
 ALTER TABLE crime_batch
     ADD CONSTRAINT uc_crime_batch_crime_batch_email_attachment UNIQUE (crime_batch_email_attachment_id);
@@ -108,10 +99,6 @@ ALTER TABLE crime_version
     ADD CONSTRAINT FK_CRIME_VERSION_ON_CRIME FOREIGN KEY (crime_id) REFERENCES crime (id)
         ON DELETE CASCADE;
 
-ALTER TABLE crime_batch_crime_version
-    ADD CONSTRAINT fk_cribatcriver_on_crime_batch FOREIGN KEY (crime_batch_id) REFERENCES crime_batch (id)
-        ON DELETE CASCADE;
-
-ALTER TABLE crime_batch_crime_version
-    ADD CONSTRAINT fk_cribatcriver_on_crime_version FOREIGN KEY (crime_version_id) REFERENCES crime_version (id)
+ALTER TABLE crime_version
+    ADD CONSTRAINT FK_CRIME_VERSION_ON_CRIME_BATCH FOREIGN KEY (crime_batch_id) REFERENCES crime_batch (id)
         ON DELETE CASCADE;
