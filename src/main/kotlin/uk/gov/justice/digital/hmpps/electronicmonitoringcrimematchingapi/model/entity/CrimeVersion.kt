@@ -50,6 +50,8 @@ data class CrimeVersion(
   @Column(nullable = false)
   val crimeText: String,
 
+  val updates: String?,
+
   @Column(nullable = false)
   val createdAt: LocalDateTime = LocalDateTime.now(),
 )

@@ -7,6 +7,7 @@ import java.util.UUID
 
 interface CrimeVersionProjection {
   val crimeVersionId: UUID
+  val latestCrimeVersionId: UUID?
   val crimeReference: String
   val batchId: String
   val crimeType: CrimeType

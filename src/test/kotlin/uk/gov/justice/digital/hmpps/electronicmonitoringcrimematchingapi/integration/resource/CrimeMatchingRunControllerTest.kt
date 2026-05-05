@@ -181,6 +181,7 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
       longitude = 0.060977,
       crimeText = "",
       crimeBatch = crimeBatch,
+      updates = "",
     )
     crimeBatch.crimeVersions.add(crimeVersion)
     crimeBatchRepository.save(crimeBatch)

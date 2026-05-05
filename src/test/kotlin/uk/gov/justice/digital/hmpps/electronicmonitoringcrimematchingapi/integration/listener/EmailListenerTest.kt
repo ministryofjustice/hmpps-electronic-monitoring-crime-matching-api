@@ -502,6 +502,7 @@ class EmailListenerTest : IntegrationTestBase() {
       longitude = -1.38542,
       crimeText = "",
       crimeBatch = crimeBatch,
+      updates = null,
     )
     crimeBatch.crimeVersions.add(crimeVersion)
     crimeBatchRepository.save(crimeBatch)

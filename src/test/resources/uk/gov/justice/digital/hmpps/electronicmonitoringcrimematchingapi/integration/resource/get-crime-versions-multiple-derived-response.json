@@ -9,8 +9,8 @@
       "batchId": "HAM20251031",
       "ingestionDateTime": "2025-10-31T04:03:01",
       "matched": false,
-      "versionLabel": "Latest version",
-      "updates": "Crime type, Crime location"
+      "versionLabel": "Latest Version",
+      "updates": "Crime Type, Crime Location"
     },
     {
       "crimeVersionId": "cccccccc-cccc-cccc-cccc-cccccccccccc",
@@ -22,7 +22,7 @@
       "ingestionDateTime": "2025-10-30T04:03:01",
       "matched": false,
       "versionLabel": "Version 2",
-      "updates": "Crime type"
+      "updates": "Crime Type"
     },
     {
       "crimeVersionId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
@@ -33,7 +33,7 @@
       "batchId": "HAM20251029",
       "ingestionDateTime": "2025-10-29T04:03:01",
       "matched": false,
-      "versionLabel": "Duplicate",
+      "versionLabel": "Version 1 (Duplicate)",
       "updates": "None"
     },
     {

@@ -43,6 +43,7 @@ class CrimeVersionMapper(
 
     return CrimeVersionResponse(
       crimeVersionId = crimeVersion.crimeVersionId.toString(),
+      latestCrimeVersionId = crimeVersion.latestCrimeVersionId?.toString(),
       crimeReference = crimeVersion.crimeReference,
       batchId = crimeVersion.batchId,
       crimeTypeDescription = crimeVersion.crimeType.value,

@@ -9,7 +9,7 @@
       "batchId": "HAM20251030",
       "ingestionDateTime": "2025-10-30T04:03:01",
       "matched": false,
-      "versionLabel": "Duplicate",
+      "versionLabel": "Latest Version (Duplicate)",
       "updates": "None"
     },
     {
@@ -21,8 +21,8 @@
       "batchId": "HAM20251029",
       "ingestionDateTime": "2025-10-29T10:03:01",
       "matched": true,
-      "versionLabel": "Latest version",
-      "updates": "Crime type"
+      "versionLabel": "Version 2",
+      "updates": "Crime Type"
     },
     {
       "crimeVersionId": "33333333-3333-3333-3333-333333333333",
