@@ -28,4 +28,5 @@ interface CrimeVersionProjection {
   val sequenceLabel: String?
   val confidence: Int?
   val capturedDateTime: LocalDateTime?
+  val versionLabel: String
 }

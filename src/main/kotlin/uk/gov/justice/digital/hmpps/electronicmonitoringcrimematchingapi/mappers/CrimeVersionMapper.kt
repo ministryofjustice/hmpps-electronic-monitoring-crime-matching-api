@@ -54,7 +54,7 @@ class CrimeVersionMapper(
       latitude = coords.latitude.roundTo(6),
       longitude = coords.longitude.roundTo(6),
       matching = if (crimeVersion.matchingResultId != null) matchingResponse else null,
-      versionLabel = "Latest version",
+      versionLabel = crimeVersion.versionLabel,
     )
   }
 }

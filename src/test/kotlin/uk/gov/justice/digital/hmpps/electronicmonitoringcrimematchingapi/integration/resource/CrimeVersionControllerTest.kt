@@ -638,5 +638,83 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         JSONCompareMode.STRICT,
       )
     }
+
+    @Test
+    fun `it should return a latest crime version id when requesting a previous crime version`() {
+      val crimeRef = "01/7298583/25"
+
+      val version1 = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      val version2 = UUID.fromString("22222222-2222-2222-2222-222222222222")
+
+      crimeMatchingFixtures.givenBatch(batchId = "batch1") {
+        withCrime(
+          crimeRef = crimeRef,
+          id = version1,
+        ) {}
+      }
+
+      crimeMatchingFixtures.givenBatch(batchId = "batch2") {
+        withCrime(
+          crimeRef = crimeRef,
+          id = version2,
+          updates = "",
+        ) {}
+      }
+
+      val body = webTestClient.get()
+        .uri("/crime-versions/$version1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-version-latest-version-id-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
+
+    @Test
+    fun `it should return a duplicate crime version`() {
+      val crimeRef = "01/7298583/25"
+
+      val version1 = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      val version2 = UUID.fromString("22222222-2222-2222-2222-222222222222")
+
+      crimeMatchingFixtures.givenBatch(batchId = "batch1") {
+        withCrime(
+          crimeRef = crimeRef,
+          id = version1,
+        ) {}
+      }
+
+      crimeMatchingFixtures.givenBatch(batchId = "batch2") {
+        withCrime(
+          crimeRef = crimeRef,
+          id = version2,
+          updates = "",
+        ) {}
+      }
+
+      val body = webTestClient.get()
+        .uri("/crime-versions/$version2")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-version-duplicate-version-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
   }
 }

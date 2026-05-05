@@ -50,8 +50,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
         CASE
           WHEN vi.latest_version = 1 THEN
             CASE
-              WHEN vi.updates = '' THEN 'Latest Version (Duplicate)'
-              ELSE 'Latest Version'
+              WHEN vi.updates = '' THEN 'Latest version (Duplicate)'
+              ELSE 'Latest version'
             END
           ELSE
             'Version ' || vi.version_number ||
@@ -153,8 +153,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
       CASE
         WHEN vi.latest_version = 1 THEN
           CASE
-            WHEN vi.updates = '' THEN 'Latest Version (Duplicate)'
-            ELSE 'Latest Version'
+            WHEN vi.updates = '' THEN 'Latest version (Duplicate)'
+            ELSE 'Latest version'
           END
         ELSE
           'Version ' || vi.version_number ||
