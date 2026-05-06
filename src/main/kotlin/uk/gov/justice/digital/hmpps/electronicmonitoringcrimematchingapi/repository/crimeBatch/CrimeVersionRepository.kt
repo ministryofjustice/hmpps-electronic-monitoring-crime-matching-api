@@ -339,6 +339,8 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
         cmrp.longitude AS wearerLongitude,
         cmrp.sequence_label AS sequenceLabel,
         cmrp.precision AS precision,
+        cmrp.speed as speed,
+        cmrp.direction AS direction,
         cmrp.captured_date_time AS capturedDateTime
       FROM crime_version cv
       JOIN crime_batch cb ON cb.id = cv.crime_batch_id

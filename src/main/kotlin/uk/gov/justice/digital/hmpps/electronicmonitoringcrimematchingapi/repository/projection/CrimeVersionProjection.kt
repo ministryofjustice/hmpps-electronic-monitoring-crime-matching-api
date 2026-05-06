@@ -26,5 +26,7 @@ interface CrimeVersionProjection {
   val wearerLongitude: Double?
   val sequenceLabel: String?
   val precision: Int?
+  val speed: Int?
+  val direction: Int?
   val capturedDateTime: LocalDateTime?
 }
