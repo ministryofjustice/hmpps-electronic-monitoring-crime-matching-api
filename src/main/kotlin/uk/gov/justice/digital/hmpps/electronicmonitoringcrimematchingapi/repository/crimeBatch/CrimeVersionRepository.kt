@@ -360,4 +360,6 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
     nativeQuery = true,
   )
   fun findCrimeVersionMatchingResult(crimeVersionId: UUID): List<CrimeVersionProjection>
+
+  fun findFirstByCrimeIdOrderByCreatedAtDesc(crimeId: UUID): CrimeVersion?
 }
