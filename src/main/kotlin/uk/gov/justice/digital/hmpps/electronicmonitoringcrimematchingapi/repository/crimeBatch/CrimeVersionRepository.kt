@@ -14,72 +14,113 @@ import java.util.UUID
 interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
   @Query(
     value = """
-      WITH version_info AS (
-        SELECT
-          cv.*,
-          COUNT(*) OVER (PARTITION BY cv.crime_id) AS version_count,
-          ROW_NUMBER() OVER (
-            PARTITION BY cv.crime_id
-            ORDER BY cv.created_at DESC
-          ) AS latest_version,
-          SUM(
-            CASE
-              WHEN cv.updates IS NOT NULL AND cv.updates <> '' THEN 1
-              ELSE 0
-            END
-          ) OVER (
-            PARTITION BY cv.crime_id
-            ORDER BY cv.created_at
-          ) + 1 AS version_number
-        FROM crime_version cv
-      )
-      
-      SELECT
-        vi.id AS crimeVersionId,
-        c.crime_reference AS crimeReference,
-        c.police_force_area AS policeForceArea,
-        vi.crime_type_id AS crimeTypeId,
-        vi.crime_date_time_from AS crimeDateTimeFrom,
-        cb.batch_id AS batchId,
-        cb.created_at AS ingestionDateTime,
-        EXISTS (
-            SELECT 1
-            FROM crime_matching_result cmr
-            WHERE cmr.crime_version_id = vi.id
-        ) AS matched,
+      WITH base AS (
+    SELECT
+        vi.*,
         CASE
-          WHEN vi.latest_version = 1 THEN
+            WHEN EXISTS (
+                SELECT 1
+                FROM crime_version_update u
+                WHERE u.crime_version_id = vi.id
+            ) THEN 1 ELSE 0
+            END AS has_updates
+
+    FROM crime_version vi
+),
+
+     version_info AS (
+         SELECT
+             b.*,
+
+             ROW_NUMBER() OVER (
+                 PARTITION BY b.crime_id
+                 ORDER BY b.created_at DESC
+                 ) AS version_order,
+
+             COUNT(*) OVER (
+                 PARTITION BY b.crime_id
+                 ) AS total_versions,
+
+             FIRST_VALUE(b.id) OVER (
+                 PARTITION BY b.crime_id
+                 ORDER BY b.created_at DESC
+                 ) AS latest_crime_version_id,
+
+--          Increments the version number by 1 if there are updates
+             SUM(CASE WHEN b.has_updates = 1 THEN 1 ELSE 0 END) OVER (
+                 PARTITION BY b.crime_id
+                 ORDER BY b.created_at
+                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                 ) + 1 AS version_number
+
+         FROM base b
+     )
+
+SELECT
+    cv.id AS crimeVersionId,
+    c.crime_reference AS crimeReference,
+    c.police_force_area AS policeForceArea,
+    cv.crime_type_id AS crimeTypeId,
+    cv.crime_date_time_from AS crimeDateTimeFrom,
+    cb.batch_id AS batchId,
+    cb.created_at AS ingestionDateTime,
+    EXISTS (
+        SELECT 1
+        FROM crime_matching_result cmr
+        WHERE cmr.crime_version_id = cv.id
+    ) AS matched,
+    CASE
+        WHEN cv.id = vi.latest_crime_version_id THEN
             CASE
-              WHEN vi.updates = '' THEN 'Latest version (Duplicate)'
-              ELSE 'Latest version'
-            END
-          ELSE
-            'Version ' || vi.version_number ||
+                WHEN vi.total_versions = 1 THEN 'Latest version'
+                WHEN vi.has_updates = 0 THEN 'Latest version (Duplicate)'
+                ELSE 'Latest version'
+                END
+        ELSE
             CASE
-              WHEN vi.updates = '' THEN ' (Duplicate)'
-              ELSE ''
-            END
+                -- first version
+                WHEN vi.version_order = vi.total_versions AND vi.has_updates = 0 THEN
+                    'Version ' || vi.version_number
+
+                WHEN vi.has_updates = 0 THEN
+                    'Version ' || vi.version_number || ' (Duplicate)'
+
+                ELSE
+                    'Version ' || vi.version_number
+                END
         END AS versionLabel,
-        CASE
-          WHEN vi.updates = '' THEN 'None'
-          WHEN vi.updates IS NULL THEN 'N/A'
-          ELSE vi.updates
-        END AS updates
-      FROM version_info vi
-      JOIN crime_batch cb 
-          ON cb.id = vi.crime_batch_id
-      JOIN crime c 
-          ON c.id = vi.crime_id
-      LEFT JOIN crime_matching_result cmr 
-          ON cmr.id = (
-            SELECT id
-            FROM crime_matching_result
-            WHERE crime_version_id = vi.id
-            ORDER BY created_at DESC
-            LIMIT 1
-          )
-      WHERE LOWER(c.crime_reference) LIKE '%' || LOWER(:crimeReference) || '%'
-      ORDER BY cb.created_at DESC;
+    'updates' AS updates
+FROM version_info vi
+
+         JOIN crime_version cv
+              ON cv.id = vi.id
+
+         JOIN crime_batch cb
+              ON cb.id = cv.crime_batch_id
+
+         JOIN crime c
+              ON c.id = cv.crime_id
+
+         LEFT JOIN crime_version_update cvu
+                   ON cvu.crime_version_id = cv.id
+
+         LEFT JOIN crime_matching_result cmr
+                   ON cmr.id = (
+                       SELECT id
+                       FROM crime_matching_result
+                       WHERE crime_version_id = cv.id
+                       ORDER BY created_at DESC
+                       LIMIT 1
+                   )
+
+         LEFT JOIN crime_matching_result_device_wearer cmrdw
+                   ON cmrdw.crime_matching_result_id = cmr.id
+
+         LEFT JOIN crime_matching_result_position cmrp
+                   ON cmrp.crime_matching_result_device_wearer_id = cmrdw.id
+WHERE LOWER(c.crime_reference) LIKE '%' || LOWER(:crimeReference) || '%'
+ORDER BY cb.created_at DESC;
+
     """,
 
     countQuery = """
@@ -100,85 +141,131 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
 
   @Query(
     value = """
-    WITH version_info AS (
-      SELECT
-        cv.*,
-        COUNT(*) OVER (PARTITION BY cv.crime_id) AS version_count,
-        ROW_NUMBER() OVER (
-          PARTITION BY cv.crime_id
-          ORDER BY cv.created_at DESC
-        ) AS latest_version,
-        FIRST_VALUE(cv.id) OVER (
-          PARTITION BY cv.crime_id
-          ORDER BY cv.created_at DESC
-        ) AS latest_crime_version_id,
-        SUM(
-          CASE
-            WHEN cv.updates IS NOT NULL AND cv.updates <> '' THEN 1
-            ELSE 0
-          END
-        ) OVER (
-          PARTITION BY cv.crime_id
-          ORDER BY cv.created_at
-        ) + 1 AS version_number
-      FROM crime_version cv
-    )
-
+    WITH base AS (
     SELECT
-      vi.id AS crimeVersionId,
-      CASE
-        WHEN vi.latest_version = 1 THEN NULL
-        ELSE vi.latest_crime_version_id
-      END AS latestCrimeVersionId,
-      c.crime_reference AS crimeReference,
-      cb.batch_id AS batchId,
-      vi.crime_type_id AS crimeType,
-      vi.crime_date_time_from AS crimeDateTimeFrom,
-      vi.crime_date_time_to AS crimeDateTimeTo,
-      vi.crime_text AS crimeText,
-      vi.latitude AS crimeLatitude,
-      vi.longitude AS crimeLongitude,
-      vi.northing AS crimeNorthing,
-      vi.easting AS crimeEasting,
-      cmr.id AS matchingResultId,
-      cmrdw.id AS deviceWearerId,
-      cmrdw.name AS name,
-      cmrdw.device_id AS deviceId,
-      cmrdw.nomis_id AS nomisId,
-      cmrp.latitude AS wearerLatitude,
-      cmrp.longitude AS wearerLongitude,
-      cmrp.sequence_label AS sequenceLabel,
-      cmrp.confidence_circle AS confidence,
-      cmrp.captured_date_time AS capturedDateTime,
-      CASE
-        WHEN vi.latest_version = 1 THEN
-          CASE
-            WHEN vi.updates = '' THEN 'Latest version (Duplicate)'
-            ELSE 'Latest version'
-          END
+        vi.*,
+
+        CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM crime_version_update u
+                WHERE u.crime_version_id = vi.id
+            ) THEN 1 ELSE 0
+        END AS has_updates
+
+    FROM crime_version vi
+),
+
+version_info AS (
+     SELECT
+         b.*,
+         ROW_NUMBER() OVER (
+             PARTITION BY b.crime_id
+             ORDER BY b.created_at DESC
+         ) AS version_order,
+
+         COUNT(*) OVER (
+             PARTITION BY b.crime_id
+         ) AS total_versions,
+
+         FIRST_VALUE(b.id) OVER (
+             PARTITION BY b.crime_id
+             ORDER BY b.created_at DESC
+         ) AS latest_crime_version_id,
+
+         SUM(CASE WHEN b.has_updates = 1 THEN 1 ELSE 0 END) OVER (
+             PARTITION BY b.crime_id
+             ORDER BY b.created_at
+             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+         ) + 1 AS version_number
+
+     FROM base b
+)
+
+SELECT
+    cv.id AS crimeVersionId,
+
+    c.crime_reference AS crimeReference,
+    cb.batch_id AS batchId,
+
+    cv.crime_type_id AS crimeType,
+    cv.crime_date_time_from AS crimeDateTimeFrom,
+    cv.crime_date_time_to AS crimeDateTimeTo,
+    cv.crime_text AS crimeText,
+
+    cv.latitude AS crimeLatitude,
+    cv.longitude AS crimeLongitude,
+    cv.northing AS crimeNorthing,
+    cv.easting AS crimeEasting,
+
+    cmr.id AS matchingResultId,
+
+    cmrdw.id AS deviceWearerId,
+    cmrdw.name AS name,
+    cmrdw.device_id AS deviceId,
+    cmrdw.nomis_id AS nomisId,
+
+    cmrp.latitude AS wearerLatitude,
+    cmrp.longitude AS wearerLongitude,
+    cmrp.sequence_label AS sequenceLabel,
+    cmrp.confidence_circle AS confidence,
+    cmrp.captured_date_time AS capturedDateTime,
+
+    CASE
+        WHEN cv.id = vi.latest_crime_version_id THEN
+            CASE
+                WHEN vi.total_versions = 1 THEN 'Latest version'
+                WHEN vi.has_updates = 0 THEN 'Latest version (Duplicate)'
+                ELSE 'Latest version'
+                END
         ELSE
-          'Version ' || vi.version_number ||
-          CASE
-            WHEN vi.updates = '' THEN ' (Duplicate)'
-            ELSE ''
-          END
-      END AS versionLabel
-    FROM version_info vi
-    JOIN crime_batch cb ON cb.id = vi.crime_batch_id
-    JOIN crime c ON c.id = vi.crime_id
-    LEFT JOIN crime_matching_result cmr ON cmr.id = (
-      SELECT id
-      FROM crime_matching_result
-      WHERE crime_version_id = vi.id
-      ORDER BY created_at DESC
-      LIMIT 1
-    )
-    LEFT JOIN crime_matching_result_device_wearer cmrdw
-        ON cmrdw.crime_matching_result_id = cmr.id
-    LEFT JOIN crime_matching_result_position cmrp
-        ON cmrp.crime_matching_result_device_wearer_id = cmrdw.id
-    WHERE vi.id =:crimeVersionId
-    ORDER BY cmrp.captured_date_time
+            CASE
+                WHEN vi.version_order = vi.total_versions AND vi.has_updates = 0 THEN
+                    'Version ' || vi.version_number
+
+                WHEN vi.has_updates = 0 THEN
+                    'Version ' || vi.version_number || ' (Duplicate)'
+
+                ELSE
+                    'Version ' || vi.version_number
+                END
+        END AS versionLabel,
+    CASE
+        WHEN cv.id = vi.latest_crime_version_id THEN NULL
+        ELSE vi.latest_crime_version_id
+    END AS latestCrimeVersionId
+
+FROM version_info vi
+
+JOIN crime_version cv
+  ON cv.id = vi.id
+
+JOIN crime_batch cb
+  ON cb.id = cv.crime_batch_id
+
+JOIN crime c
+  ON c.id = cv.crime_id
+
+LEFT JOIN crime_version_update cvu
+       ON cvu.crime_version_id = cv.id
+
+LEFT JOIN crime_matching_result cmr
+       ON cmr.id = (
+           SELECT id
+           FROM crime_matching_result
+           WHERE crime_version_id = cv.id
+           ORDER BY created_at DESC
+           LIMIT 1
+       )
+
+LEFT JOIN crime_matching_result_device_wearer cmrdw
+       ON cmrdw.crime_matching_result_id = cmr.id
+
+LEFT JOIN crime_matching_result_position cmrp
+       ON cmrp.crime_matching_result_device_wearer_id = cmrdw.id
+WHERE cv.id =:crimeVersionId
+ORDER BY cmrp.captured_date_time;
+
     """,
     nativeQuery = true,
   )

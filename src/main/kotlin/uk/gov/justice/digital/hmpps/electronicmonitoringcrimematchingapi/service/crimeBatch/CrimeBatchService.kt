@@ -12,6 +12,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttemptSummary
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersionUpdate
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeVersionFieldName
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
@@ -45,17 +47,15 @@ class CrimeBatchService(
 
       val previousVersion = crimeVersionRepository.findFirstByCrimeIdOrderByCreatedAtDesc(crime.id)
 
-      val crimeVersionUpdates =
-        previousVersion?.let {
-          compareCrimeVersion(it, record).joinToString(", ")
-        }
-
       val crimeVersion = createCrimeVersion(
         record,
         crime,
         crimeBatch,
-        crimeVersionUpdates,
       )
+
+      if (previousVersion != null) {
+        compareCrimeVersions(crimeVersion, previousVersion)
+      }
 
       // Add version to batch
       crimeBatch.crimeVersions.add(crimeVersion)
@@ -110,7 +110,7 @@ class CrimeBatchService(
     )
   }
 
-  private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime, crimeBatch: CrimeBatch, updates: String?): CrimeVersion = CrimeVersion(
+  private fun createCrimeVersion(record: CrimeRecordRequest, crime: Crime, crimeBatch: CrimeBatch): CrimeVersion = CrimeVersion(
     crime = crime,
     crimeTypeId = record.crimeTypeId,
     crimeDateTimeFrom = record.crimeDateTimeFrom,
@@ -121,22 +121,29 @@ class CrimeBatchService(
     longitude = record.longitude,
     crimeText = record.crimeText,
     crimeBatch = crimeBatch,
-    updates = updates,
   )
 
-  private fun compareCrimeVersion(
-    previousVersion: CrimeVersion?,
-    record: CrimeRecordRequest,
-  ): Set<String> {
-    val updates = mutableSetOf<String>()
+  private fun compareCrimeVersions(
+    version: CrimeVersion,
+    previousVersion: CrimeVersion,
+  ) {
+    val comparisonFields = listOf(
+      CrimeVersionFieldName.CRIME_TYPE_ID to CrimeVersion::crimeTypeId,
+      CrimeVersionFieldName.CRIME_DATE_TIME_FROM to CrimeVersion::crimeDateTimeFrom,
+      CrimeVersionFieldName.CRIME_DATE_TIME_TO to CrimeVersion::crimeDateTimeTo,
+      CrimeVersionFieldName.EASTING to CrimeVersion::easting,
+      CrimeVersionFieldName.NORTHING to CrimeVersion::northing,
+      CrimeVersionFieldName.LATITUDE to CrimeVersion::latitude,
+      CrimeVersionFieldName.LONGITUDE to CrimeVersion::longitude,
+      CrimeVersionFieldName.CRIME_TEXT to CrimeVersion::crimeText,
+    )
 
-    if (previousVersion != null) {
-      if (previousVersion.crimeTypeId != record.crimeTypeId) updates.add("Crime Type")
-      if (previousVersion.crimeDateTimeFrom != record.crimeDateTimeFrom || previousVersion.crimeDateTimeTo != record.crimeDateTimeTo) updates.add("Crime Date")
-      if (previousVersion.easting != record.easting || previousVersion.northing != record.northing || previousVersion.latitude != record.latitude || previousVersion.longitude != record.longitude) updates.add("Crime Location")
-      if (previousVersion.crimeText != record.crimeText) updates.add("Crime Text")
+    comparisonFields.forEach { (fieldName, prop) ->
+      if (prop.get(previousVersion) != prop.get(version)) {
+        version.updates.add(createCrimeVersionUpdate(fieldName, version))
+      }
     }
-
-    return updates
   }
+
+  private fun createCrimeVersionUpdate(crimeVersionFieldName: CrimeVersionFieldName, crimeVersion: CrimeVersion): CrimeVersionUpdate = CrimeVersionUpdate(fieldName = crimeVersionFieldName, crimeVersion = crimeVersion)
 }

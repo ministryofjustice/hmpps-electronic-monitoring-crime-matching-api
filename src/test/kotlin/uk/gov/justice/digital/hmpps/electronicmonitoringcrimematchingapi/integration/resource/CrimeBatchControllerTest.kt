@@ -135,7 +135,6 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           longitude = 0.060977,
           crimeText = "",
           crimeBatch = crimeBatch,
-          updates = null,
         ),
         CrimeVersion(
           id = UUID.fromString("8d595ab3-d4ef-4975-93ef-24570f6f0f61"),
@@ -149,7 +148,6 @@ class CrimeBatchControllerTest : IntegrationTestBase() {
           longitude = null,
           crimeText = "",
           crimeBatch = crimeBatch,
-          updates = null,
         ),
       )
       crimeBatch.crimeVersions.addAll(crimeVersions)

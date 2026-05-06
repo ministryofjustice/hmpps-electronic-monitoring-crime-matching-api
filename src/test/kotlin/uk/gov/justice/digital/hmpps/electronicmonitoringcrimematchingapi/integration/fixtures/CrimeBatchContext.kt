@@ -31,7 +31,6 @@ class CrimeBatchContext(
     easting: Double? = null,
     northing: Double? = null,
     crimeText: String = "text",
-    updates: String? = null,
     block: CrimeContext.() -> Unit,
   ) {
     // Reuse existing crime if it already exists (prevents unique constraint violation)
@@ -60,7 +59,6 @@ class CrimeBatchContext(
         northing = northing,
         crimeText = crimeText,
         crimeBatch = batch,
-        updates = updates,
       ),
     )
 

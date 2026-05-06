@@ -112,7 +112,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = longitude,
           easting = easting,
           northing = northing,
-          updates = "Crime Type",
         ) {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
@@ -135,7 +134,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = longitude,
           easting = easting,
           northing = northing,
-          updates = "",
         ) {}
       }
 
@@ -244,7 +242,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = -1.5,
           easting = easting,
           northing = northing,
-          updates = "Crime Location",
         ) {}
       }
 
@@ -425,7 +422,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = longitude,
           easting = easting,
           northing = northing,
-          updates = "",
         ) {}
       }
 
@@ -445,7 +441,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = longitude,
           easting = easting,
           northing = northing,
-          updates = "Crime Type",
         ) {}
       }
 
@@ -465,7 +460,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = -1.5,
           easting = easting,
           northing = northing,
-          updates = "Crime Type, Crime Location",
         ) {}
       }
 
@@ -657,7 +651,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         withCrime(
           crimeRef = crimeRef,
           id = version2,
-          updates = "",
         ) {}
       }
 
@@ -696,7 +689,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         withCrime(
           crimeRef = crimeRef,
           id = version2,
-          updates = "",
         ) {}
       }
 
