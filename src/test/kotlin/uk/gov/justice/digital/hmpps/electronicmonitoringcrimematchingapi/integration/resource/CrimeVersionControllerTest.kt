@@ -542,6 +542,64 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return a duplicate crime version`() {
+      val version1 = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", id = version1) {}
+      }
+
+      val version2 = UUID.fromString("22222222-2222-2222-2222-222222222222")
+      crimeMatchingFixtures.givenBatch(batchId = "Batch2") {
+        withCrime("crime1", id = version2) {}
+      }
+
+      val body = webTestClient.get()
+        .uri("/crime-versions/$version2")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-version-duplicate-result-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
+    fun `it should return an older crime version`() {
+      val version1 = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", id = version1) {}
+      }
+
+      val version2 = UUID.fromString("22222222-2222-2222-2222-222222222222")
+      crimeMatchingFixtures.givenBatch(batchId = "Batch2") {
+        withCrime("crime1", id = version2) {}
+      }
+
+      val body = webTestClient.get()
+        .uri("/crime-versions/$version1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-crime-version-older-version-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
     fun `it should return a crime version with easting and northing location data`() {
       val versionId = UUID.fromString("11111111-1111-1111-1111-111111111111")
       crimeMatchingFixtures.givenBatch(batchId = "Batch1") {

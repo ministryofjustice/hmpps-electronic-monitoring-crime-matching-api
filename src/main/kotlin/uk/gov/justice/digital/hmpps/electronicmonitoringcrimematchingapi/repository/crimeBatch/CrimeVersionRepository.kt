@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionSummaryProjection
 import java.util.UUID
 
@@ -315,51 +314,6 @@ interface CrimeVersionRepository : JpaRepository<CrimeVersion, UUID> {
     crimeReference: String?,
     pageable: Pageable,
   ): Page<CrimeVersionSummaryProjection>
-
-  @Query(
-    value = """
-      SELECT
-        cv.id AS crimeVersionId,
-        c.crime_reference AS crimeReference,
-        cb.batch_id AS batchId,
-        cv.crime_type_id AS crimeType,
-        cv.crime_date_time_from AS crimeDateTimeFrom,
-        cv.crime_date_time_to AS crimeDateTimeTo,
-        cv.crime_text AS crimeText,
-        cv.latitude AS crimeLatitude,
-        cv.longitude AS crimeLongitude,
-        cv.northing AS crimeNorthing,
-        cv.easting AS crimeEasting,
-        cmr.id AS matchingResultId,
-        cmrdw.id AS deviceWearerId,
-        cmrdw.name AS name,
-        cmrdw.device_id AS deviceId,
-        cmrdw.nomis_id AS nomisId,
-        cmrp.latitude AS wearerLatitude,
-        cmrp.longitude AS wearerLongitude,
-        cmrp.sequence_label AS sequenceLabel,
-        cmrp.precision AS precision,
-        cmrp.speed as speed,
-        cmrp.direction AS direction,
-        cmrp.captured_date_time AS capturedDateTime
-      FROM crime_version cv
-      JOIN crime_batch cb ON cb.id = cv.crime_batch_id
-      JOIN crime c ON c.id = cv.crime_id
-      LEFT JOIN crime_matching_result cmr ON cmr.id = (
-        SELECT id
-        FROM crime_matching_result
-        WHERE crime_version_id = cv.id
-        ORDER BY created_at DESC
-        LIMIT 1
-      )
-      LEFT JOIN crime_matching_result_device_wearer cmrdw on cmrdw.crime_matching_result_id = cmr.id
-      LEFT JOIN crime_matching_result_position cmrp on cmrp.crime_matching_result_device_wearer_id = cmrdw.id
-      WHERE cv.id = :crimeVersionId
-      ORDER BY cmrp.captured_date_time
-    """,
-    nativeQuery = true,
-  )
-  fun findCrimeVersionMatchingResult(crimeVersionId: UUID): List<CrimeVersionProjection>
 
   fun findFirstByCrimeIdOrderByCreatedAtDesc(crimeId: UUID): CrimeVersion?
 }

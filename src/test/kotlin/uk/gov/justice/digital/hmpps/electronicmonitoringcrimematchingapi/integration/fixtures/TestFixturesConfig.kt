@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionUpdateRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 
 @TestConfiguration
@@ -14,12 +15,14 @@ class TestFixturesConfig {
   fun crimeMatchingFixtures(
     crimeRepository: CrimeRepository,
     crimeVersionRepository: CrimeVersionRepository,
+    crimeVersionUpdateRepository: CrimeVersionUpdateRepository,
     crimeBatchRepository: CrimeBatchRepository,
     crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
     crimeMatchingRunRepository: CrimeMatchingRunRepository,
   ) = CrimeMatchingFixtures(
     crimeRepository = crimeRepository,
     crimeVersionRepository = crimeVersionRepository,
+    crimeVersionUpdateRepository = crimeVersionUpdateRepository,
     crimeBatchRepository = crimeBatchRepository,
     crimeBatchIngestionAttemptRepository = crimeBatchIngestionAttemptRepository,
     crimeMatchingRunRepository = crimeMatchingRunRepository,

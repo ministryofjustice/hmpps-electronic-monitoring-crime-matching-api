@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 data class CrimeVersionResponse(
   val crimeVersionId: String,
+  val latestCrimeVersionId: String?,
   val crimeReference: String,
   val batchId: String,
   val crimeTypeDescription: String,

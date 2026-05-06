@@ -55,6 +55,9 @@ data class CrimeVersion(
   @OneToMany(mappedBy = "crimeVersion", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   val updates: MutableList<CrimeVersionUpdate> = mutableListOf(),
 
+  @OneToMany(mappedBy = "crimeVersion", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
+  val matchingResults: MutableList<CrimeMatchingResult> = mutableListOf(),
+
   @Column(nullable = false)
   val createdAt: LocalDateTime = LocalDateTime.now(),
 )
