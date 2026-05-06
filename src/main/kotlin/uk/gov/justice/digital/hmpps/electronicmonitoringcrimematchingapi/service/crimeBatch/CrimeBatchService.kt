@@ -12,9 +12,12 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttemptSummary
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersionUpdate
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeVersionFieldName
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
@@ -24,6 +27,7 @@ import java.util.UUID
 class CrimeBatchService(
   private val crimeBatchRepository: CrimeBatchRepository,
   private val crimeRepository: CrimeRepository,
+  private val crimeVersionRepository: CrimeVersionRepository,
   private val matchingNotificationService: MatchingNotificationService,
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
 ) {
@@ -41,8 +45,20 @@ class CrimeBatchService(
       val crime = crimeRepository.findByCrimeReferenceAndPoliceForceArea(record.crimeReference, record.policeForce)
         .orElseGet { crimeRepository.save(Crime(policeForceArea = record.policeForce, crimeReference = record.crimeReference)) }
 
+      val previousVersion = crimeVersionRepository.findFirstByCrimeIdOrderByCreatedAtDesc(crime.id)
+
+      val crimeVersion = createCrimeVersion(
+        record,
+        crime,
+        crimeBatch,
+      )
+
+      if (previousVersion != null) {
+        compareCrimeVersions(crimeVersion, previousVersion)
+      }
+
       // Add version to batch
-      crimeBatch.crimeVersions.add(createCrimeVersion(record, crime, crimeBatch))
+      crimeBatch.crimeVersions.add(crimeVersion)
     }
 
     // Save batch
@@ -106,4 +122,28 @@ class CrimeBatchService(
     crimeText = record.crimeText,
     crimeBatch = crimeBatch,
   )
+
+  private fun compareCrimeVersions(
+    version: CrimeVersion,
+    previousVersion: CrimeVersion,
+  ) {
+    val comparisonFields = listOf(
+      CrimeVersionFieldName.CRIME_TYPE_ID to CrimeVersion::crimeTypeId,
+      CrimeVersionFieldName.CRIME_DATE_TIME_FROM to CrimeVersion::crimeDateTimeFrom,
+      CrimeVersionFieldName.CRIME_DATE_TIME_TO to CrimeVersion::crimeDateTimeTo,
+      CrimeVersionFieldName.EASTING to CrimeVersion::easting,
+      CrimeVersionFieldName.NORTHING to CrimeVersion::northing,
+      CrimeVersionFieldName.LATITUDE to CrimeVersion::latitude,
+      CrimeVersionFieldName.LONGITUDE to CrimeVersion::longitude,
+      CrimeVersionFieldName.CRIME_TEXT to CrimeVersion::crimeText,
+    )
+
+    comparisonFields.forEach { (fieldName, prop) ->
+      if (prop.get(previousVersion) != prop.get(version)) {
+        version.updates.add(createCrimeVersionUpdate(fieldName, version))
+      }
+    }
+  }
+
+  private fun createCrimeVersionUpdate(crimeVersionFieldName: CrimeVersionFieldName, crimeVersion: CrimeVersion): CrimeVersionUpdate = CrimeVersionUpdate(fieldName = crimeVersionFieldName, crimeVersion = crimeVersion)
 }
