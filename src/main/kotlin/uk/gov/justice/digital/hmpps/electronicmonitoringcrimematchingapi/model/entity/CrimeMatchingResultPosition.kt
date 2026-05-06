@@ -17,19 +17,23 @@ data class CrimeMatchingResultPosition(
   @Column(name = "id", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
+  @Column(nullable = false)
+  val capturedDateTime: LocalDateTime,
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crime_matching_result_device_wearer_id", nullable = false)
   val crimeMatchingResultDeviceWearer: CrimeMatchingResultDeviceWearer,
+
+  val direction: Long,
 
   val latitude: Double,
 
   val longitude: Double,
 
-  @Column(nullable = false)
-  val capturedDateTime: LocalDateTime,
+  val precision: Long,
 
   @Column(nullable = false)
   val sequenceLabel: String,
 
-  val confidenceCircle: Int,
+  val speed: Long,
 )

@@ -83,9 +83,13 @@ class CrimeMatchingRunService(
   private fun createDeviceWearer(result: CrimeMatchingResult, wearerDto: CrimeMatchingResultDeviceWearerRequest): CrimeMatchingResultDeviceWearer {
     val wearer = CrimeMatchingResultDeviceWearer(
       crimeMatchingResult = result,
+      address = wearerDto.address,
+      dateOfBirth = wearerDto.dateOfBirth,
       deviceId = wearerDto.deviceId,
+      identifier = wearerDto.identifier,
       name = wearerDto.name,
       nomisId = wearerDto.nomisId,
+      pncRef = wearerDto.pncRef,
     )
 
     for (positionDto in wearerDto.positions) {
@@ -98,10 +102,12 @@ class CrimeMatchingRunService(
 
   private fun createPosition(wearer: CrimeMatchingResultDeviceWearer, positionDto: CrimeMatchingResultPositionRequest): CrimeMatchingResultPosition = CrimeMatchingResultPosition(
     crimeMatchingResultDeviceWearer = wearer,
+    capturedDateTime = positionDto.capturedDateTime,
+    direction = positionDto.direction,
     latitude = positionDto.latitude,
     longitude = positionDto.longitude,
-    capturedDateTime = positionDto.capturedDateTime,
+    precision = positionDto.precision,
     sequenceLabel = positionDto.sequenceLabel,
-    confidenceCircle = positionDto.confidenceCircle,
+    speed = positionDto.speed,
   )
 }
