@@ -26,13 +26,13 @@ class CrimeMatchingResultMapper(
       crimeText = matchingResult.crimeText,
       deviceId = matchingResult.deviceId,
       deviceName = "",
-      subjectId = "",
+      subjectId = matchingResult.identifier,
       subjectName = matchingResult.name,
       subjectNomisId = matchingResult.nomisId,
-      subjectPncRef = "",
-      subjectAddress = "",
-      subjectDateOfBirth = "",
-      subjectManager = "",
+      subjectPncRef = matchingResult.pncRef,
+      subjectAddress = matchingResult.address,
+      subjectDateOfBirth = matchingResult.dateOfBirth.toString(),
+      subjectManager = "", // Always an empty string
     )
   }
 }
