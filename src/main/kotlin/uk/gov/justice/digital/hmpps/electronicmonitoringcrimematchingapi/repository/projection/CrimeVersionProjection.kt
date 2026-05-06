@@ -25,6 +25,6 @@ interface CrimeVersionProjection {
   val wearerLatitude: Double?
   val wearerLongitude: Double?
   val sequenceLabel: String?
-  val confidence: Int?
+  val precision: Int?
   val capturedDateTime: LocalDateTime?
 }

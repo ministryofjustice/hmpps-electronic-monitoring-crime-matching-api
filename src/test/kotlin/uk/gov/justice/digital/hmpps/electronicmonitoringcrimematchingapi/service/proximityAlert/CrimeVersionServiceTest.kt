@@ -50,7 +50,7 @@ class CrimeVersionServiceTest {
         on { crimeLatitude } doReturn 10.0
         on { crimeLongitude } doReturn 10.0
         on { sequenceLabel } doReturn "A1"
-        on { confidence } doReturn 10
+        on { precision } doReturn 10
         on { capturedDateTime } doReturn LocalDateTime.now()
       }
 

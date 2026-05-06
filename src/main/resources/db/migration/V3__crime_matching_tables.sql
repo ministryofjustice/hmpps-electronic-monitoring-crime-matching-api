@@ -11,9 +11,13 @@ CREATE TABLE crime_matching_result_device_wearer
 (
     id                       UUID   NOT NULL,
     crime_matching_result_id UUID   NOT NULL,
+    address                  VARCHAR(255) NOT NULL,
+    date_of_birth            TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     device_id                BIGINT NOT NULL,
+    identifier               VARCHAR(255) NOT NULL,
     name                     VARCHAR(255) NOT NULL,
     nomis_id                 VARCHAR(255) NOT NULL,
+    pnc_ref                  VARCHAR(255) NOT NULL,
     CONSTRAINT pk_crime_matching_result_device_wearer PRIMARY KEY (id)
 );
 
@@ -21,11 +25,13 @@ CREATE TABLE crime_matching_result_position
 (
     id                                     UUID             NOT NULL,
     crime_matching_result_device_wearer_id UUID             NOT NULL,
+    captured_date_time                     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    direction                              BIGINT NOT NULL,
     latitude                               DOUBLE PRECISION NOT NULL,
     longitude                              DOUBLE PRECISION NOT NULL,
-    captured_date_time                     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    precision                              BIGINT NOT NULL,
     sequence_label                         VARCHAR(255) NOT NULL,
-    confidence_circle                      INTEGER          NOT NULL,
+    speed                                  BIGINT NOT NULL,
     CONSTRAINT pk_crime_matching_result_position PRIMARY KEY (id)
 );
 

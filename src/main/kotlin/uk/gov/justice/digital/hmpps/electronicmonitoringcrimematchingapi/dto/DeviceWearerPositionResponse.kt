@@ -4,6 +4,6 @@ data class DeviceWearerPositionResponse(
   val latitude: Double,
   val longitude: Double,
   val sequenceLabel: String,
-  val confidence: Int,
+  val precision: Int,
   val capturedDateTime: String,
 )

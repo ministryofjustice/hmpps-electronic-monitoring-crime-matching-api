@@ -14,11 +14,13 @@ class CrimeMatchingResultDeviceWearerContext(
     crimeMatchingResultDeviceWearer.positions.add(
       CrimeMatchingResultPosition(
         crimeMatchingResultDeviceWearer = crimeMatchingResultDeviceWearer,
+        capturedDateTime = capturedDateTime,
+        direction = 10,
         latitude = 10.0,
         longitude = 10.0,
-        capturedDateTime = capturedDateTime,
+        precision = 10,
         sequenceLabel = sequenceLabel,
-        confidenceCircle = 10,
+        speed = 10,
       ),
     )
   }

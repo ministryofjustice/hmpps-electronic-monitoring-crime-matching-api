@@ -169,23 +169,31 @@ class CrimeMatchingRunServiceTest {
             crimeVersionId = versionId,
             deviceWearers = listOf(
               CrimeMatchingResultDeviceWearerRequest(
+                address = "address",
+                dateOfBirth = LocalDateTime.of(1980, 1, 1, 1, 1, 1),
                 deviceId = 604008982,
+                identifier = "identifier",
                 name = "Richard Gibbons",
                 nomisId = "A5128CZ",
+                pncRef = "ABC",
                 positions = listOf(
                   CrimeMatchingResultPositionRequest(
+                    capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),
+                    direction = 10,
                     latitude = 51.574865,
                     longitude = 0.060977,
-                    capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),
+                    precision = 30,
                     sequenceLabel = "A1",
-                    confidenceCircle = 30,
+                    speed = 10,
                   ),
                   CrimeMatchingResultPositionRequest(
+                    capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),
+                    direction = 10,
                     latitude = 51.574153,
                     longitude = 0.058536,
-                    capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),
+                    precision = 30,
                     sequenceLabel = "A2",
-                    confidenceCircle = 52,
+                    speed = 10,
                   ),
                 ),
               ),
@@ -207,16 +215,23 @@ class CrimeMatchingRunServiceTest {
       assertThat(savedResult.deviceWearers).hasSize(1)
 
       val savedWearer = savedResult.deviceWearers.first()
+      assertThat(savedWearer.address).isEqualTo("address")
+      assertThat(savedWearer.dateOfBirth).isEqualTo(LocalDateTime.of(1980, 1, 1, 1, 1, 1))
       assertThat(savedWearer.deviceId).isEqualTo(604008982)
+      assertThat(savedWearer.identifier).isEqualTo("identifier")
       assertThat(savedWearer.name).isEqualTo("Richard Gibbons")
       assertThat(savedWearer.nomisId).isEqualTo("A5128CZ")
+      assertThat(savedWearer.pncRef).isEqualTo("ABC")
       assertThat(savedWearer.positions).hasSize(2)
 
       val firstPos = savedWearer.positions.first()
-      assertThat(firstPos.sequenceLabel).isEqualTo("A1")
+      assertThat(firstPos.capturedDateTime).isEqualTo(LocalDateTime.of(2026, 1, 16, 8, 12, 0))
+      assertThat(firstPos.direction).isEqualTo(10)
       assertThat(firstPos.latitude).isEqualTo(51.574865)
       assertThat(firstPos.longitude).isEqualTo(0.060977)
-      assertThat(firstPos.confidenceCircle).isEqualTo(30)
+      assertThat(firstPos.precision).isEqualTo(30)
+      assertThat(firstPos.sequenceLabel).isEqualTo("A1")
+      assertThat(firstPos.speed).isEqualTo(10)
     }
   }
 }

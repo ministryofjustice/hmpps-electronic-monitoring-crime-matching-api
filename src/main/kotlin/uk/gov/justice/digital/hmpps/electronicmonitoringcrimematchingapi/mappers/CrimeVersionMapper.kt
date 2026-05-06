@@ -33,7 +33,7 @@ class CrimeVersionMapper(
           latitude = row.wearerLatitude!!,
           longitude = row.wearerLongitude!!,
           sequenceLabel = row.sequenceLabel!!,
-          confidence = row.confidence!!,
+          precision = row.precision!!,
           capturedDateTime = row.capturedDateTime.toString(),
         )
       }
