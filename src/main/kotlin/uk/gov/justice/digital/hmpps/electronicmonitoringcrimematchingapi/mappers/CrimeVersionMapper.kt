@@ -23,18 +23,20 @@ class CrimeVersionMapper(
       if (row.deviceWearerId != null) {
         val wearer = deviceWearerMap.getOrPut(row.deviceWearerId!!) {
           DeviceWearerResponse(
-            name = row.name!!,
             deviceId = row.deviceId!!,
+            name = row.name!!,
             nomisId = row.nomisId!!,
           )
         }
 
         wearer.positions += DeviceWearerPositionResponse(
+          capturedDateTime = row.capturedDateTime.toString(),
+          direction = row.direction!!,
           latitude = row.wearerLatitude!!,
           longitude = row.wearerLongitude!!,
-          sequenceLabel = row.sequenceLabel!!,
           precision = row.precision!!,
-          capturedDateTime = row.capturedDateTime.toString(),
+          sequenceLabel = row.sequenceLabel!!,
+          speed = row.speed!!,
         )
       }
     }

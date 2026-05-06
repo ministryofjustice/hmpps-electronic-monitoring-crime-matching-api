@@ -12,12 +12,12 @@
       "crimeText": "text",
       "deviceId": 2,
       "deviceName": "",
-      "subjectId": "",
+      "subjectId": "1",
       "subjectName": "name",
       "subjectNomisId": "nomisId",
-      "subjectPncRef": "",
-      "subjectAddress": "",
-      "subjectDateOfBirth": "",
+      "subjectPncRef": "pncRef",
+      "subjectAddress": "address",
+      "subjectDateOfBirth": "2025-01-01T01:01",
       "subjectManager": ""
     },
     {
@@ -32,12 +32,12 @@
       "crimeText": "text",
       "deviceId": 3,
       "deviceName": "",
-      "subjectId": "",
+      "subjectId": "1",
       "subjectName": "name",
       "subjectNomisId": "nomisId",
-      "subjectPncRef": "",
-      "subjectAddress": "",
-      "subjectDateOfBirth": "",
+      "subjectPncRef": "pncRef",
+      "subjectAddress": "address",
+      "subjectDateOfBirth": "2025-01-01T01:01",
       "subjectManager": ""
     }
   ]
