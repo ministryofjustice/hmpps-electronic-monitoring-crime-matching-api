@@ -13,6 +13,7 @@
           "address": "address",
           "dateOfBirth": "1980-01-01T00:00:00",
           "deviceId": 604008982,
+          "deviceName": "deviceName",
           "name": "Richard Gibbons",
           "identifier": "identifier",
           "nomisId": "A5128CZ",

@@ -8,8 +8,9 @@ class CrimeMatchingRunContext(
   private val result: CrimeMatchingResult,
 ) {
   fun withMatchedDeviceWearer(
-    deviceId: Long,
     address: String = "address",
+    deviceId: Long,
+    deviceName: String = "deviceName",
     dateOfBirth: LocalDateTime = LocalDateTime.of(2025, 1, 1, 1, 1),
     identifier: String = "1",
     name: String = "name",
@@ -22,6 +23,7 @@ class CrimeMatchingRunContext(
       address = address,
       dateOfBirth = dateOfBirth,
       deviceId = deviceId,
+      deviceName = deviceName,
       identifier = identifier,
       name = name,
       nomisId = nomisId,

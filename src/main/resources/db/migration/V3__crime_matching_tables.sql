@@ -14,6 +14,7 @@ CREATE TABLE crime_matching_result_device_wearer
     address                  VARCHAR(255) NOT NULL,
     date_of_birth            TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     device_id                BIGINT NOT NULL,
+    device_name              VARCHAR(255) NOT NULL,
     identifier               VARCHAR(255) NOT NULL,
     name                     VARCHAR(255) NOT NULL,
     nomis_id                 VARCHAR(255) NOT NULL,
