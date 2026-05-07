@@ -172,6 +172,7 @@ class CrimeMatchingRunServiceTest {
                 address = "address",
                 dateOfBirth = LocalDateTime.of(1980, 1, 1, 1, 1, 1),
                 deviceId = 604008982,
+                deviceName = "deviceName",
                 identifier = "identifier",
                 name = "Richard Gibbons",
                 nomisId = "A5128CZ",
