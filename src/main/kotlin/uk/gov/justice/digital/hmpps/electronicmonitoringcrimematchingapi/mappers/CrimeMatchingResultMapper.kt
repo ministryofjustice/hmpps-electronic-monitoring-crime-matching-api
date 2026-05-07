@@ -25,7 +25,7 @@ class CrimeMatchingResultMapper(
       crimeLongitude = coords.longitude.roundTo(6),
       crimeText = matchingResult.crimeText,
       deviceId = matchingResult.deviceId,
-      deviceName = "",
+      deviceName = matchingResult.deviceName,
       subjectId = matchingResult.identifier,
       subjectName = matchingResult.name,
       subjectNomisId = matchingResult.nomisId,
