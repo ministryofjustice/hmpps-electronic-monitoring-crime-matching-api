@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionUpdateRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.time.Instant
 import java.time.LocalDateTime
@@ -19,7 +18,6 @@ class CrimeBatchContext(
   private val policeForce: PoliceForce,
   private val crimeRepository: CrimeRepository,
   private val crimeVersionRepository: CrimeVersionRepository,
-  private val crimeVersionUpdateRepository: CrimeVersionUpdateRepository,
   private val crimeMatchingRunRepository: CrimeMatchingRunRepository,
 ) {
   fun withCrime(
@@ -70,7 +68,6 @@ class CrimeBatchContext(
       batch = batch,
       version = version,
       crimeMatchingRunRepository = crimeMatchingRunRepository,
-      crimeVersionUpdateRepository = crimeVersionUpdateRepository,
     ).block()
   }
 }

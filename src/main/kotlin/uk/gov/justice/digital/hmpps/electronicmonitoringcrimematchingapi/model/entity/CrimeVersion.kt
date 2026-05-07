@@ -60,4 +60,34 @@ data class CrimeVersion(
 
   @Column(nullable = false)
   val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+  val versionLabel: String
+    get() {
+      val versions = crime.crimeVersions.sortedBy { it.createdAt }
+      val currentVersionIndex = crime.crimeVersions.indexOf(this)
+
+      val versionNumber = versions
+        .take(currentVersionIndex + 1)
+        .count { it.updates.isNotEmpty() } + 1
+
+      val previousVersionNumber = if (currentVersionIndex > 0) {
+        versions
+          .take(currentVersionIndex)
+          .count { it.updates.isNotEmpty() } + 1
+      } else {
+        null
+      }
+
+      val isDuplicate = previousVersionNumber != null && versionNumber == previousVersionNumber
+
+      return buildString {
+        append(if (isLatest) "Latest version" else "Version $versionNumber")
+        if (isDuplicate) append(" (Duplicate)")
+      }
+    }
+
+  val isLatest: Boolean
+    get() {
+      return crime.latestVersion.id == this.id
+    }
+}

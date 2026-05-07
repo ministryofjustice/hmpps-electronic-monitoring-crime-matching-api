@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceWearerPositionResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceWearerResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.MatchingResponse
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.computeVersionLabel
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.CoordinateResolver
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.roundTo
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
@@ -20,17 +19,7 @@ class CrimeVersionMapper(
 
   fun toDto(crimeVersion: CrimeVersion): CrimeVersionResponse {
     val coords = coordinateResolver.toWgs84(crimeVersion.latitude, crimeVersion.longitude, crimeVersion.easting, crimeVersion.northing)
-    val versions = crimeVersion.crime.crimeVersions.sortedBy { it.createdAt }
-
-    val latestVersion = versions.lastOrNull()
-    val isLatest = latestVersion?.id == crimeVersion.id
-    val latestCrimeVersionId = if (!isLatest) latestVersion?.id?.toString() else null
-
-    val versionLabel = computeVersionLabel(
-      isLatest,
-      versions,
-      crimeVersion,
-    )
+    val latestCrimeVersionId = if (!crimeVersion.isLatest) crimeVersion.crime.latestVersion.id.toString() else null
 
     return CrimeVersionResponse(
       crimeVersionId = crimeVersion.id.toString(),
@@ -45,7 +34,7 @@ class CrimeVersionMapper(
       latitude = coords.latitude.roundTo(6),
       longitude = coords.longitude.roundTo(6),
       matching = crimeVersion.matchingResults.maxByOrNull { it.createdAt }?.let { matchingResultToDto(it) },
-      versionLabel = versionLabel,
+      versionLabel = crimeVersion.versionLabel,
     )
   }
 

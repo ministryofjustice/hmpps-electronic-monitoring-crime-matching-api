@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionUpdateRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.time.LocalDateTime
 import java.util.*
@@ -16,7 +15,6 @@ import java.util.*
 class CrimeMatchingFixtures(
   private val crimeRepository: CrimeRepository,
   private val crimeVersionRepository: CrimeVersionRepository,
-  private val crimeVersionUpdateRepository: CrimeVersionUpdateRepository,
   private val crimeBatchRepository: CrimeBatchRepository,
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
   private val crimeMatchingRunRepository: CrimeMatchingRunRepository,
@@ -83,7 +81,6 @@ class CrimeMatchingFixtures(
       policeForce,
       crimeRepository = crimeRepository,
       crimeVersionRepository = crimeVersionRepository,
-      crimeVersionUpdateRepository = crimeVersionUpdateRepository,
       crimeMatchingRunRepository = crimeMatchingRunRepository,
     ).block()
 

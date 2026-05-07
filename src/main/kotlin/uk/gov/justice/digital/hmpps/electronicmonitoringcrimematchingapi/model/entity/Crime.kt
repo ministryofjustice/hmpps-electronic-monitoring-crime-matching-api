@@ -37,4 +37,9 @@ data class Crime(
   @OneToMany(mappedBy = "crime", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   val crimeVersions: MutableList<CrimeVersion> = mutableListOf(),
 
-)
+) {
+  val latestVersion: CrimeVersion
+    get() {
+      return crimeVersions.maxBy { it.createdAt }
+    }
+}
