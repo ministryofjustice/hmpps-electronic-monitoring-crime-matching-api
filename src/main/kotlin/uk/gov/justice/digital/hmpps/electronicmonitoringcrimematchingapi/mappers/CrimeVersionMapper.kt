@@ -105,9 +105,9 @@ class CrimeVersionMapper(
     latitude = position.latitude,
     longitude = position.longitude,
     sequenceLabel = position.sequenceLabel,
-    precision = position.precision.toInt(),
+    precision = position.precision,
     capturedDateTime = position.capturedDateTime.toString(),
-    direction = position.direction.toInt(),
-    speed = position.speed.toInt(),
+    direction = position.direction,
+    speed = position.speed,
   )
 }
