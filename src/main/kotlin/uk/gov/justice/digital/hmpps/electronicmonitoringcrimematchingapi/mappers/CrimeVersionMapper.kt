@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceWearerPositionResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceWearerResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.MatchingResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.computeVersionLabel
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.CoordinateResolver
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.roundTo
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
@@ -48,48 +49,13 @@ class CrimeVersionMapper(
     )
   }
 
-  // Builds the label based on version history, only incrementing the version number if there are updates
-  fun computeVersionLabel(
-    isLatest: Boolean,
-    versions: List<CrimeVersion>,
-    current: CrimeVersion,
-  ): String {
-    val currentVersionIndex = versions.indexOf(current)
-
-    val versionNumber = versions
-      .take(currentVersionIndex + 1)
-      .count { it.updates.isNotEmpty() } + 1
-
-    val previousVersionNumber = if (currentVersionIndex > 0) {
-      versions
-        .take(currentVersionIndex)
-        .count { it.updates.isNotEmpty() } + 1
-    } else {
-      null
-    }
-
-    val isDuplicate = previousVersionNumber != null && versionNumber == previousVersionNumber
-
-    return if (isLatest) {
-      buildString {
-        append("Latest version")
-        if (isDuplicate) append(" (Duplicate)")
-      }
-    } else {
-      buildString {
-        append("Version $versionNumber")
-        if (isDuplicate) append(" (Duplicate)")
-      }
-    }
-  }
-
-  fun matchingResultToDto(matchingResult: CrimeMatchingResult): MatchingResponse {
+  private fun matchingResultToDto(matchingResult: CrimeMatchingResult): MatchingResponse {
     val deviceWearers = matchingResult.deviceWearers.map(this::deviceWearerToDto)
 
     return MatchingResponse(deviceWearers = deviceWearers)
   }
 
-  fun deviceWearerToDto(deviceWearer: CrimeMatchingResultDeviceWearer): DeviceWearerResponse {
+  private fun deviceWearerToDto(deviceWearer: CrimeMatchingResultDeviceWearer): DeviceWearerResponse {
     val positions = deviceWearer.positions.map(this::deviceWearerPositionToDto).sortedBy { it.capturedDateTime }
 
     val deviceWearer = DeviceWearerResponse(
@@ -101,7 +67,7 @@ class CrimeVersionMapper(
     return deviceWearer
   }
 
-  fun deviceWearerPositionToDto(position: CrimeMatchingResultPosition): DeviceWearerPositionResponse = DeviceWearerPositionResponse(
+  private fun deviceWearerPositionToDto(position: CrimeMatchingResultPosition): DeviceWearerPositionResponse = DeviceWearerPositionResponse(
     latitude = position.latitude,
     longitude = position.longitude,
     sequenceLabel = position.sequenceLabel,
