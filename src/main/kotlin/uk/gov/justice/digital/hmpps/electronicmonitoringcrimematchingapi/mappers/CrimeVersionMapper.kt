@@ -7,55 +7,62 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Dev
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.MatchingResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.CoordinateResolver
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.roundTo
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultDeviceWearer
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultPosition
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 
 @Component
 class CrimeVersionMapper(
   val coordinateResolver: CoordinateResolver,
 ) {
 
-  fun toDto(results: List<CrimeVersionProjection>): CrimeVersionResponse {
-    val crimeVersion = results.first()
-    val coords = coordinateResolver.toWgs84(crimeVersion.crimeLatitude, crimeVersion.crimeLongitude, crimeVersion.crimeEasting, crimeVersion.crimeNorthing)
-
-    val deviceWearerMap = LinkedHashMap<String, DeviceWearerResponse>()
-    results.forEach { row ->
-      if (row.deviceWearerId != null) {
-        val wearer = deviceWearerMap.getOrPut(row.deviceWearerId!!) {
-          DeviceWearerResponse(
-            deviceId = row.deviceId!!,
-            name = row.name!!,
-            nomisId = row.nomisId!!,
-          )
-        }
-
-        wearer.positions += DeviceWearerPositionResponse(
-          capturedDateTime = row.capturedDateTime.toString(),
-          direction = row.direction!!,
-          latitude = row.wearerLatitude!!,
-          longitude = row.wearerLongitude!!,
-          precision = row.precision!!,
-          sequenceLabel = row.sequenceLabel!!,
-          speed = row.speed!!,
-        )
-      }
-    }
-
-    val matchingResponse = MatchingResponse(deviceWearers = deviceWearerMap.values.toList())
+  fun toDto(crimeVersion: CrimeVersion): CrimeVersionResponse {
+    val coords = coordinateResolver.toWgs84(crimeVersion.latitude, crimeVersion.longitude, crimeVersion.easting, crimeVersion.northing)
+    val latestCrimeVersionId = if (!crimeVersion.isLatest) crimeVersion.crime.latestVersion.id.toString() else null
 
     return CrimeVersionResponse(
-      crimeVersionId = crimeVersion.crimeVersionId.toString(),
-      crimeReference = crimeVersion.crimeReference,
-      batchId = crimeVersion.batchId,
-      crimeTypeDescription = crimeVersion.crimeType.value,
-      crimeTypeId = crimeVersion.crimeType.name,
+      crimeVersionId = crimeVersion.id.toString(),
+      latestCrimeVersionId = latestCrimeVersionId,
+      crimeReference = crimeVersion.crime.crimeReference,
+      batchId = crimeVersion.crimeBatch.batchId,
+      crimeTypeDescription = crimeVersion.crimeTypeId.value,
+      crimeTypeId = crimeVersion.crimeTypeId.name,
       crimeDateTimeFrom = crimeVersion.crimeDateTimeFrom.toString(),
       crimeDateTimeTo = crimeVersion.crimeDateTimeTo.toString(),
       crimeText = crimeVersion.crimeText,
       latitude = coords.latitude.roundTo(6),
       longitude = coords.longitude.roundTo(6),
-      matching = if (crimeVersion.matchingResultId != null) matchingResponse else null,
-      versionLabel = "Latest version",
+      matching = crimeVersion.matchingResults.maxByOrNull { it.createdAt }?.let { matchingResultToDto(it) },
+      versionLabel = crimeVersion.versionLabel,
     )
   }
+
+  private fun matchingResultToDto(matchingResult: CrimeMatchingResult): MatchingResponse {
+    val deviceWearers = matchingResult.deviceWearers.map(this::deviceWearerToDto)
+
+    return MatchingResponse(deviceWearers = deviceWearers)
+  }
+
+  private fun deviceWearerToDto(deviceWearer: CrimeMatchingResultDeviceWearer): DeviceWearerResponse {
+    val positions = deviceWearer.positions.map(this::deviceWearerPositionToDto).sortedBy { it.capturedDateTime }
+
+    val deviceWearer = DeviceWearerResponse(
+      deviceId = deviceWearer.deviceId,
+      name = deviceWearer.name,
+      nomisId = deviceWearer.nomisId,
+    )
+    deviceWearer.positions.addAll(positions)
+    return deviceWearer
+  }
+
+  private fun deviceWearerPositionToDto(position: CrimeMatchingResultPosition): DeviceWearerPositionResponse = DeviceWearerPositionResponse(
+    latitude = position.latitude,
+    longitude = position.longitude,
+    sequenceLabel = position.sequenceLabel,
+    precision = position.precision,
+    capturedDateTime = position.capturedDateTime.toString(),
+    direction = position.direction,
+    speed = position.speed,
+  )
 }

@@ -13,6 +13,7 @@ erDiagram
     CRIME-BATCH-EMAIL 1 to 0+ CRIME-BATCH-EMAIL-ATTACHMENT : "has 0 or more attachments"
     CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or more CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ERROR : "has 0 or more ingestion errors"
     CRIME-BATCH-EMAIL 1 to 1 CRIME-BATCH-EMAIL-INGESTION-ERROR : "produces at most 1 crime batch ingestion error"
+    CRIME-VERSION 1 to 1+ CRIME-VERSION-UPDATE : "has 1 or more version updates"
 
     %% Matching
     CRIME-BATCH 1 to 0+ CRIME-MATCHING-RUN : "has 0 or more matching runs"
@@ -86,6 +87,12 @@ erDiagram
         double northing
         string crimeText
         datetime created-at
+    }
+
+    CRIME-VERSION-UPDATE {
+        uuid id pk
+        uuid crime-version-id fk
+        string fieldName
     }
 
     CRIME-MATCHING-RUN {

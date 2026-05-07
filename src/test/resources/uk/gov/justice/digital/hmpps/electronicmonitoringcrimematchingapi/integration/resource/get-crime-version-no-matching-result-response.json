@@ -1,6 +1,7 @@
 {
   "data" : {
     "crimeVersionId" : "11111111-1111-1111-1111-111111111111",
+    "latestCrimeVersionId": null,
     "crimeReference" : "crime1",
     "batchId" : "Batch1",
     "crimeTypeDescription" : "Aggravated Burglary",

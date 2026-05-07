@@ -4,8 +4,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingRun
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersionUpdate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeMatchingStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeMatchingTriggerType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeVersionFieldName
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.time.LocalDateTime
 
@@ -43,5 +45,16 @@ class CrimeContext(
     }
 
     crimeMatchingRunRepository.save(run)
+  }
+
+  fun withCrimeVersionUpdate(
+    fieldName: CrimeVersionFieldName = CrimeVersionFieldName.CRIME_TYPE_ID,
+  ) {
+    val update = CrimeVersionUpdate(
+      crimeVersion = version,
+      fieldName = fieldName,
+    )
+
+    version.updates.add(update)
   }
 }

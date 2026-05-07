@@ -1,17 +1,17 @@
 {
   "data" : {
-    "crimeVersionId" : "11111111-1111-1111-1111-111111111111",
-    "latestCrimeVersionId": null,
+    "crimeVersionId" : "22222222-2222-2222-2222-222222222222",
+    "latestCrimeVersionId": "33333333-3333-3333-3333-333333333333",
     "crimeReference" : "crime1",
-    "batchId" : "Batch1",
+    "batchId" : "Batch2",
     "crimeTypeDescription" : "Aggravated Burglary",
     "crimeTypeId" : "AB",
     "crimeDateTimeFrom" : "2025-01-01T00:00:00Z",
     "crimeDateTimeTo" : "2025-01-01T01:00:00Z",
     "crimeText" : "text",
-    "versionLabel" : "Latest version",
-    "longitude" : -0.128354,
-    "latitude" : 51.503991,
+    "versionLabel" : "Version 1 (Duplicate)",
+    "longitude" : 0.0,
+    "latitude" : 0.0,
     "matching" : null
   }
 }
