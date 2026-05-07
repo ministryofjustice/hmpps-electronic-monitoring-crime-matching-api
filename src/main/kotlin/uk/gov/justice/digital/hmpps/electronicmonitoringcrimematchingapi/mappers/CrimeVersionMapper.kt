@@ -19,9 +19,9 @@ class CrimeVersionMapper(
 
   fun toDto(crimeVersion: CrimeVersion): CrimeVersionResponse {
     val coords = coordinateResolver.toWgs84(crimeVersion.latitude, crimeVersion.longitude, crimeVersion.easting, crimeVersion.northing)
-    val versions = crimeVersion.crime.crimeVersions
+    val versions = crimeVersion.crime.crimeVersions.sortedBy { it.createdAt }
 
-    val latestVersion = versions.maxByOrNull { it.createdAt }
+    val latestVersion = versions.lastOrNull()
     val isLatest = latestVersion?.id == crimeVersion.id
     val latestCrimeVersionId = if (!isLatest) latestVersion?.id?.toString() else null
 
@@ -48,36 +48,39 @@ class CrimeVersionMapper(
     )
   }
 
-  fun computeVersionLabel(isLatest: Boolean, versions: List<CrimeVersion>, crimeVersion: CrimeVersion): String {
-    var versionLabel = ""
+  // Builds the label based on version history, only incrementing the version number if there are updates
+  fun computeVersionLabel(
+    isLatest: Boolean,
+    versions: List<CrimeVersion>,
+    current: CrimeVersion,
+  ): String {
+    val currentVersionIndex = versions.indexOf(current)
 
-    if (isLatest) {
-      versionLabel = "Latest version"
-      if (crimeVersion.updates.isEmpty() && versions.indexOf(crimeVersion) != 0) {
-        versionLabel += " (Duplicate)"
-      }
+    val versionNumber = versions
+      .take(currentVersionIndex + 1)
+      .count { it.updates.isNotEmpty() } + 1
+
+    val previousVersionNumber = if (currentVersionIndex > 0) {
+      versions
+        .take(currentVersionIndex)
+        .count { it.updates.isNotEmpty() } + 1
     } else {
-      var versionNumber = 1
-
-      for (v in versions) {
-        // Only increment when there are updates
-        if (v.updates.isNotEmpty()) {
-          versionNumber++
-        }
-
-        // stop when we reach the current version
-        if (v == crimeVersion) {
-          break
-        }
-      }
-      versionLabel = "Version $versionNumber"
-
-      if (versionNumber > 1) {
-        versionLabel += " (Duplicate)"
-      }
+      null
     }
 
-    return versionLabel
+    val isDuplicate = previousVersionNumber != null && versionNumber == previousVersionNumber
+
+    return if (isLatest) {
+      buildString {
+        append("Latest version")
+        if (isDuplicate) append(" (Duplicate)")
+      }
+    } else {
+      buildString {
+        append("Version $versionNumber")
+        if (isDuplicate) append(" (Duplicate)")
+      }
+    }
   }
 
   fun matchingResultToDto(matchingResult: CrimeMatchingResult): MatchingResponse {
