@@ -2,21 +2,21 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mapper
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeVersionSummaryResponse
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeVersionSummaryProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
 
 @Component
 class CrimeVersionSummaryMapper {
 
-  fun toDto(summary: CrimeVersionSummaryProjection): CrimeVersionSummaryResponse = CrimeVersionSummaryResponse(
-    crimeVersionId = summary.crimeVersionId,
-    crimeReference = summary.crimeReference,
-    policeForceArea = summary.policeForceArea,
-    crimeType = summary.crimeTypeId,
-    crimeDate = summary.crimeDateTimeFrom.toString(),
-    batchId = summary.batchId,
-    ingestionDateTime = summary.ingestionDateTime.toString(),
-    matched = summary.matched,
-    versionLabel = summary.versionLabel,
-    updates = summary.updates,
+  fun toDto(crimeVersion: CrimeVersion): CrimeVersionSummaryResponse = CrimeVersionSummaryResponse(
+    crimeVersionId = crimeVersion.id.toString(),
+    crimeReference = crimeVersion.crime.crimeReference,
+    policeForceArea = crimeVersion.crime.policeForceArea.name,
+    crimeType = crimeVersion.crimeTypeId.name,
+    crimeDate = crimeVersion.crimeDateTimeFrom.toString(),
+    batchId = crimeVersion.crimeBatch.batchId,
+    ingestionDateTime = crimeVersion.crimeBatch.createdAt.toString(),
+    matched = crimeVersion.matchingResults.isNotEmpty(),
+    versionLabel = crimeVersion.versionLabel,
+    updates = crimeVersion.updatesSummary,
   )
 }

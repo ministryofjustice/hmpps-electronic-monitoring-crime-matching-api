@@ -90,4 +90,28 @@ data class CrimeVersion(
     get() {
       return crime.latestVersion.id == this.id
     }
+
+  val updatesSummary: String
+    get() {
+      val isFirstVersion = crime.crimeVersions
+        .minByOrNull { it.createdAt } == this
+
+      if (isFirstVersion) return "N/A"
+
+      if (updates.isEmpty()) return "None"
+
+      val grouped = mutableSetOf<String>()
+      val individual = mutableListOf<String>()
+
+      updates.map { it.fieldName }.toSet().forEach {
+        val group = it.groupLabel()
+        if (group != null) {
+          grouped.add(group)
+        } else {
+          individual.add(it.value)
+        }
+      }
+
+      return (grouped + individual).joinToString(", ")
+    }
 }
