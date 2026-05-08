@@ -8,6 +8,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeVersionFieldName
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -116,6 +117,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1)
           }
+          withCrimeVersionUpdate()
         }
       }
 
@@ -242,7 +244,14 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = -1.5,
           easting = easting,
           northing = northing,
-        ) {}
+        ) {
+          withCrimeVersionUpdate(
+            fieldName = CrimeVersionFieldName.LONGITUDE,
+          )
+          withCrimeVersionUpdate(
+            fieldName = CrimeVersionFieldName.LATITUDE,
+          )
+        }
       }
 
       val body = webTestClient.get()
@@ -441,7 +450,9 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = longitude,
           easting = easting,
           northing = northing,
-        ) {}
+        ) {
+          withCrimeVersionUpdate()
+        }
       }
 
       // Latest version with multiple changes
@@ -460,7 +471,11 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           longitude = -1.5,
           easting = easting,
           northing = northing,
-        ) {}
+        ) {
+          withCrimeVersionUpdate()
+          withCrimeVersionUpdate(fieldName = CrimeVersionFieldName.LATITUDE)
+          withCrimeVersionUpdate(fieldName = CrimeVersionFieldName.LONGITUDE)
+        }
       }
 
       val body = webTestClient.get()
