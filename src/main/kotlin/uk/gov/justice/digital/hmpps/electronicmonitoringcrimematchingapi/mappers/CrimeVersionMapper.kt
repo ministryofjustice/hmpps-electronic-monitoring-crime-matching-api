@@ -48,9 +48,12 @@ class CrimeVersionMapper(
     val positions = deviceWearer.positions.map(this::deviceWearerPositionToDto).sortedBy { it.capturedDateTime }
 
     val deviceWearer = DeviceWearerResponse(
+      address = deviceWearer.address,
+      dateOfBirth = deviceWearer.dateOfBirth.toString(),
       deviceId = deviceWearer.deviceId,
       name = deviceWearer.name,
       nomisId = deviceWearer.nomisId,
+      pncRef = deviceWearer.pncRef,
     )
     deviceWearer.positions.addAll(positions)
     return deviceWearer

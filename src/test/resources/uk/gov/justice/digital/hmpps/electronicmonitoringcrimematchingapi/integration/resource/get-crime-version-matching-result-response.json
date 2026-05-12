@@ -15,9 +15,12 @@
     "matching": {
       "deviceWearers": [
         {
+          "address": "address",
+          "dateOfBirth": "2025-01-01T01:01",
           "deviceId": 1,
           "name": "name",
           "nomisId": "nomisId",
+          "pncRef": "pncRef",
           "positions": [
             {
               "capturedDateTime": "2025-01-01T00:00",
@@ -40,9 +43,12 @@
           ]
         },
         {
+          "address": "address",
+          "dateOfBirth": "2025-01-01T01:01",
           "name": "name",
           "deviceId": 2,
           "nomisId": "nomisId",
+          "pncRef": "pncRef",
           "positions": [
             {
               "capturedDateTime": "2025-01-01T00:00",
