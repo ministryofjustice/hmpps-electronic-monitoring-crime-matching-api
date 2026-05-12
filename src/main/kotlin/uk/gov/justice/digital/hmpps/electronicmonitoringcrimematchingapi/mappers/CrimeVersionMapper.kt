@@ -25,6 +25,7 @@ class CrimeVersionMapper(
       crimeVersionId = crimeVersion.id.toString(),
       latestCrimeVersionId = latestCrimeVersionId,
       crimeReference = crimeVersion.crime.crimeReference,
+      policeForceArea = crimeVersion.crime.policeForceArea.label,
       batchId = crimeVersion.crimeBatch.batchId,
       crimeTypeDescription = crimeVersion.crimeTypeId.value,
       crimeTypeId = crimeVersion.crimeTypeId.name,
@@ -48,9 +49,12 @@ class CrimeVersionMapper(
     val positions = deviceWearer.positions.map(this::deviceWearerPositionToDto).sortedBy { it.capturedDateTime }
 
     val deviceWearer = DeviceWearerResponse(
+      address = deviceWearer.address,
+      dateOfBirth = deviceWearer.dateOfBirth.toString(),
       deviceId = deviceWearer.deviceId,
       name = deviceWearer.name,
       nomisId = deviceWearer.nomisId,
+      pncRef = deviceWearer.pncRef,
     )
     deviceWearer.positions.addAll(positions)
     return deviceWearer

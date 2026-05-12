@@ -3,6 +3,7 @@
     "crimeVersionId" : "22222222-2222-2222-2222-222222222222",
     "latestCrimeVersionId": null,
     "crimeReference" : "crime1",
+    "policeForceArea": "Metropolitan",
     "batchId" : "Batch2",
     "crimeTypeDescription" : "Aggravated Burglary",
     "crimeTypeId" : "AB",
