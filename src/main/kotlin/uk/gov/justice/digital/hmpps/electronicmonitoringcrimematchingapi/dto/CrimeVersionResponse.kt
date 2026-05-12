@@ -4,6 +4,7 @@ data class CrimeVersionResponse(
   val crimeVersionId: String,
   val latestCrimeVersionId: String?,
   val crimeReference: String,
+  val policeForceArea: String,
   val batchId: String,
   val crimeTypeDescription: String,
   val crimeTypeId: String,

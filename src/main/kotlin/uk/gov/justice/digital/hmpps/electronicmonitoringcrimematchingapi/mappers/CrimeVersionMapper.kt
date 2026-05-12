@@ -25,6 +25,7 @@ class CrimeVersionMapper(
       crimeVersionId = crimeVersion.id.toString(),
       latestCrimeVersionId = latestCrimeVersionId,
       crimeReference = crimeVersion.crime.crimeReference,
+      policeForceArea = crimeVersion.crime.policeForceArea.label,
       batchId = crimeVersion.crimeBatch.batchId,
       crimeTypeDescription = crimeVersion.crimeTypeId.value,
       crimeTypeId = crimeVersion.crimeTypeId.name,
