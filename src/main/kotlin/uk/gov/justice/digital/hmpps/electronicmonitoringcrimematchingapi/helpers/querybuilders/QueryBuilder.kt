@@ -85,6 +85,14 @@ abstract class Condition {
   infix fun <T> Column<T>.gte(value: Expression<T>) {
     addCondition(Gte(this, value))
   }
+
+  infix fun <T> Column<T>.lte(value: T) {
+    addCondition(Gte(this, Parameter(value)))
+  }
+
+  infix fun <T> Column<T>.lte(value: Expression<T>) {
+    addCondition(Gte(this, value))
+  }
 }
 
 open class CompositeCondition(private val op: String) : Condition() {
@@ -143,4 +151,10 @@ class Gte<T>(private val column: Column<T>, private val value: Expression<T>) : 
   override fun addCondition(condition: Condition): Unit = throw IllegalStateException("Can't add a nested condition to the gte Operator")
 
   override fun toString(): String = "${column.name} >= $value"
+}
+
+class Lte<T>(private val column: Column<T>, private val value: Expression<T>) : Condition() {
+  override fun addCondition(condition: Condition): Unit = throw IllegalStateException("Can't add a nested condition to the gte Operator")
+
+  override fun toString(): String = "${column.name} <= $value"
 }
