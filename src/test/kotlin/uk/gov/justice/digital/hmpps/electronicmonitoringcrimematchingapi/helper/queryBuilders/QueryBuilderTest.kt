@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.fromIso8601Timestamp
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.functions.AthenaFunctions
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -76,11 +76,24 @@ class QueryBuilderTest {
     val query = TestTable
       .selectAll()
       .where {
-        TestTable.testDateColumn gte fromIso8601Timestamp(date)
+        TestTable.testDateColumn gte AthenaFunctions.fromIso8601Timestamp(date)
       }
       .prepareSQL()
 
     assertThat(query).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_date_column >= from_iso8601_timestamp(?)")
+  }
+
+  @Test
+  fun `it should build a query using lte date filter`() {
+    val date = ZonedDateTime.of(LocalDateTime.of(2020, 1, 1, 1, 0, 0), ZoneOffset.UTC)
+    val query = TestTable
+      .selectAll()
+      .where {
+        TestTable.testDateColumn lte AthenaFunctions.fromIso8601Timestamp(date)
+      }
+      .prepareSQL()
+
+    assertThat(query).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_date_column <= from_iso8601_timestamp(?)")
   }
 
   companion object {
