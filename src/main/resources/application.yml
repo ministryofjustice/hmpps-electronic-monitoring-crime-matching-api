@@ -86,6 +86,7 @@ aws:
 datastore:
   fms-database: ${FMS_DATABASE:serco_fms_dev}
   mdss-database: ${MDSS_DATABASE:allied_mdss_dev}
+  database: ${DATABASE:acquisitive_crime_dev_dbt}
   output-bucket-arn: ${ATHENA_OUTPUT_BUCKET}
   workgroup: ${ATHENA_WORKGROUP}
 

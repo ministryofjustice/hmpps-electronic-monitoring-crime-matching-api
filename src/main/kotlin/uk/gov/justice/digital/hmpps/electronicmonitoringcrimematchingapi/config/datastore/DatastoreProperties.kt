@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class DatastoreProperties(
   val fmsDatabase: String,
   val mdssDatabase: String,
+  val database: String,
   val outputBucketArn: String,
   val retryIntervalMs: Long = 1000,
   val workgroup: String,
