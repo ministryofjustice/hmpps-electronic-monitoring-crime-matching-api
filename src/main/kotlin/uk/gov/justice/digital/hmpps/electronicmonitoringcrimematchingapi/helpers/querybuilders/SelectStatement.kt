@@ -1,3 +1,3 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders
 
-abstract class SelectStatement(val table: Table)
+abstract class SelectStatement(val columnSet: ColumnSet)

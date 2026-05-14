@@ -9,5 +9,5 @@ class GreaterThanEqual<T>(private val column: Column<T>, private val value: Expr
 
   override fun parameters(): List<String> = value.parameters()
 
-  override fun toString(): String = "${column.name} >= $value"
+  override fun toString(): String = "$column >= $value"
 }

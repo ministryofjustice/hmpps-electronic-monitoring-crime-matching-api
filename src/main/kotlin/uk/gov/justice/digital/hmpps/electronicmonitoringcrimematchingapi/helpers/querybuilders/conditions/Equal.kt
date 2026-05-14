@@ -10,7 +10,7 @@ class Equal<T>(private val column: Column<T>, private val value: Expression) : C
   override fun parameters(): List<String> = value.parameters()
 
   override fun toString(): String = when (value) {
-    null -> "${column.name} is null" // TODO use value,
-    else -> "${column.name} = $value"
+    null -> "$column is null" // TODO use value,
+    else -> "$column = $value"
   }
 }

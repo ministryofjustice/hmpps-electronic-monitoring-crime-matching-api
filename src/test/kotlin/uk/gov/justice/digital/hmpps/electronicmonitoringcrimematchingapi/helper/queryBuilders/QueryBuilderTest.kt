@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn1
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn2
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testDateColumn
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.functions.AthenaFunctions
 import java.time.LocalDateTime
@@ -19,6 +20,14 @@ object TestTable : Table("test_table") {
   val testColumn1 = integer("test_column_1")
   val testColumn2 = integer("test_column_2")
   val testDateColumn = date("test_date_column")
+}
+
+object OtherTable : Table("other_table") {
+  val testColumn1 = integer("test_column_1")
+}
+
+object AnotherTable : Table("another_table") {
+  val testColumn1 = integer("test_column_1")
 }
 
 @ActiveProfiles("test")
@@ -42,7 +51,7 @@ class QueryBuilderTest {
       )
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1 FROM test_table")
+    assertThat(query.queryString).isEqualTo("SELECT test_table.test_column_1 FROM test_table")
     assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
   }
 
@@ -55,7 +64,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_column_1 = ?")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 = ?")
     assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
   }
 
@@ -69,7 +78,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE (test_column_1 = ? AND test_column_2 = ?)")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE (test_table.test_column_1 = ? AND test_table.test_column_2 = ?)")
     assertThat(query.parameters).isEqualTo(listOf("1", "1").toTypedArray())
   }
 
@@ -98,7 +107,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_column_1 >= ?")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 >= ?")
     assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
   }
 
@@ -112,7 +121,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_date_column >= from_iso8601_timestamp(?)")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_date_column >= from_iso8601_timestamp(?)")
     assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'").toTypedArray())
   }
 
@@ -125,7 +134,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_column_1 <= ?")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 <= ?")
     assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
   }
 
@@ -139,15 +148,57 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_date_column <= from_iso8601_timestamp(?)")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_date_column <= from_iso8601_timestamp(?)")
     assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'").toTypedArray())
+  }
+
+  @Test
+  fun `it should build a join query`() {
+    val query = TestTable
+      .join(OtherTable, JoinType.INNER) {
+        TestTable.testColumn1 eq OtherTable.testColumn1
+      }
+      .join(AnotherTable, JoinType.LEFT) {
+        TestTable.testColumn1 eq AnotherTable.testColumn1
+      }
+      .selectAll()
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table INNER JOIN other_table ON test_table.test_column_1 = other_table.test_column_1 LEFT JOIN another_table ON test_table.test_column_1 = another_table.test_column_1")
+    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
+  }
+
+  @Test
+  fun `it should build a join query using aliases`() {
+    val tt = TestTable.aliased("tt")
+    val ot = OtherTable.aliased("ot")
+    val at = AnotherTable.aliased("at")
+
+    val query = tt
+      .join(ot, JoinType.INNER) {
+        tt[TestTable.testColumn1] eq ot[OtherTable.testColumn1]
+      }
+      .join(at, JoinType.LEFT) {
+        tt[TestTable.testColumn1] eq at[AnotherTable.testColumn1]
+      }
+      .select(
+        listOf(
+          tt[TestTable.testColumn1],
+          ot[TestTable.testColumn1],
+          at[TestTable.testColumn1],
+        ),
+      )
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT tt.test_column_1, ot.test_column_1, at.test_column_1 FROM test_table tt INNER JOIN other_table ot ON tt.test_column_1 = ot.test_column_1 LEFT JOIN another_table at ON tt.test_column_1 = at.test_column_1")
+    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
   }
 
   companion object {
     @JvmStatic
     fun data() = listOf(
       Arguments.of(null, "SELECT * FROM test_table", emptyList<String>()),
-      Arguments.of(1, "SELECT * FROM test_table WHERE test_column_1 = ?", listOf("1")),
+      Arguments.of(1, "SELECT * FROM test_table WHERE test_table.test_column_1 = ?", listOf("1")),
     )
   }
 }
