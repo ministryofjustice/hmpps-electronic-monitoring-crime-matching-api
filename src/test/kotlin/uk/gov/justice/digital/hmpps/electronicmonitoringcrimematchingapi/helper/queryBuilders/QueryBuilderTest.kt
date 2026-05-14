@@ -6,6 +6,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn1
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn2
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testDateColumn
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.functions.AthenaFunctions
 import java.time.LocalDateTime
@@ -27,7 +30,19 @@ class QueryBuilderTest {
       .selectAll()
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table")
+    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
+  }
+
+  @Test
+  fun `it should build a select query`() {
+    val query = TestTable
+      .select(
+        listOf(testColumn1),
+      )
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT test_column_1 FROM test_table")
     assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
   }
 
@@ -40,7 +55,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_column_1 = ?")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_column_1 = ?")
     assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
   }
 
@@ -54,7 +69,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE (test_column_1 = ? AND test_column_2 = ?)")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE (test_column_1 = ? AND test_column_2 = ?)")
     assertThat(query.parameters).isEqualTo(listOf("1", "1").toTypedArray())
   }
 
@@ -83,7 +98,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_column_1 >= ?")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_column_1 >= ?")
     assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
   }
 
@@ -97,7 +112,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_date_column >= from_iso8601_timestamp(?)")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_date_column >= from_iso8601_timestamp(?)")
     assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'").toTypedArray())
   }
 
@@ -110,7 +125,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_column_1 <= ?")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_column_1 <= ?")
     assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
   }
 
@@ -124,15 +139,15 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_date_column <= from_iso8601_timestamp(?)")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_date_column <= from_iso8601_timestamp(?)")
     assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'").toTypedArray())
   }
 
   companion object {
     @JvmStatic
     fun data() = listOf(
-      Arguments.of(null, "SELECT test_column_1, test_column_2, test_date_column FROM test_table", emptyList<String>()),
-      Arguments.of(1, "SELECT test_column_1, test_column_2, test_date_column FROM test_table WHERE test_column_1 = ?", listOf("1")),
+      Arguments.of(null, "SELECT * FROM test_table", emptyList<String>()),
+      Arguments.of(1, "SELECT * FROM test_table WHERE test_column_1 = ?", listOf("1")),
     )
   }
 }

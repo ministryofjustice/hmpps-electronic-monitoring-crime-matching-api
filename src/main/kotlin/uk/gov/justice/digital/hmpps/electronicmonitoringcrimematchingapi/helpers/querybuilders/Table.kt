@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders
 
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.statements.Select
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.statements.SelectAll
 import java.time.ZonedDateTime
 
 open class Table(val name: String) {
@@ -7,7 +9,9 @@ open class Table(val name: String) {
 
   val columns: List<Column<*>> get() = _columns
 
-  fun selectAll(): Query = Query(this)
+  fun selectAll(): Query = Query(SelectAll(this))
+
+  fun select(columns: List<Column<*>>): Query = Query(Select(this, columns))
 
   fun integer(name: String): Column<Int> = registerColumn(name)
 

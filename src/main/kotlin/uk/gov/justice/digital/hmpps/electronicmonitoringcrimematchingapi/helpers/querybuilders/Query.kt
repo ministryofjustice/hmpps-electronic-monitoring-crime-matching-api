@@ -3,27 +3,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.conditions.And
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 
-class Query(val table: Table) {
+class Query(val selectStatement: SelectStatement) {
   private var condition: Condition? = null
 
   fun prepare(): AthenaQuery {
-    if (this.table.columns.isEmpty()) {
-      throw Exception("Cannot prepare SELECT without columns")
-    }
-
     val builder = StringBuilder()
 
-    builder.append("SELECT ")
-
-    this.table.columns.forEachIndexed { index, column ->
-      builder.append(column.name)
-      if (index < this.table.columns.size - 1) {
-        builder.append(", ")
-      }
-    }
-
-    builder.append(" FROM ")
-    builder.append(this.table.name)
+    builder.append(selectStatement)
 
     condition
       ?.toString()
