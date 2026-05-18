@@ -64,18 +64,17 @@ class EmDatastoreClient(
         .outputLocation(properties.outputBucketArn)
         .build()
 
-      val startQueryExecutionRequest = StartQueryExecutionRequest.builder()
+      var startQueryExecutionRequest = StartQueryExecutionRequest.builder()
         .queryString(query.queryString)
         .queryExecutionContext(queryExecutionContext)
         .workGroup(properties.workgroup)
 
       if (query.parameters.isNotEmpty()) {
-        startQueryExecutionRequest.executionParameters(*query.parameters)
+        startQueryExecutionRequest.executionParameters(*query.parameters.toTypedArray())
       }
 
       startQueryExecutionRequest.resultConfiguration(resultConfiguration)
 
-      log.debug("Workgroup: {}", properties.workgroup)
       log.debug("Starting query: {}", query)
 
       val startQueryExecutionResponse = athenaClient.startQueryExecution(startQueryExecutionRequest.build())

@@ -94,6 +94,6 @@ open class SqlQueryBuilder(
 
     whereClauses.forEach { query.where(it) }
 
-    return AthenaQuery(query.toSql(), values.toTypedArray())
+    return AthenaQuery(query.toSql(), values)
   }
 }

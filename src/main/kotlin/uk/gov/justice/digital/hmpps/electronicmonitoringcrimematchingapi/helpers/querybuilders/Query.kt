@@ -18,7 +18,7 @@ class Query(val selectStatement: SelectStatement) {
 
     return AthenaQuery(
       queryString = builder.toString(),
-      parameters = (condition?.parameters() ?: emptyList()).toTypedArray(),
+      parameters = (condition?.parameters() ?: emptyList()),
     )
   }
 

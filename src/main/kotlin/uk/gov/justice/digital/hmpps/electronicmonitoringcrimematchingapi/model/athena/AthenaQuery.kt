@@ -4,7 +4,7 @@ import java.io.Serializable
 
 class AthenaQuery(
   val queryString: String,
-  val parameters: Array<String>,
+  val parameters: List<String>,
 ) : Serializable {
   override fun toString(): String = this.queryString
 }

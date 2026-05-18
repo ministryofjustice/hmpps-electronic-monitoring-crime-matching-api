@@ -40,7 +40,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table")
-    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
+    assertThat(query.parameters).isEqualTo(emptyList<String>())
   }
 
   @Test
@@ -52,7 +52,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT test_table.test_column_1 FROM test_table")
-    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
+    assertThat(query.parameters).isEqualTo(emptyList<String>())
   }
 
   @Test
@@ -65,7 +65,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 = ?")
-    assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
+    assertThat(query.parameters).isEqualTo(listOf("1"))
   }
 
   @Test
@@ -79,7 +79,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE (test_table.test_column_1 = ? AND test_table.test_column_2 = ?)")
-    assertThat(query.parameters).isEqualTo(listOf("1", "1").toTypedArray())
+    assertThat(query.parameters).isEqualTo(listOf("1", "1"))
   }
 
   @ParameterizedTest(name = "{0}")
@@ -95,7 +95,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo(expectedSQL)
-    assertThat(query.parameters).isEqualTo(expectedParams.toTypedArray())
+    assertThat(query.parameters).isEqualTo(expectedParams)
   }
 
   @Test
@@ -106,7 +106,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 is NULL")
-    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
+    assertThat(query.parameters).isEqualTo(emptyList<String>())
   }
 
   @Test
@@ -119,7 +119,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 >= ?")
-    assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
+    assertThat(query.parameters).isEqualTo(listOf("1"))
   }
 
   @Test
@@ -133,7 +133,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_date_column >= from_iso8601_timestamp(?)")
-    assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'").toTypedArray())
+    assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'"))
   }
 
   @Test
@@ -146,7 +146,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 <= ?")
-    assertThat(query.parameters).isEqualTo(listOf("1").toTypedArray())
+    assertThat(query.parameters).isEqualTo(listOf("1"))
   }
 
   @Test
@@ -160,7 +160,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_date_column <= from_iso8601_timestamp(?)")
-    assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'").toTypedArray())
+    assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'"))
   }
 
   @Test
@@ -176,7 +176,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table INNER JOIN other_table ON test_table.test_column_1 = other_table.test_column_1 LEFT JOIN another_table ON test_table.test_column_1 = another_table.test_column_1")
-    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
+    assertThat(query.parameters).isEqualTo(emptyList<String>())
   }
 
   @Test
@@ -202,7 +202,7 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT tt.test_column_1, ot.test_column_1, at.test_column_1 FROM test_table tt INNER JOIN other_table ot ON tt.test_column_1 = ot.test_column_1 LEFT JOIN another_table at ON tt.test_column_1 = at.test_column_1")
-    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
+    assertThat(query.parameters).isEqualTo(emptyList<String>())
   }
 
   companion object {
