@@ -5,12 +5,9 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Expression
 
 class Equal<T>(private val column: Column<T>, private val value: Expression) : Condition() {
-  override fun addCondition(condition: Condition): Unit = throw IllegalStateException("Can't add a nested condition to the eq Operator")
+  override fun addCondition(condition: Condition): Unit = throw IllegalStateException("Can't add a nested condition to the Equal Operator")
 
   override fun parameters(): List<String> = value.parameters()
 
-  override fun toString(): String = when (value) {
-    null -> "$column is null" // TODO use value,
-    else -> "$column = $value"
-  }
+  override fun toString(): String = "$column = $value"
 }

@@ -47,7 +47,7 @@ class QueryBuilderTest {
   fun `it should build a select query`() {
     val query = TestTable
       .select(
-        listOf(testColumn1),
+        TestTable.testColumn1,
       )
       .prepare()
 
@@ -96,6 +96,17 @@ class QueryBuilderTest {
 
     assertThat(query.queryString).isEqualTo(expectedSQL)
     assertThat(query.parameters).isEqualTo(expectedParams.toTypedArray())
+  }
+
+  @Test
+  fun `it should build a query with a null check`() {
+    val query = TestTable
+      .selectAll()
+      .where { testColumn1 eq null }
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 is NULL")
+    assertThat(query.parameters).isEqualTo(emptyList<String>().toTypedArray())
   }
 
   @Test
@@ -182,11 +193,11 @@ class QueryBuilderTest {
         tt[TestTable.testColumn1] eq at[AnotherTable.testColumn1]
       }
       .select(
-        listOf(
-          tt[TestTable.testColumn1],
-          ot[TestTable.testColumn1],
-          at[TestTable.testColumn1],
-        ),
+
+        tt[TestTable.testColumn1],
+        ot[TestTable.testColumn1],
+        at[TestTable.testColumn1],
+
       )
       .prepare()
 

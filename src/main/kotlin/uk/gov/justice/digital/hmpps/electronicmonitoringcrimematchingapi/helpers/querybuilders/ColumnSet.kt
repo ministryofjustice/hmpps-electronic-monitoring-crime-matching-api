@@ -13,5 +13,5 @@ abstract class ColumnSet {
 
   fun selectAll(): Query = Query(SelectAll(this))
 
-  fun select(columns: List<Column<*>>): Query = Query(Select(this, columns))
+  fun select(vararg columns: Column<*>): Query = Query(Select(this, columns.toList()))
 }
