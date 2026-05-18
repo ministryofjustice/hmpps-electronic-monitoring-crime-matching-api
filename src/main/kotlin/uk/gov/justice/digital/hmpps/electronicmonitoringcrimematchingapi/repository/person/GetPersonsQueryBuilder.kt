@@ -3,54 +3,64 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Caseload
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.DeviceActivation
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Person
 
 class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCriteria) {
   fun build(): AthenaQuery {
-    val columns = mutableListOf(
-      Caseload.personId,
-      Caseload.firstName,
-      Caseload.lastName,
-      Caseload.nomisId,
-      Caseload.dateOfBirth,
-      Caseload.postcode,
-      Caseload.cityOrTown,
-      Caseload.street,
-    )
+    val columns = buildList {
+      addAll(
+        listOf(
+          Person.personId,
+          Person.firstName,
+          Person.lastName,
+          Person.nomisId,
+          Person.dateOfBirth,
+          Person.postcode,
+          Person.cityOrTown,
+          Person.street,
+        ),
+      )
 
-    if (personsQueryCriteria.includeDeviceActivations) {
-      columns.add(DeviceActivation.deviceId)
-      columns.add(DeviceActivation.deviceActivationId)
-      columns.add(DeviceActivation.deviceActivationDate)
-      columns.add(DeviceActivation.deviceDeactivationDate)
-    }
-
-    val caseload = if (!personsQueryCriteria.deviceId.isNullOrBlank()) {
-      Caseload.join(DeviceActivation, JoinType.INNER) {
-        Caseload.personId eq DeviceActivation.personId
+      if (personsQueryCriteria.includeDeviceActivations) {
+        addAll(
+          listOf(
+            DeviceActivation.deviceId,
+            DeviceActivation.deviceActivationId,
+            DeviceActivation.deviceActivationDate,
+            DeviceActivation.deviceDeactivationDate,
+          ),
+        )
       }
-    } else {
-      Caseload
     }
 
-    return caseload
+    return (
+      if (personsQueryCriteria.includeDeviceActivations) {
+        Person.join(DeviceActivation, JoinType.INNER) {
+          Person.personId eq DeviceActivation.personId
+        }
+      } else {
+        Person
+      }
+      )
       .select(*columns.toTypedArray())
       .where {
-        if (!personsQueryCriteria.name.isNullOrBlank()) {
+        personsQueryCriteria.name?.let {
           or {
-            Caseload.firstName like personsQueryCriteria.name
-            Caseload.lastName like personsQueryCriteria.name
+            Person.firstName like it
+            Person.lastName like it
           }
         }
 
-        if (!personsQueryCriteria.nomisId.isNullOrBlank()) {
-          Caseload.nomisId like personsQueryCriteria.nomisId
+        personsQueryCriteria.nomisId?.let {
+          Person.nomisId like it
         }
 
-        if (!personsQueryCriteria.deviceId.isNullOrBlank()) {
-          DeviceActivation.deviceId.asVarchar() like personsQueryCriteria.deviceId
-        }
+        personsQueryCriteria.deviceId
+          ?.takeIf { personsQueryCriteria.includeDeviceActivations }
+          ?.let {
+            DeviceActivation.deviceId.castAs("VARCHAR") like it
+          }
       }
       .prepare()
   }

@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
 
-object Caseload : Table(name = "caseload") {
+object Person : Table(name = "caseload") {
   val personId = long("mdss_person_id")
   val firstName = varchar("first_name")
   val lastName = varchar("last_name")

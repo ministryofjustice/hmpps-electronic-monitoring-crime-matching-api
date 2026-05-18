@@ -1,22 +1,22 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Caseload
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Person
 
 class GetPersonByIdQueryBuilder(private val id: Long) {
-  fun build(): AthenaQuery = Caseload
+  fun build(): AthenaQuery = Person
     .select(
-      Caseload.personId,
-      Caseload.firstName,
-      Caseload.lastName,
-      Caseload.nomisId,
-      Caseload.dateOfBirth,
-      Caseload.postcode,
-      Caseload.cityOrTown,
-      Caseload.street,
+      Person.personId,
+      Person.firstName,
+      Person.lastName,
+      Person.nomisId,
+      Person.dateOfBirth,
+      Person.postcode,
+      Person.cityOrTown,
+      Person.street,
     )
     .where {
-      Caseload.personId eq id
+      Person.personId eq id
     }
     .prepare()
 }

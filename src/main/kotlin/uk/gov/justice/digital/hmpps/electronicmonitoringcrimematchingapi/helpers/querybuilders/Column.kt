@@ -7,5 +7,5 @@ class Column<T>(val table: Table, val name: String) : Expression() {
 
   override fun toString(): String = "${table.ref()}.$name"
 
-  fun asVarchar(): Expression = Cast(this, "VARCHAR")
+  fun castAs(type: String): Expression = Cast(this, type)
 }

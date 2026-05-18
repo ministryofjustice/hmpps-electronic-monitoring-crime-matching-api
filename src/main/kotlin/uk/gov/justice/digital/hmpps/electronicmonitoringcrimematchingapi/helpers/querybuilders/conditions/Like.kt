@@ -8,5 +8,5 @@ class Like(private val left: Expression, private val right: Expression) : Condit
 
   override fun parameters(): List<String> = right.parameters()
 
-  override fun toString(): String = "$left LIKE $right"
+  override fun toString(): String = "$left LIKE %$right%"
 }
