@@ -1,6 +1,19 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.fixtures.queries
 
 object AthenaQueries {
+  val SelectDeviceActivationById = """
+    SELECT 
+      device_activations.device_activation_id, 
+      device_activations.device_id, 
+      device_activations.person_id, 
+      device_activations.device_activation_date, 
+      device_activations.device_deactivation_date 
+    FROM 
+      device_activations
+    WHERE 
+      device_activations.device_activation_id = ?
+  """.trimIndent().replace("\\s+".toRegex(), " ")
+
   val SelectPositionsByDeviceActivationId = """
     SELECT 
       position.position_id,

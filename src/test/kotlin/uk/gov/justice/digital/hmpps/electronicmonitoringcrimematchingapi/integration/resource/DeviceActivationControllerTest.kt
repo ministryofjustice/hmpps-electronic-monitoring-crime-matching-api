@@ -98,6 +98,12 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
           orderEnd = "",
         ),
       )
+
+      // Check that the query sent to Athena was correct
+      verifyAthenaStartQueryExecutionWithQuery(
+        AthenaQueries.SelectDeviceActivationById,
+        listOf("1"),
+      )
     }
 
     @Test
