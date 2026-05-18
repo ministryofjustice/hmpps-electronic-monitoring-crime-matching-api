@@ -1,22 +1,19 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.deviceActivation
 
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.datastore.DatastoreProperties
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlQueryBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.DeviceActivation
 
-class GetDeviceActivationByIdQueryBuilder : SqlQueryBuilder {
-  constructor(
-    datastoreProperties: DatastoreProperties,
-    id: Long,
-  ) : super("${datastoreProperties.mdssDatabase}.device_activation") {
-    this.addFields(
-      listOf(
-        "device_activation_id",
-        "device_id",
-        "person_id",
-        "device_activation_date",
-        "device_deactivation_date",
-      ),
+class GetDeviceActivationByIdQueryBuilder(private val id: Long) {
+  fun build(): AthenaQuery = DeviceActivation
+    .select(
+      DeviceActivation.deviceActivationId,
+      DeviceActivation.deviceId,
+      DeviceActivation.personId,
+      DeviceActivation.deviceActivationDate,
+      DeviceActivation.deviceDeactivationDate,
     )
-      .addFilter("device_activation_id", id)
-  }
+    .where {
+      DeviceActivation.deviceActivationId eq id
+    }
+    .prepare()
 }

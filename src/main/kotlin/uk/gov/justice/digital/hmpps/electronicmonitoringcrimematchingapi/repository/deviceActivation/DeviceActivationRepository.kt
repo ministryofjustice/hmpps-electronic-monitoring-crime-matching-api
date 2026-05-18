@@ -17,7 +17,7 @@ class DeviceActivationRepository(
   fun findById(id: Long): Optional<DeviceActivation> = Optional.ofNullable(
     this.executeQuery(
       GetDeviceActivationByIdQueryBuilder(
-        athenaClient.properties,
+
         id,
       ).build(),
     ).firstOrNull(),
