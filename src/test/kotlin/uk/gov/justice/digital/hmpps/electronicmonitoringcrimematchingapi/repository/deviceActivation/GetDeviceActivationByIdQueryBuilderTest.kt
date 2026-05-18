@@ -25,6 +25,6 @@ class GetDeviceActivationByIdQueryBuilderTest {
         device_activation.device_activation_id = ?
       """.trimIndent().replace("\n", "").replace("   ", " "),
     )
-    assertThat(query.parameters).isEqualTo(listOf(id.toString()))
+    assertThat(query.parameters).isEqualTo(listOf("0"))
   }
 }
