@@ -78,7 +78,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE (test_table.test_column_1 = ? AND test_table.test_column_2 = ?)")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE ( test_table.test_column_1 = ? AND test_table.test_column_2 = ? )")
     assertThat(query.parameters).isEqualTo(listOf("1", "'foo'"))
   }
 
