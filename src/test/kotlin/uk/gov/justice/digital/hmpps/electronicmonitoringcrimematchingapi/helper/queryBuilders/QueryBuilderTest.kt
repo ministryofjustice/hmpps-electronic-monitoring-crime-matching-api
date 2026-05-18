@@ -18,7 +18,7 @@ import java.time.ZonedDateTime
 
 object TestTable : Table("test_table") {
   val testColumn1 = integer("test_column_1")
-  val testColumn2 = integer("test_column_2")
+  val testColumn2 = varchar("test_column_2")
   val testDateColumn = date("test_date_column")
 }
 
@@ -74,12 +74,12 @@ class QueryBuilderTest {
       .selectAll()
       .where {
         TestTable.testColumn1 eq 1
-        TestTable.testColumn2 eq 1
+        TestTable.testColumn2 eq "foo"
       }
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE (test_table.test_column_1 = ? AND test_table.test_column_2 = ?)")
-    assertThat(query.parameters).isEqualTo(listOf("1", "1"))
+    assertThat(query.parameters).isEqualTo(listOf("1", "'foo'"))
   }
 
   @ParameterizedTest(name = "{0}")
