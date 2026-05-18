@@ -36,7 +36,7 @@ class PersonControllerTest {
       val expectedResult = listOf(
         PersonResponse(
           1,
-          name = "name",
+          name = "firstName lastName",
           nomisId = "nomis",
           pncRef = "",
           dateOfBirth = "1990-01-01",
@@ -50,13 +50,14 @@ class PersonControllerTest {
         listOf(
           Person(
             personId = 1,
-            personName = "name",
+            firstName = "firstName",
+            lastName = "lastName",
             nomisId = "nomis",
             pncRef = "",
-            dob = "1990-01-01",
+            dateOfBirth = "1990-01-01",
             probationPractitioner = "",
-            zip = "zip",
-            city = "city",
+            postcode = "zip",
+            cityOrTown = "city",
             street = "street",
             deviceActivations = mutableListOf(),
           ),

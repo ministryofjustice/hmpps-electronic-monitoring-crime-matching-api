@@ -25,7 +25,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.some.success.json",
       )
 
       val result = webTestClient.get()
@@ -40,6 +40,18 @@ class PersonControllerTest : IntegrationTestBase() {
 
       assertThat(result.data).isNotNull()
       assertThat(result.data).hasSize(1)
+      assertThat(result.data[0]).isEqualTo(
+        PersonResponse(
+          personId = 1,
+          name = "first_name last_name",
+          nomisId = "nomis_id",
+          pncRef = "",
+          dateOfBirth = "2000-05-29",
+          probationPractitioner = "",
+          address = "street city zip",
+          deviceActivations = listOf(),
+        ),
+      )
       assertThat(result.data[0].deviceActivations).isEmpty()
     }
 
@@ -49,7 +61,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponseWithDeviceActivations.json",
+        "athenaResponses/persons.device-activations.success.json",
       )
 
       val result = webTestClient.get()
@@ -110,7 +122,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulEmptyPersonResponse.json",
+        "athenaResponses/person.empty.success.json",
       )
 
       webTestClient.get()
@@ -127,7 +139,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.some.success.json",
       )
 
       val result = webTestClient.get()
@@ -143,7 +155,7 @@ class PersonControllerTest : IntegrationTestBase() {
       assertThat(result.data).isEqualTo(
         PersonResponse(
           personId = 1,
-          name = "person_name",
+          name = "first_name last_name",
           nomisId = "nomis_id",
           pncRef = "",
           dateOfBirth = "2000-05-29",
@@ -160,7 +172,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.some.success.json",
       )
 
       webTestClient.get()
@@ -214,7 +226,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         3,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.some.success.json",
       )
 
       webTestClient.get()

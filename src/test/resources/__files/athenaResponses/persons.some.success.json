@@ -17,8 +17,20 @@
         {
           "CaseSensitive": true,
           "CatalogName": "hive",
-          "Label": "person_name",
-          "Name": "person_name",
+          "Label": "first_name",
+          "Name": "first_name",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": true,
+          "CatalogName": "hive",
+          "Label": "last_name",
+          "Name": "last_name",
           "Nullable": "UNKNOWN",
           "Precision": 19,
           "Scale": 0,
@@ -29,8 +41,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "u_id_nomis",
-          "Name": "u_id_nomis",
+          "Label": "nomis_id",
+          "Name": "nomis_id",
           "Nullable": "UNKNOWN",
           "Precision": 2147483647,
           "Scale": 0,
@@ -41,8 +53,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "u_dob",
-          "Name": "u_dob",
+          "Label": "date_of_birth",
+          "Name": "date_of_birth",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -53,8 +65,8 @@
         {
           "CaseSensitive": true,
           "CatalogName": "hive",
-          "Label": "zip",
-          "Name": "zip",
+          "Label": "postcode",
+          "Name": "postcode",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -65,8 +77,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "city",
-          "Name": "city",
+          "Label": "city_or_town",
+          "Name": "city_or_town",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -77,8 +89,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "street",
-          "Name": "street",
+          "Label": "house_number_and_street_name",
+          "Name": "house_number_and_street_name",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -95,22 +107,25 @@
             "VarCharValue": "person_id"
           },
           {
-            "VarCharValue": "person_name"
+            "VarCharValue": "first_name"
           },
           {
-            "VarCharValue": "u_id_nomis"
+            "VarCharValue": "last_name"
           },
           {
-            "VarCharValue": "u_dob"
+            "VarCharValue": "nomis_id"
           },
           {
-            "VarCharValue": "zip"
+            "VarCharValue": "date_of_birth"
           },
           {
-            "VarCharValue": "city"
+            "VarCharValue": "postcode"
           },
           {
-            "VarCharValue": "street"
+            "VarCharValue": "city_or_town"
+          },
+          {
+            "VarCharValue": "house_number_and_street_name"
           }
         ]
       },
@@ -120,7 +135,10 @@
             "VarCharValue": "1"
           },
           {
-            "VarCharValue": "person_name"
+            "VarCharValue": "first_name"
+          },
+          {
+            "VarCharValue": "last_name"
           },
           {
             "VarCharValue": "nomis_id"

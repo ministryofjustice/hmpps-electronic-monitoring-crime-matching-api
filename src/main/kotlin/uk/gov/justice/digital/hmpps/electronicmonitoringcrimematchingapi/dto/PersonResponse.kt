@@ -14,12 +14,12 @@ data class PersonResponse(
 ) {
   constructor(entity: Person) : this(
     personId = entity.personId,
-    name = entity.personName,
+    name = entity.firstName + " " + entity.lastName,
     nomisId = entity.nomisId,
     pncRef = entity.pncRef,
-    dateOfBirth = entity.dob,
+    dateOfBirth = entity.dateOfBirth,
     probationPractitioner = entity.probationPractitioner,
-    address = "${entity.street} ${entity.city} ${entity.zip}",
+    address = "${entity.street} ${entity.cityOrTown} ${entity.postcode}",
     deviceActivations = entity.deviceActivations.map {
       DeviceActivationResponse(it)
     },

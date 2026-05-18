@@ -35,13 +35,14 @@ class PersonServiceTest {
       val expectedResult = listOf(
         Person(
           personId = 1,
-          personName = "name",
+          firstName = "firstName",
+          lastName = "lastName",
           nomisId = "nomisId",
           pncRef = "",
           probationPractitioner = "",
-          dob = "1990-01-01",
-          zip = "FK12 3FA",
-          city = "Fakesville",
+          dateOfBirth = "1990-01-01",
+          postcode = "FK12 3FA",
+          cityOrTown = "Fakesville",
           street = "123 Fake Street",
           deviceActivations = mutableListOf(),
         ),
@@ -64,13 +65,14 @@ class PersonServiceTest {
       val expectedResult = listOf(
         Person(
           personId = 1,
-          personName = "name",
+          firstName = "firstName",
+          lastName = "lastName",
           nomisId = "nomisId",
           pncRef = "",
           probationPractitioner = "",
-          dob = "1990-01-01",
-          zip = "FK12 3FA",
-          city = "Fakesville",
+          dateOfBirth = "1990-01-01",
+          postcode = "FK12 3FA",
+          cityOrTown = "Fakesville",
           street = "123 Fake Street",
           deviceActivations = mutableListOf(
             DeviceActivation(
