@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.fixtures.queries.AthenaQueries
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -21,23 +22,7 @@ class GetPositionsByDeviceActivationIdTest {
     ).build()
 
     assertThat(query.queryString).isEqualTo(
-      """
-      SELECT 
-        position.position_id,
-        position.position_latitude,
-        position.position_longitude,
-        position.position_precision,
-        position.position_speed,
-        position.position_direction,
-        position.position_recorded_date,
-        position.position_lbs
-      FROM 
-        device_activations
-      INNER JOIN
-        position ON ( device_activations.device_id = position.device_id AND device_activations.person_id = position.person_id )
-      WHERE 
-        device_activations.device_activation_id = ?
-      """.trimIndent().replace("\\s+".toRegex(), " "),
+      AthenaQueries.SelectPositionsByDeviceActivationId,
     )
     assertThat(query.parameters).isEqualTo(listOf("1"))
   }
@@ -53,25 +38,7 @@ class GetPositionsByDeviceActivationIdTest {
     ).build()
 
     assertThat(query.queryString).isEqualTo(
-      """
-      SELECT 
-        position.position_id,
-        position.position_latitude,
-        position.position_longitude,
-        position.position_precision,
-        position.position_speed,
-        position.position_direction,
-        position.position_recorded_date,
-        position.position_lbs
-      FROM 
-        device_activations
-      INNER JOIN
-        position ON ( device_activations.device_id = position.device_id AND device_activations.person_id = position.person_id )
-      WHERE (
-        device_activations.device_activation_id = ?
-        AND position.position_lbs = ? 
-      )
-      """.trimIndent().replace("\\s+".toRegex(), " "),
+      AthenaQueries.SelectPositionsByDeviceActivationIdAndGeolocationMechanism,
     )
     assertThat(query.parameters).isEqualTo(listOf("1", "4"))
   }
@@ -87,25 +54,7 @@ class GetPositionsByDeviceActivationIdTest {
     ).build()
 
     assertThat(query.queryString).isEqualTo(
-      """
-      SELECT 
-        position.position_id,
-        position.position_latitude,
-        position.position_longitude,
-        position.position_precision,
-        position.position_speed,
-        position.position_direction,
-        position.position_recorded_date,
-        position.position_lbs
-      FROM 
-        device_activations
-      INNER JOIN
-        position ON ( device_activations.device_id = position.device_id AND device_activations.person_id = position.person_id )
-      WHERE (
-        device_activations.device_activation_id = ?
-        AND position.position_recorded_date >= from_iso8601_timestamp(?) 
-      )
-      """.trimIndent().replace("\\s+".toRegex(), " "),
+      AthenaQueries.SelectPositionsByDeviceActivationIdAndFromDate,
     )
     assertThat(query.parameters).isEqualTo(listOf("1", "'2020-01-01T01:00Z'"))
   }
@@ -121,25 +70,7 @@ class GetPositionsByDeviceActivationIdTest {
     ).build()
 
     assertThat(query.queryString).isEqualTo(
-      """
-      SELECT 
-        position.position_id,
-        position.position_latitude,
-        position.position_longitude,
-        position.position_precision,
-        position.position_speed,
-        position.position_direction,
-        position.position_recorded_date,
-        position.position_lbs
-      FROM 
-        device_activations
-      INNER JOIN
-        position ON ( device_activations.device_id = position.device_id AND device_activations.person_id = position.person_id )
-      WHERE (
-        device_activations.device_activation_id = ?
-        AND position.position_recorded_date <= from_iso8601_timestamp(?) 
-      )
-      """.trimIndent().replace("\\s+".toRegex(), " "),
+      AthenaQueries.SelectPositionsByDeviceActivationIdAndToDate,
     )
     assertThat(query.parameters).isEqualTo(listOf("1", "'2020-01-01T01:00Z'"))
   }
@@ -155,27 +86,7 @@ class GetPositionsByDeviceActivationIdTest {
     ).build()
 
     assertThat(query.queryString).isEqualTo(
-      """
-      SELECT 
-        position.position_id,
-        position.position_latitude,
-        position.position_longitude,
-        position.position_precision,
-        position.position_speed,
-        position.position_direction,
-        position.position_recorded_date,
-        position.position_lbs
-      FROM 
-        device_activations
-      INNER JOIN
-        position ON ( device_activations.device_id = position.device_id AND device_activations.person_id = position.person_id )
-      WHERE (
-        device_activations.device_activation_id = ?
-        AND position.position_lbs = ?
-        AND position.position_recorded_date >= from_iso8601_timestamp(?)
-        AND position.position_recorded_date <= from_iso8601_timestamp(?)
-      )
-      """.trimIndent().replace("\\s+".toRegex(), " "),
+      AthenaQueries.SelectPositionsByDeviceActivationIdAndGeolocationMechanismAndFromDateAndToDate,
     )
     assertThat(query.parameters).isEqualTo(listOf("1", "5", "'2020-01-01T01:00Z'", "'2020-01-02T01:00Z'"))
   }
