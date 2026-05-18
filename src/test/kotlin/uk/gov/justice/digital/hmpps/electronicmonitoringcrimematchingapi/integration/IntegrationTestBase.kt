@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.containing
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
@@ -153,7 +152,7 @@ abstract class IntegrationTestBase {
     val requestPattern = postRequestedFor(urlPathEqualTo("/"))
       .withHeader("X-Amz-Target", equalTo("AmazonAthena.StartQueryExecution"))
       .withRequestBody(
-        matchingJsonPath("QueryString", containing(query)),
+        matchingJsonPath("QueryString", equalTo(query)),
       )
 
     for (executionParameter in executionParameters) {

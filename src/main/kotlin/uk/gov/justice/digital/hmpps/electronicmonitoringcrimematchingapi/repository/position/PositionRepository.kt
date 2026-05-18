@@ -22,7 +22,6 @@ class PositionRepository(
     to: ZonedDateTime?,
   ): List<Position> = this.executeQuery(
     GetPositionsByDeviceActivationId(
-      athenaClient.properties,
       id,
       geolocationMechanism,
       from,
