@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
 
-object DeviceActivation : Table(name = "device_activation") {
+object DeviceActivation : Table(name = "device_activations") {
   val deviceActivationId = long("device_activation_id")
   val deviceId = long("device_id")
   val personId = long("person_id")

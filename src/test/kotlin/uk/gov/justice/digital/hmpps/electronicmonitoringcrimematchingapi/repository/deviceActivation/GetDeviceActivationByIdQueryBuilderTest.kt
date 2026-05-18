@@ -14,16 +14,16 @@ class GetDeviceActivationByIdQueryBuilderTest {
     assertThat(query.queryString).isEqualTo(
       """
       SELECT 
-        device_activation.device_activation_id, 
-        device_activation.device_id, 
-        device_activation.person_id, 
-        device_activation.device_activation_date, 
-        device_activation.device_deactivation_date 
+        device_activations.device_activation_id, 
+        device_activations.device_id, 
+        device_activations.person_id, 
+        device_activations.device_activation_date, 
+        device_activations.device_deactivation_date 
       FROM 
-        device_activation 
+        device_activations
       WHERE 
-        device_activation.device_activation_id = ?
-      """.trimIndent().replace("\n", "").replace("   ", " "),
+        device_activations.device_activation_id = ?
+      """.trimIndent().replace("\\s+".toRegex(), " "),
     )
     assertThat(query.parameters).isEqualTo(listOf("0"))
   }
