@@ -70,7 +70,7 @@ class EmDatastoreClient(
         .workGroup(properties.workgroup)
 
       if (query.parameters.isNotEmpty()) {
-        startQueryExecutionRequest.executionParameters(*query.parameters)
+        startQueryExecutionRequest.executionParameters(*query.parameters.toTypedArray())
       }
 
       startQueryExecutionRequest.resultConfiguration(resultConfiguration)
