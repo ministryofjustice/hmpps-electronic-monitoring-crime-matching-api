@@ -1,48 +1,48 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.position
 
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.datastore.DatastoreProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlQueryBuilder
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.functions.AthenaFunctions
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.DeviceActivation
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Position
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import java.time.ZonedDateTime
 
-class GetPositionsByDeviceActivationId : SqlQueryBuilder {
-  constructor(
-    datastoreProperties: DatastoreProperties,
-    id: Long,
-    geolocationMechanism: GeolocationMechanism?,
-    from: ZonedDateTime?,
-    to: ZonedDateTime?,
-  ) : super("${datastoreProperties.mdssDatabase}.device_activation", "d") {
-    this.addFields(
-      listOf(
-        "p.position_id",
-        "p.position_latitude",
-        "p.position_longitude",
-        "p.position_precision",
-        "p.position_speed",
-        "p.position_direction",
-        "p.position_gps_date",
-        "p.position_lbs",
-      ),
+class GetPositionsByDeviceActivationId(
+  private val id: Long,
+  private val geolocationMechanism: GeolocationMechanism?,
+  private val from: ZonedDateTime?,
+  private val to: ZonedDateTime?,
+) {
+  fun build(): AthenaQuery = DeviceActivation
+    .join(Position, JoinType.INNER) {
+      DeviceActivation.deviceId eq Position.deviceId
+      DeviceActivation.personId eq Position.personId
+    }
+    .select(
+      Position.positionId,
+      Position.positionLatitude,
+      Position.positionLongitude,
+      Position.positionPrecision,
+      Position.positionSpeed,
+      Position.positionDirection,
+      Position.positionRecordedDate,
+      Position.positionLbs,
     )
-      .addJoin(
-        "${datastoreProperties.mdssDatabase}.position p",
-        "d.device_id = p.device_id AND d.person_id = p.person_id",
-        JoinType.INNER,
-      )
-      .addFilter("d.device_activation_id", id)
+    .where {
+      DeviceActivation.deviceActivationId eq id
 
-    if (geolocationMechanism != null) {
-      this.addFilter("p.position_lbs", geolocationMechanism.value)
-    }
+      geolocationMechanism?.let {
+        Position.positionLbs eq geolocationMechanism.value
+      }
 
-    if (from != null) {
-      this.greaterEq("p.position_gps_date", from)
-    }
+      from?.let {
+        Position.positionRecordedDate gte AthenaFunctions.fromIso8601Timestamp(from)
+      }
 
-    if (to != null) {
-      this.lessEq("p.position_gps_date", to)
+      to?.let {
+        Position.positionRecordedDate lte AthenaFunctions.fromIso8601Timestamp(to)
+      }
     }
-  }
+    .prepare()
 }

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.fixtures.queries.AthenaQueries
 
 class GetDeviceActivationByIdQueryBuilderTest {
   @Test
@@ -12,18 +13,7 @@ class GetDeviceActivationByIdQueryBuilderTest {
     ).build()
 
     assertThat(query.queryString).isEqualTo(
-      """
-      SELECT 
-        device_activations.device_activation_id, 
-        device_activations.device_id, 
-        device_activations.person_id, 
-        device_activations.device_activation_date, 
-        device_activations.device_deactivation_date 
-      FROM 
-        device_activations
-      WHERE 
-        device_activations.device_activation_id = ?
-      """.trimIndent().replace("\\s+".toRegex(), " "),
+      AthenaQueries.SelectDeviceActivationById,
     )
     assertThat(query.parameters).isEqualTo(listOf("0"))
   }

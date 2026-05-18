@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PositionResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.fixtures.queries.AthenaQueries
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -96,6 +97,12 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
           orderStart = "",
           orderEnd = "",
         ),
+      )
+
+      // Check that the query sent to Athena was correct
+      verifyAthenaStartQueryExecutionWithQuery(
+        AthenaQueries.SelectDeviceActivationById,
+        listOf("1"),
       )
     }
 
@@ -436,7 +443,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       // Check that the WHERE clause include the geolocation mechanism filter
       verifyAthenaStartQueryExecutionWithQuery(
-        "WHERE d.device_activation_id = ? AND p.position_lbs = ?",
+        AthenaQueries.SelectPositionsByDeviceActivationIdAndGeolocationMechanism,
         listOf("1", "1"),
       )
     }
@@ -462,7 +469,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       // Check that the WHERE clause include the geolocation mechanism filter
       verifyAthenaStartQueryExecutionWithQuery(
-        "WHERE d.device_activation_id = ? AND p.position_gps_date >= from_iso8601_timestamp(?)",
+        AthenaQueries.SelectPositionsByDeviceActivationIdAndFromDate,
         listOf("1", "'2025-01-01T00:00Z'"),
       )
     }
@@ -488,7 +495,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       // Check that the WHERE clause include the geolocation mechanism filter
       verifyAthenaStartQueryExecutionWithQuery(
-        "WHERE d.device_activation_id = ? AND p.position_gps_date <= from_iso8601_timestamp(?)",
+        AthenaQueries.SelectPositionsByDeviceActivationIdAndToDate,
         listOf("1", "'2025-01-01T00:00Z'"),
       )
     }

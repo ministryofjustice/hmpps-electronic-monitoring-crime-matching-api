@@ -15,8 +15,8 @@ open class CompositeCondition(private val op: String) : Condition() {
     0 -> ""
     1 -> conditions.first().toString()
     else -> conditions.joinToString(
-      prefix = "(",
-      postfix = ")",
+      prefix = "( ",
+      postfix = " )",
       separator = " $op ",
     )
   }

@@ -77,8 +77,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "position_gps_date",
-          "Name": "position_gps_date",
+          "Label": "position_recorded_date",
+          "Name": "position_recorded_date",
           "Nullable": "UNKNOWN",
           "Precision": 0,
           "Scale": 0,
@@ -122,7 +122,7 @@
             "VarCharValue": "position_direction"
           },
           {
-            "VarCharValue": "position_gps_date"
+            "VarCharValue": "position_recorded_date"
           },
           {
             "VarCharValue": "position_lbs"

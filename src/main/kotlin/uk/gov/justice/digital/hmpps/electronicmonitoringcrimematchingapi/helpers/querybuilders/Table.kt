@@ -11,6 +11,8 @@ open class Table(val name: String) : ColumnSet() {
 
   fun long(name: String): Column<Long> = registerColumn(name)
 
+  fun double(name: String): Column<Double> = registerColumn(name)
+
   fun varchar(name: String): Column<String> = registerColumn(name)
 
   fun date(name: String): Column<ZonedDateTime> = registerColumn(name)

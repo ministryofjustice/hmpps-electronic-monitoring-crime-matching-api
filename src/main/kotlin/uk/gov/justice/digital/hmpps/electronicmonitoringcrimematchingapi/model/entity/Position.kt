@@ -17,7 +17,7 @@ data class Position(
   val positionDirection: Long,
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss[.[SSSSSS][SSS]]")
-  val positionGpsDate: LocalDateTime,
+  val positionRecordedDate: LocalDateTime,
 
   val positionLbs: Long,
 )
