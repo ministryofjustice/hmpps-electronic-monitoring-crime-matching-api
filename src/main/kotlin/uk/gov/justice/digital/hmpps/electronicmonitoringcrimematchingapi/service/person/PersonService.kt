@@ -13,7 +13,7 @@ class PersonService(
   fun getPersons(personsQueryCriteria: PersonsQueryCriteria): List<Person> = this.personRepository
     .getPersons(personsQueryCriteria)
 
-  fun getPerson(id: Long): Person = this.personRepository
+  fun getPerson(id: String): Person = this.personRepository
     .findById(id)
     .orElseThrow {
       EntityNotFoundException("No person found with id: $id")

@@ -16,7 +16,7 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
     for (row in rows) {
       val person = persons.getOrPut(row[0]) {
         Person(
-          personId = row[0].toLong(),
+          personId = row[0],
           firstName = row[1],
           lastName = row[2],
           nomisId = row[3],
@@ -30,14 +30,14 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
         )
       }
 
-      if (row.size == 12) {
+      if (row.size == 13) {
         val deviceActivation = DeviceActivation(
-          deviceActivationId = row[9].toLong(),
+          deviceActivationId = row[10].toLong(),
           deviceId = row[8].toLong(),
           deviceName = "",
-          personId = row[0].toLong(),
-          deviceActivationDate = LocalDateTime.parse(row[10], formatter),
-          deviceDeactivationDate = nullableLocalDateTime(row[11]),
+          personId = row[9].toLong(),
+          deviceActivationDate = LocalDateTime.parse(row[11], formatter),
+          deviceDeactivationDate = nullableLocalDateTime(row[12]),
           orderStart = "",
           orderEnd = "",
         )

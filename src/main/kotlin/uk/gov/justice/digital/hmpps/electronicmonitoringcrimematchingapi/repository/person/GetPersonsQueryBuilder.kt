@@ -9,10 +9,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.a
 class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCriteria) {
   fun build(): AthenaQuery = Person
     .join(DeviceActivation, JoinType.INNER) {
-      Person.personId eq DeviceActivation.personId
+      Person.mdssPersonId eq DeviceActivation.personId
     }
     .select(
-      Person.personId,
+      Person.deviceWearerId,
       Person.firstName,
       Person.lastName,
       Person.nomisId,
@@ -21,6 +21,7 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
       Person.cityOrTown,
       Person.street,
       DeviceActivation.deviceId,
+      DeviceActivation.personId,
       DeviceActivation.deviceActivationId,
       DeviceActivation.deviceActivationDate,
       DeviceActivation.deviceDeactivationDate,

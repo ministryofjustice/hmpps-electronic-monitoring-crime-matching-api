@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity
 
 data class Person(
-  val personId: Long,
+  val personId: String,
   val firstName: String,
   val lastName: String,
   val nomisId: String,

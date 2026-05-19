@@ -34,7 +34,7 @@ class PersonServiceTest {
 
       val expectedResult = listOf(
         Person(
-          personId = 1,
+          personId = "1",
           firstName = "firstName",
           lastName = "lastName",
           nomisId = "nomisId",

@@ -9,10 +9,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.fixture
 class GetPersonByIdTest {
   @Test
   fun `it should build a valid query`() {
-    val id: Long = 0
+    val id = "foo"
     val query = GetPersonByIdQueryBuilder(id).build()
 
     assertThat(query.queryString).isEqualTo(AthenaQueries.SelectPersonById)
-    assertThat(query.parameters).isEqualTo(listOf("0"))
+    assertThat(query.parameters).isEqualTo(listOf("'foo'"))
   }
 }

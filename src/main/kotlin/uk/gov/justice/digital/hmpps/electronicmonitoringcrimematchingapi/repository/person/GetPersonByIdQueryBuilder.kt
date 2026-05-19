@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Person
 
-class GetPersonByIdQueryBuilder(private val id: Long) {
+class GetPersonByIdQueryBuilder(private val id: String) {
   fun build(): AthenaQuery = Person
     .select(
-      Person.personId,
+      Person.deviceWearerId,
       Person.firstName,
       Person.lastName,
       Person.nomisId,
@@ -16,7 +16,7 @@ class GetPersonByIdQueryBuilder(private val id: Long) {
       Person.street,
     )
     .where {
-      Person.personId eq id
+      Person.deviceWearerId eq id
     }
     .prepare()
 }

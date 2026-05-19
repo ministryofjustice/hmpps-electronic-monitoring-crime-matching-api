@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 
 data class PersonResponse(
-  val personId: Long,
+  val personId: String,
   val name: String,
   val nomisId: String,
   val pncRef: String,

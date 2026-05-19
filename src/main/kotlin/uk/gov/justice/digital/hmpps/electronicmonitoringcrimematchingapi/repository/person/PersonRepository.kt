@@ -20,7 +20,7 @@ class PersonRepository(
     ).build(),
   )
 
-  fun findById(id: Long): Optional<Person> = Optional.ofNullable(
+  fun findById(id: String): Optional<Person> = Optional.ofNullable(
     this.executeQuery(
       GetPersonByIdQueryBuilder(
         id,

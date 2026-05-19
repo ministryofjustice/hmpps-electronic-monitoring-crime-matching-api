@@ -35,13 +35,13 @@ class PersonControllerTest {
 
       val expectedResult = listOf(
         PersonResponse(
-          1,
+          "1",
           name = "firstName lastName",
           nomisId = "nomis",
           pncRef = "",
           dateOfBirth = "1990-01-01",
           probationPractitioner = "",
-          address = "street city zip",
+          address = "street, city, zip",
           deviceActivations = listOf(),
         ),
       )
@@ -49,7 +49,7 @@ class PersonControllerTest {
       whenever(service.getPersons(personsQueryCriteria)).thenReturn(
         listOf(
           Person(
-            personId = 1,
+            personId = "1",
             firstName = "firstName",
             lastName = "lastName",
             nomisId = "nomis",

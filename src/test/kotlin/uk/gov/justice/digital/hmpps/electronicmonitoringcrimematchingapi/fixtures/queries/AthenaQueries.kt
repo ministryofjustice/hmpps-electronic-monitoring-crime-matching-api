@@ -16,7 +16,7 @@ object AthenaQueries {
 
   val SelectPersonById = """
     SELECT
-      caseload.mdss_person_id,
+      caseload.unique_device_wearer_id,
       caseload.first_name,
       caseload.last_name, 
       caseload.nomis_id,
@@ -27,12 +27,12 @@ object AthenaQueries {
     FROM 
       caseload
     WHERE 
-      caseload.mdss_person_id = ?
+      caseload.unique_device_wearer_id = ?
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
   val SelectPersonsByNameLike = """
     SELECT 
-      caseload.mdss_person_id, 
+      caseload.unique_device_wearer_id, 
       caseload.first_name, 
       caseload.last_name, 
       caseload.nomis_id, 
@@ -40,7 +40,8 @@ object AthenaQueries {
       caseload.postcode, 
       caseload.city_or_town, 
       caseload.house_number_and_street_name, 
-      device_activations.device_id, 
+      device_activations.device_id,
+      device_activations.person_id,
       device_activations.device_activation_id, 
       device_activations.device_activation_date, 
       device_activations.device_deactivation_date 
@@ -53,7 +54,7 @@ object AthenaQueries {
 
   val SelectPersonsByNomisIdLike = """
     SELECT 
-      caseload.mdss_person_id, 
+      caseload.unique_device_wearer_id, 
       caseload.first_name, 
       caseload.last_name, 
       caseload.nomis_id, 
@@ -61,7 +62,8 @@ object AthenaQueries {
       caseload.postcode, 
       caseload.city_or_town, 
       caseload.house_number_and_street_name, 
-      device_activations.device_id, 
+      device_activations.device_id,
+      device_activations.person_id,
       device_activations.device_activation_id, 
       device_activations.device_activation_date, 
       device_activations.device_deactivation_date 
@@ -74,7 +76,7 @@ object AthenaQueries {
 
   val SelectPersonsByDeviceIdLike = """
     SELECT 
-      caseload.mdss_person_id, 
+      caseload.unique_device_wearer_id, 
       caseload.first_name, 
       caseload.last_name, 
       caseload.nomis_id, 
@@ -82,7 +84,8 @@ object AthenaQueries {
       caseload.postcode, 
       caseload.city_or_town, 
       caseload.house_number_and_street_name, 
-      device_activations.device_id, 
+      device_activations.device_id,
+      device_activations.person_id,
       device_activations.device_activation_id, 
       device_activations.device_activation_date, 
       device_activations.device_deactivation_date 

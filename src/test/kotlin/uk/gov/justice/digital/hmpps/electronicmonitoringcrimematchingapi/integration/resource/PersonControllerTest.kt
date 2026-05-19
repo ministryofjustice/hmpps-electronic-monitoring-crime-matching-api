@@ -20,42 +20,6 @@ class PersonControllerTest : IntegrationTestBase() {
   @DisplayName("GET /persons")
   inner class GetPersons {
     @Test
-    fun `it should return persons without device activations`() {
-      stubQueryExecution(
-        "123",
-        1,
-        "SUCCEEDED",
-        "athenaResponses/persons.some.success.json",
-      )
-
-      val result = webTestClient.get()
-        .uri("/persons?name=name")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody<PagedResponse<PersonResponse>>()
-        .returnResult()
-        .responseBody!!
-
-      assertThat(result.data).isNotNull()
-      assertThat(result.data).hasSize(1)
-      assertThat(result.data[0]).isEqualTo(
-        PersonResponse(
-          personId = 1,
-          name = "first_name last_name",
-          nomisId = "nomis_id",
-          pncRef = "",
-          dateOfBirth = "2000-05-29",
-          probationPractitioner = "",
-          address = "street city zip",
-          deviceActivations = listOf(),
-        ),
-      )
-      assertThat(result.data[0].deviceActivations).isEmpty()
-    }
-
-    @Test
     fun `it should return persons with device activations`() {
       stubQueryExecution(
         "123",
@@ -154,13 +118,13 @@ class PersonControllerTest : IntegrationTestBase() {
 
       assertThat(result.data).isEqualTo(
         PersonResponse(
-          personId = 1,
+          personId = "1",
           name = "first_name last_name",
           nomisId = "nomis_id",
           pncRef = "",
           dateOfBirth = "2000-05-29",
           probationPractitioner = "",
-          address = "street city zip",
+          address = "street, city, zip",
           deviceActivations = listOf(),
         ),
       )
