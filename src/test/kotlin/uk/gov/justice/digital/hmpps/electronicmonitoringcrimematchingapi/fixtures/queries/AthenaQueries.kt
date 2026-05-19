@@ -14,6 +14,73 @@ object AthenaQueries {
       device_activations.device_activation_id = ?
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
+  val SelectPersonById = """
+    SELECT
+      caseload.mdss_person_id,
+      caseload.first_name,
+      caseload.last_name, 
+      caseload.nomis_id,
+      caseload.date_of_birth,
+      caseload.postcode,
+      caseload.city_or_town,
+      caseload.house_number_and_street_name
+    FROM 
+      caseload
+    WHERE 
+      caseload.mdss_person_id = ?
+  """.trimIndent().replace("\\s+".toRegex(), " ")
+
+  val SelectPersonsByNameLike = """
+    SELECT
+      caseload.mdss_person_id,
+      caseload.first_name,
+      caseload.last_name, 
+      caseload.nomis_id,
+      caseload.date_of_birth,
+      caseload.postcode,
+      caseload.city_or_town,
+      caseload.house_number_and_street_name
+    FROM 
+      caseload
+    WHERE ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? )
+  """.trimIndent().replace("\\s+".toRegex(), " ")
+
+  val SelectPersonsByNomisIdLike = """
+    SELECT
+      caseload.mdss_person_id,
+      caseload.first_name,
+      caseload.last_name, 
+      caseload.nomis_id,
+      caseload.date_of_birth,
+      caseload.postcode,
+      caseload.city_or_town,
+      caseload.house_number_and_street_name
+    FROM 
+      caseload
+    WHERE caseload.nomis_id LIKE ?
+  """.trimIndent().replace("\\s+".toRegex(), " ")
+
+  val SelectPersonsByDeviceIdLike = """
+  SELECT 
+    caseload.mdss_person_id, 
+    caseload.first_name, 
+    caseload.last_name, 
+    caseload.nomis_id, 
+    caseload.date_of_birth, 
+    caseload.postcode, 
+    caseload.city_or_town, 
+    caseload.house_number_and_street_name, 
+    device_activations.device_id, 
+    device_activations.device_activation_id, 
+    device_activations.device_activation_date, 
+    device_activations.device_deactivation_date 
+  FROM 
+    caseload 
+  INNER JOIN 
+    device_activations ON caseload.mdss_person_id = device_activations.person_id 
+  WHERE CAST(device_activations.device_id AS VARCHAR) LIKE ?
+  """.trimIndent().replace("\\s+".toRegex(), " ")
+
   val SelectPositionsByDeviceActivationId = """
     SELECT 
       position.position_id,
