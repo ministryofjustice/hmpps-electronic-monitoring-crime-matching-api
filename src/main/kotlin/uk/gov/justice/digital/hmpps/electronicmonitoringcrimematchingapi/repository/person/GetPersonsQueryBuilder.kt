@@ -7,61 +7,39 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.a
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Person
 
 class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCriteria) {
-  fun build(): AthenaQuery {
-    val columns = buildList {
-      addAll(
-        listOf(
-          Person.personId,
-          Person.firstName,
-          Person.lastName,
-          Person.nomisId,
-          Person.dateOfBirth,
-          Person.postcode,
-          Person.cityOrTown,
-          Person.street,
-        ),
-      )
+  fun build(): AthenaQuery = Person
+    .join(DeviceActivation, JoinType.INNER) {
+      Person.personId eq DeviceActivation.personId
+    }
+    .select(
+      Person.personId,
+      Person.firstName,
+      Person.lastName,
+      Person.nomisId,
+      Person.dateOfBirth,
+      Person.postcode,
+      Person.cityOrTown,
+      Person.street,
+      DeviceActivation.deviceId,
+      DeviceActivation.deviceActivationId,
+      DeviceActivation.deviceActivationDate,
+      DeviceActivation.deviceDeactivationDate,
+    )
+    .where {
+      personsQueryCriteria.name?.let {
+        or {
+          Person.firstName like "%$it%"
+          Person.lastName like "%$it%"
+        }
+      }
 
-      if (personsQueryCriteria.includeDeviceActivations) {
-        addAll(
-          listOf(
-            DeviceActivation.deviceId,
-            DeviceActivation.deviceActivationId,
-            DeviceActivation.deviceActivationDate,
-            DeviceActivation.deviceDeactivationDate,
-          ),
-        )
+      personsQueryCriteria.nomisId?.let {
+        Person.nomisId like "%$it%"
+      }
+
+      personsQueryCriteria.deviceId?.let {
+        DeviceActivation.deviceId eq it
       }
     }
-
-    return (
-      if (personsQueryCriteria.includeDeviceActivations) {
-        Person.join(DeviceActivation, JoinType.INNER) {
-          Person.personId eq DeviceActivation.personId
-        }
-      } else {
-        Person
-      }
-      )
-      .select(*columns.toTypedArray())
-      .where {
-        personsQueryCriteria.name?.let {
-          or {
-            Person.firstName like it
-            Person.lastName like it
-          }
-        }
-
-        personsQueryCriteria.nomisId?.let {
-          Person.nomisId like it
-        }
-
-        personsQueryCriteria.deviceId
-          ?.takeIf { personsQueryCriteria.includeDeviceActivations }
-          ?.let {
-            DeviceActivation.deviceId.castAs("VARCHAR") like it
-          }
-      }
-      .prepare()
-  }
+    .prepare()
 }

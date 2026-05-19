@@ -168,24 +168,11 @@ class QueryBuilderTest {
     val query = TestTable
       .selectAll()
       .where {
-        TestTable.testColumn2 like "foo"
+        TestTable.testColumn2 like "%foo%"
       }
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_2 LIKE ?")
-    assertThat(query.parameters).isEqualTo(listOf("'%foo%'"))
-  }
-
-  @Test
-  fun `it should build a select query with a cast like varchar condition`() {
-    val query = TestTable
-      .selectAll()
-      .where {
-        TestTable.testColumn2.castAs("VARCHAR") like "foo"
-      }
-      .prepare()
-
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE CAST(test_table.test_column_2 AS VARCHAR) LIKE ?")
     assertThat(query.parameters).isEqualTo(listOf("'%foo%'"))
   }
 

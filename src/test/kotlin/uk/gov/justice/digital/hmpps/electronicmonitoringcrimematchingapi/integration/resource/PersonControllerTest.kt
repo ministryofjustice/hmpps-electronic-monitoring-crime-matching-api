@@ -65,7 +65,7 @@ class PersonControllerTest : IntegrationTestBase() {
       )
 
       val result = webTestClient.get()
-        .uri("/persons?name=name&includeDeviceActivations=true")
+        .uri("/persons?name=name")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()

@@ -78,14 +78,5 @@ class PersonControllerTest {
         controller.getPersons(personsQueryCriteria)
       }
     }
-
-    @Test
-    fun `it should throw an exception when includeDeviceActivations is false and deviceId is present`() {
-      val personsQueryCriteria = PersonsQueryCriteria(deviceId = "deviceId")
-
-      assertThrows<ResponseStatusException> {
-        controller.getPersons(personsQueryCriteria)
-      }
-    }
   }
 }

@@ -36,7 +36,7 @@ class GetPersonsTest {
 
   @Test
   fun `it should build a valid query with a device id filter`() {
-    val personsQueryCriteria = PersonsQueryCriteria(deviceId = "foo", includeDeviceActivations = true)
+    val personsQueryCriteria = PersonsQueryCriteria(deviceId = 1)
     val query = GetPersonsQueryBuilder(
       personsQueryCriteria,
     ).build()
@@ -44,6 +44,6 @@ class GetPersonsTest {
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByDeviceIdLike,
     )
-    assertThat(query.parameters).isEqualTo(listOf("'%foo%'"))
+    assertThat(query.parameters).isEqualTo(listOf("1"))
   }
 }

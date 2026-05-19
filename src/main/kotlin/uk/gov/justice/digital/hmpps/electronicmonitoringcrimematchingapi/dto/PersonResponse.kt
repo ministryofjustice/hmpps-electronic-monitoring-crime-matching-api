@@ -19,7 +19,7 @@ data class PersonResponse(
     pncRef = entity.pncRef,
     dateOfBirth = entity.dateOfBirth,
     probationPractitioner = entity.probationPractitioner,
-    address = "${entity.street} ${entity.cityOrTown} ${entity.postcode}",
+    address = "${entity.street}, ${entity.cityOrTown}, ${entity.postcode}",
     deviceActivations = entity.deviceActivations.map {
       DeviceActivationResponse(it)
     },

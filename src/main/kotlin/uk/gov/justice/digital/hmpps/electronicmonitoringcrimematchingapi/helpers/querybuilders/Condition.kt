@@ -35,8 +35,8 @@ abstract class Condition {
     addCondition(Equal(this, value))
   }
 
-  infix fun Expression.like(value: String) {
-    addCondition(Like(this, Parameter("%$value%")))
+  infix fun <T> Column<T>.like(value: String) {
+    addCondition(Like(this, Parameter(value)))
   }
 
   infix fun <T> Column<T>.gte(value: T) {
