@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
@@ -41,6 +42,29 @@ class PersonControllerTest : IntegrationTestBase() {
       assertThat(result.data).isNotNull()
       assertThat(result.data).hasSize(1)
       assertThat(result.data[0].deviceActivations).hasSize(1)
+      assertThat(result.data[0]).isEqualTo(
+        PersonResponse(
+          personId = "1",
+          name = "first_name last_name",
+          nomisId = "nomis_id",
+          pncRef = "",
+          dateOfBirth = "2000-05-29",
+          probationPractitioner = "",
+          address = "street, city, zip",
+          deviceActivations = listOf(
+            DeviceActivationResponse(
+              deviceActivationId = 54321,
+              deviceId = 12345,
+              deviceName = "",
+              personId = 56789,
+              deviceActivationDate = "2023-05-18T00:00",
+              deviceDeactivationDate = "2024-05-18T00:00",
+              orderStart = "",
+              orderEnd = "",
+            ),
+          ),
+        ),
+      )
     }
 
     @Test
