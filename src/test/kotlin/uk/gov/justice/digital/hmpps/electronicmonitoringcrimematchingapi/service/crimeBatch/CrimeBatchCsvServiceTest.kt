@@ -226,6 +226,18 @@ class CrimeBatchCsvServiceTest {
     assertThat(parseResult.recordCount).isEqualTo(1)
   }
 
+  @ParameterizedTest(name = "it should parse valid batch id - {0}")
+  @MethodSource("validBatchIds")
+  fun `it should parse all valid batch ids`(batchId: String) {
+    val crimeData = createCsvRow(batchId = batchId).byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(1)
+    assertThat(parseResult.records[0].batchId).isEqualTo(batchId)
+    assertThat(parseResult.errors).hasSize(0)
+    assertThat(parseResult.recordCount).isEqualTo(1)
+  }
+
   @Test
   fun `it should not parse an invalid date in batch ID`() {
     val crimeData = createCsvRow(batchId = "MPS20253001").byteInputStream()
@@ -537,6 +549,12 @@ class CrimeBatchCsvServiceTest {
       Arguments.of("", "", "50", "3", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "3.0"),
       Arguments.of("", "", "", "1", "longitude", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA, "1"),
       Arguments.of("", "", "", "", null, CrimeBatchEmailAttachmentIngestionErrorType.MISSING_LOCATION_DATA, null),
+    )
+
+    @JvmStatic
+    fun validBatchIds() = listOf(
+      Arguments.of("AVS20250101-1"),
+      Arguments.of("AVS20250101-R")
     )
   }
 }
