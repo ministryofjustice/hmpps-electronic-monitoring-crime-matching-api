@@ -12,7 +12,7 @@ generic-service:
     ATHENA_OUTPUT_BUCKET: "placeholder"
     ATHENA_WORKGROUP: "placeholder"
     MFA_REQUIRED: "false"
-    DATASTORE_DATABASE: "acquisitive_crime_prod_dbt"
+    DATASTORE_DATABASE: "placeholder"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
