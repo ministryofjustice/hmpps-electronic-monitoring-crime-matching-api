@@ -16,15 +16,13 @@ class PersonRepository(
 
   fun getPersons(personsQueryCriteria: PersonsQueryCriteria): List<Person> = this.executeQuery(
     GetPersonsQueryBuilder(
-      athenaClient.properties,
       personsQueryCriteria,
     ).build(),
   )
 
-  fun findById(id: Long): Optional<Person> = Optional.ofNullable(
+  fun findById(id: String): Optional<Person> = Optional.ofNullable(
     this.executeQuery(
       GetPersonByIdQueryBuilder(
-        athenaClient.properties,
         id,
       ).build(),
     ).firstOrNull(),

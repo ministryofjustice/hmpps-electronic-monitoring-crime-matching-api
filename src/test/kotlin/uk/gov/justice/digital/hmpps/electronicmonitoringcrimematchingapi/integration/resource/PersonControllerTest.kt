@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
@@ -20,12 +21,12 @@ class PersonControllerTest : IntegrationTestBase() {
   @DisplayName("GET /persons")
   inner class GetPersons {
     @Test
-    fun `it should return persons without device activations`() {
+    fun `it should return persons with device activations`() {
       stubQueryExecution(
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.device-activations.success.json",
       )
 
       val result = webTestClient.get()
@@ -40,31 +41,30 @@ class PersonControllerTest : IntegrationTestBase() {
 
       assertThat(result.data).isNotNull()
       assertThat(result.data).hasSize(1)
-      assertThat(result.data[0].deviceActivations).isEmpty()
-    }
-
-    @Test
-    fun `it should return persons with device activations`() {
-      stubQueryExecution(
-        "123",
-        1,
-        "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponseWithDeviceActivations.json",
-      )
-
-      val result = webTestClient.get()
-        .uri("/persons?name=name&includeDeviceActivations=true")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody<PagedResponse<PersonResponse>>()
-        .returnResult()
-        .responseBody!!
-
-      assertThat(result.data).isNotNull()
-      assertThat(result.data).hasSize(1)
       assertThat(result.data[0].deviceActivations).hasSize(1)
+      assertThat(result.data[0]).isEqualTo(
+        PersonResponse(
+          personId = "1",
+          name = "first_name last_name",
+          nomisId = "nomis_id",
+          pncRef = "",
+          dateOfBirth = "2000-05-29",
+          probationPractitioner = "",
+          address = "street, city, zip",
+          deviceActivations = listOf(
+            DeviceActivationResponse(
+              deviceActivationId = 54321,
+              deviceId = 12345,
+              deviceName = "",
+              personId = 56789,
+              deviceActivationDate = "2023-05-18T00:00",
+              deviceDeactivationDate = "2024-05-18T00:00",
+              orderStart = "",
+              orderEnd = "",
+            ),
+          ),
+        ),
+      )
     }
 
     @Test
@@ -110,7 +110,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulEmptyPersonResponse.json",
+        "athenaResponses/person.empty.success.json",
       )
 
       webTestClient.get()
@@ -127,7 +127,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.some.success.json",
       )
 
       val result = webTestClient.get()
@@ -142,13 +142,13 @@ class PersonControllerTest : IntegrationTestBase() {
 
       assertThat(result.data).isEqualTo(
         PersonResponse(
-          personId = 1,
-          name = "person_name",
+          personId = "1",
+          name = "first_name last_name",
           nomisId = "nomis_id",
           pncRef = "",
           dateOfBirth = "2000-05-29",
           probationPractitioner = "",
-          address = "street city zip",
+          address = "street, city, zip",
           deviceActivations = listOf(),
         ),
       )
@@ -160,7 +160,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         1,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.some.success.json",
       )
 
       webTestClient.get()
@@ -214,7 +214,7 @@ class PersonControllerTest : IntegrationTestBase() {
         "123",
         3,
         "SUCCEEDED",
-        "athenaResponses/successfulPersonsResponse.json",
+        "athenaResponses/persons.some.success.json",
       )
 
       webTestClient.get()

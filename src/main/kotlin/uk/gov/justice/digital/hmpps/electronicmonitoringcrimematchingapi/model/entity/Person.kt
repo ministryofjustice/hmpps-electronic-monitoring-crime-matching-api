@@ -1,14 +1,15 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity
 
 data class Person(
-  val personId: Long,
-  val personName: String,
+  val personId: String,
+  val firstName: String,
+  val lastName: String,
   val nomisId: String,
   val pncRef: String,
   val probationPractitioner: String,
-  val dob: String,
-  val zip: String,
-  val city: String,
+  val dateOfBirth: String,
+  val postcode: String,
+  val cityOrTown: String,
   val street: String,
   val deviceActivations: MutableList<DeviceActivation>,
 )

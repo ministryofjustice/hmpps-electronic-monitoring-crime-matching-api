@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.conditions.GreaterThanEqual
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.conditions.IsNull
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.conditions.LessThanEqual
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.conditions.Like
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.conditions.Or
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.expressions.Parameter
 
@@ -32,6 +33,10 @@ abstract class Condition {
 
   infix fun <T> Column<T>.eq(value: Expression) {
     addCondition(Equal(this, value))
+  }
+
+  infix fun <T> Column<T>.like(value: String) {
+    addCondition(Like(this, Parameter(value)))
   }
 
   infix fun <T> Column<T>.gte(value: T) {

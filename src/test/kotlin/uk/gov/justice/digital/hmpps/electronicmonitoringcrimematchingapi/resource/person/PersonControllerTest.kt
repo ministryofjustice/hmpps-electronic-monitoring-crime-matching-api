@@ -35,13 +35,13 @@ class PersonControllerTest {
 
       val expectedResult = listOf(
         PersonResponse(
-          1,
-          name = "name",
+          "1",
+          name = "firstName lastName",
           nomisId = "nomis",
           pncRef = "",
           dateOfBirth = "1990-01-01",
           probationPractitioner = "",
-          address = "street city zip",
+          address = "street, city, zip",
           deviceActivations = listOf(),
         ),
       )
@@ -49,14 +49,15 @@ class PersonControllerTest {
       whenever(service.getPersons(personsQueryCriteria)).thenReturn(
         listOf(
           Person(
-            personId = 1,
-            personName = "name",
+            personId = "1",
+            firstName = "firstName",
+            lastName = "lastName",
             nomisId = "nomis",
             pncRef = "",
-            dob = "1990-01-01",
+            dateOfBirth = "1990-01-01",
             probationPractitioner = "",
-            zip = "zip",
-            city = "city",
+            postcode = "zip",
+            cityOrTown = "city",
             street = "street",
             deviceActivations = mutableListOf(),
           ),
@@ -72,15 +73,6 @@ class PersonControllerTest {
     @Test
     fun `it should throw an exception when no valid criteria fields are passed`() {
       val personsQueryCriteria = PersonsQueryCriteria()
-
-      assertThrows<ResponseStatusException> {
-        controller.getPersons(personsQueryCriteria)
-      }
-    }
-
-    @Test
-    fun `it should throw an exception when includeDeviceActivations is false and deviceId is present`() {
-      val personsQueryCriteria = PersonsQueryCriteria(deviceId = "deviceId")
 
       assertThrows<ResponseStatusException> {
         controller.getPersons(personsQueryCriteria)

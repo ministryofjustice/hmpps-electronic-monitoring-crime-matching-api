@@ -110,7 +110,7 @@ class QueryBuilderTest {
   }
 
   @Test
-  fun `it should build a query with a gte conditions`() {
+  fun `it should build a query with a gte condition`() {
     val query = TestTable
       .selectAll()
       .where {
@@ -137,7 +137,7 @@ class QueryBuilderTest {
   }
 
   @Test
-  fun `it should build a query with a lte conditions`() {
+  fun `it should build a query with a lte condition`() {
     val query = TestTable
       .selectAll()
       .where {
@@ -161,6 +161,19 @@ class QueryBuilderTest {
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_date_column <= from_iso8601_timestamp(?)")
     assertThat(query.parameters).isEqualTo(listOf("'2020-01-01T01:00Z'"))
+  }
+
+  @Test
+  fun `it should build a select query with a like condition`() {
+    val query = TestTable
+      .selectAll()
+      .where {
+        TestTable.testColumn2 like "%foo%"
+      }
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_2 LIKE ?")
+    assertThat(query.parameters).isEqualTo(listOf("'%foo%'"))
   }
 
   @Test

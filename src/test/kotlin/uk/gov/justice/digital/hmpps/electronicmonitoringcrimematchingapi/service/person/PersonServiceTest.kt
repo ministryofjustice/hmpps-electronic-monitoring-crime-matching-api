@@ -29,48 +29,20 @@ class PersonServiceTest {
   @DisplayName("GetPersons")
   inner class GetPersons {
     @Test
-    fun `it should return a list of persons without device activations when includeDeviceActivations is false`() {
-      val personsQueryCriteria = PersonsQueryCriteria(name = "name", includeDeviceActivations = false)
+    fun `it should return a list of persons with device activations`() {
+      val personsQueryCriteria = PersonsQueryCriteria(name = "name")
 
       val expectedResult = listOf(
         Person(
-          personId = 1,
-          personName = "name",
+          personId = "1",
+          firstName = "firstName",
+          lastName = "lastName",
           nomisId = "nomisId",
           pncRef = "",
           probationPractitioner = "",
-          dob = "1990-01-01",
-          zip = "FK12 3FA",
-          city = "Fakesville",
-          street = "123 Fake Street",
-          deviceActivations = mutableListOf(),
-        ),
-      )
-
-      whenever(personRepository.getPersons(personsQueryCriteria)).thenReturn(expectedResult)
-
-      val result = service.getPersons(personsQueryCriteria)
-
-      assertThat(result).isInstanceOf(List::class.java)
-      assertThat(result.count()).isEqualTo(1)
-      assertThat(result.first()).isInstanceOf(Person::class.java)
-      assertThat(result.first().deviceActivations).isEqualTo(listOf<DeviceActivation>())
-    }
-
-    @Test
-    fun `it should return a list of persons with device activations when includeDeviceActivations is true`() {
-      val personsQueryCriteria = PersonsQueryCriteria(name = "name", includeDeviceActivations = true)
-
-      val expectedResult = listOf(
-        Person(
-          personId = 1,
-          personName = "name",
-          nomisId = "nomisId",
-          pncRef = "",
-          probationPractitioner = "",
-          dob = "1990-01-01",
-          zip = "FK12 3FA",
-          city = "Fakesville",
+          dateOfBirth = "1990-01-01",
+          postcode = "FK12 3FA",
+          cityOrTown = "Fakesville",
           street = "123 Fake Street",
           deviceActivations = mutableListOf(
             DeviceActivation(

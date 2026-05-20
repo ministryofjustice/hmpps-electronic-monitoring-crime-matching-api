@@ -58,7 +58,7 @@ class PersonController(
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   fun getPerson(
-    @PathVariable personId: Long,
+    @PathVariable personId: String,
   ): ResponseEntity<Response<PersonResponse>> {
     val person = personService.getPerson(personId)
 
