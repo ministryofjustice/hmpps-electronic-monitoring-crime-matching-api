@@ -15,6 +15,7 @@ generic-service:
     ATHENA_OUTPUT_BUCKET: "s3://emds-dev-athena-query-results-20240917144028307600000004"
     ATHENA_WORKGROUP: "800964199911-default"
     MFA_REQUIRED: "false"
+    DATASTORE_DATABASE: "acquisitive_crime_dev_dbt"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
