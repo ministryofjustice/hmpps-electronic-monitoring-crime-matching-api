@@ -229,7 +229,7 @@ class CrimeBatchCsvServiceTest {
   @ParameterizedTest(name = "it should parse valid batch id - {0}")
   @MethodSource("validBatchIds")
   fun `it should parse all valid batch ids`(batchId: String) {
-    val crimeData = createCsvRow(batchId = batchId).byteInputStream()
+    val crimeData = createCsvRow(batchId = batchId, policeForce = PoliceForce.AVON_AND_SOMERSET.identifier).byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
 
     assertThat(parseResult.records).hasSize(1)
@@ -553,8 +553,12 @@ class CrimeBatchCsvServiceTest {
 
     @JvmStatic
     fun validBatchIds() = listOf(
+      Arguments.of("AVS20250101"),
       Arguments.of("AVS20250101-1"),
-      Arguments.of("AVS20250101-R")
+      Arguments.of("AVS20250101-R"),
+      Arguments.of("AVS20250101-r"),
+      Arguments.of("AVS20250101-A"),
+      Arguments.of("AVS20250101-a")
     )
   }
 }
