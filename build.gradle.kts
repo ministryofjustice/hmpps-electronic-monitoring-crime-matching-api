@@ -17,7 +17,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
-
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
   implementation("software.amazon.awssdk:athena:2.41.28")
   implementation("software.amazon.awssdk:s3:2.41.28")
   implementation("org.apache.commons:commons-csv:1.14.1")
@@ -25,11 +25,6 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:6.0.0-RELEASE")
   implementation("org.locationtech.proj4j:proj4j:1.2.3")
   implementation("org.locationtech.proj4j:proj4j-epsg:1.2.3")
-
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
-  constraints {
-    implementation("org.webjars:swagger-ui:5.32.2")
-  }
 
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
