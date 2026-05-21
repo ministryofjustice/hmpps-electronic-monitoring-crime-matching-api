@@ -84,8 +84,7 @@ aws:
     bucket-name: police-emails
 
 datastore:
-  fms-database: ${FMS_DATABASE:serco_fms_dev}
-  mdss-database: ${MDSS_DATABASE:allied_mdss_dev}
+  database: ${DATASTORE_DATABASE}
   output-bucket-arn: ${ATHENA_OUTPUT_BUCKET}
   workgroup: ${ATHENA_WORKGROUP}
 

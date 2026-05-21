@@ -29,16 +29,6 @@ class EmDatastoreClient(
 
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  fun getQueryResult(athenaQuery: AthenaQuery): ResultSet {
-    val queryExecutionId: String = submitAthenaQuery(athenaClient, athenaQuery)
-
-    // Wait for query to complete - blocking
-    waitForQueryToComplete(athenaClient, queryExecutionId)
-
-    val resultSet: ResultSet = retrieveResults(athenaClient, queryExecutionId)
-    return resultSet
-  }
-
   fun getQueryResult(queryExecutionId: String): ResultSet {
     waitForQueryToComplete(athenaClient, queryExecutionId)
     val resultSet: ResultSet = retrieveResults(athenaClient, queryExecutionId)
@@ -57,6 +47,7 @@ class EmDatastoreClient(
     return try {
       val queryExecutionContext = QueryExecutionContext.builder()
         .catalog("AwsDataCatalog")
+        .database(properties.database)
         .build()
 
       // The result configuration specifies where the results of the query should go.
@@ -76,6 +67,7 @@ class EmDatastoreClient(
       startQueryExecutionRequest.resultConfiguration(resultConfiguration)
 
       log.debug("Workgroup: {}", properties.workgroup)
+      log.debug("Database: {}", properties.database)
       log.debug("Starting query: {}", query)
 
       val startQueryExecutionResponse = athenaClient.startQueryExecution(startQueryExecutionRequest.build())
