@@ -47,9 +47,9 @@ class PersonControllerTest : IntegrationTestBase() {
           personId = "1",
           name = "first_name last_name",
           nomisId = "nomis_id",
-          pncRef = "",
+          pncRef = "pnc_id",
           dateOfBirth = "2000-05-29",
-          probationPractitioner = "",
+          probationPractitioner = "responsible_officer_name",
           address = "street, city, zip",
           deviceActivations = listOf(
             DeviceActivationResponse(
@@ -145,9 +145,9 @@ class PersonControllerTest : IntegrationTestBase() {
           personId = "1",
           name = "first_name last_name",
           nomisId = "nomis_id",
-          pncRef = "",
+          pncRef = "pnc_id",
           dateOfBirth = "2000-05-29",
-          probationPractitioner = "",
+          probationPractitioner = "responsible_officer_name",
           address = "street, city, zip",
           deviceActivations = listOf(),
         ),

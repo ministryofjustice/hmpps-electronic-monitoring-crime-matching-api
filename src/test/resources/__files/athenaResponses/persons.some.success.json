@@ -53,6 +53,18 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
+          "Label": "pnc_id",
+          "Name": "pnc_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
           "Label": "date_of_birth",
           "Name": "date_of_birth",
           "Nullable": "UNKNOWN",
@@ -61,6 +73,18 @@
           "SchemaName": "",
           "TableName": "",
           "Type": "date"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "responsible_officer_name",
+          "Name": "responsible_officer_name",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
         },
         {
           "CaseSensitive": true,
@@ -116,7 +140,13 @@
             "VarCharValue": "nomis_id"
           },
           {
+            "VarCharValue": "pnc_id"
+          },
+          {
             "VarCharValue": "date_of_birth"
+          },
+          {
+            "VarCharValue": "responsible_officer_name"
           },
           {
             "VarCharValue": "postcode"
@@ -144,7 +174,13 @@
             "VarCharValue": "nomis_id"
           },
           {
+            "VarCharValue": "pnc_id"
+          },
+          {
             "VarCharValue": "2000-05-29"
+          },
+          {
+            "VarCharValue": "responsible_officer_name"
           },
           {
             "VarCharValue": "zip"
