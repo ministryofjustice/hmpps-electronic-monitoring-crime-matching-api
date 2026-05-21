@@ -32,11 +32,11 @@
           "Label": "person_id",
           "Name": "person_id",
           "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
+          "Precision": 19,
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "bigint"
+          "Type": "varchar"
         },
         {
           "CaseSensitive": false,

@@ -49,7 +49,7 @@ class PersonServiceTest {
               deviceActivationId = 54321,
               deviceId = 12345,
               deviceName = "",
-              personId = 1,
+              personId = "1",
               deviceActivationDate = LocalDateTime.of(2021, 1, 1, 1, 1),
               deviceDeactivationDate = null,
               orderStart = "",

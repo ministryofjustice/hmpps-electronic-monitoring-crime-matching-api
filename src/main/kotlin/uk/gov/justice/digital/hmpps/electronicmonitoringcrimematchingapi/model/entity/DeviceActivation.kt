@@ -10,7 +10,7 @@ data class DeviceActivation(
 
   val deviceName: String = "",
 
-  val personId: Long,
+  val personId: String,
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss[.[SSSSSS][SSS]]")
   val deviceActivationDate: LocalDateTime,

@@ -23,7 +23,6 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
       Person.cityOrTown,
       Person.street,
       DeviceActivation.deviceId,
-      DeviceActivation.personId,
       DeviceActivation.deviceActivationId,
       DeviceActivation.deviceActivationDate,
       DeviceActivation.deviceDeactivationDate,

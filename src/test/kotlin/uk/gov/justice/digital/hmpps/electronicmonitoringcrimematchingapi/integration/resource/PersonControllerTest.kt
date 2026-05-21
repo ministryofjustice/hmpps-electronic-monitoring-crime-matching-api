@@ -56,7 +56,7 @@ class PersonControllerTest : IntegrationTestBase() {
               deviceActivationId = 54321,
               deviceId = 12345,
               deviceName = "",
-              personId = 56789,
+              personId = "1",
               deviceActivationDate = "2023-05-18T00:00",
               deviceDeactivationDate = "2024-05-18T00:00",
               orderStart = "",
