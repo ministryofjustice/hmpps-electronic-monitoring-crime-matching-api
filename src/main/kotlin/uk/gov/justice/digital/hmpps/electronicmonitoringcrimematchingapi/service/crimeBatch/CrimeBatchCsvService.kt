@@ -126,7 +126,7 @@ class CrimeBatchCsvService {
     }
 
     // Batch id pattern validity
-    val regex = Regex("^${policeForce.code}(\\d{8})(-(\\d|[RAra]))?")
+    val regex = Regex("^${policeForce.code}(\\d{8})(-\\d)?(-[RAra])?")
     val match = regex.find(parsed.value) ?: return FieldValidationResult(
       errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
       field = fieldName,

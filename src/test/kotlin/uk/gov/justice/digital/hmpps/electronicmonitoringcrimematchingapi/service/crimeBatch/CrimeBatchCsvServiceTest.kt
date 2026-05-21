@@ -559,6 +559,8 @@ class CrimeBatchCsvServiceTest {
       Arguments.of("AVS20250101-r"),
       Arguments.of("AVS20250101-A"),
       Arguments.of("AVS20250101-a"),
+      Arguments.of("AVS20250101-1-R"),
+      Arguments.of("AVS20250101-1-A"),
     )
   }
 }
