@@ -1,22 +1,5 @@
 version: "3"
 services:
-  hmpps-electronic-monitoring-crime-matching-api:
-    build:
-      context: .
-    networks:
-      - hmpps
-    container_name: hmpps-electronic-monitoring-crime-matching-api
-    ports:
-      - "8080:8080"
-    healthcheck:
-      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080"]
-    environment:
-      - SERVER_PORT=8080
-      - HMPPS_AUTH_URL=http://hmpps-auth:8080/auth
-      - SPRING_PROFILES_ACTIVE=local
-      - ATHENA_OUTPUT_BUCKET=test-output-bucket-id
-      - HMPPS_SQS_PROVIDER=localstack
-      - HMPPS_SQS_LOCALSTACKURL=http://local-stack-aws:4566
 
   hmpps-auth:
     image: ghcr.io/ministryofjustice/hmpps-auth:latest
@@ -43,6 +26,28 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+
+  hmpps-electronic-monitoring-crime-matching-api:
+    build:
+      context: .
+    networks:
+      - hmpps
+    container_name: hmpps-electronic-monitoring-crime-matching-api
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080" ]
+    environment:
+      - SERVER_PORT=8080
+      - HMPPS_AUTH_URL=http://hmpps-auth:8080/auth
+      - SPRING_PROFILES_ACTIVE=local
+      - ATHENA_OUTPUT_BUCKET=test-output-bucket-id
+      - HMPPS_SQS_PROVIDER=localstack
+      - HMPPS_SQS_LOCALSTACKURL=http://local-stack-aws:4566
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+    depends_on:
+      - db
 
   localstack:
     image: localstack/localstack:3.8
