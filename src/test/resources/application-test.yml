@@ -25,7 +25,6 @@ hmpps:
       matchingnotificationstopic:
         arn: arn:aws:sns:eu-west-2:000000000000:matching-notifications
 
-
 services:
   hmpps-auth:
     url: "http://localhost:8090/auth"
@@ -49,6 +48,12 @@ spring:
     url: jdbc:postgresql://localhost/testdb
     username: postgres
     password: postgres
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
 
 datastore:
   output-bucket-arn: test-output-bucket
