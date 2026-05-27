@@ -10,7 +10,7 @@
       "ingestionDateTime": "2025-10-31T04:03:01",
       "matched": false,
       "versionLabel": "Latest version",
-      "updates": "Crime location, Crime type"
+      "updates": "Crime location, Crime window, Crime type"
     },
     {
       "crimeVersionId": "cccccccc-cccc-cccc-cccc-cccccccccccc",

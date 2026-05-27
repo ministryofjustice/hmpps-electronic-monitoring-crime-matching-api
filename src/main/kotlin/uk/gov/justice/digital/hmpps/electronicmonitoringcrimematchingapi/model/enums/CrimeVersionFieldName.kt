@@ -13,7 +13,7 @@ enum class CrimeVersionFieldName(val value: String) {
 
   fun groupLabel(): String? = when (this) {
     EASTING, NORTHING, LATITUDE, LONGITUDE -> "Crime location"
-    CRIME_DATE_TIME_FROM, CRIME_DATE_TIME_TO -> "Crime date"
+    CRIME_DATE_TIME_FROM, CRIME_DATE_TIME_TO -> "Crime window"
     else -> null
   }
 }
