@@ -475,6 +475,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
           withCrimeVersionUpdate()
           withCrimeVersionUpdate(fieldName = CrimeVersionFieldName.LATITUDE)
           withCrimeVersionUpdate(fieldName = CrimeVersionFieldName.LONGITUDE)
+          withCrimeVersionUpdate(fieldName = CrimeVersionFieldName.CRIME_DATE_TIME_TO)
         }
       }
 
