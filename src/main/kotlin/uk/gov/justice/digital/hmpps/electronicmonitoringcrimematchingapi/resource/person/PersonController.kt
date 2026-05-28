@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Res
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.person.PersonService
 
 @RestController
-@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
+@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CASELOAD__RO')")
 @RequestMapping("/persons", produces = ["application/json"])
 class PersonController(
   val personService: PersonService,

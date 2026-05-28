@@ -31,7 +31,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/persons?name=name")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -71,7 +71,7 @@ class PersonControllerTest : IntegrationTestBase() {
     fun `it should fail with bad request when invalid criteria fields are passed`() {
       webTestClient.get()
         .uri("/persons")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isBadRequest
@@ -83,7 +83,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/persons?name=name")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .is5xxServerError
@@ -115,7 +115,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/persons/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isNotFound
@@ -132,7 +132,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/persons/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -165,14 +165,14 @@ class PersonControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/persons/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isOk
 
       webTestClient.get()
         .uri("/persons/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -191,7 +191,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/persons/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .is5xxServerError
@@ -219,7 +219,7 @@ class PersonControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/persons/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isOk

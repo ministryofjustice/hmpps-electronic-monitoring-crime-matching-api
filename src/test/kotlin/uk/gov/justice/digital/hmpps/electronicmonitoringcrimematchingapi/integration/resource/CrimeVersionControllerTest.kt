@@ -57,7 +57,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
     fun `it should return an empty result when no crime versions exist`() {
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=CRI")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -141,7 +141,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=$crimeRef")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -172,7 +172,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/crime-versions?crimeRef=$crimeRef")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -196,7 +196,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/crime-versions?crimeRef=$crimeRef")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -256,7 +256,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=$crimeRef")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -300,7 +300,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=$crimeRef")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -360,7 +360,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=$crimeRef&page=1&pageSize=1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -481,7 +481,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=$crimeRef")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -524,7 +524,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
       val id = UUID.randomUUID()
       webTestClient.get()
         .uri("/crime-versions/$id")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isNotFound
@@ -542,7 +542,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions/$versionId")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -571,7 +571,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions/$version2")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -605,7 +605,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions/$version2")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -636,7 +636,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions/$version2")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -667,7 +667,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions/$versionId")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -702,7 +702,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions/$versionId")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -728,7 +728,7 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
 
       val body = webTestClient.get()
         .uri("/crime-versions/$versionId")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING_GENERAL_RO")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
         .exchange()
         .expectStatus()
         .isOk

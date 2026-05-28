@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import java.time.ZonedDateTime
 
 @RestController
-@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
+@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO')")
 @RequestMapping("/device-activations", produces = ["application/json"])
 class DeviceActivationController(
   private val deviceActivationService: DeviceActivationService,

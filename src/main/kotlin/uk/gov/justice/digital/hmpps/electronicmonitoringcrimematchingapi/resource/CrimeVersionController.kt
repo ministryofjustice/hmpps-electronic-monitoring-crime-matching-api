@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import java.util.UUID
 
 @RestController
-@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING_GENERAL_RO')")
+@PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__CRIMES__RO')")
 @RequestMapping("/crime-versions", produces = ["application/json"])
 class CrimeVersionController(
   private val crimeVersionService: CrimeVersionService,
