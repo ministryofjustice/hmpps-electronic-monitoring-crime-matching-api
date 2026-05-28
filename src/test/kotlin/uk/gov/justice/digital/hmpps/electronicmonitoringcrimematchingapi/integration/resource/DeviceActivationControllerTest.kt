@@ -33,7 +33,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
     fun `it should return a BAD_REQUEST if param is not a number`() {
       val result = webTestClient.get()
         .uri("/device-activations/abc")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isBadRequest
@@ -61,7 +61,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isNotFound
@@ -78,7 +78,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/device-activations/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -117,7 +117,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/device-activations/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -150,14 +150,14 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
 
       webTestClient.get()
         .uri("/device-activations/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -176,7 +176,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/device-activations/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .is5xxServerError
@@ -204,7 +204,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -234,7 +234,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
     fun `it should return a BAD_REQUEST if param is not a number`() {
       val result = webTestClient.get()
         .uri("/device-activations/abc/positions")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isBadRequest
@@ -262,7 +262,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/device-activations/1/positions")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -284,7 +284,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/device-activations/1/positions")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -349,7 +349,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/device-activations/1/positions?geolocationMechanism=abc")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isBadRequest
@@ -377,7 +377,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/device-activations/1/positions?from=abc")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isBadRequest
@@ -405,7 +405,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val result = webTestClient.get()
         .uri("/device-activations/1/positions?to=abc")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isBadRequest
@@ -433,7 +433,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1/positions?geolocationMechanism=GPS")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -459,7 +459,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1/positions?from=2025-01-01T00:00:00Z")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -485,7 +485,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1/positions?to=2025-01-01T00:00:00Z")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -511,14 +511,14 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1/positions")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
 
       webTestClient.get()
         .uri("/device-activations/1/positions")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -537,7 +537,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       val response = webTestClient.get()
         .uri("/device-activations/1/positions")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .is5xxServerError
@@ -565,7 +565,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/device-activations/1/positions")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isOk
