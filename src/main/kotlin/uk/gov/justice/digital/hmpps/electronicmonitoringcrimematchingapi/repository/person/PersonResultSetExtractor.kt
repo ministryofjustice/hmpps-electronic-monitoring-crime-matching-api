@@ -30,14 +30,14 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
         )
       }
 
-      if (row.size == 15) {
+      if (row.size == 14) {
         val deviceActivation = DeviceActivation(
-          deviceActivationId = row[12].toLong(),
+          deviceActivationId = row[11].toLong(),
           deviceId = row[10].toLong(),
           deviceName = "",
           personId = row[0],
-          deviceActivationDate = LocalDateTime.parse(row[13], formatter),
-          deviceDeactivationDate = nullableLocalDateTime(row[14]),
+          deviceActivationDate = LocalDateTime.parse(row[12], formatter),
+          deviceDeactivationDate = nullableLocalDateTime(row[13]),
           orderStart = "",
           orderEnd = "",
         )

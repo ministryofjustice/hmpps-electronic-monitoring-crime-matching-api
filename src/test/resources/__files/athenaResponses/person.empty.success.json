@@ -137,18 +137,6 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "person_id",
-          "Name": "person_id",
-          "Nullable": "UNKNOWN",
-          "Precision": 2147483647,
-          "Scale": 0,
-          "SchemaName": "",
-          "TableName": "",
-          "Type": "bigint"
-        },
-        {
-          "CaseSensitive": false,
-          "CatalogName": "hive",
           "Label": "device_activation_id",
           "Name": "device_activation_id",
           "Nullable": "UNKNOWN",
@@ -219,9 +207,6 @@
           },
           {
             "VarCharValue": "device_id"
-          },
-          {
-            "VarCharValue": "person_id"
           },
           {
             "VarCharValue": "device_activation_id"
