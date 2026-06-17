@@ -29,8 +29,8 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
-          "Label": "person_id",
-          "Name": "person_id",
+          "Label": "unique_device_wearer_id",
+          "Name": "unique_device_wearer_id",
           "Nullable": "UNKNOWN",
           "Precision": 2147483647,
           "Scale": 0,
@@ -74,7 +74,7 @@
             "VarCharValue": "device_id"
           },
           {
-            "VarCharValue": "person_id"
+            "VarCharValue": "unique_device_wearer_id"
           },
           {
             "VarCharValue": "device_activation_date"
