@@ -16,7 +16,7 @@ data class DeviceActivationResponse(
     deviceActivationId = deviceActivation.deviceActivationId,
     deviceId = deviceActivation.deviceId,
     deviceName = deviceActivation.deviceName,
-    personId = deviceActivation.personId,
+    personId = deviceActivation.uniqueDeviceWearerId,
     deviceActivationDate = deviceActivation.deviceActivationDate.toString(),
     deviceDeactivationDate = deviceActivation.deviceDeactivationDate?.toString(),
     orderStart = deviceActivation.orderStart,

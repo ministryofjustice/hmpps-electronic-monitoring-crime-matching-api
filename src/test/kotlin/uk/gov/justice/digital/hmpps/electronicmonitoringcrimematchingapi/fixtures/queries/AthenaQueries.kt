@@ -3,11 +3,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.fixtur
 object AthenaQueries {
   val SelectDeviceActivationById = """
     SELECT 
-      device_activations.device_activation_id, 
-      device_activations.device_id, 
-      caseload.unique_device_wearer_id, 
-      device_activations.device_activation_date, 
-      device_activations.device_deactivation_date 
+      device_activations.device_activation_id,
+      device_activations.device_id,
+      caseload.unique_device_wearer_id,
+      device_activations.device_activation_date,
+      device_activations.device_deactivation_date
     FROM 
       device_activations
     INNER JOIN 
@@ -20,7 +20,7 @@ object AthenaQueries {
     SELECT
       caseload.unique_device_wearer_id,
       caseload.first_name,
-      caseload.last_name, 
+      caseload.last_name,
       caseload.nomis_id,
       caseload.pnc_id,
       caseload.date_of_birth,
@@ -37,9 +37,9 @@ object AthenaQueries {
   val SelectPersonsByNameLike = """
     SELECT 
       caseload.unique_device_wearer_id, 
-      caseload.first_name, 
-      caseload.last_name, 
-      caseload.nomis_id, 
+      caseload.first_name,
+      caseload.last_name,
+      caseload.nomis_id,
       caseload.pnc_id,
       caseload.date_of_birth,
       caseload.responsible_officer_name,
@@ -59,20 +59,20 @@ object AthenaQueries {
 
   val SelectPersonsByNomisIdLike = """
     SELECT 
-      caseload.unique_device_wearer_id, 
-      caseload.first_name, 
-      caseload.last_name, 
-      caseload.nomis_id, 
+      caseload.unique_device_wearer_id,
+      caseload.first_name,
+      caseload.last_name,
+      caseload.nomis_id,
       caseload.pnc_id,
       caseload.date_of_birth,
       caseload.responsible_officer_name,
-      caseload.postcode, 
-      caseload.city_or_town, 
-      caseload.house_number_and_street_name, 
+      caseload.postcode,
+      caseload.city_or_town,
+      caseload.house_number_and_street_name,
       device_activations.device_id,
-      device_activations.device_activation_id, 
-      device_activations.device_activation_date, 
-      device_activations.device_deactivation_date 
+      device_activations.device_activation_id,
+      device_activations.device_activation_date,
+      device_activations.device_deactivation_date
     FROM 
       caseload 
     INNER JOIN 
@@ -82,20 +82,20 @@ object AthenaQueries {
 
   val SelectPersonsByDeviceIdLike = """
     SELECT 
-      caseload.unique_device_wearer_id, 
-      caseload.first_name, 
-      caseload.last_name, 
-      caseload.nomis_id, 
+      caseload.unique_device_wearer_id,
+      caseload.first_name,
+      caseload.last_name,
+      caseload.nomis_id,
       caseload.pnc_id,
       caseload.date_of_birth,
       caseload.responsible_officer_name,
-      caseload.postcode, 
-      caseload.city_or_town, 
-      caseload.house_number_and_street_name, 
+      caseload.postcode,
+      caseload.city_or_town,
+      caseload.house_number_and_street_name,
       device_activations.device_id,
-      device_activations.device_activation_id, 
-      device_activations.device_activation_date, 
-      device_activations.device_deactivation_date 
+      device_activations.device_activation_id,
+      device_activations.device_activation_date,
+      device_activations.device_deactivation_date
     FROM 
       caseload 
     INNER JOIN 
