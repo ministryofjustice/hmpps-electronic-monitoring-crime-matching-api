@@ -14,6 +14,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     ATHENA_OUTPUT_BUCKET: "s3://emds-test-athena-query-results-20240923095933297100000013"
     ATHENA_WORKGROUP: "396913731313-default"
+    ATHENA_ENDPOINT: "http://hmpps-electronic-monitoring-crime-matching-datastore-stubs"
     MFA_REQUIRED: "false"
     DATASTORE_DATABASE: "acquisitive_crime_test_dbt"
     SPRINGDOC_API-DOCS_ENABLED: "true"
@@ -23,3 +24,5 @@ generic-service:
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: hmpps-em-crime-matching-alerts-nonprod
+
+deploy-stubs: true

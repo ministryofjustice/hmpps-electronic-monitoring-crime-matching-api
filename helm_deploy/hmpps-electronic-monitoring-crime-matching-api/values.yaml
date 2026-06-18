@@ -19,6 +19,7 @@ generic-service:
     JAVA_OPTS: "-Xmx512m"
     SERVER_PORT: "8080"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    ATHENA_ENDPOINT: https://athena.eu-west-2.amazonaws.com
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -79,3 +80,8 @@ generic-service:
 
 generic-prometheus-alerts:
   targetApplication: hmpps-electronic-monitoring-crime-matching-api
+
+# Whether to deploy the stubs
+# Override in values-dev.yaml
+# Also update the environment variables to point the application to the mocked services (on port 80)
+deploy_stubs: false
