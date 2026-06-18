@@ -84,6 +84,7 @@ notify:
 
 aws:
   region: eu-west-2
+  endpoint-url: ${ATHENA_ENDPOINT}
   athena:
     role: ${ATHENA_GENERAL_IAM_ROLE}
   s3:
