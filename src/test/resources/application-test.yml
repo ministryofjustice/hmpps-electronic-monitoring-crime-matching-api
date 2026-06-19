@@ -36,6 +36,7 @@ aws:
     endpoint-url: http://localhost:4566
   athena:
     role: testIAM
+    endpoint-url: http://localhost:8091
 
 spring:
   jpa:
