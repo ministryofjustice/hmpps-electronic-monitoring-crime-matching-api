@@ -25,4 +25,4 @@ generic-service:
 generic-prometheus-alerts:
   alertSeverity: hmpps-em-crime-matching-alerts-nonprod
 
-deploy-stubs: true
+deploy_stubs: true
