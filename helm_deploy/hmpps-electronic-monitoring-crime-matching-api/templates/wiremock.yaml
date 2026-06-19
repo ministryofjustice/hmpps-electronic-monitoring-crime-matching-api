@@ -44,7 +44,7 @@ spec:
       volumes:
         - name: mappings-volume
           configMap:
-            name: hmpps-electronic-monitoring-crime-matching-api-stub-data-mappings
+            name: hmpps-electronic-monitoring-crime-matching-datastore-stub-data-mappings
 ---
 apiVersion: v1
 kind: Service
