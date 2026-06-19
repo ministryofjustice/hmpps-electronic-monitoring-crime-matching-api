@@ -1,12 +1,19 @@
 {{- if .Values.deploy_stubs }}
 {{- $mappingsGlob := "files/stubs/mappings/*" }}
+{{- $baseName := "hmpps-electronic-monitoring-crime-matching-datastore-stub-data-mappings" }}
+
+{{- range $path, $_ := $.Files.Glob $mappingsGlob }}
+{{- $fileName := base $path }}
+{{- $safeName := regexReplaceAll "[^a-z0-9-]" (lower (trimSuffix ".json" $fileName)) "-" }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: hmpps-electronic-monitoring-crime-matching-datastore-stub-data-mappings
+  name: {{ printf "%s-%s" $baseName $safeName | trunc 63 | trimSuffix "-" }}
 data:
-{{ ($.Files.Glob $mappingsGlob).AsConfig | indent 2 }}
+  {{ $fileName }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,8 +40,13 @@ spec:
           ports:
             - containerPort: 8080
           volumeMounts:
-            - name: mappings-volume
-              mountPath: /home/wiremock/mappings
+{{- range $path, $_ := $.Files.Glob $mappingsGlob }}
+{{- $fileName := base $path }}
+{{- $safeName := regexReplaceAll "[^a-z0-9-]" (lower (trimSuffix ".json" $fileName)) "-" }}
+            - name: mappings-{{ $safeName | trunc 40 | trimSuffix "-" }}
+              mountPath: /home/wiremock/mappings/{{ $fileName }}
+              subPath: {{ $fileName }}
+{{- end }}
           livenessProbe:
             httpGet:
               path: /__admin/mappings
@@ -42,9 +54,13 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 30
       volumes:
-        - name: mappings-volume
+{{- range $path, $_ := $.Files.Glob $mappingsGlob }}
+{{- $fileName := base $path }}
+{{- $safeName := regexReplaceAll "[^a-z0-9-]" (lower (trimSuffix ".json" $fileName)) "-" }}
+        - name: mappings-{{ $safeName | trunc 40 | trimSuffix "-" }}
           configMap:
-            name: hmpps-electronic-monitoring-crime-matching-datastore-stub-data-mappings
+            name: {{ printf "%s-%s" $baseName $safeName | trunc 63 | trimSuffix "-" }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
