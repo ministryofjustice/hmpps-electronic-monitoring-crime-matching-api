@@ -36,8 +36,8 @@ class AwsConfig(
     val clientBuilder = AthenaClient.builder()
       .region(properties.region)
 
-    if (properties.endpointUrl != null) {
-      clientBuilder.endpointOverride(URI(properties.endpointUrl))
+    if (properties.athena.endpointUrl != null) {
+      clientBuilder.endpointOverride(URI(properties.athena.endpointUrl))
     }
 
     if (properties.athena.role != null) {
