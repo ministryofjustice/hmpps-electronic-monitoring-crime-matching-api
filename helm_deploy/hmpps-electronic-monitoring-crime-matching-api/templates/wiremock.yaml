@@ -1,6 +1,6 @@
 {{- if .Values.deploy_stubs }}
 {{- $mappingsGlob := "files/stubs/mappings/*" }}
-{{- $baseName := "hmpps-electronic-monitoring-crime-matching-datastore-stub-data-mappings" }}
+{{- $baseName := "datastore-stub-mappings" }}
 
 {{- range $path, $_ := $.Files.Glob $mappingsGlob }}
 {{- $fileName := base $path }}
