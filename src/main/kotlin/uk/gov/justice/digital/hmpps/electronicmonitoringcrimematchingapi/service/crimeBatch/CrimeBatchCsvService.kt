@@ -22,7 +22,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-private const val CRIME_DATE_WINDOW_HOURS = 12
+private val CRIME_WINDOW_MAX_DURATION = Duration.ofHours(12)
 
 @Service
 class CrimeBatchCsvService {
@@ -221,13 +221,13 @@ class CrimeBatchCsvService {
       )
     }
 
-    val crimeDateWindow = Duration.between(dateFrom, dateTo).toHours()
+    val crimeWindowDuration = Duration.between(dateFrom, dateTo)
 
-    if (crimeDateWindow > CRIME_DATE_WINDOW_HOURS) {
+    if (crimeWindowDuration > CRIME_WINDOW_MAX_DURATION) {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
         field = fieldName,
-        input = crimeDateWindow.toString(),
+        input = "${crimeWindowDuration.toHours()}h ${crimeWindowDuration.toMinutesPart()}m",
       )
     }
 
