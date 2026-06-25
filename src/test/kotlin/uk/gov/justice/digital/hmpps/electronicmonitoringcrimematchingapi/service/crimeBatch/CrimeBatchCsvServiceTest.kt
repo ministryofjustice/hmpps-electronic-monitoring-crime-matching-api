@@ -346,7 +346,7 @@ class CrimeBatchCsvServiceTest {
   }
 
   @Test
-  fun `it should not parse a crime if crime date windows exceeds 12 hours`() {
+  fun `it should not parse a crime if crime window exceeds 12 hours`() {
     val crimeData = createCsvRow(
       crimeDateTimeFrom = "20250125083000",
       crimeDateTimeTo = "20250325083000",
@@ -363,6 +363,30 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
           field = "dateTo",
           value = "1416",
+        ),
+      ),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should not parse a crime if crime window exceeds 12 hours but is less than 13 hours`() {
+    val crimeData = createCsvRow(
+      crimeDateTimeFrom = "20250125000000",
+      crimeDateTimeTo = "20250125125900",
+    ).byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "CRI00000001",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
+          field = "dateTo",
+          value = "12",
         ),
       ),
     )
