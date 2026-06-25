@@ -362,7 +362,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
           field = "dateTo",
-          value = "1416",
+          value = "1416h 0m",
         ),
       ),
     )
@@ -386,7 +386,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
           field = "dateTo",
-          value = "12",
+          value = "12h 59m",
         ),
       ),
     )
