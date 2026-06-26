@@ -102,5 +102,8 @@ enum class PoliceForce(val identifier: String, val label: String, val code: Stri
     fun from(identifier: String): PoliceForce = entries.first {
       it.identifier == identifier
     }
+
+    fun fromOrNull(identifier: String): PoliceForce? =
+      entries.firstOrNull { it.identifier == identifier }
   }
 }
