@@ -28,12 +28,16 @@ class EmailListener(
   private val crimeBatchService: CrimeBatchService,
   private val emailNotificationService: EmailNotificationService,
   private val emailParserService: EmailParserService,
+  private val metricsService: MetricsService,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
 
   @SqsListener("email", factory = "hmppsQueueContainerFactoryProxy")
   fun receiveEmailNotification(message: SqsMessage) {
+    // Increment total messages received counter
+    metricsService.recordReceived()
+
     // Map message contents
     val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
 
@@ -50,6 +54,9 @@ class EmailListener(
 
     // Once basic email checks have completed, process the email contents
     val ingestionOutcome = processEmail(emailData, bucketName, objectKey)
+
+    // Record ingestion outcome
+    metricsService.recordOutcome(ingestionOutcome)
 
     try {
       emailNotificationService.sendEmails(ingestionOutcome)
