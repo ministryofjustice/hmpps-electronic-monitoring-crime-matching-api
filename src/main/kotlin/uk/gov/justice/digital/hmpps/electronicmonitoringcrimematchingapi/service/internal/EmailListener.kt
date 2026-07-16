@@ -35,9 +35,6 @@ class EmailListener(
 
   @SqsListener("email", factory = "hmppsQueueContainerFactoryProxy")
   fun receiveEmailNotification(message: SqsMessage) {
-    // Increment total messages received counter
-    metricsService.recordReceived()
-
     // Map message contents
     val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
 
