@@ -27,3 +27,5 @@ generic-prometheus-alerts:
     - hmpps-em-probation-devs-preprod-email-notifications
   sqsNumberAlertQueueNames:
     - hmpps-em-probation-devs-preprod-email-notifications-dlq
+  rdsAlertsDatabases:
+    cloud-platform-3b9e8faa7849429d: "Electronic Monitoring Crime Matching API Database"

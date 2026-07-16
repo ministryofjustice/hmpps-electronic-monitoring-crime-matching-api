@@ -23,11 +23,14 @@ generic-service:
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: hmpps-em-crime-matching-alerts-nonprod
+  businessHoursOnly: true
   sqsAlertsTotalMessagesThreshold: 10
   sqsAlertsOldestThreshold: 60
   sqsAlertsQueueNames:
     - hmpps-em-probation-devs-dev-email-notifications
   sqsNumberAlertQueueNames:
     - hmpps-em-probation-devs-dev-email-notifications-dlq
+  rdsAlertsDatabases:
+    cloud-platform-aa6d54b06ce132e9: "Electronic Monitoring Crime Matching API Database"
 
 deploy_stubs: false
