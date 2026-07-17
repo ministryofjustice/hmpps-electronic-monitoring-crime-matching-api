@@ -63,7 +63,7 @@ jobs:
       - app_version
   build:
     name: Build docker image from hmpps-github-actions
-    if: github.ref == 'refs/heads/main'
+#    if: github.ref == 'refs/heads/main'
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
     needs:
       - gradle_verify
@@ -71,7 +71,7 @@ jobs:
       docker_registry: 'ghcr.io'
       registry_org: 'ministryofjustice'
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
-      push: ${{ inputs.push || inputs.push == null }}
+      push: true
       docker_multiplatform: false
       download_build_artifacts: true
       generate_sbom: true
@@ -89,6 +89,7 @@ jobs:
       app_version: '${{ needs.build.outputs.app_version }}'
   deploy_preprod:
     name: Deploy to pre-production environment
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - deploy_dev
@@ -99,6 +100,7 @@ jobs:
       app_version: '${{ needs.build.outputs.app_version }}'
   deploy_prod:
     name: Deploy to production environment
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - deploy_preprod
