@@ -88,9 +88,10 @@ The easiest way to get around this is to add some dummy variables to the AWS cre
 run any test in IntelliJ or from the cli e.g. `./gradlew check`.
 
 ```text
-AWS_ACCESS_KEY_ID="ASIAIOSFODNN7EXAMPLE"
-AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-AWS_SESSION_TOKEN="IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE"
+[default]
+aws_access_key_id="ASIAIOSFODNN7EXAMPLE"
+aws_secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+aws_session_token="IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE"
 ```
 
 ### Using the email listener with localstack
