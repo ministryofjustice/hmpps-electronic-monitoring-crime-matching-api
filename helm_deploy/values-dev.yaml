@@ -28,5 +28,6 @@ generic-prometheus-alerts:
     - hmpps-em-probation-devs-dev-email-notifications-dlq
   rdsAlertsDatabases:
     cloud-platform-aa6d54b06ce132e9: "Electronic Monitoring Crime Matching API Database"
+  rdsAlertsConnectionThreshold: 65
 
 deploy_stubs: false
