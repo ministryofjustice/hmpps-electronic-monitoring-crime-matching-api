@@ -94,30 +94,43 @@ aws_secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 aws_session_token="IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE"
 ```
 
-### Using the email listener with localstack
+# Using the email listener with localstack
 
 The repository will setup the required SQS/SNS config to allow simulation of the email notification flow.
 
-An S3 bucket will be required in localstack which the listener function will retrieve email files from, to create this bucket you can use the `./scripts/localstack-init.sh` script
+These instructions show the strict order that resources need to be created in.
 
-To add a file to S3 you can use the following command
+1. Bring up the DB and localstack
 
-```text
+```bash
+docker compose up -d db localstack
+```
+
+2. Start the API
+3. Run the localstack-init script to create the S3 bucket in localstack
+
+The listener function will retrieve email files from this bucket.
+
+```bash
+bash ./scripts/localstack-init.sh
+```
+
+4. Simulate an email arriving in S3 caused by AWS Simple Email Service (SES)
+
+```bash
 awslocal s3api put-object \
 --bucket police-emails \
 --key email-file \
---body email-file \
+--body ./src/test/resources/emailExamples/email-file \
 --region eu-west-2
 ```
 
-An example email-file can be found in the `test/resources/emailExamples` folder
+5. Simulate an SNS notification being sent to the API (required API to be up and running)
 
-#### Example SNS message
-The following command can be used to simulate sending an email notification
-
-```text
+```bash
 awslocal sns publish \
 --topic-arn "arn:aws:sns:eu-west-2:000000000000:email-topic" \
+--region eu-west-2 \
 --message '{
     "notificationType": "Received",
     "receipt": {
@@ -129,6 +142,15 @@ awslocal sns publish \
         }
     }
 }'
+```
+
+6. Check the logs of the API to ensure there are no errors.
+7. As an alternative to steps 3-7, just run the helper script.
+
+This uses a different test file and fetches IDs from Postgres to be used in Postman API requests (see next section).
+
+```bash
+bash scripts/localstack-ingest-sample-email.sh
 ```
 
 ### Using Postman to locally test API requests
@@ -153,7 +175,7 @@ The script can be found here
 ```text
 scripts/localstack-ingest-sample-email.sh
 ```
-It needs `awscli-local` installed and can be run from the repo root with 
+It needs `awscli-local` and `awscli` installed and can be run from the repo root with 
 ```text
 bash scripts/localstack-ingest-sample-email.sh
 ```
