@@ -77,6 +77,12 @@ generic-service:
     groups:
       - internal
 
+  custommetrics:
+    enabled: true
+    scrapeInterval: 15s
+    metricsPath: /prometheus
+    metricsPort: http
+
 generic-prometheus-alerts:
   targetApplication: hmpps-electronic-monitoring-crime-matching-api
 

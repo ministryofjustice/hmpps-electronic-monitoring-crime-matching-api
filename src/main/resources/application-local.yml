@@ -34,6 +34,12 @@ spring:
     username: postgres
     password: postgres
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
 email-ingestion:
   valid-emails:
     metropolitan: "test@email.com"
