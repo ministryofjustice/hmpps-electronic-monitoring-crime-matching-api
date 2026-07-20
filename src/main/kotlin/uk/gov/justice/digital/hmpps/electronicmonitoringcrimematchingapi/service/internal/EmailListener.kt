@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
+import io.opentelemetry.api.trace.Span
 import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
@@ -19,8 +19,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
-
-private const val MESSAGE_ID = "messageId"
 
 @Service
 class EmailListener(
@@ -37,14 +35,14 @@ class EmailListener(
 
   @SqsListener("email", factory = "hmppsQueueContainerFactoryProxy")
   fun receiveEmailNotification(message: SqsMessage) {
-    // Add message id to logging context
-    MDC.put(MESSAGE_ID, message.MessageId.toString())
-
     try {
       // Map message contents
       val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
 
       // Get S3 details from message
+      val span = Span.current()
+      span.setAttribute("aws.sqs.message_id", message.MessageId.toString())
+
       val messageId = message.MessageId
       val bucketName = emailReceivedMessage.receipt.action.bucketName
       val objectKey = emailReceivedMessage.receipt.action.objectKey
@@ -66,8 +64,6 @@ class EmailListener(
     } catch (ex: Exception) {
       log.error("Failed to process email notification", ex)
       throw ex
-    } finally {
-      MDC.remove(MESSAGE_ID)
     }
   }
 
