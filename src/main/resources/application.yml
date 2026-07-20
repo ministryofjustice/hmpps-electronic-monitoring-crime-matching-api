@@ -58,8 +58,6 @@ management:
       exposure:
         include: 'info, health, prometheus'
   endpoint:
-    prometheus:
-      enabled: true
     health:
       cache:
         time-to-live: 2000ms
