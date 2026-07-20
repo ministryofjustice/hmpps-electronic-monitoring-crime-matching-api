@@ -41,7 +41,7 @@ class EmailParserService(
   }
 
   private fun validateMetadata(subject: String, sender: String, redirectAddress: String) {
-    if (!subject.equals("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
+    if (!subject.contains("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
 
     if (!redirectAddress.contains(properties.mailboxAddress, ignoreCase = true)) throw ValidationException("Invalid redirect email")
 

@@ -17,7 +17,7 @@ fun createCsvRow(
 
 fun createEmailFile(
   csvContent: String = "test",
-  subject: String = "Crime Mapping Request",
+  subject: String = "Metropolitan - Crime Mapping Request - 20260209",
   fromAddress: String = "test@email.com",
   resentFrom: String = "<shared-mailbox@email.com>",
 ) = """
@@ -47,7 +47,7 @@ fun createEmailFile(
 
 fun createEmailFileWithoutAttachment() = """
   From: test@email.com
-  Subject: Crime Mapping Request
+  Subject: Metropolitan - Crime Mapping Request - 20251015
   Date: Wed, 15 Oct 2025 13:56:58 +0000
   X-MS-Has-Attach: no
   Resent-From: <shared-mailbox@email.com>
@@ -61,7 +61,7 @@ fun createEmailFileWithoutAttachment() = """
 
 fun createEmailFileWithMultipleAttachments() = """
   From: test@email.com
-  Subject: Crime Mapping Request
+  Subject: Metropolitan - Crime Mapping Request - 20251015
   Date: Wed, 15 Oct 2025 13:56:58 +0000
   X-MS-Has-Attach: yes
   Resent-From: <shared-mailbox@email.com>
@@ -99,7 +99,7 @@ fun createEmailFileWithMultipleAttachments() = """
 
 fun createEmailFileNoRedirect() = """
   From: test@email.com
-  Subject: Crime Mapping Request
+  Subject: Metropolitan - Crime Mapping Request - 20251015
   Date: Wed, 15 Oct 2025 13:56:58 +0000
   X-MS-Has-Attach: yes
   Content-Type: multipart/mixed;
