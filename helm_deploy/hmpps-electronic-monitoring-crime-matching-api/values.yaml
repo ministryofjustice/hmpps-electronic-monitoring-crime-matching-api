@@ -78,7 +78,7 @@ generic-service:
       - internal
 
   custommetrics:
-    enabled: false
+    enabled: true
     scrapeInterval: 15s
     metricsPath: /prometheus
     metricsPort: http
