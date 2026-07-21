@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
-import io.opentelemetry.api.trace.Span
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
@@ -41,9 +40,6 @@ class EmailListener(
       val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
 
       // Get S3 details from message
-      val span = Span.current()
-      span.setAttribute("aws.sqs.message_id", message.MessageId.toString())
-
       val messageId = message.MessageId
       val bucketName = emailReceivedMessage.receipt.action.bucketName
       val objectKey = emailReceivedMessage.receipt.action.objectKey
