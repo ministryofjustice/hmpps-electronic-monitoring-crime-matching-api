@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.listener
 
+import io.micrometer.core.instrument.MeterRegistry
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
@@ -38,6 +39,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchEmailAttachmentIngestionErrorRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
@@ -72,6 +74,9 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var jdbcTemplate: JdbcTemplate
+
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
 
   @MockitoSpyBean
   lateinit var crimeBatchRepository: CrimeBatchRepository
@@ -119,6 +124,7 @@ class EmailListenerTest : IntegrationTestBase() {
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
     crimeBatchIngestionAttemptRepository.deleteAll()
+    meterRegistry.clear()
   }
 
   @AfterEach
@@ -171,6 +177,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "policeForce",
+        "Metropolitan",
+        "ingestionStatus",
+        IngestionStatus.SUCCESSFUL.name,
+      ).counter().count()
+
+      assertThat(outcomeMetric).isEqualTo(1.0)
     }
 
     @Test
@@ -193,6 +209,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "policeForce",
+        "Unknown due to an error",
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter().count()
+
+      assertThat(outcomeMetric).isEqualTo(1.0)
     }
 
     @Test
@@ -216,6 +242,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "policeForce",
+        "Unknown due to an error",
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter().count()
+
+      assertThat(outcomeMetric).isEqualTo(1.0)
     }
 
     @Test
@@ -241,6 +277,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "policeForce",
+        "Unknown due to an error",
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter().count()
+
+      assertThat(outcomeMetric).isEqualTo(1.0)
     }
 
     @Test
@@ -268,6 +314,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "policeForce",
+        "Unknown due to an error",
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter().count()
+
+      assertThat(outcomeMetric).isEqualTo(1.0)
     }
 
     @Test
@@ -339,6 +395,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "policeForce",
+        "Metropolitan",
+        "ingestionStatus",
+        IngestionStatus.PARTIAL.name,
+      ).counter().count()
+
+      assertThat(outcomeMetric).isEqualTo(1.0)
     }
 
     @Test
@@ -366,6 +432,16 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "policeForce",
+        "Unknown due to an error",
+        "ingestionStatus",
+        IngestionStatus.ERROR.name,
+      ).counter().count()
+
+      assertThat(outcomeMetric).isEqualTo(1.0)
     }
 
     @Test

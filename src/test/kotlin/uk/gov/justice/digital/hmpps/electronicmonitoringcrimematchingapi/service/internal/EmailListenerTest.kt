@@ -144,6 +144,7 @@ class EmailListenerTest {
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
       verify(emailNotificationService, times(1)).sendEmails(any())
+      verify(metricsService, times(1)).recordOutcome(any())
     }
 
     @Test
