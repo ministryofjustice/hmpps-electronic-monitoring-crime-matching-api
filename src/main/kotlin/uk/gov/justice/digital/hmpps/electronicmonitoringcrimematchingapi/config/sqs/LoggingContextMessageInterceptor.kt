@@ -11,8 +11,8 @@ class LoggingContextMessageInterceptor : MessageInterceptor<Any> {
     val span = Span.current()
     val messageId = message.headers["id"]?.toString()
 
-    messageId?.let { MDC.put("messageId", it) }
-    messageId?.let { span.setAttribute("aws.sqs.message_id", it) }
+//    messageId?.let { MDC.put("messageId", it) }
+//    messageId?.let { span.setAttribute("aws.sqs.message_id", it) }
 
     return message
   }

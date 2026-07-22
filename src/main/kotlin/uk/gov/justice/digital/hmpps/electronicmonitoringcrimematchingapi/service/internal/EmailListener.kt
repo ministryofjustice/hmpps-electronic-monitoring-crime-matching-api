@@ -2,9 +2,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.microsoft.applicationinsights.TelemetryClient
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.trackEvent
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
@@ -29,6 +31,7 @@ class EmailListener(
   private val emailNotificationService: EmailNotificationService,
   private val emailParserService: EmailParserService,
   private val metricsService: MetricsService,
+  private val telemetryClient: TelemetryClient,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -36,6 +39,8 @@ class EmailListener(
   @SqsListener("email", factory = "hmppsQueueContainerFactoryProxy")
   fun receiveEmailNotification(message: SqsMessage) {
     try {
+      telemetryClient.trackEvent("messageId", mapOf("messageId" to message.MessageId.toString()))
+
       // Map message contents
       val emailReceivedMessage: EmailReceivedMessage = mapper.readValue(message.Message)
 

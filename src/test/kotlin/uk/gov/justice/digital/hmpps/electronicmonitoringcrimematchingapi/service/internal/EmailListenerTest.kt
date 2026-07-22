@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinInvalidNullException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -46,6 +47,7 @@ class EmailListenerTest {
   private lateinit var emailNotificationService: EmailNotificationService
   private lateinit var emailParserService: EmailParserService
   private lateinit var metricsService: MetricsService
+  private lateinit var telemetryClient: TelemetryClient
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
   private val emailIngestionProperties: EmailIngestionProperties = EmailIngestionProperties(
@@ -64,7 +66,8 @@ class EmailListenerTest {
     emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
     emailParserService = EmailParserService(emailIngestionProperties)
     metricsService = Mockito.mock(MetricsService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService, metricsService)
+    telemetryClient = Mockito.mock(TelemetryClient::class.java)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService, metricsService, telemetryClient)
   }
 
   @Nested
