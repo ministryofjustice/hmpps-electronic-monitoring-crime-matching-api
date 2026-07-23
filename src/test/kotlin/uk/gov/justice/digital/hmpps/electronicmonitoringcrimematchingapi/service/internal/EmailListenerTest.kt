@@ -148,6 +148,83 @@ class EmailListenerTest {
     }
 
     @Test
+    fun `it should successfully receive and process an email notification with a plain subject line`() {
+      val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file-plain-subject"
+            }
+          }
+        }
+      """.trimIndent()
+      val messageId = UUID.randomUUID()
+      val sqsMessage = SqsMessage("Notification", message, messageId)
+
+      val csvContent = listOf(
+        createCsvRow(),
+      ).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+
+      val responseStream = ResponseInputStream(
+        GetObjectResponse.builder().build(),
+        createEmailFile(csvContent = encoded, subject = "Crime Mapping Request").byteInputStream(),
+      )
+
+      val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file-plain-subject",
+      )
+
+      whenever(s3Service.getObject(messageId, "email-file-plain-subject", "emails")).thenReturn(responseStream)
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file-plain-subject")).thenReturn(
+        crimeBatchIngestionAttempt,
+      )
+
+      val crimeBatchEmail = CrimeBatchEmail(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+      )
+
+      val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+        crimeBatchEmail = crimeBatchEmail,
+        fileName = "filename",
+        rowCount = 1,
+      )
+
+      val crimeBatch = CrimeBatch(
+        batchId = "batchId",
+        crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any())).thenReturn(
+        crimeBatchEmailAttachment,
+      )
+
+      whenever(crimeBatchService.createCrimeBatch(any(), any())).thenReturn(
+        crimeBatch,
+      )
+
+      whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
+        CrimeBatchEmail(
+          crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+          sender = "sender",
+          originalSender = "originalSender",
+          subject = "subject",
+          sentAt = Date.from(Instant.now()),
+        ),
+      )
+
+      assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
+      verify(emailNotificationService, times(1)).sendEmails(any())
+      verify(metricsService, times(1)).recordOutcome(any())
+    }
+
+    @Test
     fun `it should throw an exception when the message content does not contain s3 details`() {
       val message = """
         {
