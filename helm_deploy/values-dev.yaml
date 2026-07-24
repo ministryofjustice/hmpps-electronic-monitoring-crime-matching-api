@@ -31,3 +31,4 @@ generic-prometheus-alerts:
   rdsAlertsConnectionThreshold: 65
 
 deploy_stubs: false
+deploy_grafana_dashboards: true

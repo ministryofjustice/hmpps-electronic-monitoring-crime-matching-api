@@ -1,0 +1,11 @@
+{{ if .Values.deploy_grafana_dashboards }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: police-data-ingestion-grafana-dashboard
+  labels:
+    grafana_dashboard: "police-data-ingestion-grafana-dashboard"
+data:
+  police-data-ingestion-dashboard.json: |
+    {{ .Files.Get "files/police-data-ingestion-dashboard.json" | nindent 4 }}
+{{ end }}
