@@ -86,37 +86,12 @@
             "uid": "P896B4444D3F0DAB8"
           },
           "dimensions": {
-            "RuleSetName": "email-receiving-rules"
-          },
-          "expression": "",
-          "id": "",
-          "label": "Email Received",
-          "logGroups": [],
-          "matchExact": true,
-          "metricEditorMode": 0,
-          "metricName": "Received",
-          "metricQueryType": 0,
-          "namespace": "AWS/SES",
-          "period": "",
-          "queryLanguage": "CWLI",
-          "queryMode": "Metrics",
-          "refId": "A",
-          "region": "default",
-          "sqlExpression": "",
-          "statistic": "Sum"
-        },
-        {
-          "datasource": {
-            "type": "cloudwatch",
-            "uid": "P896B4444D3F0DAB8"
-          },
-          "dimensions": {
             "QueueName": "hmpps-em-probation-devs-${environment}-email-notifications"
           },
           "expression": "",
           "hide": false,
           "id": "",
-          "label": "SQS Message Sent",
+          "label": "SQS Messages Sent",
           "logGroups": [],
           "matchExact": true,
           "metricEditorMode": 0,
@@ -142,7 +117,7 @@
           "expression": "",
           "hide": false,
           "id": "",
-          "label": "SQS Message Processed",
+          "label": "SQS Messages Processed",
           "logGroups": [],
           "matchExact": true,
           "metricEditorMode": 0,
@@ -158,7 +133,7 @@
           "statistic": "Sum"
         }
       ],
-      "title": "E2E Status",
+      "title": "SQS Status",
       "type": "bargauge"
     },
     {
@@ -227,7 +202,7 @@
             "uid": "P896B4444D3F0DAB8"
           },
           "dimensions": {
-            "QueueName": "hmpps-em-probation-devs-${environment}-notifications-dlq"
+            "QueueName": "hmpps-em-probation-devs-${environment}-email-notifications-dlq"
           },
           "expression": "",
           "id": "",
@@ -252,7 +227,7 @@
             "uid": "P896B4444D3F0DAB8"
           },
           "dimensions": {
-            "QueueName": "hmpps-em-probation-devs-${environment}-notifications-dlq"
+            "QueueName": "hmpps-em-probation-devs-${environment}-email-notifications-dlq"
           },
           "expression": "",
           "hide": false,
@@ -277,70 +252,157 @@
       "type": "bargauge"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+      "id": 17,
+      "type": "piechart",
+      "title": "Ingestions By Status",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "h": 8,
+        "w": 12
       },
       "fieldConfig": {
         "defaults": {
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+          "fieldMinMax": false
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PARTIAL"
+            },
+            "properties": [
               {
-                "color": "green",
-                "value": null
-              },
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SUCCESSFUL"
+            },
+            "properties": [
               {
-                "color": "red",
-                "value": 80
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "FAILED"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ERROR"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "UNKNOWN"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "transparent"
+                }
               }
             ]
           }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 17,
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        ]
       },
       "pluginVersion": "11.5.6+security-01",
       "targets": [
         {
           "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "count by (ingestionStatus) (increase(email_ingestion_outcome_total{namespace=\"hmpps-electronic-monitoring-crime-matching-${environment}\"}[$__range]))",
+          "editorMode": "builder",
+          "expr": "count by(ingestionStatus) (email_ingestion_outcome_total{namespace=\"hmpps-electronic-monitoring-crime-matching-${environment}\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "__auto",
+          "legendFormat": "{{label_name}}",
           "range": true,
           "refId": "A",
-          "useBackend": false
+          "useBackend": false,
+          "interval": "",
+          "exemplar": false,
+          "instant": false,
+          "format": "time_series"
         }
       ],
-      "title": "Ingestions By Status",
-      "type": "gauge"
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "last"
+          ],
+          "fields": ""
+        },
+        "pieType": "pie",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none",
+          "hideZeros": false
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "values": [
+            "value"
+          ]
+        },
+        "displayLabels": [
+          "value",
+          "name"
+        ]
+      }
     }
   ],
   "preload": false,
