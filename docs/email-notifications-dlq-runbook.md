@@ -34,20 +34,32 @@ These values can assist in determining the root cause of the failure.
 
 ## Step 2: Review the Failure in Application Insights/OpenSearch
 
-1. Open **Application Insights**.
+### Review via Application Insights Logs
+1. Open [**Application Insights**](https://portal.azure.com/#browse/microsoft.insights%2Fcomponents)
+2. Navigate to **Logs**.
+3. Query on exceptions:
+   1. ``` exceptions | where cloud_RoleName == 'hmpps-electronic-monitoring-crime-matching-api' ```
+   2. Add ```| where details contains "18532b58-d1e9-4280-982b-5d787d64614e"``` to filter on a specific DLQ Message ID
+4. View the details section for more information on the exception including stack trace.
+5. You can also take the **operation_Id** or the **operation_ParentId** from here and use it in the **Search** window to access the end-to-end transaction.
+
+### Review via Application Insights Failures
+
+1. Open [**Application Insights**](https://portal.azure.com/#browse/microsoft.insights%2Fcomponents)
 2. Navigate to **Failures**.
-3. Search for **RECEIVE** operations.
-4. Filter on the application role:
+3. Filter on the **Roles** by deselecting all roles and selecting the following:
 
 ```text
 hmpps-electronic-monitoring-crime-matching-api
 ```
 
-5. Locate the failed transaction that corresponds to the message using the DLQ Message ID.
+4. Search for **RECEIVE** operations.
+
+5. Select the operation then **Drill into…** and browse the samples for the relevant message using the DLQ message ID.
 
 ### Reviewing Exception Details
 
-The failure reason is typically visible within the **Call Stack** section.
+The failure reason is typically visible within the **Call Stack** section of an event.
 
 Look for exceptions such as:
 
@@ -73,8 +85,12 @@ These details will usually indicate the underlying cause of the failure.
 ---
 ## OpenSearch
 
-1. Open OpenSearch Dashboards.
-2. Search using the DLQ Message ID obtained in Step 1.
+1. Open [OpenSearch Dashboards](https://app-logs.cloud-platform.service.justice.gov.uk/_dashboards/app/home#/).
+2. Select the live_kubernetes_cluster-* index pattern.
+3. Add filters for namespace and container:
+   1. ```kubernetes.namespace_name: hmpps-electronic-monitoring-crime-matching-dev```
+   2. ```kubernetes.container_name: hmpps-electronic-monitoring-crime-matching-api```
+4. Search using the DLQ Message ID obtained in Step 1.
 
 ### Common Error Messages
 
