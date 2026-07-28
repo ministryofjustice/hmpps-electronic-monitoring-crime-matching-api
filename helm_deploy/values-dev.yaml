@@ -19,6 +19,11 @@ generic-service:
     SPRINGDOC_API-DOCS_ENABLED: "true"
     SPRINGDOC_SWAGGER-UI_ENABLED: "true"
 
+  namespace_secrets:
+    athena-roles: null
+    mock-datastore-roles:
+      DATASTORE__ROLE_ARN: "general_role_arn"
+
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
