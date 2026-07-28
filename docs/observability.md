@@ -43,7 +43,8 @@ Follow the steps to access Application Insights:
 Observability tooling that can be used to monitor the status of police data ingestion.
 
 ### Grafana Dashboards
-
+- [Police Data Ingestion](https://grafana.live.cloud-platform.service.justice.gov.uk/d/afsdv98od660we/police-data-ingestion-dashboard)
+  - Filter by queue or DLQ
 - [AWS S3](https://grafana.live.cloud-platform.service.justice.gov.uk/d/AWSS31iWk/aws-s3) 
   - Filter by police-emails bucket
 - [AWS SNS](https://grafana.live.cloud-platform.service.justice.gov.uk/d/AWSSNS001/aws-sns)
