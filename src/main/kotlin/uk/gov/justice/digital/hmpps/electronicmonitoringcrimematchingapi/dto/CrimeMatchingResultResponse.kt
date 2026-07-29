@@ -11,6 +11,7 @@ data class CrimeMatchingResultResponse(
   val crimeLongitude: Double,
   val crimeText: String,
   val deviceId: Long,
+  val deviceSerialNumber: Long,
   val deviceName: String,
   val subjectId: String,
   val subjectName: String,
