@@ -10,6 +10,7 @@ class CrimeMatchingRunContext(
   fun withMatchedDeviceWearer(
     address: String = "address",
     deviceId: Long,
+    deviceSerialNumber: Long = 123456789,
     deviceName: String = "deviceName",
     dateOfBirth: LocalDateTime = LocalDateTime.of(2025, 1, 1, 1, 1),
     identifier: String = "1",
@@ -23,6 +24,7 @@ class CrimeMatchingRunContext(
       address = address,
       dateOfBirth = dateOfBirth,
       deviceId = deviceId,
+      deviceSerialNumber = deviceSerialNumber,
       deviceName = deviceName,
       identifier = identifier,
       name = name,
