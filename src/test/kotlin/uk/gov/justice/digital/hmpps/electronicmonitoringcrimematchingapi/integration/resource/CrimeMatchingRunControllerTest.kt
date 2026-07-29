@@ -7,6 +7,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.reactive.server.expectBody
+import org.springframework.transaction.support.TransactionTemplate
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CreateCrimeMatchingRunResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
@@ -32,6 +36,9 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var crimeMatchingRunRepository: CrimeMatchingRunRepository
+
+  @Autowired
+  lateinit var transactionTemplate: TransactionTemplate
 
   @Autowired
   lateinit var crimeBatchRepository: CrimeBatchRepository
@@ -108,24 +115,39 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
     fun `it should create a crime matching run and return 201 with run id`() {
       val (crimeBatchId, _) = createCrimeBatchWithCrimeVersion()
 
-      webTestClient.post()
+      val response = webTestClient.post()
         .uri("/crime-matching-run")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW")))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue("create-crime-matching-run-request".loadJson())
         .exchange()
         .expectStatus().isCreated
-        .expectBody()
-        .jsonPath("$.data.id").exists()
-        .jsonPath("$.data.id").isNotEmpty
+        .expectBody<Response<CreateCrimeMatchingRunResponse>>()
+        .returnResult().responseBody!!
 
       assertThat(crimeMatchingRunRepository.count()).isEqualTo(1)
 
-      val run = crimeMatchingRunRepository.findAll().first()
-      assertThat(run.algorithmVersion).isEqualTo("e83c5163316f89bfbde7d9ab23ca2e25604af290")
-      assertThat(run.crimeBatch.id).isEqualTo(crimeBatchId)
-      assertThat(run.triggerType.name).isEqualTo("AUTO")
-      assertThat(run.status.name).isEqualTo("SUCCESS")
+      transactionTemplate.executeWithoutResult {
+        val run = crimeMatchingRunRepository
+          .findById(UUID.fromString(response.data.id))
+          .orElseThrow()
+
+        assertThat(run.algorithmVersion).isEqualTo("e83c5163316f89bfbde7d9ab23ca2e25604af290")
+        assertThat(run.crimeBatch.id).isEqualTo(crimeBatchId)
+        assertThat(run.triggerType.name).isEqualTo("AUTO")
+        assertThat(run.status.name).isEqualTo("SUCCESS")
+        assertThat(run.results.size).isEqualTo(1)
+        assertThat(run.results[0].deviceWearers).hasSize(1)
+        assertThat(run.results[0].deviceWearers[0].address).isEqualTo("address")
+        assertThat(run.results[0].deviceWearers[0].dateOfBirth).isEqualTo(LocalDateTime.of(1980, 1, 1, 0, 0))
+        assertThat(run.results[0].deviceWearers[0].name).isEqualTo("Richard Gibbons")
+        assertThat(run.results[0].deviceWearers[0].identifier).isEqualTo("identifier")
+        assertThat(run.results[0].deviceWearers[0].nomisId).isEqualTo("A5128CZ")
+        assertThat(run.results[0].deviceWearers[0].pncRef).isEqualTo("pncRef")
+        assertThat(run.results[0].deviceWearers[0].deviceId).isEqualTo(604008982)
+        assertThat(run.results[0].deviceWearers[0].deviceSerialNumber).isEqualTo(123456789)
+        assertThat(run.results[0].deviceWearers[0].deviceName).isEqualTo("deviceName")
+      }
     }
   }
 
