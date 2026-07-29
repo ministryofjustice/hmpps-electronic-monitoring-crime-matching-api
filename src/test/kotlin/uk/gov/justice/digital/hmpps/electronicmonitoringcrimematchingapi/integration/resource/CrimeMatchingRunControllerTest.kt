@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
-
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -10,6 +9,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.transaction.support.TransactionTemplate
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CreateCrimeMatchingRunResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Crime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
@@ -24,8 +25,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CreateCrimeMatchingRunResponse
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -115,17 +114,6 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
     @Test
     fun `it should create a crime matching run and return 201 with run id`() {
       val (crimeBatchId, _) = createCrimeBatchWithCrimeVersion()
-
-//      webTestClient.post()
-//        .uri("/crime-matching-run")
-//        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW")))
-//        .contentType(MediaType.APPLICATION_JSON)
-//        .bodyValue("create-crime-matching-run-request".loadJson())
-//        .exchange()
-//        .expectStatus().isCreated
-//        .expectBody()
-//        .jsonPath("$.data.id").exists()
-//        .jsonPath("$.data.id").isNotEmpty
 
       val response = webTestClient.post()
         .uri("/crime-matching-run")
