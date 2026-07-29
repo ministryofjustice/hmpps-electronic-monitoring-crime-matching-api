@@ -5,6 +5,7 @@ data class DeviceWearerResponse(
   val dateOfBirth: String,
   val name: String,
   val deviceId: Long,
+  val deviceSerialNumber: Long,
   val nomisId: String,
   val pncRef: String,
   val positions: MutableList<DeviceWearerPositionResponse> = mutableListOf(),

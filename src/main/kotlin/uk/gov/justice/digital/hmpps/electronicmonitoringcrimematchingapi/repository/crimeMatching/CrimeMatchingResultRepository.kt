@@ -52,6 +52,7 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
         dw.address                     AS address,
         dw.date_of_birth               AS dateOfBirth,
         dw.device_id                   AS deviceId,
+        dw.device_serial_number        AS deviceSerialNumber,
         dw.device_name                 AS deviceName,
         dw.identifier                  AS identifier,
         dw.name                        AS name,
