@@ -359,6 +359,12 @@ class EmailListenerTest : IntegrationTestBase() {
 
     @Test
     fun `it should process an email with valid and invalid crime data`() {
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.PARTIAL.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
+
       val csvContent = listOf(
         createCsvRow(),
         createCsvRow(crimeTypeId = "invalid"),
@@ -390,17 +396,18 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
 
-      // Check outcome metric recorded with expected count and tags
-      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "ingestionStatus",
-        IngestionStatus.PARTIAL.name,
-      ).counter().count()
-
-      assertThat(outcomeMetric).isEqualTo(1.0)
+      // Check outcome metric was incremented
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore + 1)
     }
 
     @Test
     fun `it should process an email with only invalid crime data`() {
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.ERROR.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
+
       val csvContent = listOf(
         createCsvRow(latitude = "invalid"),
         createCsvRow(crimeTypeId = "invalid"),
@@ -425,13 +432,8 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
 
-      // Check outcome metric recorded with expected count and tags
-      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "ingestionStatus",
-        IngestionStatus.ERROR.name,
-      ).counter().count()
-
-      assertThat(outcomeMetric).isEqualTo(1.0)
+      // Check outcome metric was incremented
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore + 1)
     }
 
     @Test

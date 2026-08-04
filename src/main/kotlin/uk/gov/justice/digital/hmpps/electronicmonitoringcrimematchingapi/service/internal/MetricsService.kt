@@ -30,7 +30,7 @@ class MetricsService(
   private fun createEmailIngestionOutcomeCounter(
     ingestionStatus: IngestionStatus,
   ): Counter = Counter.builder(MESSAGE_OUTCOME)
-    .description("Email ingestion outcomes by police force and status")
+    .description("Email ingestion outcomes by status")
     .tag("ingestionStatus", ingestionStatus.name)
     .register(meterRegistry)
 
