@@ -19,6 +19,7 @@ class MetricsServiceTest {
   fun setup() {
     meterRegistry = SimpleMeterRegistry()
     service = MetricsService(meterRegistry)
+    service.initialise()
   }
 
   @Test
@@ -42,8 +43,6 @@ class MetricsServiceTest {
     service.recordOutcome(ingestionOutcome)
 
     val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-      "policeForce",
-      "Bedfordshire",
       "ingestionStatus",
       IngestionStatus.SUCCESSFUL.name,
     ).counter().count()

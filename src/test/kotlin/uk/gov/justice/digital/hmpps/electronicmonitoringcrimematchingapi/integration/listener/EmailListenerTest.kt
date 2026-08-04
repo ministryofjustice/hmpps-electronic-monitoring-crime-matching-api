@@ -124,7 +124,6 @@ class EmailListenerTest : IntegrationTestBase() {
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
     crimeBatchIngestionAttemptRepository.deleteAll()
-    meterRegistry.clear()
   }
 
   @AfterEach
@@ -144,6 +143,12 @@ class EmailListenerTest : IntegrationTestBase() {
   inner class ReceiveEmailNotification {
     @Test
     fun `it should process a valid email notification`() {
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.SUCCESSFUL.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
+
       val csvContent = listOf(
         createCsvRow(),
         createCsvRow(crimeReference = "CRI00000002"),
@@ -178,19 +183,18 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
 
-      // Check outcome metric recorded with expected count and tags
-      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "policeForce",
-        "Metropolitan",
-        "ingestionStatus",
-        IngestionStatus.SUCCESSFUL.name,
-      ).counter().count()
-
-      assertThat(outcomeMetric).isEqualTo(1.0)
+      // Check outcome metric was incremented
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore + 1)
     }
 
     @Test
     fun `it should save an ingestion attempt with an error when the email is missing an attachment`() {
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
+
       val email = createEmailFileWithoutAttachment()
 
       s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
@@ -210,19 +214,17 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
 
-      // Check outcome metric recorded with expected count and tags
-      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "policeForce",
-        "Unknown due to an error",
-        "ingestionStatus",
-        IngestionStatus.FAILED.name,
-      ).counter().count()
-
-      assertThat(outcomeMetric).isEqualTo(1.0)
+      // Check outcome metric was incremented
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore + 1)
     }
 
     @Test
     fun `it should save an ingestion attempt with an error when the email has multiple attachments`() {
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
       val email = createEmailFileWithMultipleAttachments()
 
       s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
@@ -243,19 +245,19 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
 
-      // Check outcome metric recorded with expected count and tags
-      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "policeForce",
-        "Unknown due to an error",
-        "ingestionStatus",
-        IngestionStatus.FAILED.name,
-      ).counter().count()
-
-      assertThat(outcomeMetric).isEqualTo(1.0)
+      // Check outcome metric was incremented
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore + 1)
     }
 
     @Test
     fun `it should save an ingestion attempt with an error when the csv has multiple police forces`() {
+      // Check outcome metric recorded with expected count and tags
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
+
       val csvContent = listOf(
         createCsvRow(),
         createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.identifier, batchId = "BFD20250126"),
@@ -278,19 +280,18 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
 
-      // Check outcome metric recorded with expected count and tags
-      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "policeForce",
-        "Unknown due to an error",
-        "ingestionStatus",
-        IngestionStatus.FAILED.name,
-      ).counter().count()
-
-      assertThat(outcomeMetric).isEqualTo(1.0)
+      // Check outcome metric was incremented
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore + 1)
     }
 
     @Test
     fun `it should save an ingestion attempt with an error when the csv has multiple batch IDs`() {
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.FAILED.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
+
       val csvContent = listOf(
         createCsvRow(),
         createCsvRow(batchId = "MPS20260123"),
@@ -315,15 +316,8 @@ class EmailListenerTest : IntegrationTestBase() {
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
 
-      // Check outcome metric recorded with expected count and tags
-      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "policeForce",
-        "Unknown due to an error",
-        "ingestionStatus",
-        IngestionStatus.FAILED.name,
-      ).counter().count()
-
-      assertThat(outcomeMetric).isEqualTo(1.0)
+      // Check outcome metric was incremented
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore + 1)
     }
 
     @Test
@@ -398,8 +392,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check outcome metric recorded with expected count and tags
       val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "policeForce",
-        "Metropolitan",
         "ingestionStatus",
         IngestionStatus.PARTIAL.name,
       ).counter().count()
@@ -435,8 +427,6 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check outcome metric recorded with expected count and tags
       val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
-        "policeForce",
-        "Unknown due to an error",
         "ingestionStatus",
         IngestionStatus.ERROR.name,
       ).counter().count()
