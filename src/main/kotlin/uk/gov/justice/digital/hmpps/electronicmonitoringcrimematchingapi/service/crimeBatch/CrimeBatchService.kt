@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -28,7 +27,6 @@ class CrimeBatchService(
   private val crimeBatchRepository: CrimeBatchRepository,
   private val crimeRepository: CrimeRepository,
   private val crimeVersionRepository: CrimeVersionRepository,
-  private val matchingNotificationService: MatchingNotificationService,
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
 ) {
 
@@ -63,8 +61,6 @@ class CrimeBatchService(
 
     // Save batch
     crimeBatchRepository.save(crimeBatch)
-
-    matchingNotificationService.publishMatchingRequest(crimeBatch.id.toString())
 
     return crimeBatch
   }

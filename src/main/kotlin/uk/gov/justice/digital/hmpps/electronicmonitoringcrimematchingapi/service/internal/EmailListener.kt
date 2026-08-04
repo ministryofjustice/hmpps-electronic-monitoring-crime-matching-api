@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
@@ -28,6 +29,7 @@ class EmailListener(
   private val crimeBatchService: CrimeBatchService,
   private val emailNotificationService: EmailNotificationService,
   private val emailParserService: EmailParserService,
+  private val matchingNotificationService: MatchingNotificationService,
   private val metricsService: MetricsService,
 ) {
 
@@ -54,6 +56,10 @@ class EmailListener(
 
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)
+
+    if (ingestionOutcome.ingestionStatus == IngestionStatus.SUCCESSFUL || ingestionOutcome.ingestionStatus == IngestionStatus.PARTIAL) {
+      matchingNotificationService.publishMatchingRequest(ingestionOutcome.crimeBatchId)
+    }
 
     try {
       emailNotificationService.sendEmails(ingestionOutcome)
@@ -116,9 +122,11 @@ class EmailListener(
       val crimeBatch = crimeBatchService.createCrimeBatch(parseResult.records, crimeBatchEmailAttachment)
       val policeForce = parseResult.records.first().policeForce
       val batchId = crimeBatch.batchId
+      val crimeBatchId = crimeBatch.id.toString()
       val status = if (parseResult.errors.isEmpty()) IngestionStatus.SUCCESSFUL else IngestionStatus.PARTIAL
       return EmailIngestionOutcome(
         batchId = batchId,
+        crimeBatchId = crimeBatchId,
         policeForce = policeForce.label,
         errors = parseResult.errors,
         emailData = emailData,
