@@ -35,6 +35,7 @@ springdoc:
   api-docs:
     enabled: false
   swagger-ui:
+    version: 5.32.11 # workaround for v11 of hmpps-gradle-spring-boot https://github.com/ministryofjustice/hmpps-gradle-spring-boot/blob/main/release-notes/11.x.md#1102
     enabled: false
 
 server:
