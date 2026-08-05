@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.v
 
 data class EmailIngestionOutcome(
   val batchId: String = "Unknown due to an error",
+  val crimeBatchId: String = "Unknown due to an error",
   val policeForce: String = "Unknown due to an error",
   val errorType: CrimeBatchEmailIngestionErrorType = CrimeBatchEmailIngestionErrorType.UNKNOWN,
   val errors: List<EmailAttachmentIngestionError> = emptyList(),

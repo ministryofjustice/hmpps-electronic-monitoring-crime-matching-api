@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -33,20 +32,17 @@ class CrimeBatchServiceTest {
   private lateinit var crimeRepository: CrimeRepository
   private lateinit var crimeVersionRepository: CrimeVersionRepository
   private lateinit var service: CrimeBatchService
-  private lateinit var matchingNotificationService: MatchingNotificationService
 
   @BeforeEach
   fun setup() {
     crimeBatchRepository = Mockito.mock(CrimeBatchRepository::class.java)
     crimeRepository = Mockito.mock(CrimeRepository::class.java)
-    matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
     crimeVersionRepository = Mockito.mock(CrimeVersionRepository::class.java)
     crimeBatchIngestionAttemptRepository = Mockito.mock(CrimeBatchIngestionAttemptRepository::class.java)
     service = CrimeBatchService(
       crimeBatchRepository,
       crimeRepository,
       crimeVersionRepository,
-      matchingNotificationService,
       crimeBatchIngestionAttemptRepository,
     )
   }
@@ -85,17 +81,14 @@ class CrimeBatchServiceTest {
       )
       val crimeCaptor = argumentCaptor<Crime>()
       val crimeBatchCaptor = argumentCaptor<CrimeBatch>()
-      val notificationCaptor = argumentCaptor<String>()
 
       verify(crimeRepository, times(1)).save(crimeCaptor.capture())
       verify(crimeBatchRepository, times(1)).save(crimeBatchCaptor.capture())
-      verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
 
       assertThat(crimeBatchCaptor.allValues.first().crimeBatchEmailAttachment).isEqualTo(crimeBatchEmailAttachment)
       assertThat(crimeBatchCaptor.allValues.first().batchId).isEqualTo("batchId")
       assertThat(crimeBatchCaptor.allValues.first().crimeVersions).isNotEmpty()
       assertThat(crimeBatchCaptor.allValues.first().crimeVersions).hasSize(1)
-      assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatchCaptor.allValues.first().id.toString())
     }
   }
 }

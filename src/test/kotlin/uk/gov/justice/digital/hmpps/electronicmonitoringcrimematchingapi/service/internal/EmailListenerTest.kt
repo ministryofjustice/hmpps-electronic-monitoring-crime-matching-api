@@ -13,6 +13,8 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -28,6 +30,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
@@ -45,6 +48,7 @@ class EmailListenerTest {
   private lateinit var crimeBatchService: CrimeBatchService
   private lateinit var emailNotificationService: EmailNotificationService
   private lateinit var emailParserService: EmailParserService
+  private lateinit var matchingNotificationService: MatchingNotificationService
   private lateinit var metricsService: MetricsService
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
@@ -63,8 +67,9 @@ class EmailListenerTest {
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
     emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
     emailParserService = EmailParserService(emailIngestionProperties)
+    matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService, metricsService)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService, matchingNotificationService, metricsService)
   }
 
   @Nested
@@ -143,8 +148,22 @@ class EmailListenerTest {
       )
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
-      verify(emailNotificationService, times(1)).sendEmails(any())
-      verify(metricsService, times(1)).recordOutcome(any())
+
+      val notificationCaptor = argumentCaptor<String>()
+
+      val inOrder = inOrder(
+        crimeBatchService,
+        matchingNotificationService,
+        emailNotificationService,
+        metricsService,
+      )
+
+      inOrder.verify(crimeBatchService, times(1)).createCrimeBatch(any(), any())
+      inOrder.verify(metricsService, times(1)).recordOutcome(any())
+      inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
+      inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
+
+      assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatch.id.toString())
     }
 
     @Test
@@ -220,8 +239,13 @@ class EmailListenerTest {
       )
 
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
+
+      val notificationCaptor = argumentCaptor<String>()
+      verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
       verify(emailNotificationService, times(1)).sendEmails(any())
       verify(metricsService, times(1)).recordOutcome(any())
+
+      assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatch.id.toString())
     }
 
     @Test
