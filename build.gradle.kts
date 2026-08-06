@@ -31,13 +31,13 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
   testImplementation("com.h2database:h2:2.4.240")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.2.0")
-  testImplementation("org.mockito:mockito-core:5.21.0")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.0")
+  testImplementation("org.mockito:mockito-core:5.23.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("org.testcontainers:postgresql:1.21.3")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.41") {
+  testImplementation("org.testcontainers:postgresql:1.21.4")
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.42") {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("org.skyscreamer:jsonassert:1.5.3")
