@@ -54,7 +54,7 @@ class CrimeBatchServiceTest {
     fun `it should create a crime batch from crime csv records`() {
       val crimeBatchEmailAttachment = Mockito.mock(CrimeBatchEmailAttachment::class.java)
 
-      whenever(crimeRepository.save(any())).thenReturn(
+      whenever(crimeRepository.save(any<Crime>())).thenReturn(
         Crime(
           policeForceArea = PoliceForce.METROPOLITAN,
           crimeReference = "crimeRef",

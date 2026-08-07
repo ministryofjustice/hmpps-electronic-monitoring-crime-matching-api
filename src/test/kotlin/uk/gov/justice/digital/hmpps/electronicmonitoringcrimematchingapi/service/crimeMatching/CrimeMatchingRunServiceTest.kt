@@ -118,7 +118,7 @@ class CrimeMatchingRunServiceTest {
       val crimeBatch = Mockito.mock(CrimeBatch::class.java)
 
       whenever(crimeBatchRepository.findById(batchId)).thenReturn(Optional.of(crimeBatch))
-      whenever(crimeMatchingRunRepository.save(any())).thenAnswer { it.arguments[0] as CrimeMatchingRun }
+      whenever(crimeMatchingRunRepository.save(any<CrimeMatchingRun>())).thenAnswer { it.arguments[0] }
 
       val dto = CreateCrimeMatchingRunRequest(
         crimeBatchId = batchId,
@@ -155,7 +155,7 @@ class CrimeMatchingRunServiceTest {
 
       whenever(crimeBatchRepository.findById(batchId)).thenReturn(Optional.of(crimeBatch))
       whenever(crimeVersionRepository.findById(versionId)).thenReturn(Optional.of(crimeVersion))
-      whenever(crimeMatchingRunRepository.save(any())).thenAnswer { it.arguments[0] as CrimeMatchingRun }
+      whenever(crimeMatchingRunRepository.save(any<CrimeMatchingRun>())).thenAnswer { it.arguments[0] }
 
       val dto = CreateCrimeMatchingRunRequest(
         crimeBatchId = batchId,
