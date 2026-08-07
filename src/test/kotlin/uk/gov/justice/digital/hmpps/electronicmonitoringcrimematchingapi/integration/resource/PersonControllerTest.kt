@@ -113,12 +113,23 @@ class PersonControllerTest : IntegrationTestBase() {
         "athenaResponses/person.empty.success.json",
       )
 
-      webTestClient.get()
+      val response = webTestClient.get()
         .uri("/persons/1")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
         .isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = 404,
+          userMessage = "Not Found",
+          developerMessage = "No person found with id: 1",
+        ),
+      )
     }
 
     @Test

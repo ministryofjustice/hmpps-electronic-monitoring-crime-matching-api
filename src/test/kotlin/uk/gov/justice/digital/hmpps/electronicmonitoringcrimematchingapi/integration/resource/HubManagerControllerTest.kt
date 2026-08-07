@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.HubManager
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.HubManagerRepository
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -187,12 +188,25 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a 404 if the hub manager does not exist`() {
-      webTestClient.get()
-        .uri("$path/${UUID.randomUUID()}")
+      val id = UUID.randomUUID()
+
+      val response = webTestClient.get()
+        .uri("$path/$id")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
         .exchange()
         .expectStatus()
         .isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = 404,
+          userMessage = "Not Found",
+          developerMessage = "No hub manager found with id: $id",
+        ),
+      )
     }
 
     @Test
@@ -288,24 +302,48 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a 404 if the hub manager does not exist`() {
-      webTestClient.get()
-        .uri("$path/${UUID.randomUUID()}/signature")
+      val id = UUID.randomUUID()
+
+      val response = webTestClient.get()
+        .uri("$path/$id/signature")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
         .exchange()
         .expectStatus()
         .isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = 404,
+          userMessage = "Not Found",
+          developerMessage = "No hub manager found with id: $id",
+        ),
+      )
     }
 
     @Test
     fun `it should return a 404 if the hub manager does not have a signature`() {
       createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", hasSignature = false)
 
-      webTestClient.get()
+      val response = webTestClient.get()
         .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
         .exchange()
         .expectStatus()
         .isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = 404,
+          userMessage = "Not Found",
+          developerMessage = "No signature found for hub manager found with id: 48b83e4b-ea09-4ba7-8440-a7e5ed534cb4",
+        ),
+      )
     }
 
     @Test
@@ -362,14 +400,27 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a 404 if the hub manager does not exist`() {
-      webTestClient.put()
-        .uri("$path/${UUID.randomUUID()}/signature")
+      val id = UUID.randomUUID()
+
+      val response = webTestClient.put()
+        .uri("$path/$id/signature")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__HUB_MANAGERS__RW")))
         .contentType(MediaType.MULTIPART_FORM_DATA)
         .body(BodyInserters.fromMultipartData(multipartBody))
         .exchange()
         .expectStatus()
         .isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = 404,
+          userMessage = "Not Found",
+          developerMessage = "No hub manager found with id: $id",
+        ),
+      )
     }
 
     @Test

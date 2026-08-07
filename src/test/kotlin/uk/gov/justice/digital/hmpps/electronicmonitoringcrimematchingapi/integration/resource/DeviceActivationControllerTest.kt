@@ -59,12 +59,23 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
         "athenaResponses/device-activation.empty.success.json",
       )
 
-      webTestClient.get()
+      val response = webTestClient.get()
         .uri("/device-activations/1")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
         .exchange()
         .expectStatus()
         .isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = 404,
+          userMessage = "Not Found",
+          developerMessage = "No device activation found with id: 1",
+        ),
+      )
     }
 
     @Test
