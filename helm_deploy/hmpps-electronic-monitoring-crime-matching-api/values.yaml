@@ -19,6 +19,7 @@ generic-service:
     JAVA_OPTS: "-Xmx512m"
     SERVER_PORT: "8080"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    FLIPT_NAMESPACE: hmpps-electronic-monitoring-crime-matching
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:

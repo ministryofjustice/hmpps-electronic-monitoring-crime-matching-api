@@ -24,26 +24,27 @@ class EmailParserService(
     val message = MimeMessage(session, emailFile)
 
     val subject = message.subject
-    val sender = (message.from?.firstOrNull() as? InternetAddress)?.address!!
+    val originalSender = (message.from?.firstOrNull() as? InternetAddress)?.address!!
     val sentAt = message.sentDate
-    val redirectAddress = message.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
+    val redirectHeader = message.getHeader("Resent-From", null) ?: throw ValidationException("No redirect email")
+    val redirectAddress = InternetAddress.parse(redirectHeader).first().address
 
-    validateMetadata(subject, sender, redirectAddress)
+    validateMetadata(subject, originalSender, redirectAddress)
     val attachments = extractCsvAttachment(message)
 
     return EmailData(
-      sender,
-      redirectAddress,
-      subject,
-      sentAt,
-      attachments,
+      sender = redirectAddress,
+      originalSender = originalSender,
+      subject = subject,
+      sentAt = sentAt,
+      attachments = attachments,
     )
   }
 
   private fun validateMetadata(subject: String, sender: String, redirectAddress: String) {
     if (!subject.contains("Crime Mapping Request", ignoreCase = true)) throw ValidationException("Invalid email subject")
 
-    if (!redirectAddress.contains(properties.mailboxAddress, ignoreCase = true)) throw ValidationException("Invalid redirect email")
+    if (!redirectAddress.equals(properties.mailboxAddress, ignoreCase = true)) throw ValidationException("Invalid redirect email")
 
     if (!properties.validEmails.values.contains(sender.lowercase())) throw ValidationException("Invalid sender email")
   }

@@ -12,5 +12,5 @@ import uk.gov.service.notify.NotificationClient
 class NotifyConfig(private val properties: NotifyProperties) {
 
   @Bean
-  fun notifyClient(): NotificationClient = NotificationClient(properties.apikey)
+  fun notifyClient(): NotificationClient = NotificationClient(properties.apikey, properties.baseUrl)
 }

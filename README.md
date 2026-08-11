@@ -182,3 +182,15 @@ bash scripts/localstack-ingest-sample-email.sh
 
 ### Code coverage
 This project has Jacoco integrated and this will run after each test run. The generated report can be found [here](build/reports/jacoco/test/html/index.html) and can be opened in your browser.
+
+### Feature flags
+Feature flags are evaluated with the [HMPPS Flipt Instance](https://github.com/ministryofjustice/hmpps-feature-flags) in the
+`hmpps-electronic-monitoring-crime-matching` namespace. The service currently only evaluates Boolean flags and will return false by default
+if a flag cannot be retrieved.
+
+Current flags:
+- `enable-police-email-notifications` - controls whether ingestion outcome notification emails are sent to the police.
+  - Default: false
+  - Prod: false
+  - Preprod: true
+  - Dev: true

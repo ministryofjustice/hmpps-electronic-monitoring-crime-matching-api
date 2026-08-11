@@ -28,6 +28,11 @@ aws:
 notify:
   enabled: false
 
+flipt:
+  url: https://feature-toggles-dev.hmpps.service.justice.gov.uk
+  namespace: hmpps-electronic-monitoring-crime-matching
+  polling-interval-in-seconds: 120
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
