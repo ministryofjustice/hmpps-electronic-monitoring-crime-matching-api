@@ -22,27 +22,27 @@ class FeatureFlagServiceTest {
 
   @Test
   fun `it should return true when the feature flag is enabled`() {
-    whenever(fliptClient.evaluateBoolean(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS, "entityId", emptyMap()))
+    whenever(fliptClient.evaluateBoolean(FeatureFlagService.ENABLE_POLICE_CONFIRMATION_EMAILS, "entityId", emptyMap()))
       .thenReturn(response)
     whenever(response.isEnabled).thenReturn(true)
 
-    assertTrue(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS))
+    assertTrue(featureFlagService.policeConfirmationEmailsEnabled())
   }
 
   @Test
   fun `it should return false when the feature flag is disabled`() {
-    whenever(fliptClient.evaluateBoolean(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS, "entityId", emptyMap()))
+    whenever(fliptClient.evaluateBoolean(FeatureFlagService.ENABLE_POLICE_CONFIRMATION_EMAILS, "entityId", emptyMap()))
       .thenReturn(response)
     whenever(response.isEnabled).thenReturn(false)
 
-    assertFalse(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS))
+    assertFalse(featureFlagService.policeConfirmationEmailsEnabled())
   }
 
   @Test
   fun `it should return false when the flag can't be retrieved`() {
-    whenever(fliptClient.evaluateBoolean(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS, "entityId", emptyMap()))
+    whenever(fliptClient.evaluateBoolean(FeatureFlagService.ENABLE_POLICE_CONFIRMATION_EMAILS, "entityId", emptyMap()))
       .thenThrow(FliptException::class.java)
 
-    assertFalse(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS))
+    assertFalse(featureFlagService.policeConfirmationEmailsEnabled())
   }
 }

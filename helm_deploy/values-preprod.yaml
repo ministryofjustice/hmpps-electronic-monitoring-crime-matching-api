@@ -17,7 +17,6 @@ generic-service:
     MFA_REQUIRED: "false"
     DATASTORE_DATABASE: "acquisitive_crime_preprod_dbt"
     FLIPT_URL: "https://feature-toggles-preprod.hmpps.service.justice.gov.uk"
-    FLIPT_NAMESPACE: "hmpps-electronic-monitoring-crime-matching"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

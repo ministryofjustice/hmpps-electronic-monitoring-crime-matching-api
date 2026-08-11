@@ -510,7 +510,7 @@ class EmailListenerTest : IntegrationTestBase() {
       s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
 
       // Police emails flag set to true
-      whenever(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS)).thenReturn(true)
+      whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
 
       sendDomainSqsMessage(getMessage(OBJECT_KEY))
 
@@ -534,7 +534,7 @@ class EmailListenerTest : IntegrationTestBase() {
       s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
 
       // Police emails flag set to false
-      whenever(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS)).thenReturn(false)
+      whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(false)
 
       sendDomainSqsMessage(getMessage(OBJECT_KEY))
 

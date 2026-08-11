@@ -10,15 +10,17 @@ class FeatureFlagService(
 ) {
   companion object {
     private val logger = LoggerFactory.getLogger(this::class.java)
-    const val ENABLE_POLICE_EMAIL_NOTIFICATIONS = "enable-police-email-notifications"
+    const val ENABLE_POLICE_CONFIRMATION_EMAILS = "enable-police-confirmation-emails"
   }
 
-  fun enabled(key: String) = try {
-    client
-      .evaluateBoolean(key, "entityId", emptyMap())
-      .isEnabled
+  fun policeConfirmationEmailsEnabled() = try {
+    enabled(ENABLE_POLICE_CONFIRMATION_EMAILS)
   } catch (e: Exception) {
-    logger.warn("Error retrieving feature flag $key, defaulting to false", e)
+    logger.warn("Error retrieving feature flag $ENABLE_POLICE_CONFIRMATION_EMAILS, defaulting to false", e)
     false
   }
+
+  private fun enabled(key: String): Boolean = client
+    .evaluateBoolean(key, "entityId", emptyMap())
+    .isEnabled
 }

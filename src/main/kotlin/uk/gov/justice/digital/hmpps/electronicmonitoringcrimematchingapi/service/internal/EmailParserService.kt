@@ -33,11 +33,11 @@ class EmailParserService(
     val attachments = extractCsvAttachment(message)
 
     return EmailData(
-      redirectAddress,
-      originalSender,
-      subject,
-      sentAt,
-      attachments,
+      sender = redirectAddress,
+      originalSender = originalSender,
+      subject = subject,
+      sentAt = sentAt,
+      attachments = attachments,
     )
   }
 

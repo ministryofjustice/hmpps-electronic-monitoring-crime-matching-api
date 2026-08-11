@@ -40,8 +40,7 @@ class EmailNotificationServiceTest {
     whenever(notifyProperties.failedIngestionTemplateId).thenReturn("failedTemplateId")
     whenever(notifyProperties.partialIngestionTemplateId).thenReturn("partialTemplateId")
     whenever(notifyProperties.errorIngestionTemplateId).thenReturn("errorTemplateId")
-    whenever(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS))
-      .thenReturn(true)
+    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
     notifyClient = Mockito.mock(NotificationClient::class.java)
     service = EmailNotificationService(featureFlagService, notifyClient, notifyProperties)
   }
@@ -276,7 +275,7 @@ class EmailNotificationServiceTest {
   @Test
   fun `it should not send an email to the original sender when the send police email flag is false`() {
     whenever(notifyProperties.enabled).thenReturn(true)
-    whenever(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS)).thenReturn(false)
+    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(false)
 
     val emailData = EmailData(
       sender = "sender",

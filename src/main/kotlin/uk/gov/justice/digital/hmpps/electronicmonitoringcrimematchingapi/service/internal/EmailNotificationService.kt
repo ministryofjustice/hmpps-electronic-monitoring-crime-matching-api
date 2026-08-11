@@ -34,7 +34,7 @@ class EmailNotificationService(
 
     val emailAddresses = buildList {
       add(ingestionOutcome.emailData.sender)
-      if (featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS)) {
+      if (featureFlagService.policeConfirmationEmailsEnabled()) {
         add(ingestionOutcome.emailData.originalSender)
       }
     }
