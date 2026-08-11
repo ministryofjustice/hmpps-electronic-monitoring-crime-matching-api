@@ -62,12 +62,18 @@ datastore:
   workgroup: test-workgroup
 
 notify:
-  enabled: false
-  apikey: test-key
+  enabled: true
+  base-url: http://localhost:8092
+  apikey: 0123456789abcdef0123456789abcdef
   successfulIngestionTemplateId: c3df947e-2473-11f1-8dc8-2246b06f42bf
   failedIngestionTemplateId: ccd9f27c-2473-11f1-9dfb-2246b06f42bf
   partialIngestionTemplateId: def0238c-2473-11f1-8c78-2246b06f42bf
   errorIngestionTemplateId: eat1238d-2473-11f1-8c78-2246b06f42bf
+
+flipt:
+  url: http://localhost:8092
+  namespace: hmpps-electronic-monitoring-crime-matching
+  polling-interval-in-seconds: 120
   
 email-ingestion:
   valid-emails:

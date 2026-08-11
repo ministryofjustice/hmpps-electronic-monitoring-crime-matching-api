@@ -12,6 +12,7 @@ import java.time.LocalDate
 
 @Service
 class EmailNotificationService(
+  private val featureFlagService: FeatureFlagService,
   private val notifyClient: NotificationClient,
   private val properties: NotifyProperties,
 ) {
@@ -31,10 +32,12 @@ class EmailNotificationService(
       recordCount = ingestionOutcome.recordCount,
     )
 
-    val emailAddresses = listOf(
-      ingestionOutcome.emailData.sender,
-      ingestionOutcome.emailData.originalSender,
-    )
+    val emailAddresses = buildList {
+      add(ingestionOutcome.emailData.sender)
+      if (featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS)) {
+        add(ingestionOutcome.emailData.originalSender)
+      }
+    }
 
     for (emailAddress in emailAddresses) {
       sendEmail(

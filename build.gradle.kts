@@ -26,6 +26,7 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:6.1.0-RELEASE")
   implementation("org.locationtech.proj4j:proj4j:1.4.3")
   implementation("org.locationtech.proj4j:proj4j-epsg:1.4.3")
+  implementation("io.flipt:flipt-client-java:1.3.3")
 
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")

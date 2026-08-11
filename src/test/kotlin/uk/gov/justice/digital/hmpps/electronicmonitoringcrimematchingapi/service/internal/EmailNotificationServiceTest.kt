@@ -32,6 +32,7 @@ class EmailNotificationServiceTest {
   private lateinit var service: EmailNotificationService
   private lateinit var notifyClient: NotificationClient
   private val notifyProperties: NotifyProperties = mock()
+  private val featureFlagService: FeatureFlagService = mock()
 
   @BeforeEach
   fun setup() {
@@ -39,8 +40,10 @@ class EmailNotificationServiceTest {
     whenever(notifyProperties.failedIngestionTemplateId).thenReturn("failedTemplateId")
     whenever(notifyProperties.partialIngestionTemplateId).thenReturn("partialTemplateId")
     whenever(notifyProperties.errorIngestionTemplateId).thenReturn("errorTemplateId")
+    whenever(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS))
+      .thenReturn(true)
     notifyClient = Mockito.mock(NotificationClient::class.java)
-    service = EmailNotificationService(notifyClient, notifyProperties)
+    service = EmailNotificationService(featureFlagService, notifyClient, notifyProperties)
   }
 
   @Test
@@ -155,7 +158,7 @@ class EmailNotificationServiceTest {
     assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
 
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
   }
 
   @Test
@@ -268,5 +271,41 @@ class EmailNotificationServiceTest {
       verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("sender"), any(), eq(batchId))
       verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("originalSender"), any(), eq(batchId))
     }
+  }
+
+  @Test
+  fun `it should not send an email to the original sender when the send police email flag is false`() {
+    whenever(notifyProperties.enabled).thenReturn(true)
+    whenever(featureFlagService.enabled(FeatureFlagService.ENABLE_POLICE_EMAIL_NOTIFICATIONS)).thenReturn(false)
+
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val personalisation = mapOf(
+      "fileName" to "Invalid File",
+      "ingestionDate" to LocalDate.now().toString(),
+      "batchId" to "Unknown due to an error",
+      "policeForce" to "Unknown due to an error",
+      "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
+      "totalCount" to 0,
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = "Unknown due to an error",
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
+
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(0)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
   }
 }

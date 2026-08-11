@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "notify")
 data class NotifyProperties(
   val enabled: Boolean,
+  val baseUrl: String,
   val successfulIngestionTemplateId: String,
   val failedIngestionTemplateId: String,
   val partialIngestionTemplateId: String,
