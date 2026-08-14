@@ -23,4 +23,9 @@ data class CrimeBatchIngestionAttempt(
   val bucket: String,
   val objectName: String,
   val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+  // JPA entities should not include bidirectional associations in equality.
+  override fun equals(other: Any?): Boolean = this === other || (other is CrimeBatchIngestionAttempt && id == other.id)
+
+  override fun hashCode(): Int = id.hashCode()
+}

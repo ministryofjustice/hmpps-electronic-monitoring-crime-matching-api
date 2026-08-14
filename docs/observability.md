@@ -54,3 +54,7 @@ Observability tooling that can be used to monitor the status of police data inge
 
 ## Runbooks
 - [Investigating Email Notifications DLQ Messages](email-notifications-dlq-runbook.md)
+
+## Design & Testing
+- [Email Outbox: exactly-once email design plan](email-outbox-plan.md) — transactional outbox, `event_id` idempotency, relay/DLQ (`email.outbox.event` metrics).
+- [Email Outbox: local & dev testing guide](email-outbox-testing.md)

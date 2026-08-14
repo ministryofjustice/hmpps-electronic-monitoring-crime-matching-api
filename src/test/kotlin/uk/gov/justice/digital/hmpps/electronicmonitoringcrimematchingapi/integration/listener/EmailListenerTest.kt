@@ -49,6 +49,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.outbox.EmailOutboxRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.FeatureFlagService
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -97,6 +98,9 @@ class EmailListenerTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var crimeBatchEmailAttachmentIngestionErrorRepository: CrimeBatchEmailAttachmentIngestionErrorRepository
 
+  @Autowired
+  lateinit var emailOutboxRepository: EmailOutboxRepository
+
   @MockitoBean
   lateinit var featureFlagService: FeatureFlagService
 
@@ -108,6 +112,15 @@ class EmailListenerTest : IntegrationTestBase() {
   val emailQueueSqsClient by lazy { emailQueueConfig.sqsClient }
   val emailDeadLetterSqsClient by lazy { emailQueueConfig.sqsDlqClient as SqsAsyncClient }
   val emailDeadLetterSqsUrl by lazy { emailQueueConfig.dlqUrl as String }
+
+  val emailSendQueueConfig by lazy {
+    hmppsQueueService.findByQueueId("emailsend")
+      ?: throw MissingQueueException("HmppsQueue emailsend not found")
+  }
+  val emailSendSqsUrl by lazy { emailSendQueueConfig.queueUrl }
+  val emailSendSqsClient by lazy { emailSendQueueConfig.sqsClient }
+  val emailSendDeadLetterSqsClient by lazy { emailSendQueueConfig.sqsDlqClient as SqsAsyncClient }
+  val emailSendDeadLetterSqsUrl by lazy { emailSendQueueConfig.dlqUrl as String }
 
   val matchingNotificationsQueueConfig by lazy {
     hmppsQueueService.findByQueueId("matchingnotifications")
@@ -125,9 +138,16 @@ class EmailListenerTest : IntegrationTestBase() {
     emailDeadLetterSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(emailDeadLetterSqsUrl).build(),
     ).get()
+    emailSendSqsClient.purgeQueue(
+      PurgeQueueRequest.builder().queueUrl(emailSendSqsUrl).build(),
+    ).get()
+    emailSendDeadLetterSqsClient.purgeQueue(
+      PurgeQueueRequest.builder().queueUrl(emailSendDeadLetterSqsUrl).build(),
+    ).get()
     matchingNotificationsSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
     )
+    emailOutboxRepository.deleteAll()
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
     crimeBatchIngestionAttemptRepository.deleteAll()
@@ -516,9 +536,11 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      // Verify Notify Emails
-      notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
-      notifyMockServer.verifyEmailSentTo("test@email.com", 1)
+      // Verify Notify Emails (sent asynchronously via the outbox relay + send worker)
+      await().untilAsserted {
+        notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
+        notifyMockServer.verifyEmailSentTo("test@email.com", 1)
+      }
     }
 
     @Test
@@ -540,8 +562,10 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      // Verify Notify Emails
-      notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
+      // Verify Notify Emails (sent asynchronously via the outbox relay + send worker)
+      await().untilAsserted {
+        notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
+      }
       notifyMockServer.verifyEmailSentTo("test@email.com", 0)
     }
 

@@ -3,8 +3,9 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailReceivedMessage
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.outbox.EmailOutboxService
 
 @Service
 class EmailListener(
@@ -27,13 +29,14 @@ class EmailListener(
   private val crimeBatchCsvService: CrimeBatchCsvService,
   private val crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService,
   private val crimeBatchService: CrimeBatchService,
-  private val emailNotificationService: EmailNotificationService,
+  private val emailOutboxService: EmailOutboxService,
   private val emailParserService: EmailParserService,
   private val matchingNotificationService: MatchingNotificationService,
   private val metricsService: MetricsService,
+  transactionManager: PlatformTransactionManager,
 ) {
 
-  private val log = LoggerFactory.getLogger(this::class.java)
+  private val transactionTemplate = TransactionTemplate(transactionManager)
 
   @SqsListener("email", factory = "hmppsQueueContainerFactoryProxy")
   fun receiveEmailNotification(message: SqsMessage) {
@@ -48,23 +51,25 @@ class EmailListener(
     // Get email file from S3
     val emailFile = s3Service.getObject(messageId, objectKey, bucketName)
 
-    // Extract email details
+    // Extract email details (network I/O is performed outside the transaction below)
     val emailData = emailFile.use { emailParserService.extractEmailData(it) }
 
-    // Once basic email checks have completed, process the email contents
-    val ingestionOutcome = processEmail(emailData, bucketName, objectKey)
+    // Persist the ingestion outcome and durably record the email intent in one transaction,
+    // so an email is enqueued if and only if the ingestion outcome is committed.
+    val ingestionOutcome = requireNotNull(
+      transactionTemplate.execute {
+        val outcome = processEmail(emailData, bucketName, objectKey)
+        emailOutboxService.enqueue(outcome)
+        outcome
+      },
+    )
 
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)
 
+    // Published only after the ingestion transaction has committed.
     if (ingestionOutcome.ingestionStatus == IngestionStatus.SUCCESSFUL || ingestionOutcome.ingestionStatus == IngestionStatus.PARTIAL) {
       matchingNotificationService.publishMatchingRequest(ingestionOutcome.crimeBatchId)
-    }
-
-    try {
-      emailNotificationService.sendEmails(ingestionOutcome)
-    } catch (notifyEx: Exception) {
-      log.warn("Failed to send failed ingestion notification email: ${notifyEx.message}", notifyEx)
     }
   }
 

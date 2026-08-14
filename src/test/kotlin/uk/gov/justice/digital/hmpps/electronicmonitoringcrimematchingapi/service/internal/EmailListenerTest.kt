@@ -19,6 +19,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.SimpleTransactionStatus
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.emailIngestion.EmailIngestionProperties
@@ -34,6 +36,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.outbox.EmailOutboxService
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
@@ -46,10 +49,11 @@ class EmailListenerTest {
   private lateinit var crimeBatchCsvService: CrimeBatchCsvService
   private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
   private lateinit var crimeBatchService: CrimeBatchService
-  private lateinit var emailNotificationService: EmailNotificationService
+  private lateinit var emailOutboxService: EmailOutboxService
   private lateinit var emailParserService: EmailParserService
   private lateinit var matchingNotificationService: MatchingNotificationService
   private lateinit var metricsService: MetricsService
+  private lateinit var transactionManager: PlatformTransactionManager
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
   private val emailIngestionProperties: EmailIngestionProperties = EmailIngestionProperties(
@@ -65,11 +69,13 @@ class EmailListenerTest {
     crimeBatchCsvService = CrimeBatchCsvService()
     crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
+    emailOutboxService = Mockito.mock(EmailOutboxService::class.java)
     emailParserService = EmailParserService(emailIngestionProperties)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService, matchingNotificationService, metricsService)
+    transactionManager = Mockito.mock(PlatformTransactionManager::class.java)
+    whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailOutboxService, emailParserService, matchingNotificationService, metricsService, transactionManager)
   }
 
   @Nested
@@ -154,14 +160,14 @@ class EmailListenerTest {
       val inOrder = inOrder(
         crimeBatchService,
         matchingNotificationService,
-        emailNotificationService,
+        emailOutboxService,
         metricsService,
       )
 
       inOrder.verify(crimeBatchService, times(1)).createCrimeBatch(any(), any())
+      inOrder.verify(emailOutboxService, times(1)).enqueue(any())
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
       inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
-      inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
 
       assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatch.id.toString())
     }
@@ -242,7 +248,7 @@ class EmailListenerTest {
 
       val notificationCaptor = argumentCaptor<String>()
       verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
-      verify(emailNotificationService, times(1)).sendEmails(any())
+      verify(emailOutboxService, times(1)).enqueue(any())
       verify(metricsService, times(1)).recordOutcome(any())
 
       assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatch.id.toString())
