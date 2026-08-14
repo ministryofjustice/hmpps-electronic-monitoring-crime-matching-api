@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.E
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.EmailOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.EmailOutboxStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.outbox.EmailOutboxRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailNotificationService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.MetricsService
 import java.net.InetAddress
 import java.time.Duration
@@ -17,6 +18,7 @@ import java.util.UUID
 class EmailOutboxService(
   private val emailOutboxRepository: EmailOutboxRepository,
   private val emailOutboxPayloadMapper: EmailOutboxPayloadMapper,
+  private val emailNotificationService: EmailNotificationService,
   private val metricsService: MetricsService,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -25,24 +27,28 @@ class EmailOutboxService(
     .getOrDefault("unknown-${UUID.randomUUID()}")
 
   /**
-   * Records the intent to send an email for a committed ingestion outcome. Written as a
-   * durable PENDING row so the relay/worker can deliver it exactly once with retries.
+   * Records the intent to send an email for a committed ingestion outcome. A separate durable
+   * PENDING row is written per recipient so the relay/worker can deliver each recipient exactly
+   * once with independent retries (a partial failure never re-sends an already-delivered recipient).
    */
   @Transactional
-  fun enqueue(outcome: EmailIngestionOutcome): EmailOutbox {
+  fun enqueue(outcome: EmailIngestionOutcome): List<EmailOutbox> {
     val now = LocalDateTime.now()
-    val row = EmailOutbox(
-      crimeBatchId = outcome.crimeBatchId.toUuidOrNull(),
-      status = EmailOutboxStatus.PENDING,
-      payload = emailOutboxPayloadMapper.toJson(outcome),
-      availableAt = now,
-      createdAt = now,
-      updatedAt = now,
-    )
-    val saved = emailOutboxRepository.save(row)
-    metricsService.recordOutboxEvent(EmailOutboxStatus.PENDING)
-    log.debug("Enqueued email outbox event {} for crime batch {}", saved.eventId, saved.crimeBatchId)
-    return saved
+    val crimeBatchId = outcome.crimeBatchId.toUuidOrNull()
+    return emailNotificationService.resolveRecipients(outcome).map { recipient ->
+      val row = EmailOutbox(
+        crimeBatchId = crimeBatchId,
+        status = EmailOutboxStatus.PENDING,
+        payload = emailOutboxPayloadMapper.toJson(outcome, recipient),
+        availableAt = now,
+        createdAt = now,
+        updatedAt = now,
+      )
+      val saved = emailOutboxRepository.save(row)
+      metricsService.recordOutboxEvent(EmailOutboxStatus.PENDING)
+      log.debug("Enqueued email outbox event {} for crime batch {}", saved.eventId, saved.crimeBatchId)
+      saved
+    }
   }
 
   /**

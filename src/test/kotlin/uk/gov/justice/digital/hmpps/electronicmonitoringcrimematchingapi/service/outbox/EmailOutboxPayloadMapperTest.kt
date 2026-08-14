@@ -52,16 +52,16 @@ class EmailOutboxPayloadMapperTest {
 
   @Test
   fun `it should round-trip an ingestion outcome through the payload`() {
-    val json = mapper.toJson(outcome())
+    val json = mapper.toJson(outcome(), "officer@police.gov.uk")
 
-    val rebuilt = mapper.toOutcome(json)
+    val payload = mapper.readPayload(json)
+    val rebuilt = mapper.toOutcome(payload)
 
+    assertThat(payload.recipient).isEqualTo("officer@police.gov.uk")
     assertThat(rebuilt.ingestionStatus).isEqualTo(IngestionStatus.SUCCESSFUL)
     assertThat(rebuilt.batchId).isEqualTo("batchId")
     assertThat(rebuilt.crimeBatchId).isEqualTo("142a9a57-337f-4208-908b-2874b75fa10d")
     assertThat(rebuilt.policeForce).isEqualTo("Metropolitan")
-    assertThat(rebuilt.emailData.sender).isEqualTo("sender@police.gov.uk")
-    assertThat(rebuilt.emailData.originalSender).isEqualTo("officer@police.gov.uk")
     assertThat(rebuilt.emailData.attachments.first().name).isEqualTo("crimes.csv")
     assertThat(rebuilt.records).hasSize(1)
     assertThat(rebuilt.records.first().crimeReference).isEqualTo("CRI00000001")
@@ -81,7 +81,7 @@ class EmailOutboxPayloadMapperTest {
       ),
     )
 
-    val rebuilt = mapper.toOutcome(mapper.toJson(withoutAttachment))
+    val rebuilt = mapper.toOutcome(mapper.readPayload(mapper.toJson(withoutAttachment, "sender@police.gov.uk")))
 
     assertThat(rebuilt.emailData.attachments.first().name).isEqualTo("Invalid File")
   }

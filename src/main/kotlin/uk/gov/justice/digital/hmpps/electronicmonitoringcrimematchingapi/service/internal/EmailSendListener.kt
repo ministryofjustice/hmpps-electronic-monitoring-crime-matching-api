@@ -54,8 +54,9 @@ class EmailSendListener(
     }
 
     try {
-      val outcome = emailOutboxPayloadMapper.toOutcome(row.payload)
-      emailNotificationService.sendEmails(outcome)
+      val payload = emailOutboxPayloadMapper.readPayload(row.payload)
+      val outcome = emailOutboxPayloadMapper.toOutcome(payload)
+      emailNotificationService.sendEmail(outcome, payload.recipient, row.eventId.toString())
       emailOutboxService.markSent(row.eventId)
     } catch (e: Exception) {
       val permanentStatus = permanentFailureStatus(e)

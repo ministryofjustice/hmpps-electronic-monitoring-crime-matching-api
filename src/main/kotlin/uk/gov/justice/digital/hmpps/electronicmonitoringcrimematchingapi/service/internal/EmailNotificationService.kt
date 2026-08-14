@@ -32,14 +32,7 @@ class EmailNotificationService(
       recordCount = ingestionOutcome.recordCount,
     )
 
-    val emailAddresses = buildList {
-      add(ingestionOutcome.emailData.sender)
-      if (featureFlagService.policeConfirmationEmailsEnabled()) {
-        add(ingestionOutcome.emailData.originalSender)
-      }
-    }
-
-    for (emailAddress in emailAddresses) {
+    for (emailAddress in resolveRecipients(ingestionOutcome)) {
       sendEmail(
         templateId = templateId,
         emailAddress = emailAddress,
@@ -47,6 +40,50 @@ class EmailNotificationService(
         reference = ingestionOutcome.batchId,
       )
     }
+  }
+
+  /**
+   * The recipients an ingestion outcome should be emailed to: always the forwarding sender,
+   * and additionally the original police sender when the police-confirmation feature flag is on.
+   */
+  fun resolveRecipients(
+    ingestionOutcome: EmailIngestionOutcome,
+  ): List<String> = buildList {
+    add(ingestionOutcome.emailData.sender)
+    if (featureFlagService.policeConfirmationEmailsEnabled()) {
+      add(ingestionOutcome.emailData.originalSender)
+    }
+  }
+
+  /**
+   * Sends the ingestion outcome email to a single recipient. Used by the outbox send worker so
+   * each recipient is delivered independently (per-recipient exactly-once); [reference] is the
+   * outbox event id, giving GOV.UK Notify a per-recipient idempotency reference.
+   */
+  fun sendEmail(
+    ingestionOutcome: EmailIngestionOutcome,
+    emailAddress: String,
+    reference: String,
+  ) {
+    val templateId = emailTemplateId(ingestionOutcome.ingestionStatus)
+
+    val personalisation = buildPersonalisation(
+      status = ingestionOutcome.ingestionStatus,
+      fileName = ingestionOutcome.emailData.attachments.firstOrNull()?.name ?: "Invalid File",
+      batchId = ingestionOutcome.batchId,
+      policeForce = ingestionOutcome.policeForce,
+      errorType = ingestionOutcome.errorType,
+      records = ingestionOutcome.records,
+      errors = ingestionOutcome.errors,
+      recordCount = ingestionOutcome.recordCount,
+    )
+
+    sendEmail(
+      templateId = templateId,
+      emailAddress = emailAddress,
+      personalisation = personalisation,
+      reference = reference,
+    )
   }
 
   private fun sendEmail(
