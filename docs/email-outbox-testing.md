@@ -65,7 +65,7 @@ startup (like the `email` queue) — no manual queue creation needed.
 
 ```bash
 # Start infra (Postgres, LocalStack sns/sqs/s3, hmpps-auth)
-docker compose up -d db localstack hmpps-auth
+docker compose up -d db localstack
 
 # S3 bucket (email queue + emailsend queue are auto-created by the app)
 ./scripts/localstack-init.sh
@@ -73,6 +73,38 @@ docker compose up -d db localstack hmpps-auth
 # Local Notify stub on 8092 (returns 201 for POST /v2/notifications/email)
 docker run -d --name notify-stub -p 8092:8080 wiremock/wiremock
 # Add a mapping: POST /v2/notifications/email -> 201 (mirror NotifyMockServer body)
+curl -i -X POST "http://localhost:8092/__admin/mappings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "request": {
+      "method": "POST",
+      "url": "/v2/notifications/email"
+    },
+    "response": {
+      "status": 201,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "jsonBody": {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "reference": null,
+        "content": {
+          "subject": "Test subject",
+          "body": "Test body",
+          "from_email": "test@example.com"
+        },
+        "uri": "http://localhost:8092/v2/notifications/11111111-1111-1111-1111-111111111111",
+        "template": {
+          "id": "22222222-2222-2222-2222-222222222222",
+          "version": 1,
+          "uri": "http://localhost:8092/v2/templates/22222222-2222-2222-2222-222222222222"
+        }
+      }
+    }
+  }'
+
+# Confirm the mapping exists:
+curl -s "http://localhost:8092/__admin/mappings" | jq '.mappings[] | {method: .request.method, url: .request.url}'
 ```
 
 ### Local config overrides (`application-local.yml` or env)
