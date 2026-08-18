@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.E
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.EmailOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.EmailOutboxStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.outbox.EmailOutboxRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailNotificationService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.FeatureFlagService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.MetricsService
 import java.net.InetAddress
 import java.time.Duration
@@ -18,7 +18,7 @@ import java.util.UUID
 class EmailOutboxService(
   private val emailOutboxRepository: EmailOutboxRepository,
   private val emailOutboxPayloadMapper: EmailOutboxPayloadMapper,
-  private val emailNotificationService: EmailNotificationService,
+  private val featureFlagService: FeatureFlagService,
   private val metricsService: MetricsService,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -35,7 +35,7 @@ class EmailOutboxService(
   fun enqueue(outcome: EmailIngestionOutcome): List<EmailOutbox> {
     val now = LocalDateTime.now()
     val crimeBatchId = outcome.crimeBatchId.toUuidOrNull()
-    return emailNotificationService.resolveRecipients(outcome).map { recipient ->
+    return resolveRecipients(outcome).map { recipient ->
       val row = EmailOutbox(
         crimeBatchId = crimeBatchId,
         status = EmailOutboxStatus.PENDING,
@@ -127,4 +127,17 @@ class EmailOutboxService(
   }
 
   private fun String.toUuidOrNull(): UUID? = runCatching { UUID.fromString(this) }.getOrNull()
+
+  /**
+   * The recipients an ingestion outcome should be emailed to: always the forwarding sender,
+   * and additionally the original police sender when the police-confirmation feature flag is on.
+   */
+  private fun resolveRecipients(
+    ingestionOutcome: EmailIngestionOutcome,
+  ): List<String> = buildList {
+    add(ingestionOutcome.emailData.sender)
+    if (featureFlagService.policeConfirmationEmailsEnabled()) {
+      add(ingestionOutcome.emailData.originalSender)
+    }
+  }
 }

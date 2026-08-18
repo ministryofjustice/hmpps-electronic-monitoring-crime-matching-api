@@ -12,48 +12,9 @@ import java.time.LocalDate
 
 @Service
 class EmailNotificationService(
-  private val featureFlagService: FeatureFlagService,
   private val notifyClient: NotificationClient,
   private val properties: NotifyProperties,
 ) {
-  fun sendEmails(
-    ingestionOutcome: EmailIngestionOutcome,
-  ) {
-    val templateId = emailTemplateId(ingestionOutcome.ingestionStatus)
-
-    val personalisation = buildPersonalisation(
-      status = ingestionOutcome.ingestionStatus,
-      fileName = ingestionOutcome.emailData.attachments.firstOrNull()?.name ?: "Invalid File",
-      batchId = ingestionOutcome.batchId,
-      policeForce = ingestionOutcome.policeForce,
-      errorType = ingestionOutcome.errorType,
-      records = ingestionOutcome.records,
-      errors = ingestionOutcome.errors,
-      recordCount = ingestionOutcome.recordCount,
-    )
-
-    for (emailAddress in resolveRecipients(ingestionOutcome)) {
-      sendEmail(
-        templateId = templateId,
-        emailAddress = emailAddress,
-        personalisation = personalisation,
-        reference = ingestionOutcome.batchId,
-      )
-    }
-  }
-
-  /**
-   * The recipients an ingestion outcome should be emailed to: always the forwarding sender,
-   * and additionally the original police sender when the police-confirmation feature flag is on.
-   */
-  fun resolveRecipients(
-    ingestionOutcome: EmailIngestionOutcome,
-  ): List<String> = buildList {
-    add(ingestionOutcome.emailData.sender)
-    if (featureFlagService.policeConfirmationEmailsEnabled()) {
-      add(ingestionOutcome.emailData.originalSender)
-    }
-  }
 
   /**
    * Sends the ingestion outcome email to a single recipient. Used by the outbox send worker so

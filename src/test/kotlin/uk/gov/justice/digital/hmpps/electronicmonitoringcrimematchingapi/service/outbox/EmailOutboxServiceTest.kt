@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.EmailOutboxStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.outbox.EmailOutboxRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailNotificationService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.FeatureFlagService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.MetricsService
 import java.util.Date
 import java.util.Optional
@@ -28,7 +28,7 @@ import java.util.UUID
 class EmailOutboxServiceTest {
   private lateinit var repository: EmailOutboxRepository
   private lateinit var payloadMapper: EmailOutboxPayloadMapper
-  private lateinit var emailNotificationService: EmailNotificationService
+  private lateinit var featureFlagService: FeatureFlagService
   private lateinit var metricsService: MetricsService
   private lateinit var service: EmailOutboxService
 
@@ -36,9 +36,9 @@ class EmailOutboxServiceTest {
   fun setup() {
     repository = Mockito.mock(EmailOutboxRepository::class.java)
     payloadMapper = Mockito.mock(EmailOutboxPayloadMapper::class.java)
-    emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
+    featureFlagService = Mockito.mock(FeatureFlagService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    service = EmailOutboxService(repository, payloadMapper, emailNotificationService, metricsService)
+    service = EmailOutboxService(repository, payloadMapper, featureFlagService, metricsService)
 
     whenever(payloadMapper.toJson(any(), any())).thenReturn("{}")
     whenever(repository.save(any<EmailOutbox>())).thenAnswer { it.arguments[0] as EmailOutbox }
@@ -59,8 +59,7 @@ class EmailOutboxServiceTest {
   @Test
   fun `it should enqueue a PENDING row per recipient with a parsed crime batch id`() {
     val crimeBatchId = UUID.randomUUID()
-    whenever(emailNotificationService.resolveRecipients(any()))
-      .thenReturn(listOf("sender@police.gov.uk", "officer@police.gov.uk"))
+    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
 
     service.enqueue(outcome(crimeBatchId.toString(), IngestionStatus.SUCCESSFUL))
 
@@ -75,15 +74,31 @@ class EmailOutboxServiceTest {
   }
 
   @Test
-  fun `it should enqueue a PENDING row with a null crime batch id for failed outcomes`() {
-    whenever(emailNotificationService.resolveRecipients(any()))
-      .thenReturn(listOf("sender@police.gov.uk"))
+  fun `it should enqueue two PENDING rows with a null crime batch ids for failed outcomes`() {
+    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
 
     service.enqueue(outcome("Unknown due to an error", IngestionStatus.FAILED))
 
     val captor = argumentCaptor<EmailOutbox>()
-    verify(repository, times(1)).save(captor.capture())
+    verify(repository, times(2)).save(captor.capture())
     assertThat(captor.firstValue.crimeBatchId).isNull()
+  }
+
+  @Test
+  fun `it should not enqueue a PENDING row to the original sender when the send police email flag is false`() {
+    val crimeBatchId = UUID.randomUUID()
+    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(false)
+
+    service.enqueue(outcome(crimeBatchId.toString(), IngestionStatus.SUCCESSFUL))
+
+    val captor = argumentCaptor<EmailOutbox>()
+    verify(repository, times(1)).save(captor.capture())
+    assertThat(captor.allValues).allSatisfy {
+      assertThat(it.status).isEqualTo(EmailOutboxStatus.PENDING)
+      assertThat(it.crimeBatchId).isEqualTo(crimeBatchId)
+      assertThat(it.payload).isEqualTo("{}")
+    }
+    verify(metricsService, times(1)).recordOutboxEvent(EmailOutboxStatus.PENDING)
   }
 
   @Test
