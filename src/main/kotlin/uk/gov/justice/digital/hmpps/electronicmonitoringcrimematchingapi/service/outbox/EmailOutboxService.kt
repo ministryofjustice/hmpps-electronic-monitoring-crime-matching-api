@@ -85,7 +85,10 @@ class EmailOutboxService(
 
   @Transactional
   fun markSent(eventId: UUID) {
-    update(eventId, EmailOutboxStatus.SENT) { it.lastError = null }
+    update(eventId, EmailOutboxStatus.SENT) {
+      it.attempts += 1
+      it.lastError = null
+    }
   }
 
   @Transactional

@@ -109,6 +109,7 @@ class EmailOutboxServiceTest {
     service.markSent(row.eventId)
 
     assertThat(row.status).isEqualTo(EmailOutboxStatus.SENT)
+    assertThat(row.attempts).isEqualTo(1)
     assertThat(row.lastError).isNull()
     verify(metricsService, times(1)).recordOutboxEvent(EmailOutboxStatus.SENT)
   }
