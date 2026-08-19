@@ -151,6 +151,39 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return a null deactivation date if the device activation has the sentinel date value`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/device-activation.sentinel-date-value.success.json",
+      )
+
+      val result = webTestClient.get()
+        .uri("/device-activations/1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<Response<DeviceActivationResponse>>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.data).isEqualTo(
+        DeviceActivationResponse(
+          deviceActivationId = 12345,
+          deviceId = 54321,
+          deviceName = "",
+          personId = "98765",
+          deviceActivationDate = "2023-05-18T00:00",
+          deviceDeactivationDate = null,
+          orderStart = "",
+          orderEnd = "",
+        ),
+      )
+    }
+
+    @Test
     fun `it should use the cached query execution when a duplicate request is made`() {
       stubQueryExecution(
         "123",

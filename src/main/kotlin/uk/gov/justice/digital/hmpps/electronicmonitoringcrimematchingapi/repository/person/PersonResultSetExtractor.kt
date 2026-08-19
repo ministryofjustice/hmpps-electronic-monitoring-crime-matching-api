@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 import software.amazon.awssdk.services.athena.model.ResultSet
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.AthenaResultSetExtractor
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.formatter
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.nullIfSentinelDate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.nullableLocalDateTime
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.DeviceActivation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
@@ -37,7 +38,7 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
           deviceName = "",
           uniqueDeviceWearerId = row[0],
           deviceActivationDate = LocalDateTime.parse(row[12], formatter),
-          deviceDeactivationDate = nullableLocalDateTime(row[13]),
+          deviceDeactivationDate = nullableLocalDateTime(nullIfSentinelDate(row[13])),
           orderStart = "",
           orderEnd = "",
         )
