@@ -39,6 +39,7 @@ class EmailSendListener(
     message: EmailSendMessage,
     @Header(value = "ApproximateReceiveCount", required = false) receiveCount: String?,
   ) {
+    val attempt = receiveCount?.toIntOrNull() ?: 1
     val row = emailOutboxService.find(message.eventId)
     if (row == null) {
       log.warn("Received emailsend message for unknown outbox event {}", message.eventId)
@@ -58,20 +59,40 @@ class EmailSendListener(
       val outcome = emailOutboxPayloadMapper.toOutcome(payload)
       emailNotificationService.sendEmail(outcome, payload.recipient, row.eventId.toString())
       emailOutboxService.markSent(row.eventId)
+      log.info("Email outbox event {} sent successfully on attempt {}", row.eventId, attempt)
     } catch (e: Exception) {
       val permanentStatus = permanentFailureStatus(e)
       if (permanentStatus != null) {
-        log.error("Email outbox event {} failed permanently (HTTP {}); marking FAILED", row.eventId, permanentStatus, e)
+        log.error(
+          "Email outbox event {} failed permanently (HTTP {}, ApproximateReceiveCount='{}'); marking FAILED",
+          row.eventId,
+          permanentStatus,
+          receiveCount,
+          e,
+        )
         emailOutboxService.markFailed(row.eventId, e.message)
         return
       }
 
-      val attempt = receiveCount?.toIntOrNull() ?: 1
       if (attempt >= maxReceiveCount) {
-        log.error("Email outbox event {} failed on final attempt {}; marking DEAD", row.eventId, attempt, e)
+        log.error(
+          "Email outbox event {} failed on final attempt {} of {} (ApproximateReceiveCount='{}'); marking DEAD",
+          row.eventId,
+          attempt,
+          maxReceiveCount,
+          receiveCount,
+          e,
+        )
         emailOutboxService.markDead(row.eventId, e.message)
       } else {
-        log.warn("Email outbox event {} failed on attempt {}; will retry", row.eventId, attempt, e)
+        log.warn(
+          "Email outbox event {} failed on attempt {} of {} (ApproximateReceiveCount='{}'); will retry",
+          row.eventId,
+          attempt,
+          maxReceiveCount,
+          receiveCount,
+          e,
+        )
         emailOutboxService.markRetry(row.eventId, e.message)
       }
       throw e
