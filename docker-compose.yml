@@ -83,9 +83,9 @@ services:
       - hmpps
     container_name: notify-stub
     ports:
-      - "8092:8080"
+      - "8093:8080"
     volumes:
-      - "./wiremock/mappings:/home/wiremock/mappings"
+      - "./wiremock/active-mappings:/home/wiremock/mappings"
 
 networks:
   hmpps:

@@ -30,7 +30,7 @@ aws:
 
 notify:
   enabled: false # If set to true, requires `docker compose up -d notify-stub`
-  base-url: http://localhost:8092
+  base-url: http://localhost:8093
   apikey: test-key-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
 
 flipt:

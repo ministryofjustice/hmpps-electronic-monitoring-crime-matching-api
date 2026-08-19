@@ -8,53 +8,7 @@ See the design in [email-outbox-plan.md](email-outbox-plan.md) and failure
 investigation steps in [email-notifications-dlq-runbook.md](email-notifications-dlq-runbook.md).
 
 ---
-
-## 1. Automated tests
-
-### Unit (JUnit + Mockito)
-Mirror the style of `CrimeBatchServiceTest` / `MatchingNotificationServiceTest`.
-
-- **Payload round-trip** (`EmailOutboxPayloadMapperTest`) — an
-  `EmailIngestionOutcome` serialises to JSON and back into an equivalent outcome
-  the existing `EmailNotificationService.sendEmails` accepts (per status).
-- **Enqueue** (`EmailOutboxServiceTest`) — `enqueue` persists a `PENDING` row with
-  a generated `event_id`, the serialised payload, and a parsed `crime_batch_id`
-  (null for FAILED/ERROR).
-- **Claim / lifecycle** — `claimBatch` marks rows `CLAIMED`; `markSent` /
-  `markRetry` / `markDead` transition correctly and update `attempts`.
-- **Relay** (`EmailOutboxRelayTest`) — `dispatchPending()` reclaims expired leases,
-  claims a batch, and publishes each `event_id`.
-- **Worker** (`EmailSendListenerTest`) — terminal-status no-op; success → `markSent`;
-  failure re-throws and marks retry/dead based on `ApproximateReceiveCount`.
-- **Metrics** — `email.outbox.event` counters increment on each transition.
-
-### Integration (LocalStack + Notify WireMock)
-Extend `integration/listener/EmailListenerTest`. Because sending is now
-asynchronous, assert with Awaitility:
-
-```kotlin
-await().untilAsserted { notifyMockServer.verifyEmailSentTo("test@email.com", 1) }
-```
-
-| Scenario | Assertion |
-|---|---|
-| Happy path exactly-once | `email_outbox` row PENDING→SENT; Notify called once |
-| Idempotency on redelivery | Re-publish same `event_id` → Notify still called once |
-| Atomicity (iff ingest succeeded) | Spy `crimeBatchRepository` to throw after save → no outbox row, no Notify call |
-| Transient retry | Notify 500 then 201 (WireMock Scenario) → row SENT, `attempts` incremented |
-| Permanent failure → DLQ | Notify 400 → message on `emailsend` DLQ, row DEAD |
-| FAILED/ERROR path | Invalid batch → outbox row keyed on `event_id` (no `crime_batch_id`), sent once |
-
-**Determinism helpers**
-- The relay exposes a public `dispatchPending()` so tests can trigger dispatch
-  directly instead of waiting on `@Scheduled`.
-- `email.outbox.relay.interval-ms` can be shortened in `application-test.yml`.
-- Extend `NotifyMockServer` with `stubSendEmailServerError()` (500) and
-  `stubSendEmailBadRequest()` (400) plus a fail-then-201 WireMock Scenario.
-
----
-
-## 2. Manual test — Local
+## Manual test — Local
 
 Local defaults to `notify.enabled: false`, so no real send happens. To exercise the
 full send + retry + DLQ locally, point Notify at a local WireMock stub and enable it.
@@ -70,12 +24,15 @@ docker compose up -d db localstack notify-stub
 # S3 bucket (email queue + emailsend queue are auto-created by the app)
 ./scripts/localstack-init.sh
 
-# Local Notify stub on 8092 is now compose-managed and preloaded from wiremock/mappings/
-curl -s "http://localhost:8092/__admin/mappings" | jq '.mappings[] | {method: .request.method, url: .request.url}'
+# Local Notify stub on 8093 is compose-managed and starts in 201 mode
+curl -s "http://localhost:8093/__admin/mappings" | jq '.mappings[] | {method: .request.method, url: .request.url}'
+
+# Optional: switch stub response mode quickly (201, 400, or 500)
+./scripts/notify-stub-mode.sh 201
 ```
 
 ### Local config overrides (`application-local.yml` or env)
-- `notify.enabled: true`, `notify.base-url: http://localhost:8092`, template ids as in `application-test.yml`.
+- `notify.enabled: true`, `notify.base-url: http://localhost:8093`, template ids as in `application-test.yml`.
 - The `emailsend` queue (with `dlqName`) is already added under `hmpps.sqs.queues`.
 
 ### Happy path
@@ -95,7 +52,7 @@ docker exec -i query-db psql -U postgres -d postgres -c \
   "select event_id, crime_batch_id, status, attempts from email_outbox order by created_at desc limit 5;"
 
 # Exactly one Notify call
-curl -s http://localhost:8092/__admin/requests/count \
+curl -s http://localhost:8093/__admin/requests/count \
   -H 'Content-Type: application/json' \
   -d '{"method":"POST","url":"/v2/notifications/email"}'
 ```
@@ -107,10 +64,24 @@ Reconfigure the stub to return `500`, re-ingest, watch `attempts` climb across
 relay/worker cycles, then flip back to `201` and confirm the row settles to `SENT`
 with a single successful send.
 
+```bash
+./scripts/notify-stub-mode.sh 500
+# trigger ingestion and observe retries
+./scripts/notify-stub-mode.sh 201
+```
+
+If you want to re-run the same test without re-ingesting, reset the outbox row to PENDING (or wait until the claim is released):
+```bash
+docker exec -i query-db psql -U postgres -d postgres -c \
+"UPDATE email_outbox SET status = 'PENDING', claimed_at = NULL, claimed_by = NULL WHERE status = 'CLAIMED';"
+```
+
 ### Permanent failure → DLQ
 
 ```bash
 # Stub returns 400 for all sends, then ingest.
+./scripts/notify-stub-mode.sh 400
+
 # After maxReceiveCount deliveries the message moves to the DLQ:
 DLQ_URL=$(awslocal sqs get-queue-url --queue-name emailsend_dlq --query QueueUrl --output text)
 awslocal sqs get-queue-attributes --queue-url "$DLQ_URL" \
@@ -132,7 +103,7 @@ safe and yields exactly one email.
 
 ---
 
-## 3. Manual test — Dev
+## Manual test — Dev
 
 - **Happy path** — forward a valid police email to the dev mailbox; confirm one
   GOV.UK Notify send (Notify dashboard) and one `email_outbox` row = SENT in dev
@@ -142,12 +113,4 @@ safe and yields exactly one email.
   redrive per the runbook — verify no duplicate email (idempotency).
 - **Observability** — confirm `email.outbox.event` counters in Prometheus/Grafana
   and that the DLQ alert mirrors the existing `email-notifications-dlq` panels.
-
----
-
-## 4. Cleanup (local)
-
-```bash
-docker compose down
-```
 
