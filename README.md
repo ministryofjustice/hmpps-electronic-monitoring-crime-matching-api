@@ -153,6 +153,35 @@ This uses a different test file and fetches IDs from Postgres to be used in Post
 bash scripts/localstack-ingest-sample-email.sh
 ```
 
+### Using the Notify stub locally
+
+The `notify-stub` service in `docker-compose.yml` mounts `wiremock/active-mappings/notify-send-email.json`.
+The default active file is the `201` response mapping.
+
+This will only be used if `notify.enabled: true` in `application-local.yml` or via env.
+
+#### Using the helper script
+
+Switch the active Notify response mode with:
+
+```bash
+./scripts/notify-stub-mode.sh 201
+./scripts/notify-stub-mode.sh 400
+./scripts/notify-stub-mode.sh 500
+./scripts/notify-stub-mode.sh 500-then-201
+```
+
+#### Without the helper script
+
+If you prefer to avoid the script, copy one of the committed mappings into the active file and restart the stub:
+
+```bash
+cp wiremock/mappings/notify-send-email-400.json wiremock/active-mappings/notify-send-email.json
+docker compose restart notify-stub
+```
+
+To return to the default `201` response, copy `wiremock/mappings/notify-send-email-201.json` back into `wiremock/active-mappings/notify-send-email.json` and restart `notify-stub`.
+
 ### Using Postman to locally test API requests
 The crime ingestion flow in this service is event-driven. There is no REST endpoint to directly trigger ingestion.
 Instead, ingestion normally happens when:

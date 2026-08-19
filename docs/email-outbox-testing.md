@@ -4,8 +4,8 @@ How to exercise the transactional-outbox email flow (ingest → outbox → relay
 `emailsend` SQS worker → GOV.UK Notify) with automated tests and documented manual
 runs.
 
-See the design in [email-outbox-plan.md](email-outbox-plan.md) and failure
-investigation steps in [email-notifications-dlq-runbook.md](email-notifications-dlq-runbook.md).
+See failure investigation steps in
+[email-notifications-dlq-runbook.md](email-notifications-dlq-runbook.md).
 
 ---
 ## Manual test — Local
@@ -27,7 +27,7 @@ docker compose up -d db localstack notify-stub
 # Local Notify stub on 8093 is compose-managed and starts in 201 mode
 curl -s "http://localhost:8093/__admin/mappings" | jq '.mappings[] | {method: .request.method, url: .request.url}'
 
-# Optional: switch stub response mode quickly (201, 400, or 500)
+# Optional: switch stub response mode quickly (201, 400, 500, or 500-then-201)
 ./scripts/notify-stub-mode.sh 201
 ```
 
