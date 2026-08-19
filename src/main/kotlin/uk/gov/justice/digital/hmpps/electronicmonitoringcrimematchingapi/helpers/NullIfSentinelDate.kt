@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 
-private const val DEVICE_DEACTIVATION_DATE_SENTINEL = "2999-12-12 23:59:59.000"
+import java.time.LocalDateTime
 
-fun nullIfSentinelDate(value: String?): String? = value
+private val DEVICE_DEACTIVATION_DATE_SENTINEL = LocalDateTime.parse("2999-12-12 23:59:59.000", formatter)
+
+fun nullIfSentinelDate(value: LocalDateTime?): LocalDateTime? = value
   ?.takeUnless { it == DEVICE_DEACTIVATION_DATE_SENTINEL }
