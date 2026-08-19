@@ -68,6 +68,53 @@ class PersonControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return persons with a null device deactivation date if the device activation has the sentinel date value`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/persons.device-activations-sentinel-date-value.success.json",
+      )
+
+      val result = webTestClient.get()
+        .uri("/persons?name=name")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<PagedResponse<PersonResponse>>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(1)
+      assertThat(result.data[0].deviceActivations).hasSize(1)
+      assertThat(result.data[0]).isEqualTo(
+        PersonResponse(
+          personId = "1",
+          name = "first_name last_name",
+          nomisId = "nomis_id",
+          pncRef = "pnc_id",
+          dateOfBirth = "2000-05-29",
+          probationPractitioner = "responsible_officer_name",
+          address = "street, city, zip",
+          deviceActivations = listOf(
+            DeviceActivationResponse(
+              deviceActivationId = 54321,
+              deviceId = 12345,
+              deviceName = "",
+              personId = "1",
+              deviceActivationDate = "2023-05-18T00:00",
+              deviceDeactivationDate = null,
+              orderStart = "",
+              orderEnd = "",
+            ),
+          ),
+        ),
+      )
+    }
+
+    @Test
     fun `it should fail with bad request when invalid criteria fields are passed`() {
       webTestClient.get()
         .uri("/persons")

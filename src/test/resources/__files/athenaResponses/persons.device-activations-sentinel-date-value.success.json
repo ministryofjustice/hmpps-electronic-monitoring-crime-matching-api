@@ -1,0 +1,271 @@
+{
+  "ResultSet": {
+    "ResultSetMetadata": {
+      "ColumnInfo": [
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "unique_device_wearer_id",
+          "Name": "unique_device_wearer_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": true,
+          "CatalogName": "hive",
+          "Label": "first_name",
+          "Name": "first_name",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": true,
+          "CatalogName": "hive",
+          "Label": "last_name",
+          "Name": "last_name",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "nomis_id",
+          "Name": "nomis_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "pnc_id",
+          "Name": "pnc_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "date_of_birth",
+          "Name": "date_of_birth",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "date"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "responsible_officer_name",
+          "Name": "responsible_officer_name",
+          "Nullable": "UNKNOWN",
+          "Precision": 19,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": true,
+          "CatalogName": "hive",
+          "Label": "postcode",
+          "Name": "postcode",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "city_or_town",
+          "Name": "city_or_town",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "house_number_and_street_name",
+          "Name": "house_number_and_street_name",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "varchar"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_id",
+          "Name": "device_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_activation_id",
+          "Name": "device_activation_id",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_activation_date",
+          "Name": "device_activation_date",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "timestamp"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
+          "Label": "device_deactivation_date",
+          "Name": "device_deactivation_date",
+          "Nullable": "UNKNOWN",
+          "Precision": 0,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "timestamp"
+        }
+      ]
+    },
+    "Rows": [
+      {
+        "Data": [
+          {
+            "VarCharValue": "unique_device_wearer_id"
+          },
+          {
+            "VarCharValue": "first_name"
+          },
+          {
+            "VarCharValue": "last_name"
+          },
+          {
+            "VarCharValue": "nomis_id"
+          },
+          {
+            "VarCharValue": "pnc_id"
+          },
+          {
+            "VarCharValue": "date_of_birth"
+          },
+          {
+            "VarCharValue": "responsible_officer_name"
+          },
+          {
+            "VarCharValue": "postcode"
+          },
+          {
+            "VarCharValue": "city_or_town"
+          },
+          {
+            "VarCharValue": "house_number_and_street_name"
+          },
+          {
+            "VarCharValue": "device_id"
+          },
+          {
+            "VarCharValue": "device_activation_id"
+          },
+          {
+            "VarCharValue": "device_activation_date"
+          },
+          {
+            "VarCharValue": "device_deactivation_date"
+          }
+        ]
+      },
+      {
+        "Data": [
+          {
+            "VarCharValue": "1"
+          },
+          {
+            "VarCharValue": "first_name"
+          },
+          {
+            "VarCharValue": "last_name"
+          },
+          {
+            "VarCharValue": "nomis_id"
+          },
+          {
+            "VarCharValue": "pnc_id"
+          },
+          {
+            "VarCharValue": "2000-05-29"
+          },
+          {
+            "VarCharValue": "responsible_officer_name"
+          },
+          {
+            "VarCharValue": "zip"
+          },
+          {
+            "VarCharValue": "city"
+          },
+          {
+            "VarCharValue": "street"
+          },
+          {
+            "VarCharValue": "12345"
+          },
+          {
+            "VarCharValue": "54321"
+          },
+          {
+            "VarCharValue": "2023-05-18 00:00:00.000"
+          },
+          {
+            "VarCharValue": "2999-12-12 23:59:59.000"
+          }
+        ]
+      }
+    ]
+  },
+  "UpdateCount": 0
+}

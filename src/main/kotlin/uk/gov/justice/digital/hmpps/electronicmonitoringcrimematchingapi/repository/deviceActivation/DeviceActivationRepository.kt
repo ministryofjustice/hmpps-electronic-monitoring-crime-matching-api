@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.EmDatastoreClient
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.SimpleResultSetExtractor
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.DeviceActivation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.AthenaRepository
 import java.util.Optional
@@ -12,7 +11,7 @@ class DeviceActivationRepository(
   athenaClient: EmDatastoreClient,
 ) : AthenaRepository<DeviceActivation>(athenaClient) {
 
-  override val resultSetExtractor = SimpleResultSetExtractor(DeviceActivation::class.java)
+  override val resultSetExtractor = DeviceActivationResultSetExtractor()
 
   fun findById(id: Long): Optional<DeviceActivation> = Optional.ofNullable(
     this.executeQuery(
