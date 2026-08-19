@@ -1,0 +1,24 @@
+{
+  "scenarioName": "notify-send-email-500-then-201",
+  "requiredScenarioState": "Started",
+  "newScenarioState": "succeeded-after-initial-failure",
+  "request": {
+    "method": "POST",
+    "url": "/v2/notifications/email"
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "errors": [
+        {
+          "error": "Exception",
+          "message": "Internal server error"
+        }
+      ]
+    }
+  }
+}
+
