@@ -39,11 +39,21 @@ class EmailSendListener(
     message: EmailSendMessage,
     @Header(value = "ApproximateReceiveCount", required = false) receiveCount: String?,
   ) {
-    val attempt = receiveCount?.toIntOrNull() ?: 1
+    val parsedReceiveCount = receiveCount?.toIntOrNull()
     val row = emailOutboxService.find(message.eventId)
     if (row == null) {
       log.warn("Received emailsend message for unknown outbox event {}", message.eventId)
       return
+    }
+
+    val attempt = resolveAttempt(parsedReceiveCount, row.attempts)
+    if (receiveCount == null) {
+      log.warn(
+        "ApproximateReceiveCount header missing for {}; using DB attempts fallback (dbAttempts={}, resolvedAttempt={})",
+        message.eventId,
+        row.attempts,
+        attempt,
+      )
     }
 
     if (row.status == EmailOutboxStatus.SENT ||
@@ -113,5 +123,14 @@ class EmailSendListener(
       current = current.cause
     }
     return null
+  }
+
+  private fun resolveAttempt(parsedReceiveCount: Int?, dbAttempts: Int): Int {
+    val dbAttempt = dbAttempts + 1
+    return when {
+      parsedReceiveCount == null -> dbAttempt
+      parsedReceiveCount < dbAttempt -> dbAttempt
+      else -> parsedReceiveCount
+    }
   }
 }

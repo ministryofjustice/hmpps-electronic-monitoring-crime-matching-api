@@ -137,6 +137,36 @@ class EmailSendListenerTest {
   }
 
   @Test
+  fun `it should use DB attempts fallback when ApproximateReceiveCount is missing`() {
+    val row = row(EmailOutboxStatus.CLAIMED).also { it.attempts = 2 }
+    whenever(emailOutboxService.find(row.eventId)).thenReturn(row)
+    stubMapper(row)
+    whenever(emailNotificationService.sendEmail(any(), any(), any())).thenThrow(RuntimeException("boom"))
+
+    assertThrows<RuntimeException> {
+      listener.receiveEmailSend(EmailSendMessage(row.eventId), null)
+    }
+
+    verify(emailOutboxService, times(1)).markDead(eq(row.eventId), any())
+    verify(emailOutboxService, never()).markRetry(any(), any())
+  }
+
+  @Test
+  fun `it should use the higher DB-based attempt when ApproximateReceiveCount is stale`() {
+    val row = row(EmailOutboxStatus.CLAIMED).also { it.attempts = 2 }
+    whenever(emailOutboxService.find(row.eventId)).thenReturn(row)
+    stubMapper(row)
+    whenever(emailNotificationService.sendEmail(any(), any(), any())).thenThrow(RuntimeException("boom"))
+
+    assertThrows<RuntimeException> {
+      listener.receiveEmailSend(EmailSendMessage(row.eventId), "1")
+    }
+
+    verify(emailOutboxService, times(1)).markDead(eq(row.eventId), any())
+    verify(emailOutboxService, never()).markRetry(any(), any())
+  }
+
+  @Test
   fun `it should mark failed without retrying on a permanent Notify failure`() {
     val row = row(EmailOutboxStatus.CLAIMED)
     whenever(emailOutboxService.find(row.eventId)).thenReturn(row)
