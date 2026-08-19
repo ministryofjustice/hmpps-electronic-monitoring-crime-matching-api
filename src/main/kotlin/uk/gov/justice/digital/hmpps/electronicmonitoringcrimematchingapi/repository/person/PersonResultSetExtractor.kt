@@ -38,7 +38,7 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
           deviceName = "",
           uniqueDeviceWearerId = row[0],
           deviceActivationDate = LocalDateTime.parse(row[12], formatter),
-          deviceDeactivationDate = nullableLocalDateTime(nullIfSentinelDate(row[13])),
+          deviceDeactivationDate = nullIfSentinelDate(nullableLocalDateTime(row[13])),
           orderStart = "",
           orderEnd = "",
         )

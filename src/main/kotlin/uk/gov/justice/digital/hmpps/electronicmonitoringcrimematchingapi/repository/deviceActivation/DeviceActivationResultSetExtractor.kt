@@ -20,7 +20,7 @@ class DeviceActivationResultSetExtractor : AthenaResultSetExtractor<DeviceActiva
         deviceId = fields[1].toLong(),
         uniqueDeviceWearerId = fields[2],
         deviceActivationDate = LocalDateTime.parse(fields[3], formatter),
-        deviceDeactivationDate = nullableLocalDateTime(nullIfSentinelDate(fields[4])),
+        deviceDeactivationDate = nullIfSentinelDate(nullableLocalDateTime(fields[4])),
       )
     }
 }
