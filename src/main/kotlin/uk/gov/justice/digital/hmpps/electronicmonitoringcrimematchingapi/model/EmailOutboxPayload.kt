@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.v
  * Self-contained snapshot of everything the email-send worker needs to rebuild and send the
  * GOV.UK Notify email for a single recipient of an ingestion outcome. Persisted as the
  * `email_outbox.payload`. One row (and therefore one payload) exists per recipient, so each
- * recipient is delivered and tracked independently (per-recipient exactly-once).
+ * recipient is tracked independently.
  */
 data class EmailOutboxPayload(
   val schemaVersion: Int = 1,

@@ -14,8 +14,14 @@ import uk.gov.service.notify.NotificationClientException
 /**
  * Idempotently sends the confirmation/failure email for an outbox event.
  *
- * - Terminal rows (SENT/FAILED/DEAD) are no-ops, so SQS redelivery cannot duplicate an email.
- * - GOV.UK Notify is called with `reference = event_id` as a second dedupe layer.
+ * Delivery contract note:
+ * - This worker is at-least-once for submissions to GOV.UK Notify (a redelivery can re-submit
+ *   the same `event_id` if a crash happens after Notify accepts but before we persist SENT).
+ * - We rely on GOV.UK Notify's `reference` idempotency behavior (`reference = event_id`) to
+ *   deduplicate before end-user email delivery:
+ *   https://docs.notifications.service.gov.uk/java.html#reference-required
+ * - Terminal rows (SENT/FAILED/DEAD) are no-ops, reducing duplicate submissions once a terminal
+ *   status is persisted.
  * - A permanent GOV.UK Notify failure (4xx other than 429) is marked FAILED and not retried,
  *   to avoid a retry storm on a non-recoverable error.
  * - Any other failure is re-thrown so SQS redelivers and, after `maxReceiveCount`, moves it to

@@ -97,9 +97,10 @@ stateDiagram-v2
 | All fail (Notify 4xx) | Each row → `FAILED` immediately; no retry storm |
 | **Some succeed, some fail** | Succeeded rows stay `SENT` (terminal no-op on redelivery); only failed rows retry — **no duplicate emails** |
 | Relay crash mid-batch | Leased rows reclaimed to `PENDING` after `leaseTimeout` |
-| SQS redelivery of a `SENT` row | Terminal-status guard no-ops; Notify `reference = event_id` dedupes at provider |
+| SQS redelivery of a `SENT` row | Terminal-status guard no-ops; submission contract is at-least-once, and Notify `reference = event_id` dedupes at provider (https://docs.notifications.service.gov.uk/java.html#reference-required) |
 | DLQ replay | Idempotent worker makes replay safe; investigate via `event_id` per runbook |
 
 See [email-outbox-testing.md](email-outbox-testing.md) for how to test each path.
+
 
 

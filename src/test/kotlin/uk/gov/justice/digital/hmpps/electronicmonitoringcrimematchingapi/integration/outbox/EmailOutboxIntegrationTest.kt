@@ -48,11 +48,15 @@ import java.util.concurrent.CompletableFuture
 /**
  * Integration tests for the transactional outbox pattern.
  *
- * The outbox guarantees **exactly-once email delivery** by:
+ * The outbox provides at-least-once submission to GOV.UK Notify and relies on Notify reference
+ * deduplication for end-user delivery behavior:
+ * https://docs.notifications.service.gov.uk/java.html#reference-required
+ *
+ * It does this by:
  * 1. Writing an intent (email_outbox row) atomically with the ingestion outcome.
  * 2. A scheduled relay claims PENDING rows and publishes to the emailsend queue.
  * 3. An SQS worker idempotently sends via GOV.UK Notify (guarded by event_id).
- * 4. Terminal rows (SENT/FAILED/DEAD) are no-ops on redelivery (idempotency).
+ * 4. Terminal rows (SENT/FAILED/DEAD) are no-ops on redelivery (idempotency after persistence).
  *
  * These tests cover five critical paths:
  * - **Happy path**: successful send PENDING -> CLAIMED -> SENT
@@ -146,7 +150,7 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
   @DisplayName("Scenario 1: Happy Path — PENDING -> CLAIMED -> SENT")
   inner class HappyPath {
     /**
-     * Happy path: valid email ingestion flows through the outbox to exactly-once delivery.
+     * Happy path: valid email ingestion flows through the outbox to Notify submission.
      *
      * Path:
      * 1. Ingest email (S3 + SQS)
@@ -294,8 +298,8 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
      * 4. Early return (no-op), message is ack'd and deleted
      * 5. Notify is NOT called again (no duplicate send)
      *
-     * Why it matters: Prevents duplicate emails when SQS redelivers or worker crashes mid-ack.
-     * Combined with event_id uniqueness, guarantees exactly-once delivery.
+     * Why it matters: Prevents unnecessary duplicate submissions after a terminal status is
+     * persisted; for crash-window duplicates, delivery dedupe is delegated to Notify reference.
      */
 
     @Test

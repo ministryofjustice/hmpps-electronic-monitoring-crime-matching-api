@@ -51,13 +51,16 @@ Verify:
 docker exec -i query-db psql -U postgres -d postgres -c \
   "select event_id, crime_batch_id, status, attempts from email_outbox order by created_at desc limit 5;"
 
-# Exactly one Notify call
+# Notify calls observed (normally one on happy path; contract is at-least-once submit)
 curl -s http://localhost:8093/__admin/requests/count \
   -H 'Content-Type: application/json' \
   -d '{"method":"POST","url":"/v2/notifications/email"}'
 ```
 
-Expected: one row transitioning `PENDING → SENT`, `attempts` = 0/1, Notify count = 1.
+Expected on happy path: one row transitioning `PENDING → SENT`, `attempts` = 0/1, Notify count typically = 1.
+Design note: submit semantics are at-least-once; dedupe of end-user delivery relies on
+Notify `reference = event_id` behavior:
+https://docs.notifications.service.gov.uk/java.html#reference-required
 
 ### Transient failure → retry
 Reconfigure the stub to return `500`, re-ingest, watch `attempts` climb across
@@ -98,8 +101,10 @@ awslocal sqs start-message-move-task \
   --source-arn arn:aws:sqs:eu-west-2:000000000000:emailsend_dlq
 ```
 
-Because the worker is idempotent (`event_id` + terminal-status guard), replay is
-safe and yields exactly one email.
+Because the worker is idempotent after persistence (`event_id` + terminal-status guard), replay is
+safe operationally. Submit semantics remain at-least-once; Notify `reference` dedupe is relied on
+to avoid duplicate end-user delivery:
+https://docs.notifications.service.gov.uk/java.html#reference-required
 
 ---
 
@@ -110,7 +115,7 @@ safe and yields exactly one email.
   RDS. Notify's built-in 5×/5-min retry handles downstream delivery.
 - **Retry/DLQ** — temporarily set an invalid Notify key (or a permanent-fail
   template) to force a failure; observe the `emailsend` DLQ alert; restore config and
-  redrive per the runbook — verify no duplicate email (idempotency).
+  redrive per the runbook — verify expected behavior with Notify `reference` dedupe.
 - **Observability** — confirm `email.outbox.event` counters in Prometheus/Grafana
   and that the DLQ alert mirrors the existing `email-notifications-dlq` panels.
 

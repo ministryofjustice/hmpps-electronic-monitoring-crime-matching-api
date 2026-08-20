@@ -18,8 +18,10 @@ class EmailNotificationService(
 
   /**
    * Sends the ingestion outcome email to a single recipient. Used by the outbox send worker so
-   * each recipient is delivered independently (per-recipient exactly-once); [reference] is the
-   * outbox event id, giving GOV.UK Notify a per-recipient idempotency reference.
+   * each recipient is tracked independently. The outbox worker can submit to Notify at-least-once,
+   * so [reference] is set to the outbox event id and Notify is relied upon to deduplicate
+   * deliveries for the same reference:
+   * https://docs.notifications.service.gov.uk/java.html#reference-required
    */
   fun sendEmail(
     ingestionOutcome: EmailIngestionOutcome,
