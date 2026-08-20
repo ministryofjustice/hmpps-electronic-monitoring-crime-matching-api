@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.Duration
 
@@ -22,7 +21,6 @@ class EmailOutboxRelay(
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  @Scheduled(fixedDelayString = "\${email.outbox.relay.interval-ms:5000}")
   fun dispatchPending() {
     emailOutboxService.reclaimExpired(Duration.ofMillis(leaseTimeoutMs))
 

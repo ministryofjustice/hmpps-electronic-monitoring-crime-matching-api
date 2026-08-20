@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.outbox.EmailOutboxRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.FeatureFlagService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.MetricsService
+import java.time.Clock
 import java.util.Date
 import java.util.Optional
 import java.util.UUID
@@ -38,7 +39,7 @@ class EmailOutboxServiceTest {
     payloadMapper = Mockito.mock(EmailOutboxPayloadMapper::class.java)
     featureFlagService = Mockito.mock(FeatureFlagService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    service = EmailOutboxService(repository, payloadMapper, featureFlagService, metricsService)
+    service = EmailOutboxService(repository, payloadMapper, featureFlagService, metricsService, Clock.systemDefaultZone())
 
     whenever(payloadMapper.toJson(any(), any())).thenReturn("{}")
     whenever(repository.save(any<EmailOutbox>())).thenAnswer { it.arguments[0] as EmailOutbox }

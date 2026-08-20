@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.FeatureFlagService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.MetricsService
 import java.net.InetAddress
+import java.time.Clock
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
@@ -20,6 +21,7 @@ class EmailOutboxService(
   private val emailOutboxPayloadMapper: EmailOutboxPayloadMapper,
   private val featureFlagService: FeatureFlagService,
   private val metricsService: MetricsService,
+  private val clock: Clock,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -33,7 +35,7 @@ class EmailOutboxService(
    */
   @Transactional
   fun enqueue(outcome: EmailIngestionOutcome): List<EmailOutbox> {
-    val now = LocalDateTime.now()
+    val now = now()
     val crimeBatchId = outcome.crimeBatchId.toUuidOrNull()
     return resolveRecipients(outcome).map { recipient ->
       val row = EmailOutbox(
@@ -57,7 +59,7 @@ class EmailOutboxService(
    */
   @Transactional
   fun claimBatch(limit: Int): List<EmailOutbox> {
-    val now = LocalDateTime.now()
+    val now = now()
     val claimed = emailOutboxRepository.claimBatch(now, limit)
     claimed.forEach { row ->
       row.status = EmailOutboxStatus.CLAIMED
@@ -72,7 +74,7 @@ class EmailOutboxService(
   /** Returns CLAIMED rows leased longer ago than [leaseTimeout] back to PENDING. */
   @Transactional
   fun reclaimExpired(leaseTimeout: Duration): Int {
-    val now = LocalDateTime.now()
+    val now = now()
     val reclaimed = emailOutboxRepository.reclaimExpired(now, now.minus(leaseTimeout))
     if (reclaimed > 0) {
       log.warn("Reclaimed {} stale CLAIMED email outbox event(s) back to PENDING", reclaimed)
@@ -123,11 +125,13 @@ class EmailOutboxService(
       return
     }
     row.status = status
-    row.updatedAt = LocalDateTime.now()
+    row.updatedAt = now()
     mutate(row)
     emailOutboxRepository.save(row)
     metricsService.recordOutboxEvent(status)
   }
+
+  private fun now(): LocalDateTime = LocalDateTime.now(clock)
 
   private fun String.toUuidOrNull(): UUID? = runCatching { UUID.fromString(this) }.getOrNull()
 
