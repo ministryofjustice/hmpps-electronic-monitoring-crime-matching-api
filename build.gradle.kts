@@ -22,7 +22,7 @@ dependencies {
   implementation("software.amazon.awssdk:athena:2.52.0")
   implementation("software.amazon.awssdk:s3:2.52.0")
   implementation("org.apache.commons:commons-csv:1.14.1")
-  implementation("org.json:json:20260719")
+  implementation("org.json:json:20260814")
   implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
   implementation("org.locationtech.proj4j:proj4j:1.4.3")
   implementation("org.locationtech.proj4j:proj4j-epsg:1.4.3")
