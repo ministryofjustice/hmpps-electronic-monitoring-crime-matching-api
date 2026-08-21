@@ -16,6 +16,9 @@ hmpps:
         queueName: "email"
         subscribeTopicId: emailtopic
         dlqName: email_dlq
+      emailsend:
+        queueName: "emailsend"
+        dlqName: emailsend_dlq
       matchingnotifications:
         queueName: "matching-notifications"
         subscribeTopicId: matchingnotificationstopic
@@ -24,6 +27,14 @@ hmpps:
         arn: arn:aws:sns:eu-west-2:000000000000:email-topic
       matchingnotificationstopic:
         arn: arn:aws:sns:eu-west-2:000000000000:matching-notifications
+
+email:
+  outbox:
+    relay:
+      interval-ms: 500
+    lease-timeout-ms: 60000
+    batch-size: 50
+    max-receive-count: 3
 
 services:
   hmpps-auth:

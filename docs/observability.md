@@ -54,3 +54,7 @@ Observability tooling that can be used to monitor the status of police data inge
 
 ## Runbooks
 - [Investigating Email Notifications DLQ Messages](email-notifications-dlq-runbook.md)
+
+## Design & Testing
+- [Email Outbox: flow diagrams (happy & sad paths)](email-outbox-flow.md)
+- [Email Outbox: local & dev testing guide](email-outbox-testing.md)

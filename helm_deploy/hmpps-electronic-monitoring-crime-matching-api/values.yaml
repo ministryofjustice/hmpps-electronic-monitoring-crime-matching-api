@@ -47,6 +47,11 @@ generic-service:
       HMPPS_SQS_QUEUES_EMAIL_QUEUEARN: "sqs_queue_arn"
     email-notifications-dlq:
       HMPPS_SQS_QUEUES_EMAIL_DLQNAME: "sqs_queue_name"
+    emailsend-queue:
+      HMPPS_SQS_QUEUES_EMAILSEND_QUEUENAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_EMAILSEND_QUEUEARN: "sqs_queue_arn"
+    emailsend-dlq:
+      HMPPS_SQS_QUEUES_EMAILSEND_DLQNAME: "sqs_queue_name"
     matching-notifications-topic:
       HMPPS_SQS_TOPICS_MATCHINGNOTIFICATIONSTOPIC_ARN: "topic_arn"
     gov-notify-api:

@@ -9,6 +9,9 @@ hmpps.sqs:
       queueName: "email"
       subscribeTopicId: emailtopic
       dlqName: email_dlq
+    emailsend:
+      queueName: "emailsend"
+      dlqName: emailsend_dlq
   topics:
     emailtopic:
       arn: arn:aws:sns:eu-west-2:000000000000:email-topic
@@ -26,7 +29,9 @@ aws:
     endpoint-url: http://localhost:4566
 
 notify:
-  enabled: false
+  enabled: false # If set to true, requires `docker compose up -d notify-stub`
+  base-url: http://localhost:8093
+  apikey: test-key-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
 
 flipt:
   url: https://feature-toggles-dev.hmpps.service.justice.gov.uk

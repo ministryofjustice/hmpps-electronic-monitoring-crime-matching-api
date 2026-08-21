@@ -26,13 +26,15 @@ import uk.gov.service.notify.NotificationClient
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Date
+import java.util.UUID
 
 @ActiveProfiles("test")
 class EmailNotificationServiceTest {
   private lateinit var service: EmailNotificationService
   private lateinit var notifyClient: NotificationClient
   private val notifyProperties: NotifyProperties = mock()
-  private val featureFlagService: FeatureFlagService = mock()
+  private val eventIdSender: String = UUID.randomUUID().toString()
+  private val eventIdOriginalSender: String = UUID.randomUUID().toString()
 
   @BeforeEach
   fun setup() {
@@ -40,9 +42,8 @@ class EmailNotificationServiceTest {
     whenever(notifyProperties.failedIngestionTemplateId).thenReturn("failedTemplateId")
     whenever(notifyProperties.partialIngestionTemplateId).thenReturn("partialTemplateId")
     whenever(notifyProperties.errorIngestionTemplateId).thenReturn("errorTemplateId")
-    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
     notifyClient = Mockito.mock(NotificationClient::class.java)
-    service = EmailNotificationService(featureFlagService, notifyClient, notifyProperties)
+    service = EmailNotificationService(notifyClient, notifyProperties)
   }
 
   @Test
@@ -86,11 +87,15 @@ class EmailNotificationServiceTest {
         ingestionStatus = IngestionStatus.SUCCESSFUL,
       )
 
-      service.sendEmails(ingestionOutcome)
+      assertDoesNotThrow {
+        service.sendEmail(ingestionOutcome, "sender", eventIdSender)
+        service.sendEmail(ingestionOutcome, "originalSender", eventIdOriginalSender)
+      }
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
     }
 
-    verify(notifyClient, times(1)).sendEmail("templateId", "sender", personalisation, "batchId")
-    verify(notifyClient, times(1)).sendEmail("templateId", "originalSender", personalisation, "batchId")
+    verify(notifyClient, times(1)).sendEmail(eq("templateId"), eq("sender"), any(), eq(eventIdSender))
+    verify(notifyClient, times(1)).sendEmail(eq("templateId"), eq("originalSender"), any(), eq(eventIdOriginalSender))
   }
 
   @Test
@@ -121,7 +126,11 @@ class EmailNotificationServiceTest {
       ingestionStatus = IngestionStatus.SUCCESSFUL,
     )
 
-    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
+    assertDoesNotThrow {
+      service.sendEmail(ingestionOutcome, "sender", UUID.randomUUID().toString())
+      service.sendEmail(ingestionOutcome, "originalSender", UUID.randomUUID().toString())
+    }
+
     verify(notifyClient, times(0)).sendEmail("templateId", "sender", personalisation, batchId)
   }
 
@@ -154,10 +163,13 @@ class EmailNotificationServiceTest {
       ingestionStatus = IngestionStatus.FAILED,
     )
 
-    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
+    assertDoesNotThrow {
+      service.sendEmail(ingestionOutcome, "sender", eventIdSender)
+      service.sendEmail(ingestionOutcome, "originalSender", eventIdOriginalSender)
+    }
 
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, eventIdSender)
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "originalSender", personalisation, eventIdOriginalSender)
   }
 
   @Test
@@ -208,12 +220,15 @@ class EmailNotificationServiceTest {
         recordCount = 10,
       )
 
-      service.sendEmails(ingestionOutcome)
-      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(1))
-
-      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("sender"), any(), eq(batchId))
-      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq(batchId))
+      assertDoesNotThrow {
+        service.sendEmail(ingestionOutcome, "sender", eventIdSender)
+        service.sendEmail(ingestionOutcome, "originalSender", eventIdOriginalSender)
+      }
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
     }
+
+    verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("sender"), any(), eq(eventIdSender))
+    verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq(eventIdOriginalSender))
   }
 
   @Test
@@ -264,47 +279,14 @@ class EmailNotificationServiceTest {
         recordCount = 1,
       )
 
-      service.sendEmails(ingestionOutcome)
-      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(1))
-
-      verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("sender"), any(), eq(batchId))
-      verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("originalSender"), any(), eq(batchId))
+      assertDoesNotThrow {
+        service.sendEmail(ingestionOutcome, "sender", eventIdSender)
+        service.sendEmail(ingestionOutcome, "originalSender", eventIdOriginalSender)
+      }
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
     }
-  }
 
-  @Test
-  fun `it should not send an email to the original sender when the send police email flag is false`() {
-    whenever(notifyProperties.enabled).thenReturn(true)
-    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(false)
-
-    val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
-      subject = "subject",
-      sentAt = Date.from(Instant.now()),
-      attachments = emptyList(),
-    )
-
-    val personalisation = mapOf(
-      "fileName" to "Invalid File",
-      "ingestionDate" to LocalDate.now().toString(),
-      "batchId" to "Unknown due to an error",
-      "policeForce" to "Unknown due to an error",
-      "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
-      "totalCount" to 0,
-    )
-
-    val ingestionOutcome = EmailIngestionOutcome(
-      batchId = "Unknown due to an error",
-      policeForce = "Unknown due to an error",
-      emailData = emailData,
-      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
-      ingestionStatus = IngestionStatus.FAILED,
-    )
-
-    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
-
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
-    verify(notifyClient, times(0)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("sender"), any(), eq(eventIdSender))
+    verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("originalSender"), any(), eq(eventIdOriginalSender))
   }
 }
