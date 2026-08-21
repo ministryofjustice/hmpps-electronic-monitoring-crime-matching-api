@@ -43,5 +43,8 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
         DeviceActivation.deviceId eq it
       }
     }
+    .orderBy {
+      DeviceActivation.deviceActivationDate.desc
+    }
     .prepare()
 }

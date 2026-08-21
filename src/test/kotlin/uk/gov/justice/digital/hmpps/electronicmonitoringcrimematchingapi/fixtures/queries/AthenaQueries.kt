@@ -55,6 +55,7 @@ object AthenaQueries {
     INNER JOIN 
       device_activations ON caseload.mdss_person_id = device_activations.person_id 
     WHERE ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? )
+    ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
   val SelectPersonsByNomisIdLike = """
@@ -78,6 +79,7 @@ object AthenaQueries {
     INNER JOIN 
       device_activations ON caseload.mdss_person_id = device_activations.person_id 
     WHERE caseload.nomis_id LIKE ?
+    ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
   val SelectPersonsByDeviceIdLike = """
@@ -101,6 +103,7 @@ object AthenaQueries {
     INNER JOIN 
       device_activations ON caseload.mdss_person_id = device_activations.person_id 
     WHERE device_activations.device_id = ?
+    ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
   val SelectPositionsByDeviceActivationId = """
