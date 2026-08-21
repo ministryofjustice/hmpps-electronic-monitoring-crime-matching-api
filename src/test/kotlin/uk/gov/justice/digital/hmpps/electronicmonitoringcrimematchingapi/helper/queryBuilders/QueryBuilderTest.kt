@@ -218,6 +218,31 @@ class QueryBuilderTest {
     assertThat(query.parameters).isEqualTo(emptyList<String>())
   }
 
+  @Test
+  fun `it should build a query with an order clause`() {
+    val query = TestTable
+      .selectAll()
+      .orderBy {
+        TestTable.testColumn1.asc
+      }
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table ORDER BY test_table.test_column_1 ASC")
+  }
+
+  @Test
+  fun `it should build a query with multiple order clauses`() {
+    val query = TestTable
+      .selectAll()
+      .orderBy {
+        TestTable.testColumn1.asc
+        TestTable.testColumn2.desc
+      }
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table ORDER BY test_table.test_column_1 ASC, test_table.test_column_2 DESC")
+  }
+
   companion object {
     @JvmStatic
     fun data() = listOf(

@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.a
 
 class Query(val selectStatement: SelectStatement) {
   private var condition: Condition? = null
+  private var ordering: Ordering? = null
 
   fun prepare(): AthenaQuery {
     val builder = StringBuilder()
@@ -16,6 +17,11 @@ class Query(val selectStatement: SelectStatement) {
       ?.takeIf { it.isNotBlank() }
       ?.let { builder.append(" WHERE ").append(it) }
 
+    ordering
+      ?.toString()
+      ?.takeIf { it.isNotBlank() }
+      ?.let { builder.append(" ORDER BY ").append(it) }
+
     return AthenaQuery(
       queryString = builder.toString(),
       parameters = (condition?.parameters() ?: emptyList()),
@@ -24,6 +30,11 @@ class Query(val selectStatement: SelectStatement) {
 
   fun where(block: Condition.() -> Unit): Query {
     condition = And().apply(block)
+    return this
+  }
+
+  fun orderBy(block: Ordering.() -> Unit): Query {
+    ordering = Ordering().apply(block)
     return this
   }
 }
