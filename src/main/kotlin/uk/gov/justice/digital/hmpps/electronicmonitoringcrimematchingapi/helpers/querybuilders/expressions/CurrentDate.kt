@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Expression
 
 class CurrentDate : Expression() {
-  override fun parameters() = listOf<String>()
+  override fun parameters() = emptyList<String>()
 
   override fun toString() = "current_date"
 }

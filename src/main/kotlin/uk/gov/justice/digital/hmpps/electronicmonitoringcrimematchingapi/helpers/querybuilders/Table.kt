@@ -17,6 +17,7 @@ open class Table(val name: String) : ColumnSet() {
 
   fun date(name: String): Column<ZonedDateTime> = registerColumn(name)
 
+  // N.B. The Column type acts as a comparison-type constraint rather than the SQL column type
   private fun <T> registerColumn(name: String): Column<T> = Column<T>(this, name).also { _columns.add(it) }
 
   override fun toString() = name
