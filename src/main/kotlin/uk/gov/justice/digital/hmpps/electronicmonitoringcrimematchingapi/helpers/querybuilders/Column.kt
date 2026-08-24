@@ -5,5 +5,3 @@ open class Column<T>(val table: Table, val name: String) : Expression() {
 
   override fun toString(): String = "${table.ref()}.$name"
 }
-
-fun <T> Column<*>.cast(type: SqlType): CastColumn<T> = CastColumn(this, type)
