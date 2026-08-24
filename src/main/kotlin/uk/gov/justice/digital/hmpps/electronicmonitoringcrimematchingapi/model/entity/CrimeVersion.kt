@@ -64,7 +64,7 @@ data class CrimeVersion(
   val versionLabel: String
     get() {
       val versions = crime.crimeVersions.sortedBy { it.createdAt }
-      val currentVersionIndex = crime.crimeVersions.indexOf(this)
+      val currentVersionIndex = versions.indexOf(this)
 
       val versionNumber = versions
         .take(currentVersionIndex + 1)
