@@ -9,10 +9,10 @@ generic-service:
 
   env:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
-    ATHENA_OUTPUT_BUCKET: "placeholder"
-    ATHENA_WORKGROUP: "placeholder"
+    ATHENA_OUTPUT_BUCKET: "s3://emds-prod-athena-query-results-20240918073115959600000002"
+    ATHENA_WORKGROUP: "976799291502-default"
     MFA_REQUIRED: "false"
-    DATASTORE_DATABASE: "placeholder"
+    DATASTORE_DATABASE: "acquisitive_crime"
     FLIPT_URL: "https://feature-toggles.hmpps.service.justice.gov.uk"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
