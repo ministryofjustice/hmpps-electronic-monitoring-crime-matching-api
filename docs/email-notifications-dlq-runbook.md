@@ -5,6 +5,13 @@
 This runbook describes the process for investigating email ingestion messages that have failed to process and have been moved to the Dead Letter Queue.
 An alert will notify the team when a message has been moved to the DLQ.
 
+> **Note**
+> This runbook applies to both DLQs used by this service:
+> - `email-notifications-dlq` (ingestion failures)
+> - `emailsend-dlq` (exhausted email send retries)
+>
+> Redrive/replay is a **manual operational action** after investigation; there is no automatic in-app DLQ redrive.
+
 ---
 # Investigation Process
 
