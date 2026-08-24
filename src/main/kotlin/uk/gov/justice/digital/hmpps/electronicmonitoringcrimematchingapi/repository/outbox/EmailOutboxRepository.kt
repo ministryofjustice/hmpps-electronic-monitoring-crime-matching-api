@@ -13,6 +13,30 @@ import java.util.UUID
 interface EmailOutboxRepository : JpaRepository<EmailOutbox, UUID> {
 
   /**
+   * Transitions a row only when it is still in the expected source status. Returns the number of
+   * rows updated so stale/duplicate workers can be detected without regressing terminal states.
+   */
+  @Modifying
+  @Query(
+    value = """
+      UPDATE email_outbox
+      SET status = :newStatus,
+          attempts = attempts + 1,
+          last_error = :lastError,
+          updated_at = :updatedAt
+      WHERE event_id = :eventId AND status = :expectedStatus
+    """,
+    nativeQuery = true,
+  )
+  fun transitionStatusIfCurrent(
+    @Param("eventId") eventId: UUID,
+    @Param("expectedStatus") expectedStatus: String,
+    @Param("newStatus") newStatus: String,
+    @Param("lastError") lastError: String?,
+    @Param("updatedAt") updatedAt: LocalDateTime,
+  ): Int
+
+  /**
    * Claims a batch of eligible PENDING rows. `FOR UPDATE SKIP LOCKED` allows every
    * replica to poll concurrently without contending on or double-processing rows.
    * Returned entities are managed within the caller's transaction, so callers should

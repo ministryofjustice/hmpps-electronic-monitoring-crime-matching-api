@@ -5,8 +5,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -21,6 +24,8 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.FeatureFlagService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.MetricsService
 import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.Optional
 import java.util.UUID
@@ -39,10 +44,17 @@ class EmailOutboxServiceTest {
     payloadMapper = Mockito.mock(EmailOutboxPayloadMapper::class.java)
     featureFlagService = Mockito.mock(FeatureFlagService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    service = EmailOutboxService(repository, payloadMapper, featureFlagService, metricsService, Clock.systemDefaultZone())
+    service = EmailOutboxService(
+      repository,
+      payloadMapper,
+      featureFlagService,
+      metricsService,
+      Clock.fixed(Instant.parse("2026-08-24T10:15:30Z"), ZoneOffset.UTC),
+    )
 
     whenever(payloadMapper.toJson(any(), any())).thenReturn("{}")
     whenever(repository.save(any<EmailOutbox>())).thenAnswer { it.arguments[0] as EmailOutbox }
+    whenever(repository.transitionStatusIfCurrent(any(), any(), any(), anyOrNull(), any())).thenReturn(1)
   }
 
   private fun outcome(crimeBatchId: String, status: IngestionStatus) = EmailIngestionOutcome(
@@ -105,40 +117,83 @@ class EmailOutboxServiceTest {
   @Test
   fun `it should mark an event as sent`() {
     val row = EmailOutbox(payload = "{}", status = EmailOutboxStatus.CLAIMED)
-    whenever(repository.findById(row.eventId)).thenReturn(Optional.of(row))
 
     service.markSent(row.eventId)
 
-    assertThat(row.status).isEqualTo(EmailOutboxStatus.SENT)
-    assertThat(row.attempts).isEqualTo(1)
-    assertThat(row.lastError).isNull()
+    verify(repository, times(1)).transitionStatusIfCurrent(
+      eq(row.eventId),
+      eq(EmailOutboxStatus.CLAIMED.name),
+      eq(EmailOutboxStatus.SENT.name),
+      isNull(),
+      any(),
+    )
     verify(metricsService, times(1)).recordOutboxEvent(EmailOutboxStatus.SENT)
   }
 
   @Test
   fun `it should increment attempts and record the error when marking dead`() {
     val row = EmailOutbox(payload = "{}", status = EmailOutboxStatus.CLAIMED, attempts = 2)
-    whenever(repository.findById(row.eventId)).thenReturn(Optional.of(row))
 
     service.markDead(row.eventId, "boom")
 
-    assertThat(row.status).isEqualTo(EmailOutboxStatus.DEAD)
-    assertThat(row.attempts).isEqualTo(3)
-    assertThat(row.lastError).isEqualTo("boom")
+    verify(repository, times(1)).transitionStatusIfCurrent(
+      eq(row.eventId),
+      eq(EmailOutboxStatus.CLAIMED.name),
+      eq(EmailOutboxStatus.DEAD.name),
+      eq("boom"),
+      any(),
+    )
     verify(metricsService, times(1)).recordOutboxEvent(EmailOutboxStatus.DEAD)
   }
 
   @Test
   fun `it should mark an event as failed without further retries`() {
     val row = EmailOutbox(payload = "{}", status = EmailOutboxStatus.CLAIMED, attempts = 0)
-    whenever(repository.findById(row.eventId)).thenReturn(Optional.of(row))
 
     service.markFailed(row.eventId, "400 bad request")
 
-    assertThat(row.status).isEqualTo(EmailOutboxStatus.FAILED)
-    assertThat(row.attempts).isEqualTo(1)
-    assertThat(row.lastError).isEqualTo("400 bad request")
+    verify(repository, times(1)).transitionStatusIfCurrent(
+      eq(row.eventId),
+      eq(EmailOutboxStatus.CLAIMED.name),
+      eq(EmailOutboxStatus.FAILED.name),
+      eq("400 bad request"),
+      any(),
+    )
     verify(metricsService, times(1)).recordOutboxEvent(EmailOutboxStatus.FAILED)
+  }
+
+  @Test
+  fun `it should keep the row claimed when marking retry`() {
+    val row = EmailOutbox(payload = "{}", status = EmailOutboxStatus.CLAIMED)
+
+    service.markRetry(row.eventId, "temporary failure")
+
+    verify(repository, times(1)).transitionStatusIfCurrent(
+      eq(row.eventId),
+      eq(EmailOutboxStatus.CLAIMED.name),
+      eq(EmailOutboxStatus.CLAIMED.name),
+      eq("temporary failure"),
+      any(),
+    )
+    verify(metricsService, times(1)).recordOutboxEvent(EmailOutboxStatus.CLAIMED)
+  }
+
+  @Test
+  fun `it should not record metrics when a stale worker loses the transition race`() {
+    val row = EmailOutbox(payload = "{}", status = EmailOutboxStatus.SENT)
+    whenever(repository.transitionStatusIfCurrent(any(), any(), any(), anyOrNull(), any())).thenReturn(0)
+    whenever(repository.findById(row.eventId)).thenReturn(Optional.of(row))
+
+    service.markRetry(row.eventId, "boom")
+
+    verify(repository, times(1)).transitionStatusIfCurrent(
+      eq(row.eventId),
+      eq(EmailOutboxStatus.CLAIMED.name),
+      eq(EmailOutboxStatus.CLAIMED.name),
+      eq("boom"),
+      any(),
+    )
+    verify(metricsService, never()).recordOutboxEvent(any())
   }
 
   @Test

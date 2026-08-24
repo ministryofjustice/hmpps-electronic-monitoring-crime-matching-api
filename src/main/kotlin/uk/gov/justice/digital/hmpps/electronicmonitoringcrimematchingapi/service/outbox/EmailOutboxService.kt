@@ -87,47 +87,49 @@ class EmailOutboxService(
 
   @Transactional
   fun markSent(eventId: UUID) {
-    update(eventId, EmailOutboxStatus.SENT) {
-      it.attempts += 1
-      it.lastError = null
-    }
+    updateFromClaimed(eventId, EmailOutboxStatus.SENT, null)
   }
 
   @Transactional
   fun markRetry(eventId: UUID, error: String?) {
-    update(eventId, EmailOutboxStatus.CLAIMED) {
-      it.attempts += 1
-      it.lastError = error
-    }
+    updateFromClaimed(eventId, EmailOutboxStatus.CLAIMED, error)
   }
 
   /** Permanent, non-retryable failure (e.g. a GOV.UK Notify 4xx). No further delivery is attempted. */
   @Transactional
   fun markFailed(eventId: UUID, error: String?) {
-    update(eventId, EmailOutboxStatus.FAILED) {
-      it.attempts += 1
-      it.lastError = error
-    }
+    updateFromClaimed(eventId, EmailOutboxStatus.FAILED, error)
   }
 
   @Transactional
   fun markDead(eventId: UUID, error: String?) {
-    update(eventId, EmailOutboxStatus.DEAD) {
-      it.attempts += 1
-      it.lastError = error
-    }
+    updateFromClaimed(eventId, EmailOutboxStatus.DEAD, error)
   }
 
-  private fun update(eventId: UUID, status: EmailOutboxStatus, mutate: (EmailOutbox) -> Unit) {
-    val row = emailOutboxRepository.findById(eventId).orElse(null)
-    if (row == null) {
-      log.warn("No email outbox event found for {} when transitioning to {}", eventId, status)
+  private fun updateFromClaimed(eventId: UUID, status: EmailOutboxStatus, error: String?) {
+    val updated = emailOutboxRepository.transitionStatusIfCurrent(
+      eventId = eventId,
+      expectedStatus = EmailOutboxStatus.CLAIMED.name,
+      newStatus = status.name,
+      lastError = error,
+      updatedAt = now(),
+    )
+    if (updated == 0) {
+      val currentStatus = emailOutboxRepository.findById(eventId).orElse(null)?.status
+      if (currentStatus == null) {
+        log.debug("Skipping transition of unknown email outbox event {} to {}", eventId, status)
+      } else {
+        log.debug(
+          "Skipping stale email outbox transition for event {} from {} to {}; current status is {}",
+          eventId,
+          EmailOutboxStatus.CLAIMED,
+          status,
+          currentStatus,
+        )
+      }
       return
     }
-    row.status = status
-    row.updatedAt = now()
-    mutate(row)
-    emailOutboxRepository.save(row)
+
     metricsService.recordOutboxEvent(status)
   }
 

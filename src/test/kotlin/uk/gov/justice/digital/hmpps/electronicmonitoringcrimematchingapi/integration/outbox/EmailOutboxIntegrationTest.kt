@@ -384,6 +384,27 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
         .counter().count()
       assertThat(sentCountAfter).isEqualTo(sentCountBefore)
     }
+
+    @Test
+    fun `it does not let stale workers regress a SENT row back to retry or dead`() {
+      val row = EmailOutboxTestFixtures.createTestEmailOutboxRowClaimed()
+      emailOutboxRepository.save(row)
+
+      emailOutboxService.markSent(row.eventId)
+      val sentRow = emailOutboxRepository.findById(row.eventId).get()
+      assertThat(sentRow.status).isEqualTo(EmailOutboxStatus.SENT)
+      assertThat(sentRow.attempts).isEqualTo(1)
+      assertThat(sentRow.lastError).isNull()
+
+      emailOutboxService.markRetry(row.eventId, "stale retry")
+      emailOutboxService.markDead(row.eventId, "stale dead")
+
+      emailOutboxRepository.findById(row.eventId).get().also { updated ->
+        assertThat(updated.status).isEqualTo(EmailOutboxStatus.SENT)
+        assertThat(updated.attempts).isEqualTo(1)
+        assertThat(updated.lastError).isNull()
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
