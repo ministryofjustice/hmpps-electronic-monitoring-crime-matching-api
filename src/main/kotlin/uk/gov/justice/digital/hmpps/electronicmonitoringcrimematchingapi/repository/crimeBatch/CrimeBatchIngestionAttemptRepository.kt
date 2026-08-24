@@ -3,10 +3,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.MatchingPublishState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchEmailAttachmentErrorProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
@@ -17,6 +20,19 @@ import java.util.UUID
 
 @Repository
 interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngestionAttempt, UUID> {
+
+  /** Looks up an existing ingestion attempt by its S3 source coordinates (the idempotency key). */
+  fun findByBucketAndObjectName(bucket: String, objectName: String): Optional<CrimeBatchIngestionAttempt>
+
+  /** Updates only the [MatchingPublishState] of the given attempt; used after confirming SNS publish. */
+  @Modifying
+  @Transactional
+  @Query("UPDATE CrimeBatchIngestionAttempt a SET a.matchingPublishState = :state WHERE a.id = :id")
+  fun updateMatchingPublishState(
+    @Param("id") id: UUID,
+    @Param("state") state: MatchingPublishState,
+  ): Int
+
   @Query(
     value = """
       SELECT

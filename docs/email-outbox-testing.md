@@ -108,6 +108,111 @@ https://docs.notifications.service.gov.uk/java.html#reference-required
 
 ---
 
+## Ingestion idempotency — local verification
+
+These steps verify that a redelivered SQS message for the same S3 object does not create
+duplicate ingestion rows, batches, or outbox events, and that `publishMatchingRequest` is
+retried only when the prior publish outcome is unknown.
+
+### Prerequisites
+
+Same as the happy-path setup above: DB, LocalStack, and notify-stub running, localstack
+initialised, API running with `SPRING_PROFILES_ACTIVE=local`.
+
+### 1. First ingestion (normal path)
+
+```bash
+bash scripts/localstack-ingest-sample-email.sh
+```
+
+Confirm a single attempt row with `PUBLISHED` state:
+
+```bash
+docker exec -i query-db psql -U postgres -d postgres -c \
+"SELECT bucket, object_name, matching_publish_state, crime_batch_id FROM crime_batch_ingestion_attempt ORDER BY created_at DESC LIMIT 5;"
+```
+
+Expected: one row, `matching_publish_state = PUBLISHED`.
+
+### 2. Duplicate redelivery — already published
+
+Send the **same SQS message again** (same `bucketName` + `objectKey`, without clearing
+the DB first) by re-running only the SQS send portion of the script, or by using the
+LocalStack console.
+
+Expected in API logs: `"Duplicate ingestion detected"` then `"Skipping publish — state is PUBLISHED"`.
+
+```bash
+BUCKET=police-emails
+QUEUE_NAME=email
+S3_KEY="samples/email-file.eml"
+QUEUE_URL=$(awslocal sqs get-queue-url \
+  --queue-name "$QUEUE_NAME" \
+  --query QueueUrl \
+  --output text)
+awslocal sqs send-message \
+  --queue-url "$QUEUE_URL" \
+  --message-body "{
+    \"Type\": \"Notification\",
+    \"MessageId\": \"$(uuidgen)\",
+    \"Message\": \"{\\\"notificationType\\\":\\\"Received\\\",\\\"receipt\\\":{\\\"action\\\":{\\\"type\\\":\\\"S3\\\",\\\"bucketName\\\":\\\"$BUCKET\\\",\\\"objectKeyPrefix\\\":\\\"\\\",\\\"objectKey\\\":\\\"$S3_KEY\\\"}}}\"
+  }"
+```
+
+Confirm in Postgres: still only **one** `crime_batch_ingestion_attempt` row, one
+`crime_batch`, one (or two if sending to the original sender too) `email_outbox` row.
+
+```bash
+docker exec -i query-db psql -U postgres -d postgres -c \
+"SELECT bucket, object_name, matching_publish_state, crime_batch_id FROM crime_batch_ingestion_attempt ORDER BY created_at DESC LIMIT 5;"
+docker exec -i query-db psql -U postgres -d postgres -c \
+"SELECT * FROM crime_batch ORDER BY created_at DESC LIMIT 5;"
+docker exec -i query-db psql -U postgres -d postgres -c \
+"SELECT DISTINCT crime_batch_id FROM email_outbox LIMIT 5;"
+
+```
+
+### 3. Transient SNS failure → state stays UNKNOWN → retry on redelivery
+
+Switch the notify stub to return 500:
+
+```bash
+./scripts/notify-stub-mode.sh 500-then-201
+```
+
+Clear the DB and trigger a fresh ingestion with a new object key (or re-run the full
+script). On the first delivery the SNS publish fails; state remains `UNKNOWN` (inspect with breakpoints). SQS
+redelivers the same message → duplicate path detects `UNKNOWN` → retries publish →
+succeeds → marks `PUBLISHED`.
+
+Switch back when done:
+
+```bash
+./scripts/notify-stub-mode.sh 201
+```
+
+Confirm final state:
+
+```bash
+docker exec -i query-db psql -U postgres -d postgres -c \
+"SELECT * FROM crime_batch ORDER BY created_at DESC LIMIT 5;"
+```
+
+Expected: `matching_publish_state = PUBLISHED`, still only one `crime_batch` row.
+
+### 4. Manually reset to UNKNOWN to re-exercise retry
+
+To re-run the retry path without re-ingesting, reset the state in Postgres:
+
+```bash
+docker exec -i query-db psql -U postgres -d postgres -c \
+"UPDATE crime_batch_ingestion_attempt SET matching_publish_state = 'UNKNOWN' WHERE matching_publish_state = 'PUBLISHED';"
+```
+
+Then resend the same SQS message. The duplicate path will fire and retry publish.
+
+---
+
 ## Manual test — Dev
 
 - **Happy path** — forward a valid police email to the dev mailbox; confirm one

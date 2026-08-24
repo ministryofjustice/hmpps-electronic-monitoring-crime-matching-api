@@ -569,6 +569,68 @@ class EmailListenerTest : IntegrationTestBase() {
       notifyMockServer.verifyEmailSentTo("test@email.com", 0)
     }
 
+    // --- Idempotency / duplicate-delivery tests ---
+
+    @Test
+    fun `it should not create a duplicate ingestion attempt or crime batch when the same message is redelivered`() {
+      val csvContent = listOf(createCsvRow()).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      // First delivery
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      assertThat(crimeBatchIngestionAttemptRepository.findAll()).hasSize(1)
+      assertThat(crimeBatchRepository.findAll()).hasSize(1)
+
+      // Second delivery (duplicate SQS redelivery)
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      // No new ingestion attempt or crime batch must be created
+      assertThat(crimeBatchIngestionAttemptRepository.findAll()).hasSize(1)
+      assertThat(crimeBatchRepository.findAll()).hasSize(1)
+      assertThat(emailOutboxRepository.findAll()).hasSize(1)
+    }
+
+    @Test
+    fun `it should retry publishMatchingRequest on duplicate delivery when prior publish state is UNKNOWN`() {
+      val csvContent = listOf(createCsvRow()).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      // First delivery
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val attempt = crimeBatchIngestionAttemptRepository.findAll().single()
+
+      // Simulate publish state not being persisted (e.g. crash after successful SNS call)
+      jdbcTemplate.update(
+        "UPDATE crime_batch_ingestion_attempt SET matching_publish_state = 'UNKNOWN' WHERE id = ?",
+        attempt.id,
+      )
+
+      // Drain the matching notifications queue so we can count the retry
+      matchingNotificationsSqsClient.purgeQueue(
+        PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
+      ).get()
+
+      // Second delivery with UNKNOWN state — should retry publish
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      // Matching notification must have been re-published
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+      // Still only one ingestion attempt
+      assertThat(crimeBatchIngestionAttemptRepository.findAll()).hasSize(1)
+    }
+
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(
       SendMessageRequest.builder().queueUrl(
         emailQueueSqsUrl,
