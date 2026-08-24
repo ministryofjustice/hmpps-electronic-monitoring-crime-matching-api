@@ -2,9 +2,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.cast
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.expressions.CurrentDate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.DeviceActivation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.Person
+import java.time.ZonedDateTime
 
 class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCriteria) {
   fun build(): AthenaQuery = Person
@@ -42,6 +46,8 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
       personsQueryCriteria.deviceId?.let {
         DeviceActivation.deviceId eq it
       }
+
+      Person.groupedDate.cast<ZonedDateTime>(SqlType.Date) eq CurrentDate()
     }
     .orderBy {
       DeviceActivation.deviceActivationDate.desc
