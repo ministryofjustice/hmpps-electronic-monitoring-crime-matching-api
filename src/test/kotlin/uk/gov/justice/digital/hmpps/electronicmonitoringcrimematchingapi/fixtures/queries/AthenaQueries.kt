@@ -5,6 +5,7 @@ object AthenaQueries {
     SELECT 
       device_activations.device_activation_id,
       device_activations.device_id,
+      device_activations.device_serial_number,
       caseload.unique_device_wearer_id,
       device_activations.device_activation_date,
       device_activations.device_deactivation_date
@@ -52,6 +53,7 @@ object AthenaQueries {
       caseload.house_number_and_street_name,
       device_activations.device_id,
       device_activations.device_activation_id,
+      device_activations.device_serial_number,
       device_activations.device_activation_date,
       device_activations.device_deactivation_date
     FROM
@@ -79,6 +81,7 @@ object AthenaQueries {
       caseload.house_number_and_street_name,
       device_activations.device_id,
       device_activations.device_activation_id,
+      device_activations.device_serial_number,
       device_activations.device_activation_date,
       device_activations.device_deactivation_date
     FROM 
@@ -106,6 +109,7 @@ object AthenaQueries {
       caseload.house_number_and_street_name,
       device_activations.device_id,
       device_activations.device_activation_id,
+      device_activations.device_serial_number,
       device_activations.device_activation_date,
       device_activations.device_deactivation_date
     FROM 

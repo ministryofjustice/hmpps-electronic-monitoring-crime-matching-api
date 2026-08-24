@@ -29,6 +29,18 @@
         {
           "CaseSensitive": false,
           "CatalogName": "hive",
+          "Label": "device_serial_number",
+          "Name": "device_serial_number",
+          "Nullable": "UNKNOWN",
+          "Precision": 2147483647,
+          "Scale": 0,
+          "SchemaName": "",
+          "TableName": "",
+          "Type": "bigint"
+        },
+        {
+          "CaseSensitive": false,
+          "CatalogName": "hive",
           "Label": "unique_device_wearer_id",
           "Name": "unique_device_wearer_id",
           "Nullable": "UNKNOWN",
@@ -74,6 +86,9 @@
             "VarCharValue": "device_id"
           },
           {
+            "VarCharValue": "device_serial_number"
+          },
+          {
             "VarCharValue": "unique_device_wearer_id"
           },
           {
@@ -91,6 +106,9 @@
           },
           {
             "VarCharValue": "54321"
+          },
+          {
+            "VarCharValue": "987654321"
           },
           {
             "VarCharValue": "98765"

@@ -16,6 +16,7 @@ class GetDeviceActivationByIdQueryBuilder(private val id: Long) {
     .select(
       DeviceActivation.deviceActivationId,
       DeviceActivation.deviceId,
+      DeviceActivation.deviceSerialNumber,
       Person.deviceWearerId,
       DeviceActivation.deviceActivationDate,
       DeviceActivation.deviceDeactivationDate,

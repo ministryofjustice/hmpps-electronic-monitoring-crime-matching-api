@@ -10,6 +10,8 @@ data class DeviceActivation(
 
   val deviceName: String = "",
 
+  val deviceSerialNumber: Long,
+
   val uniqueDeviceWearerId: String,
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss[.[SSSSSS][SSS]]")
