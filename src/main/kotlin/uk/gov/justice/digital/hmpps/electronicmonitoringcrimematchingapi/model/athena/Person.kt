@@ -14,5 +14,4 @@ object Person : Table(name = "caseload") {
   val postcode = varchar("postcode")
   val cityOrTown = varchar("city_or_town")
   val street = varchar("house_number_and_street_name")
-  val groupedDate = date("grouped_date")
 }
