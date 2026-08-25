@@ -405,11 +405,11 @@ class EmailListenerTest {
     }
 
     @Test
-    fun `it should not ingest or publish when the same s3 object has already been ingested with NOT_APPLICABLE state`() {
+    fun `it should not ingest or publish when the same s3 object has already been ingested with NOT_REQUIRED state`() {
       val existingAttempt = CrimeBatchIngestionAttempt(
         bucket = "emails",
         objectName = "email-file",
-        matchingPublishState = MatchingPublishState.NOT_APPLICABLE,
+        matchingPublishState = MatchingPublishState.NOT_REQUIRED,
         crimeBatchId = null,
       )
       whenever(crimeBatchEmailIngestionService.findIngestionAttemptBySource("emails", "email-file"))
@@ -423,12 +423,12 @@ class EmailListenerTest {
     }
 
     @Test
-    fun `it should retry publishMatchingRequest on duplicate when prior publish state is UNKNOWN`() {
+    fun `it should retry publishMatchingRequest on duplicate when prior state is PENDING_OR_UNCONFIRMED`() {
       val crimeBatchId = UUID.randomUUID()
       val existingAttempt = CrimeBatchIngestionAttempt(
         bucket = "emails",
         objectName = "email-file",
-        matchingPublishState = MatchingPublishState.UNKNOWN,
+        matchingPublishState = MatchingPublishState.PENDING_OR_UNCONFIRMED,
         crimeBatchId = crimeBatchId,
       )
       whenever(crimeBatchEmailIngestionService.findIngestionAttemptBySource("emails", "email-file"))
@@ -445,12 +445,12 @@ class EmailListenerTest {
     }
 
     @Test
-    fun `it should not publish on duplicate when prior state is UNKNOWN but crimeBatchId is null`() {
-      // UNKNOWN + null crimeBatchId = prior ingestion was FAILED/ERROR before state was persisted
+    fun `it should not publish on duplicate when prior state is PENDING_OR_UNCONFIRMED but crimeBatchId is null`() {
+      // No crimeBatchId means there is nothing to re-publish on duplicate delivery.
       val existingAttempt = CrimeBatchIngestionAttempt(
         bucket = "emails",
         objectName = "email-file",
-        matchingPublishState = MatchingPublishState.UNKNOWN,
+        matchingPublishState = MatchingPublishState.PENDING_OR_UNCONFIRMED,
         crimeBatchId = null,
       )
       whenever(crimeBatchEmailIngestionService.findIngestionAttemptBySource("emails", "email-file"))

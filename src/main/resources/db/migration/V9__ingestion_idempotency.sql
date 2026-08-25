@@ -5,11 +5,12 @@ ALTER TABLE crime_batch_ingestion_attempt
     ADD CONSTRAINT uc_crime_batch_ingestion_attempt_source UNIQUE (bucket, object_name);
 
 -- Tracks whether the matching-notification SNS publish was confirmed.
---   UNKNOWN        – default; prior publish outcome not yet persisted (retry on redelivery).
---   PUBLISHED      – publish confirmed; duplicates safely skip.
---   NOT_APPLICABLE – FAILED/ERROR outcome; no publish needed.
+--   PENDING_OR_UNCONFIRMED – default; publish is pending or the prior publish outcome was
+--                            not yet persisted (retry on redelivery).
+--   PUBLISHED   – publish confirmed; duplicates safely skip.
+--   NOT_REQUIRED – FAILED/ERROR outcome; no publish needed.
 ALTER TABLE crime_batch_ingestion_attempt
-    ADD COLUMN matching_publish_state VARCHAR(255) NOT NULL DEFAULT 'UNKNOWN';
+    ADD COLUMN matching_publish_state VARCHAR(255) NOT NULL DEFAULT 'PENDING_OR_UNCONFIRMED';
 
 -- Denormalised crime_batch PK stored directly on the attempt so duplicate-delivery
 -- handling can retry publishMatchingRequest without traversing the object graph.

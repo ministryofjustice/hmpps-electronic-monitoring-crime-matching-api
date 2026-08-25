@@ -74,10 +74,10 @@ class EmailListener(
         val result = processEmail(emailData, bucketName, objectKey)
         emailOutboxService.enqueue(result.outcome)
 
-        // Decide publish state immediately: NOT_APPLICABLE for non-publishable outcomes so
+        // Decide publish state immediately: NOT_REQUIRED for non-publishable outcomes so
         // duplicate deliveries never retry a publish that will never happen.
         val isPublishable = isPublishable(result.outcome)
-        result.attempt.matchingPublishState = if (isPublishable) MatchingPublishState.UNKNOWN else MatchingPublishState.NOT_APPLICABLE
+        result.attempt.matchingPublishState = if (isPublishable) MatchingPublishState.PENDING_OR_UNCONFIRMED else MatchingPublishState.NOT_REQUIRED
         if (isPublishable) {
           result.attempt.crimeBatchId = result.outcome.crimeBatchId.toUuidOrNull()
         }
@@ -97,10 +97,11 @@ class EmailListener(
   /**
    * Handles a duplicate SQS delivery (the source email was already ingested).
    *
-   * - [MatchingPublishState.PUBLISHED] / [MatchingPublishState.NOT_APPLICABLE]: prior state
+   * - [MatchingPublishState.PUBLISHED] / [MatchingPublishState.NOT_REQUIRED]: prior state
    *   is known — safe no-op; no new ingestion or outbox rows are created.
-   * - [MatchingPublishState.UNKNOWN]: prior publish outcome was not persisted (e.g. crash after
-   *   a successful SNS call) — retry [publishMatchingRequest] for at-least-once delivery.
+   * - [MatchingPublishState.PENDING_OR_UNCONFIRMED]: retry [publishMatchingRequest] for
+   *   at-least-once delivery, including after a crash that prevented the prior outcome from
+   *   being persisted.
    */
   private fun handleDuplicate(existingAttempt: CrimeBatchIngestionAttempt) {
     log.warn(
@@ -111,11 +112,11 @@ class EmailListener(
       existingAttempt.matchingPublishState,
     )
     when (existingAttempt.matchingPublishState) {
-      MatchingPublishState.PUBLISHED, MatchingPublishState.NOT_APPLICABLE -> {
+      MatchingPublishState.PUBLISHED, MatchingPublishState.NOT_REQUIRED -> {
         // Prior state known — no-op.
       }
-      MatchingPublishState.UNKNOWN -> {
-        // Prior publish outcome unknown; retry for at-least-once delivery.
+      MatchingPublishState.PENDING_OR_UNCONFIRMED -> {
+        // Retry from the retryable state to preserve at-least-once delivery.
         existingAttempt.crimeBatchId?.let { crimeBatchId ->
           publishAndMarkPublished(existingAttempt, crimeBatchId.toString())
         }
@@ -128,7 +129,7 @@ class EmailListener(
    *
    * If the state update fails the exception is caught and logged: the publish already succeeded,
    * so rethrowing to SQS would only cause a duplicate publish. Leaving state as
-   * [MatchingPublishState.UNKNOWN] is safer and still delivers at-least-once.
+   * [MatchingPublishState.PENDING_OR_UNCONFIRMED] is safer and still delivers at-least-once.
    */
   private fun publishAndMarkPublished(attempt: CrimeBatchIngestionAttempt, crimeBatchId: String) {
     matchingNotificationService.publishMatchingRequest(crimeBatchId)

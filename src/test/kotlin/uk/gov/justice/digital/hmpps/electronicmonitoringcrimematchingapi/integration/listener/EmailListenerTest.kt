@@ -597,7 +597,7 @@ class EmailListenerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should retry publishMatchingRequest on duplicate delivery when prior publish state is UNKNOWN`() {
+    fun `it should retry publishMatchingRequest on duplicate delivery when prior state is PENDING_OR_UNCONFIRMED`() {
       val csvContent = listOf(createCsvRow()).joinToString("\n")
       val encoded = Base64.encode(csvContent.toByteArray())
       val email = createEmailFile(encoded)
@@ -612,7 +612,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Simulate publish state not being persisted (e.g. crash after successful SNS call)
       jdbcTemplate.update(
-        "UPDATE crime_batch_ingestion_attempt SET matching_publish_state = 'UNKNOWN' WHERE id = ?",
+        "UPDATE crime_batch_ingestion_attempt SET matching_publish_state = 'PENDING_OR_UNCONFIRMED' WHERE id = ?",
         attempt.id,
       )
 
@@ -621,7 +621,7 @@ class EmailListenerTest : IntegrationTestBase() {
         PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
       ).get()
 
-      // Second delivery with UNKNOWN state — should retry publish
+      // Second delivery from the retryable state — should retry publish.
       sendDomainSqsMessage(getMessage(OBJECT_KEY))
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 

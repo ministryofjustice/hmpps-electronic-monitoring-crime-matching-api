@@ -172,7 +172,7 @@ docker exec -i query-db psql -U postgres -d postgres -c \
 
 ```
 
-### 3. Transient SNS failure → state stays UNKNOWN → retry on redelivery
+### 3. Transient SNS failure → state stays PENDING_OR_UNCONFIRMED → retry on redelivery
 
 Switch the notify stub to return 500:
 
@@ -181,8 +181,8 @@ Switch the notify stub to return 500:
 ```
 
 Clear the DB and trigger a fresh ingestion with a new object key (or re-run the full
-script). On the first delivery the SNS publish fails; state remains `UNKNOWN` (inspect with breakpoints). SQS
-redelivers the same message → duplicate path detects `UNKNOWN` → retries publish →
+script). On the first delivery the SNS publish fails; state remains `PENDING_OR_UNCONFIRMED` (inspect with breakpoints). SQS
+redelivers the same message → duplicate path detects `PENDING_OR_UNCONFIRMED` → retries publish →
 succeeds → marks `PUBLISHED`.
 
 Switch back when done:
@@ -200,13 +200,13 @@ docker exec -i query-db psql -U postgres -d postgres -c \
 
 Expected: `matching_publish_state = PUBLISHED`, still only one `crime_batch` row.
 
-### 4. Manually reset to UNKNOWN to re-exercise retry
+### 4. Manually reset to PENDING_OR_UNCONFIRMED to re-exercise retry
 
 To re-run the retry path without re-ingesting, reset the state in Postgres:
 
 ```bash
 docker exec -i query-db psql -U postgres -d postgres -c \
-"UPDATE crime_batch_ingestion_attempt SET matching_publish_state = 'UNKNOWN' WHERE matching_publish_state = 'PUBLISHED';"
+"UPDATE crime_batch_ingestion_attempt SET matching_publish_state = 'PENDING_OR_UNCONFIRMED' WHERE matching_publish_state = 'PUBLISHED';"
 ```
 
 Then resend the same SQS message. The duplicate path will fire and retry publish.

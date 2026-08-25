@@ -38,7 +38,7 @@ data class CrimeBatchIngestionAttempt(
    */
   @Enumerated(EnumType.STRING)
   @Column(name = "matching_publish_state", nullable = false)
-  var matchingPublishState: MatchingPublishState = MatchingPublishState.UNKNOWN,
+  var matchingPublishState: MatchingPublishState = MatchingPublishState.PENDING_OR_UNCONFIRMED,
 ) {
   // JPA entities should not include bidirectional associations in equality.
   override fun equals(other: Any?): Boolean = this === other || (other is CrimeBatchIngestionAttempt && id == other.id)
