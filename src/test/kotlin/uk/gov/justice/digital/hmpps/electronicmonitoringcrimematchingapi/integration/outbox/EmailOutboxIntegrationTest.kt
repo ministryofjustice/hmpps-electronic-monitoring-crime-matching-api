@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.outbox.EmailOutboxPayloadMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.outbox.EmailOutboxRelay
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.outbox.EmailOutboxService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.outbox.EmailSendQueueService
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
@@ -90,6 +91,8 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
   @Autowired lateinit var emailOutboxService: EmailOutboxService
 
   @Autowired lateinit var emailOutboxRelay: EmailOutboxRelay
+
+  @Autowired lateinit var emailSendQueueService: EmailSendQueueService
 
   @Autowired lateinit var emailOutboxPayloadMapper: EmailOutboxPayloadMapper
 
@@ -304,16 +307,17 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `it does not call Notify when reprocessing a terminal row`() {
+      val validPayload = emailOutboxPayloadMapper.toJson(
+        EmailOutboxTestFixtures.createTestEmailIngestionOutcome(),
+        EmailOutboxTestConstants.TEST_SENDER,
+      )
       val sentRow = EmailOutboxTestFixtures.createTestEmailOutboxRowSent(
-        payload = emailOutboxPayloadMapper.toJson(
-          EmailOutboxTestFixtures.createTestEmailIngestionOutcome(),
-          EmailOutboxTestConstants.TEST_SENDER,
-        ),
+        payload = validPayload,
       )
       val failedRow = EmailOutbox(
         eventId = UUID.randomUUID(),
         status = EmailOutboxStatus.FAILED,
-        payload = "{}",
+        payload = validPayload,
       ).also {
         it.attempts = 1
         it.lastError = "400 Bad Request"
@@ -321,34 +325,36 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
       val deadRow = EmailOutbox(
         eventId = UUID.randomUUID(),
         status = EmailOutboxStatus.DEAD,
-        payload = "{}",
+        payload = validPayload,
       ).also {
         it.attempts = 3
         it.lastError = "Max retries exceeded"
       }
 
-      emailOutboxRepository.saveAll(listOf(sentRow, failedRow, deadRow))
+      val savedRows = emailOutboxRepository.saveAll(listOf(sentRow, failedRow, deadRow))
+      val expectedByEventId = savedRows.associateBy({ it.eventId }) { Triple(it.status, it.attempts, it.lastError) }
 
       val notifyCountBefore = notifyMockServer.getAllServeEvents()
         .filter { it.request.url.contains("/v2/notifications/email") }.size
 
-      // Terminal rows should be skipped; verify their in-memory status is already terminal.
-      for (row in listOf(sentRow, failedRow, deadRow)) {
+      // Exercise each terminal event through the real emailsend queue/worker path.
+      savedRows.forEach { row -> emailSendQueueService.publish(row.eventId) }
+      awaitEmailSendQueueDrained()
+
+      // Terminal rows should be skipped by the listener and remain unchanged.
+      for (eventId in expectedByEventId.keys) {
+        val row = emailOutboxRepository.findById(eventId).get()
         EmailOutboxTestFixtures.verifyOutboxRowIsTerminal(row)
+        val (expectedStatus, expectedAttempts, expectedLastError) = expectedByEventId.getValue(eventId)
+        assertThat(row.status).isEqualTo(expectedStatus)
+        assertThat(row.attempts).isEqualTo(expectedAttempts)
+        assertThat(row.lastError).isEqualTo(expectedLastError)
       }
 
       // Notify must not have been called.
       val notifyCountAfter = notifyMockServer.getAllServeEvents()
         .filter { it.request.url.contains("/v2/notifications/email") }.size
       assertThat(notifyCountAfter).isEqualTo(notifyCountBefore)
-
-      // Rows remain in their original terminal state.
-      assertThat(emailOutboxRepository.findById(sentRow.eventId).get().status)
-        .isEqualTo(EmailOutboxStatus.SENT)
-      assertThat(emailOutboxRepository.findById(failedRow.eventId).get().status)
-        .isEqualTo(EmailOutboxStatus.FAILED)
-      assertThat(emailOutboxRepository.findById(deadRow.eventId).get().status)
-        .isEqualTo(EmailOutboxStatus.DEAD)
     }
 
     @Test
@@ -716,6 +722,14 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
         assertThat(emailOutboxRepository.findById(eventId).get().status)
           .isEqualTo(EmailOutboxStatus.SENT)
       }
+  }
+
+  /** Blocks until every message on the emailsend queue has been consumed. */
+  private fun awaitEmailSendQueueDrained() {
+    await()
+      .timeout(Duration.ofMillis(EmailOutboxTestConstants.AWAIT_TIMEOUT_MS))
+      .pollInterval(Duration.ofMillis(EmailOutboxTestConstants.AWAIT_POLL_INTERVAL_MS))
+      .until { emailSendSqsClient.countAllMessagesOnQueue(emailSendSqsUrl).get() == 0 }
   }
 
   private fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<*> = emailQueueSqsClient.sendMessage { it.queueUrl(emailQueueSqsUrl).messageBody(rawMessage) }
