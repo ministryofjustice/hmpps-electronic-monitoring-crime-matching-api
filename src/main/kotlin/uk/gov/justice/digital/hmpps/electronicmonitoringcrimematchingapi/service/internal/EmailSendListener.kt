@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
-import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.messaging.handler.annotation.Header
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailSendMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.EmailOutboxStatus
@@ -40,10 +38,9 @@ class EmailSendListener(
     private const val TOO_MANY_REQUESTS = 429
   }
 
-  @SqsListener("emailsend", factory = "hmppsQueueContainerFactoryProxy")
   fun receiveEmailSend(
     message: EmailSendMessage,
-    @Header(value = "ApproximateReceiveCount", required = false) receiveCount: String?,
+    receiveCount: String?,
   ) {
     val parsedReceiveCount = receiveCount?.toIntOrNull()
     val row = emailOutboxService.find(message.eventId)

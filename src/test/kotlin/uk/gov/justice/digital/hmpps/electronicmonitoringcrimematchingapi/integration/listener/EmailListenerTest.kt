@@ -113,15 +113,6 @@ class EmailListenerTest : IntegrationTestBase() {
   val emailDeadLetterSqsClient by lazy { emailQueueConfig.sqsDlqClient as SqsAsyncClient }
   val emailDeadLetterSqsUrl by lazy { emailQueueConfig.dlqUrl as String }
 
-  val emailSendQueueConfig by lazy {
-    hmppsQueueService.findByQueueId("emailsend")
-      ?: throw MissingQueueException("HmppsQueue emailsend not found")
-  }
-  val emailSendSqsUrl by lazy { emailSendQueueConfig.queueUrl }
-  val emailSendSqsClient by lazy { emailSendQueueConfig.sqsClient }
-  val emailSendDeadLetterSqsClient by lazy { emailSendQueueConfig.sqsDlqClient as SqsAsyncClient }
-  val emailSendDeadLetterSqsUrl by lazy { emailSendQueueConfig.dlqUrl as String }
-
   val matchingNotificationsQueueConfig by lazy {
     hmppsQueueService.findByQueueId("matchingnotifications")
       ?: throw MissingQueueException("HmppsQueue matchingnotifications not found")
@@ -137,12 +128,6 @@ class EmailListenerTest : IntegrationTestBase() {
     ).get()
     emailDeadLetterSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(emailDeadLetterSqsUrl).build(),
-    ).get()
-    emailSendSqsClient.purgeQueue(
-      PurgeQueueRequest.builder().queueUrl(emailSendSqsUrl).build(),
-    ).get()
-    emailSendDeadLetterSqsClient.purgeQueue(
-      PurgeQueueRequest.builder().queueUrl(emailSendDeadLetterSqsUrl).build(),
     ).get()
     matchingNotificationsSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),

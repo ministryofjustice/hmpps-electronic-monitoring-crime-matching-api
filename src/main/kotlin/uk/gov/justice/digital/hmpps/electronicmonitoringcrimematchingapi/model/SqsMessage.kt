@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import java.util.UUID
 
 @JsonNaming(value = PropertyNamingStrategies.UpperCamelCaseStrategy::class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class SqsMessage(
   val Type: String,
   val Message: String,

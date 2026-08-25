@@ -108,8 +108,8 @@ class EmailOutboxIntegrationTest : IntegrationTestBase() {
   lateinit var featureFlagService: FeatureFlagService
 
   private val emailSendQueueConfig by lazy {
-    hmppsQueueService.findByQueueId("emailsend")
-      ?: throw MissingQueueException("HmppsQueue emailsend not found")
+    hmppsQueueService.findByQueueId("email")
+      ?: throw MissingQueueException("HmppsQueue email not found")
   }
   private val emailSendSqsUrl by lazy { emailSendQueueConfig.queueUrl }
   private val emailSendSqsClient by lazy { emailSendQueueConfig.sqsClient }

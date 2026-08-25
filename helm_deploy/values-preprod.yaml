@@ -25,7 +25,6 @@ generic-prometheus-alerts:
   sqsAlertsTotalMessagesThreshold: 0
   sqsNumberAlertQueueNames:
     - hmpps-em-probation-devs-preprod-email-notifications-dlq
-    - hmpps-em-probation-devs-preprod-emailsend-dlq
   rdsAlertsDatabases:
     cloud-platform-3b9e8faa7849429d: "Electronic Monitoring Crime Matching API Database"
   rdsAlertsConnectionThreshold: 65

@@ -16,9 +16,6 @@ hmpps:
         queueName: "email"
         subscribeTopicId: emailtopic
         dlqName: email_dlq
-      emailsend:
-        queueName: "emailsend"
-        dlqName: emailsend_dlq
       matchingnotifications:
         queueName: "matching-notifications"
         subscribeTopicId: matchingnotificationstopic

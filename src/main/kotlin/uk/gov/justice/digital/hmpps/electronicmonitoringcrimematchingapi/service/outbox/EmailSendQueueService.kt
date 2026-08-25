@@ -7,14 +7,14 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.E
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import java.util.UUID
 
-/** Publishes outbox events onto the `emailsend` queue for the idempotent send worker. */
+/** Publishes outbox events onto the shared `email` queue for the idempotent send worker. */
 @Service
 class EmailSendQueueService(
   private val hmppsQueueService: HmppsQueueService,
   private val objectMapper: ObjectMapper,
 ) {
   companion object {
-    const val QUEUE_ID = "emailsend"
+    const val QUEUE_ID = "email"
   }
 
   private val emailSendQueue by lazy {
