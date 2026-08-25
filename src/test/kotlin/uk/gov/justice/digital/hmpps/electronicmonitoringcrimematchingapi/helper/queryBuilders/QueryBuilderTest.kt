@@ -9,8 +9,11 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn1
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn2
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testDateColumn
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ColumnExtensions.cast
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.expressions.CurrentDate
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.functions.AthenaFunctions
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -241,6 +244,18 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table ORDER BY test_table.test_column_1 ASC, test_table.test_column_2 DESC")
+  }
+
+  @Test
+  fun `it should build a query with a cast`() {
+    val query = TestTable
+      .selectAll()
+      .where {
+        TestTable.testColumn1.cast(SqlType.Date) eq CurrentDate()
+      }
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE CAST(test_table.test_column_1 AS Date) = current_date")
   }
 
   companion object {

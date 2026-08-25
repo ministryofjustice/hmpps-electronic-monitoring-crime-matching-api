@@ -13,10 +13,7 @@ object AthenaQueries {
       device_activations
     INNER JOIN 
       caseload ON device_activations.person_id = caseload.mdss_person_id
-    WHERE (
-      device_activations.device_activation_id = ? AND
-      CAST(caseload.grouped_date AS Date) = current_date
-    )
+    WHERE device_activations.device_activation_id = ?
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
   val SelectPersonById = """
@@ -33,10 +30,7 @@ object AthenaQueries {
       caseload.house_number_and_street_name
     FROM 
       caseload
-    WHERE (
-      caseload.unique_device_wearer_id = ? AND
-      CAST(caseload.grouped_date AS Date) = current_date
-    )
+    WHERE caseload.unique_device_wearer_id = ?
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
   val SelectPersonsByNameLike = """
@@ -60,10 +54,7 @@ object AthenaQueries {
       caseload
     INNER JOIN
       device_activations ON caseload.mdss_person_id = device_activations.person_id
-    WHERE ( 
-      ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? ) AND
-      CAST(caseload.grouped_date AS Date) = current_date
-    )
+    WHERE ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? )
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
@@ -88,10 +79,7 @@ object AthenaQueries {
       caseload 
     INNER JOIN 
       device_activations ON caseload.mdss_person_id = device_activations.person_id 
-    WHERE  (
-      caseload.nomis_id LIKE ? AND
-      CAST(caseload.grouped_date AS Date) = current_date
-    )
+    WHERE  caseload.nomis_id LIKE ?
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
@@ -116,10 +104,7 @@ object AthenaQueries {
       caseload 
     INNER JOIN 
       device_activations ON caseload.mdss_person_id = device_activations.person_id 
-    WHERE (
-      device_activations.device_id = ? AND
-      CAST(caseload.grouped_date AS Date) = current_date
-    )
+    WHERE device_activations.device_id = ?
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
