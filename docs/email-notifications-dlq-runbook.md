@@ -13,6 +13,44 @@ An alert will notify the team when a message has been moved to the DLQ.
 > Redrive/replay is a **manual operational action** after investigation; there is no automatic in-app DLQ redrive.
 
 ---
+
+## `FAILED` outbox rows (Notify 4xx — no DLQ entry)
+
+`FAILED` rows arise when GOV.UK Notify returns a permanent non-429 4xx response (e.g.
+invalid API key, unknown template ID, or a malformed request). The worker marks the row
+`FAILED` and returns without rethrowing, so SQS deletes the message after one delivery —
+**no `emailsend_dlq` entry is produced**.
+
+The `EmailOutboxFailed` Prometheus alert fires on any such event. To investigate:
+
+1. Note the `event_id` from the alert labels or from a Postgres query:
+   ```sql
+   SELECT event_id, status, attempts, last_error, updated_at
+   FROM email_outbox
+   WHERE status = 'FAILED'
+   ORDER BY updated_at DESC
+   LIMIT 20;
+   ```
+2. Search OpenSearch or App Insights for the `event_id` to find the full Notify error
+   response (status code + body logged at `WARN` level by the worker).
+3. Common causes and remediation:
+
+   | Notify error | Cause | Action |
+   |---|---|---|
+   | 403 `invalid_token` | `NOTIFY_API_KEY` secret wrong or rotated | Rotate the secret; reset row to `PENDING` |
+   | 400 `BadRequestError` (template) | `NOTIFY_*_TEMPLATE_ID` misconfigured | Correct the template ID config; reset row |
+   | 400 `ValidationError` (email address) | Recipient address rejected by Notify | Investigate upstream data; do not redrive |
+
+4. To re-attempt delivery after fixing the root cause, reset the row to `PENDING`:
+   ```sql
+   UPDATE email_outbox
+   SET status = 'PENDING', claimed_at = NULL, claimed_by = NULL, last_error = NULL
+   WHERE status = 'FAILED'
+   AND event_id = '<event_id>';
+   ```
+   The relay will re-claim and re-dispatch on its next cycle.
+
+---
 # Investigation Process
 
 ## Step 1: Retrieve the DLQ Message

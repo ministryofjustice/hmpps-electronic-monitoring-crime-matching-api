@@ -79,13 +79,63 @@ docker exec -i query-db psql -U postgres -d postgres -c \
 "UPDATE email_outbox SET status = 'PENDING', claimed_at = NULL, claimed_by = NULL WHERE status = 'CLAIMED';"
 ```
 
-### Permanent failure → DLQ
+### Permanent failure (4xx) → FAILED
+
+When Notify returns a non-429 4xx the worker classifies the failure as permanent: it
+marks the row `FAILED` and **returns without rethrowing**. SQS therefore receives a
+successful acknowledgement and deletes the message immediately — no retries occur and
+**no DLQ entry is produced**. `FAILED` is a terminal state; the row is not reprocessed
+by the relay.
 
 ```bash
-# Stub returns 400 for all sends, then ingest.
 ./scripts/notify-stub-mode.sh 400
+# Trigger ingestion
+./scripts/localstack-ingest-sample-email.sh
+```
 
-# After maxReceiveCount deliveries the message moves to the DLQ:
+Verify the row reaches `FAILED` after one worker execution:
+
+```bash
+docker exec -i query-db psql -U postgres -d postgres -c \
+  "select event_id, status, attempts, last_error from email_outbox order by created_at desc limit 5;"
+```
+
+Expected: row status `FAILED`, `attempts` = 1, `last_error` contains the Notify 400
+response. The `emailsend_dlq` remains empty.
+
+```bash
+DLQ_URL=$(awslocal sqs get-queue-url --queue-name emailsend_dlq --query QueueUrl --output text)
+awslocal sqs get-queue-attributes --queue-url "$DLQ_URL" \
+  --attribute-names ApproximateNumberOfMessages
+# Expected: ApproximateNumberOfMessages = 0
+```
+
+In production, `FAILED` rows trigger the `EmailOutboxFailed` Prometheus alert (see
+`email-outbox-failed-alert.yaml`); investigate via `event_id` in OpenSearch/App
+Insights and consult the runbook for remediation options.
+
+> **Note**: `FAILED` rows cannot be redriven via `start-message-move-task` (there is no
+> DLQ message). To re-attempt delivery, reset the row to `PENDING` in Postgres and let
+> the relay re-dispatch:
+> ```bash
+> docker exec -i query-db psql -U postgres -d postgres -c \
+>   "UPDATE email_outbox SET status = 'PENDING', claimed_at = NULL, claimed_by = NULL \
+>    WHERE status = 'FAILED' AND event_id = '<event_id>';"
+> ```
+
+### Exhausted retries (5xx) → DLQ
+
+To exercise the path where SQS exhausts its retry budget and dead-letters the message:
+
+```bash
+./scripts/notify-stub-mode.sh 500
+# Trigger ingestion and wait for maxReceiveCount SQS deliveries.
+```
+
+After `maxReceiveCount` deliveries the message moves to the DLQ and the row is marked
+`DEAD`:
+
+```bash
 DLQ_URL=$(awslocal sqs get-queue-url --queue-name emailsend_dlq --query QueueUrl --output text)
 awslocal sqs get-queue-attributes --queue-url "$DLQ_URL" \
   --attribute-names ApproximateNumberOfMessages
