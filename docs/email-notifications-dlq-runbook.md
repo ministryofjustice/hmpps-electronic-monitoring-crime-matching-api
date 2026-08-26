@@ -2,13 +2,17 @@
 
 ## Purpose
 
-This runbook describes the process for investigating email ingestion messages that have failed to process and have been moved to the Dead Letter Queue.
+This runbook describes the process for investigating messages that have failed to
+process and have been moved to the shared Dead Letter Queue.
 An alert will notify the team when a message has been moved to the DLQ.
 
 > **Note**
-> This runbook applies to both DLQs used by this service:
-> - `email-notifications-dlq` (ingestion failures)
-> - `emailsend-dlq` (exhausted email send retries)
+> This runbook applies to the single shared DLQ used by this service:
+> - `email-notifications-dlq`
+>
+> The queue can contain different message schemas:
+> - Ingestion failure payloads (S3-received email processing)
+> - `EMAILSEND` worker failures after exhausted retries
 >
 > Redrive/replay is a **manual operational action** after investigation; there is no automatic in-app DLQ redrive.
 
@@ -19,7 +23,7 @@ An alert will notify the team when a message has been moved to the DLQ.
 `FAILED` rows arise when GOV.UK Notify returns a permanent non-429 4xx response (e.g.
 invalid API key, unknown template ID, or a malformed request). The worker marks the row
 `FAILED` and returns without rethrowing, so SQS deletes the message after one delivery —
-**no `emailsend_dlq` entry is produced**.
+**no `email-notifications-dlq` entry is produced**.
 
 The `EmailOutboxFailed` Prometheus alert fires on any such event. To investigate:
 
@@ -62,18 +66,32 @@ The `EmailOutboxFailed` Prometheus alert fires on any such event. To investigate
 
 The DLQ Message ID is the primary identifier used to correlate failures across Application Insights and OpenSearch.
 
+### Distinguish the Message Schema First
+
+Because `email-notifications-dlq` is shared, first identify whether the failed
+message is an ingestion payload or an `EMAILSEND` payload.
+
+- Ingestion payload indicators: S3 metadata fields such as bucket/object key and
+  email parsing fields (subject/forwarding address/original sender).
+- `EMAILSEND` payload indicators: outbox/event fields such as `event_id` and
+  send-attempt context from the outbox worker flow.
+
 ### Information Available in the Message Payload
 
-The `Message` field of the DLQ payload will have the following information:
+The DLQ payload schema depends on the failing flow:
 
-- Original SQS Message ID
-- S3 Object Key
-- S3 Bucket Name
-- Email Subject
-- Email Forwarding Address
-- Email Original Sender
+- Ingestion failures commonly include:
+  - Original SQS Message ID
+  - S3 Object Key
+  - S3 Bucket Name
+  - Email Subject
+  - Email Forwarding Address
+  - Email Original Sender
+- `EMAILSEND` exhausted-retry failures commonly include identifiers that let you
+  correlate to `email_outbox` (for example `event_id`) and worker processing logs.
 
-These values can assist in determining the root cause of the failure.
+Use the schema type to choose the right investigation path (ingestion parsing/
+validation vs outbox send/retry behavior).
 
 ---
 

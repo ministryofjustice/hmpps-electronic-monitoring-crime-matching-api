@@ -4,7 +4,9 @@
 
 ```mermaid
 flowchart TD
-    A([SQS email queue\nmessage arrives]) --> B[EmailListener\n.receiveEmailNotification]
+    A([Shared SQS `email` queue\ningestion + EMAILSEND schemas]) --> AR[EmailQueueRoutingListener\n.route]
+    AR --> AT{messageType == EMAILSEND?}
+    AT -- No (SNS wrapper / no messageType) --> B[EmailListener\n.receiveEmailNotification]
 
     B --> C[Fetch email file\nfrom S3]
     C --> D[Parse email /\nextract EmailData]
@@ -12,8 +14,8 @@ flowchart TD
     D --> E{Parse or\nvalidation error?}
     E -- Yes --> F[Throw exception]
     F --> G{email queue\nretry count?}
-    G -- "< maxReceiveCount" --> B
-    G -- ">= maxReceiveCount" --> H([email DLQ\nmanual review])
+    G -- "< maxReceiveCount" --> A
+    G -- ">= maxReceiveCount" --> H([Shared DLQ `email-notifications-dlq`\nmanual review\ningestion schema])
 
     E -- No --> I
 
@@ -31,11 +33,11 @@ flowchart TD
 
     subgraph relay["EmailOutboxRelay.dispatchPending — runs on all replicas concurrently"]
         R1[reclaimExpired\nCLAIMED rows back to PENDING] --> R2[claimBatch\nFOR UPDATE SKIP LOCKED]
-        R2 --> R3[mark rows CLAIMED\npublish eventId to emailsend queue]
+        R2 --> R3[mark rows CLAIMED\npublish EMAILSEND eventId to shared `email` queue]
     end
 
-    R3 --> Q([emailsend SQS queue])
-    Q --> W[EmailSendListener\n.receiveEmailSend]
+    R3 --> A
+    AT -- Yes --> W[EmailSendListener\n.receiveEmailSend]
 
     W --> WA{Row found?}
     WA -- No --> WB([Log & skip\nSQS deletes message])
@@ -48,9 +50,9 @@ flowchart TD
     WF -- "4xx not 429\npermanent" --> WH([markFailed\nFAILED — terminal\nno rethrow, SQS deletes])
     WF -- "429 / 5xx\ntransient" --> WI[markRetry\nrethrow exception]
     WI --> WJ{ApproximateReceiveCount\n>= maxReceiveCount?}
-    WJ -- No --> Q
+    WJ -- No --> A
     WJ -- Yes --> WK[markDead\nrethrow exception]
-    WK --> WL([emailsend DLQ\nmanual review per runbook])
+    WK --> WL([Shared DLQ `email-notifications-dlq`\nmanual review\nEMAILSEND schema])
 
     style WG fill:#2d7d46,color:#fff
     style WH fill:#8b4513,color:#fff
@@ -98,9 +100,10 @@ stateDiagram-v2
 | **Some succeed, some fail** | Succeeded rows stay `SENT` (terminal no-op on redelivery); only failed rows retry — **no duplicate emails** |
 | Relay crash mid-batch | Leased rows reclaimed to `PENDING` after `leaseTimeout` |
 | SQS redelivery of a `SENT` row | Terminal-status guard no-ops; submission contract is at-least-once, and Notify `reference = event_id` dedupes at provider (https://docs.notifications.service.gov.uk/java.html#reference-required) |
-| DLQ replay | Idempotent worker makes replay safe; investigate via `event_id` per runbook |
+| DLQ replay | Shared `email-notifications-dlq` holds both schemas; inspect payload type first, then replay accordingly. Outbox replay stays safe via idempotent worker + `event_id` correlation |
 
 See [email-outbox-testing.md](email-outbox-testing.md) for how to test each path.
+
 
 
 

@@ -1,8 +1,8 @@
 # Email Outbox: Local & Dev Testing Guide
 
 How to exercise the transactional-outbox email flow (ingest → outbox → relay →
-`emailsend` SQS worker → GOV.UK Notify) with automated tests and documented manual
-runs.
+`EMAILSEND` message on the shared `email` SQS queue → GOV.UK Notify) with
+automated tests and documented manual runs.
 
 See failure investigation steps in
 [email-notifications-dlq-runbook.md](email-notifications-dlq-runbook.md).
@@ -12,8 +12,8 @@ See failure investigation steps in
 
 Local defaults to `notify.enabled: false`, so no real send happens. To exercise the
 full send + retry + DLQ locally, point Notify at a local WireMock stub and enable it.
-The `emailsend` queue and its DLQ are **auto-created** by the hmpps-sqs starter on
-startup (like the `email` queue) — no manual queue creation needed.
+The shared `email` queue and its DLQ `email_dlq` are **auto-created** by the
+hmpps-sqs starter on startup — no manual queue creation needed.
 
 ### One-time setup
 
@@ -21,7 +21,7 @@ startup (like the `email` queue) — no manual queue creation needed.
 # Start infra (Postgres, LocalStack sns/sqs/s3, hmpps-auth)
 docker compose up -d db localstack notify-stub
 
-# S3 bucket (email queue + emailsend queue are auto-created by the app)
+# S3 bucket (SQS queue + DLQ are auto-created by the app)
 ./scripts/localstack-init.sh
 
 # Local Notify stub on 8093 is compose-managed and starts in 201 mode
@@ -33,7 +33,7 @@ curl -s "http://localhost:8093/__admin/mappings" | jq '.mappings[] | {method: .r
 
 ### Local config overrides (`application-local.yml` or env)
 - `notify.enabled: true`, `notify.base-url: http://localhost:8093`, template ids as in `application-test.yml`.
-- The `emailsend` queue (with `dlqName`) is already added under `hmpps.sqs.queues`.
+- The shared `email` queue (with `dlqName: email_dlq`) is already added under `hmpps.sqs.queues`.
 
 ### Happy path
 
@@ -101,10 +101,10 @@ docker exec -i query-db psql -U postgres -d postgres -c \
 ```
 
 Expected: row status `FAILED`, `attempts` = 1, `last_error` contains the Notify 400
-response. The `emailsend_dlq` remains empty.
+response. The `email_dlq` remains empty.
 
 ```bash
-DLQ_URL=$(awslocal sqs get-queue-url --queue-name emailsend_dlq --query QueueUrl --output text)
+DLQ_URL=$(awslocal sqs get-queue-url --queue-name email_dlq --query QueueUrl --output text)
 awslocal sqs get-queue-attributes --queue-url "$DLQ_URL" \
   --attribute-names ApproximateNumberOfMessages
 # Expected: ApproximateNumberOfMessages = 0
@@ -136,19 +136,19 @@ After `maxReceiveCount` deliveries the message moves to the DLQ and the row is m
 `DEAD`:
 
 ```bash
-DLQ_URL=$(awslocal sqs get-queue-url --queue-name emailsend_dlq --query QueueUrl --output text)
+DLQ_URL=$(awslocal sqs get-queue-url --queue-name email_dlq --query QueueUrl --output text)
 awslocal sqs get-queue-attributes --queue-url "$DLQ_URL" \
   --attribute-names ApproximateNumberOfMessages
 awslocal sqs receive-message --queue-url "$DLQ_URL"
 ```
 
-Expected: outbox row `DEAD`, one message on `emailsend_dlq` carrying `event_id`.
+Expected: outbox row `DEAD`, one message on `email_dlq` carrying `event_id`.
 
 ### Replay (parity with current DLQ process)
 
 ```bash
 awslocal sqs start-message-move-task \
-  --source-arn arn:aws:sqs:eu-west-2:000000000000:emailsend_dlq
+  --source-arn arn:aws:sqs:eu-west-2:000000000000:email_dlq
 ```
 
 Because the worker is idempotent after persistence (`event_id` + terminal-status guard), replay is
@@ -269,7 +269,7 @@ Then resend the same SQS message. The duplicate path will fire and retry publish
   GOV.UK Notify send (Notify dashboard) and one `email_outbox` row = SENT in dev
   RDS. Notify's built-in 5×/5-min retry handles downstream delivery.
 - **Retry/DLQ** — temporarily set an invalid Notify key (or a permanent-fail
-  template) to force a failure; observe the `emailsend` DLQ alert; restore config and
+  template) to force a failure; observe the shared-queue DLQ (`email_dlq`) alert; restore config and
   redrive per the runbook — verify expected behavior with Notify `reference` dedupe.
 - **Observability** — confirm `email.outbox.event` counters in Prometheus/Grafana
   and that the DLQ alert mirrors the existing `email-notifications-dlq` panels.
