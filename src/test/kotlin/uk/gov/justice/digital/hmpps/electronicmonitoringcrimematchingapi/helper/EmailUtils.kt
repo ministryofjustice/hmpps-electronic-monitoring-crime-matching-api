@@ -18,7 +18,7 @@ fun createCsvRow(
 fun createEmailFile(
   csvContent: String = "test",
   subject: String = "Metropolitan - Crime Mapping Request - 20260209",
-  fromAddress: String? = "test@email.com",
+  fromAddress: String = "test@email.com",
   resentFrom: String = "<shared-mailbox@email.com>",
 ) = """
   From: $fromAddress
