@@ -26,3 +26,6 @@ spring:
     password: postgres
   flyway:
     enabled: false
+
+notify:
+  enabled: false

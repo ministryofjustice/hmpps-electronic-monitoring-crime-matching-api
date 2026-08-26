@@ -24,6 +24,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.emailIngestion.EmailIngestionProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createCsvRow
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoFromAddress
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoRedirect
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
@@ -309,7 +310,7 @@ class EmailListenerTest {
       val sqsMessage = SqsMessage("Notification", message, messageId)
       val responseStream = ResponseInputStream(
         GetObjectResponse.builder().build(),
-        createEmailFile(fromAddress = "invalid@email.com").byteInputStream(),
+        createEmailFileNoFromAddress().byteInputStream(),
       )
 
       whenever(s3Service.getObject(messageId, "email-file-invalid-from", "emails")).thenReturn(responseStream)

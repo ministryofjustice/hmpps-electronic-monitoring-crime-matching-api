@@ -76,7 +76,7 @@ services:
     mfa: ${MFA_REQUIRED}
 
 notify:
-  enabled: true
+  enabled: ${NOTIFY_API_ENABLED}
   base-url: https://api.notifications.service.gov.uk
   apikey: ${NOTIFY_API_KEY}
   successfulIngestionTemplateId: 4e75981e-ba14-477e-afea-5ec111c7bf11

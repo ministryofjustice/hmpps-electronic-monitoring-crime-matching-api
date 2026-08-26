@@ -109,3 +109,16 @@ fun createEmailFileNoRedirect() = """
 
   --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_--
 """.trimIndent()
+
+fun createEmailFileNoFromAddress() = """
+  Resent-From: <shared-mailbox@email.com>
+  Subject: Metropolitan - Crime Mapping Request - 20251015
+  Date: Wed, 15 Oct 2025 13:56:58 +0000
+  X-MS-Has-Attach: yes
+  Content-Type: multipart/mixed;
+  	boundary="_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_"
+  
+  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_
+
+  --_004_CWXP123MB325699A8F40C4C6DB54C4B90A9E8ACWXP123MB3256GBRP_--
+""".trimIndent()
