@@ -41,7 +41,7 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
       }
 
       personsQueryCriteria.deviceId?.let {
-        DeviceActivation.deviceId eq it
+        DeviceActivation.deviceSerialNumber eq it
       }
     }
     .orderBy {
