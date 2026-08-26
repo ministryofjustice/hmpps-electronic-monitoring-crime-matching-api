@@ -48,7 +48,7 @@ class PersonServiceTest {
             DeviceActivation(
               deviceActivationId = 54321,
               deviceId = 12345,
-              deviceSerialNumber = 123456789,
+              deviceSerialNumber = "123456789",
               deviceName = "",
               uniqueDeviceWearerId = "1",
               deviceActivationDate = LocalDateTime.of(2021, 1, 1, 1, 1),
