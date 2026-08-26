@@ -104,7 +104,7 @@ object AthenaQueries {
       caseload 
     INNER JOIN 
       device_activations ON caseload.mdss_person_id = device_activations.person_id 
-    WHERE device_activations.device_id = ?
+    WHERE device_activations.device_serial_number = ?
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
