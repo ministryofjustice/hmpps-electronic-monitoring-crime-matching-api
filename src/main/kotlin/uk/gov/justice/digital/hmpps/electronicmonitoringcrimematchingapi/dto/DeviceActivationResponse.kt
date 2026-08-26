@@ -6,7 +6,7 @@ data class DeviceActivationResponse(
   val deviceActivationId: Long,
   val deviceId: Long,
   val deviceName: String,
-  val deviceSerialNumber: Long,
+  val deviceSerialNumber: String,
   val personId: String,
   val deviceActivationDate: String,
   val deviceDeactivationDate: String?,

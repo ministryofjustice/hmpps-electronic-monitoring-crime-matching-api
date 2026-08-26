@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 object DeviceActivation : Table(name = "device_activations") {
   val deviceActivationId = long("device_activation_id")
   val deviceId = long("device_id")
-  val deviceSerialNumber = long("device_serial_number")
+  val deviceSerialNumber = varchar("device_serial_number")
   val personId = long("person_id")
   val deviceActivationDate = date("device_activation_date")
   val deviceDeactivationDate = date("device_deactivation_date")

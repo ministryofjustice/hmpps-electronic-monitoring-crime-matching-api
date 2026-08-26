@@ -36,7 +36,7 @@
           "Scale": 0,
           "SchemaName": "",
           "TableName": "",
-          "Type": "bigint"
+          "Type": "varchar"
         },
         {
           "CaseSensitive": false,

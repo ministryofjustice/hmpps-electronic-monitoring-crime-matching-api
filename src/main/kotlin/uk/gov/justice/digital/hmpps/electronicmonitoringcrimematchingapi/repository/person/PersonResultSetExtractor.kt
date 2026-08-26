@@ -36,7 +36,7 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
           deviceActivationId = row[11].toLong(),
           deviceId = row[10].toLong(),
           deviceName = "",
-          deviceSerialNumber = row[12].toLong(),
+          deviceSerialNumber = row[12],
           uniqueDeviceWearerId = row[0],
           deviceActivationDate = LocalDateTime.parse(row[13], formatter),
           deviceDeactivationDate = nullIfSentinelDate(nullableLocalDateTime(row[14])),

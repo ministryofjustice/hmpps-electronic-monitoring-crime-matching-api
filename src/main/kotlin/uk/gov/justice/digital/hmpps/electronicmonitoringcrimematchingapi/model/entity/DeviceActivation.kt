@@ -10,7 +10,7 @@ data class DeviceActivation(
 
   val deviceName: String = "",
 
-  val deviceSerialNumber: Long,
+  val deviceSerialNumber: String,
 
   val uniqueDeviceWearerId: String,
 
