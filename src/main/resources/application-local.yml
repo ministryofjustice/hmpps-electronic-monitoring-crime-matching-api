@@ -46,6 +46,4 @@ springdoc:
     enabled: true
 
 email-ingestion:
-  valid-emails:
-    metropolitan: "test@email.com"
   mailbox-address: "shared-mailbox@email.com"
