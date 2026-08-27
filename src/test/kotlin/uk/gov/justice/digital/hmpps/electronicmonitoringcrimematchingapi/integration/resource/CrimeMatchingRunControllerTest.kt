@@ -145,7 +145,7 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         assertThat(run.results[0].deviceWearers[0].nomisId).isEqualTo("A5128CZ")
         assertThat(run.results[0].deviceWearers[0].pncRef).isEqualTo("pncRef")
         assertThat(run.results[0].deviceWearers[0].deviceId).isEqualTo(604008982)
-        assertThat(run.results[0].deviceWearers[0].deviceSerialNumber).isEqualTo(123456789)
+        assertThat(run.results[0].deviceWearers[0].deviceSerialNumber).isEqualTo("123456789")
         assertThat(run.results[0].deviceWearers[0].deviceName).isEqualTo("deviceName")
       }
     }
