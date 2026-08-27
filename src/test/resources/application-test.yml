@@ -76,6 +76,4 @@ flipt:
   polling-interval-in-seconds: 120
   
 email-ingestion:
-  valid-emails:
-    metropolitan: "test@email.com"
   mailbox-address: "shared-mailbox@email.com"
