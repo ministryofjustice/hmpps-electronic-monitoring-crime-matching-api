@@ -26,7 +26,7 @@ class GetPositionsByDeviceActivationId(
       Position.positionPrecision,
       Position.positionSpeed,
       Position.positionDirection,
-      Position.positionRecordedDate,
+      Position.positionGpsDate,
       Position.positionLbs,
     )
     .where {
@@ -37,11 +37,11 @@ class GetPositionsByDeviceActivationId(
       }
 
       from?.let {
-        Position.positionRecordedDate gte AthenaFunctions.fromIso8601Timestamp(from)
+        Position.positionGpsDate gte AthenaFunctions.fromIso8601Timestamp(from)
       }
 
       to?.let {
-        Position.positionRecordedDate lte AthenaFunctions.fromIso8601Timestamp(to)
+        Position.positionGpsDate lte AthenaFunctions.fromIso8601Timestamp(to)
       }
     }
     .prepare()

@@ -11,6 +11,6 @@ object Position : Table("position") {
   val positionPrecision = long("position_precision")
   val positionSpeed = long("position_speed")
   val positionDirection = long("position_direction")
-  val positionRecordedDate = date("position_recorded_date")
+  val positionGpsDate = date("position_gps_date")
   val positionLbs = long("position_lbs")
 }

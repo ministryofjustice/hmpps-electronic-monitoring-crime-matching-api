@@ -20,7 +20,7 @@ data class PositionResponse(
     precision = position.positionPrecision,
     speed = position.positionSpeed,
     direction = position.positionDirection,
-    timestamp = position.positionRecordedDate.toString(),
+    timestamp = position.positionGpsDate.toString(),
     geolocationMechanism = GeolocationMechanism.from(position.positionLbs).toString(),
   )
 }
