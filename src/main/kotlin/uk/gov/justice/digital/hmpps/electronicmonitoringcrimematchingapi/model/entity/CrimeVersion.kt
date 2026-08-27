@@ -49,7 +49,7 @@ data class CrimeVersion(
 
   val longitude: Double?,
 
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "TEXT")
   val crimeText: String,
 
   @OneToMany(mappedBy = "crimeVersion", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
