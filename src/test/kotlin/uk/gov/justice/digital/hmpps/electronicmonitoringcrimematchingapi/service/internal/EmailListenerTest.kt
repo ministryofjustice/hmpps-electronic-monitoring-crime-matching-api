@@ -55,9 +55,6 @@ class EmailListenerTest {
   private val mapper: ObjectMapper = jacksonObjectMapper()
   private val emailIngestionProperties: EmailIngestionProperties = EmailIngestionProperties(
     mailboxAddress = "shared-mailbox@email.com",
-    validEmails = mapOf(
-      "metropolitan" to "test@email.com",
-    ),
   )
 
   @BeforeEach

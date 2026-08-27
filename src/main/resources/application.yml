@@ -102,24 +102,4 @@ datastore:
   workgroup: ${ATHENA_WORKGROUP}
 
 email-ingestion:
-  valid-emails:
-    avon-and-somerset: ${AVON_AND_SOMERSET}
-    bedfordshire: ${BEDFORDSHIRE}
-    cheshire: ${CHESHIRE}
-    city-of-london: ${CITY_OF_LONDON}
-    cumbrian: ${CUMBRIAN}
-    derbyshire: ${DERBYSHIRE}
-    durham: ${DURHAM}
-    essex: ${ESSEX}
-    gloucestershire: ${GLOUCESTERSHIRE}
-    gwent: ${GWENT}
-    hampshire: ${HAMPSHIRE}
-    hertfordshire: ${HERTFORDSHIRE}
-    humberside: ${HUMBERSIDE}
-    kent: ${KENT}
-    metropolitan: ${METROPOLITAN}
-    north-wales: ${NORTH_WALES}
-    nottinghamshire: ${NOTTINGHAMSHIRE}
-    sussex: ${SUSSEX}
-    west-midlands: ${WEST_MIDLANDS}
   mailbox-address: ${MAILBOX_ADDRESS}
