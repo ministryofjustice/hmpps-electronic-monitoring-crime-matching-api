@@ -37,7 +37,7 @@ data class CrimeMatchingResultDeviceWearer(
 
   val deviceId: Long,
 
-  val deviceSerialNumber: Long,
+  val deviceSerialNumber: String,
 
   @Column(nullable = false)
   val deviceName: String,
