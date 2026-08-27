@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/v2/notifications/email"
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "errors": [
+        {
+          "error": "BadRequestError",
+          "message": "Bad request"
+        }
+      ]
+    }
+  }
+}
+

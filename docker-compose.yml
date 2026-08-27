@@ -77,5 +77,15 @@ services:
       - "./localstack:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
+  notify-stub:
+    image: wiremock/wiremock:latest
+    networks:
+      - hmpps
+    container_name: notify-stub
+    ports:
+      - "8093:8080"
+    volumes:
+      - "./wiremock/active-mappings:/home/wiremock/mappings"
+
 networks:
   hmpps:
