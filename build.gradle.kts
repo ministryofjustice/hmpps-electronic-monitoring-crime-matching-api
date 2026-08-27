@@ -10,17 +10,17 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.1")
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
-  implementation("software.amazon.awssdk:athena:2.54.4")
-  implementation("software.amazon.awssdk:s3:2.54.4")
+  implementation("software.amazon.awssdk:athena:2.54.5")
+  implementation("software.amazon.awssdk:s3:2.54.5")
   implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20260814")
   implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
@@ -32,7 +32,7 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
   testImplementation("com.h2database:h2:2.4.240")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.1")
   testImplementation("org.mockito:mockito-core:5.23.0")
   testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
