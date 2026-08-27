@@ -23,7 +23,7 @@ generic-service:
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: hmpps-em-crime-matching-alerts-preprod
-  sqsAlertsTotalMessagesThreshold: 0
+  sqsAlertsTotalMessagesThreshold: "0"
   sqsNumberAlertQueueNames:
     - hmpps-em-probation-devs-preprod-email-notifications-dlq
   rdsAlertsDatabases:
