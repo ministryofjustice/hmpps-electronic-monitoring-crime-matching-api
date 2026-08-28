@@ -1,17 +1,9 @@
 {
-  "name": "notify-send-email-500-then-201-second",
-  "comment": "Second call in retry scenario: returns 201. Triggered when template_id is 00000000-0000-0000-0000-000000005051.",
-  "priority": 1,
-  "scenarioName": "notify-send-email-500-then-201",
-  "requiredScenarioState": "succeeded-after-initial-failure",
+  "name": "notify-send-email-default-201",
+  "priority": 10,
   "request": {
     "method": "POST",
-    "url": "/notify/v2/notifications/email",
-    "bodyPatterns": [
-      {
-        "matchesJsonPath": "$.template_id[?(@ == '00000000-0000-0000-0000-000000005051')]"
-      }
-    ]
+    "url": "/notify/v2/notifications/email"
   },
   "response": {
     "status": 201,

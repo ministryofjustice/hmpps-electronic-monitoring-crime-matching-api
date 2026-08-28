@@ -1,4 +1,7 @@
 {
+  "name": "notify-send-email-default-201",
+  "comment": "Default catch-all: returns 201 for any template_id not matched by a more specific stub. Used as the base in active-mappings/.",
+  "priority": 10,
   "request": {
     "method": "POST",
     "url": "/notify/v2/notifications/email"
@@ -25,3 +28,4 @@
     }
   }
 }
+

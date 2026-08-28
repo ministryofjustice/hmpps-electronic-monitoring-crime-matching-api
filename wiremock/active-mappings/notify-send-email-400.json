@@ -1,6 +1,6 @@
 {
   "name": "notify-send-email-400",
-  "comment": "Returns 400 when template_id is 00000000-0000-0000-0000-000000000400.",
+  "comment": "Triggered when template_id is set to 00000000-0000-0000-0000-000000000400 (see application-local.yml for how to enable)",
   "priority": 1,
   "request": {
     "method": "POST",

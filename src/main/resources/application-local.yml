@@ -26,9 +26,16 @@ aws:
     endpoint-url: http://localhost:4566
 
 notify:
-  enabled: false # If set to true, requires `docker compose up -d wiremock`
+  enabled: true # If set to true, requires `docker compose up -d wiremock`
   base-url: http://localhost:8093/notify
   apikey: test-key-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+  # WireMock routes responses based on template_id. The production template IDs (application.yml)
+  # all receive a default 201 response. Override individual template IDs here to simulate error scenarios:
+  #   00000000-0000-0000-0000-000000000400  →  400 Bad Request
+  #   00000000-0000-0000-0000-000000000500  →  500 Internal Server Error (always)
+  #   00000000-0000-0000-0000-000000005051  →  500 on first call, then 201 on retry
+  # Example – to simulate a 500 on the successful-ingestion notification:
+  #   successfulIngestionTemplateId: 00000000-0000-0000-0000-000000000500
 
 flipt:
   url: https://feature-toggles-dev.hmpps.service.justice.gov.uk
