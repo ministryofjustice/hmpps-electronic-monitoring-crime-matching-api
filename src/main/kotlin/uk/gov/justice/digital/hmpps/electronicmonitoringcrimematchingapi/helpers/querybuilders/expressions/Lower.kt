@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.expressions
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Expression
-import java.time.ZonedDateTime
 
-class CurrentDate : Expression<ZonedDateTime>() {
-  override fun parameters() = emptyList<String>()
+class Lower(private val expression: Expression<String>) : Expression<String>() {
+  override fun parameters(): List<String> = expression.parameters()
 
-  override fun toString() = "current_date"
+  override fun toString(): String = "LOWER($expression)"
 }

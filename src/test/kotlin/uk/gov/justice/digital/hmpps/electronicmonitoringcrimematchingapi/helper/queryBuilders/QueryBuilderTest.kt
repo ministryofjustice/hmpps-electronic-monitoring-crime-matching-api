@@ -6,10 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn1
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn2
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testDateColumn
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ColumnExtensions.cast
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ExpressionExtensions.cast
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ExpressionExtensions.lower
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
@@ -105,7 +103,7 @@ class QueryBuilderTest {
   fun `it should build a query with a null check`() {
     val query = TestTable
       .selectAll()
-      .where { testColumn1 eq null }
+      .where { TestTable.testColumn1 eq null }
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 is NULL")
@@ -255,7 +253,19 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE CAST(test_table.test_column_1 AS Date) = current_date")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE CAST(test_table.test_column_1 AS DATE) = current_date")
+  }
+
+  @Test
+  fun `it should build a query with lower in the where clause`() {
+    val query = TestTable
+      .selectAll()
+      .where {
+        TestTable.testColumn2.lower() eq "1"
+      }
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE LOWER(test_table.test_column_2) = ?")
   }
 
   companion object {

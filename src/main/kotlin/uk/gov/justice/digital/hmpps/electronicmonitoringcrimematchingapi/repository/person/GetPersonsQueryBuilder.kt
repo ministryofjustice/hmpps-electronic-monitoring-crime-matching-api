@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ExpressionExtensions.lower
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.DeviceActivation
@@ -35,13 +36,13 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
         ?.filter { it.isNotBlank() }
         ?.forEach { token ->
           or {
-            Person.firstName like "%$token%"
-            Person.lastName like "%$token%"
+            Person.firstName.lower() like "%${token.lowercase()}%"
+            Person.lastName.lower() like "%${token.lowercase()}%"
           }
         }
 
       personsQueryCriteria.nomisId?.let {
-        Person.nomisId like "%$it%"
+        Person.nomisId.lower() like "%${it.lowercase()}%"
       }
 
       personsQueryCriteria.deviceId?.let {
