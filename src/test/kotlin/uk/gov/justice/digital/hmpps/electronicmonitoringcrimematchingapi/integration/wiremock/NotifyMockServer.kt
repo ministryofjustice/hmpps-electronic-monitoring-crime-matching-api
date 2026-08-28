@@ -15,7 +15,7 @@ class NotifyMockServer : WireMockServer(WIREMOCK_PORT) {
 
   fun stubSendEmail() {
     stubFor(
-      post(urlEqualTo("/v2/notifications/email"))
+      post(urlEqualTo("/notify/v2/notifications/email"))
         .willReturn(
           aResponse()
             .withStatus(201)
@@ -46,7 +46,7 @@ class NotifyMockServer : WireMockServer(WIREMOCK_PORT) {
 
   fun verifyEmailSentTo(address: String, count: Int) = verify(
     count,
-    postRequestedFor(urlEqualTo("/v2/notifications/email"))
+    postRequestedFor(urlEqualTo("/notify/v2/notifications/email"))
       .withRequestBody(matchingJsonPath("$.email_address", equalTo(address))),
   )
 }

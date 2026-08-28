@@ -32,7 +32,7 @@ else
 fi
 
 docker compose up -d wiremock >/dev/null
-docker compose restart wiremock >/dev/null
+curl -X POST http://localhost:8093/__admin/mappings/reset >/dev/null
 
 for _ in {1..30}; do
   if curl -fsS http://localhost:8093/__admin/mappings >/dev/null 2>&1; then

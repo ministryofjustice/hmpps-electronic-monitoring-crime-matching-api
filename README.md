@@ -173,14 +173,14 @@ Switch the active Notify response mode with:
 
 #### Without the helper script
 
-If you prefer to avoid the script, copy one of the committed mappings into the active file and restart the stub:
+If you prefer to avoid the script, copy one of the committed mappings into the active file and reset the stub:
 
 ```bash
 cp wiremock/mappings/notify-send-email-400.json wiremock/active-mappings/notify-send-email.json
-docker compose restart wiremock
+curl -X POST http://localhost:8093/__admin/mappings/reset
 ```
 
-To return to the default `201` response, copy `wiremock/mappings/notify-send-email-201.json` back into `wiremock/active-mappings/notify-send-email.json` and restart `wiremock`.
+To return to the default `201` response, copy `wiremock/mappings/notify-send-email-201.json` back into `wiremock/active-mappings/notify-send-email.json` and reset `wiremock`.
 
 ### Using Postman to locally test API requests
 The crime ingestion flow in this service is event-driven. There is no REST endpoint to directly trigger ingestion.

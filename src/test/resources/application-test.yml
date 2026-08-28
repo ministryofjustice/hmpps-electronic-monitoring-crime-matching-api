@@ -63,7 +63,7 @@ datastore:
 
 notify:
   enabled: true
-  base-url: http://localhost:8092
+  base-url: http://localhost:8092/notify
   apikey: 0123456789abcdef0123456789abcdef
   successfulIngestionTemplateId: c3df947e-2473-11f1-8dc8-2246b06f42bf
   failedIngestionTemplateId: ccd9f27c-2473-11f1-9dfb-2246b06f42bf
