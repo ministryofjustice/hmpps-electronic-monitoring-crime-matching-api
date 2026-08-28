@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ExpressionExtensions.cast
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ExpressionExtensions.lower
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Table
@@ -253,6 +254,18 @@ class QueryBuilderTest {
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE CAST(test_table.test_column_1 AS Date) = current_date")
+  }
+
+  @Test
+  fun `it should build a query with lower in the where clause`() {
+    val query = TestTable
+      .selectAll()
+      .where {
+        TestTable.testColumn2.lower() eq "1"
+      }
+      .prepare()
+
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE LOWER(test_table.test_column_2) = ?")
   }
 
   companion object {
