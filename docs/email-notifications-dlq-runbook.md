@@ -2,8 +2,57 @@
 
 ## Purpose
 
-This runbook describes the process for investigating email ingestion messages that have failed to process and have been moved to the Dead Letter Queue.
+This runbook describes the process for investigating messages that have failed to
+process and have been moved to the shared Dead Letter Queue.
 An alert will notify the team when a message has been moved to the DLQ.
+
+> **Note**
+> This runbook applies to the single shared DLQ used by this service:
+> - `email-notifications-dlq`
+>
+> The queue can contain different message schemas:
+> - Ingestion failure payloads (S3-received email processing)
+> - `EMAILSEND` worker failures after exhausted retries
+>
+> Redrive/replay is a **manual operational action** after investigation; there is no automatic in-app DLQ redrive.
+
+---
+
+## `FAILED` outbox rows (Notify 4xx — no DLQ entry)
+
+`FAILED` rows arise when GOV.UK Notify returns a permanent non-429 4xx response (e.g.
+invalid API key, unknown template ID, or a malformed request). The worker marks the row
+`FAILED` and returns without rethrowing, so SQS deletes the message after one delivery —
+**no `email-notifications-dlq` entry is produced**.
+
+The `EmailOutboxFailed` Prometheus alert fires on any such event. To investigate:
+
+1. Note the `event_id` from the alert labels or from a Postgres query:
+   ```sql
+   SELECT event_id, status, attempts, last_error, updated_at
+   FROM email_outbox
+   WHERE status = 'FAILED'
+   ORDER BY updated_at DESC
+   LIMIT 20;
+   ```
+2. Search OpenSearch or App Insights for the `event_id` to find the full Notify error
+   response (status code + body logged at `WARN` level by the worker).
+3. Common causes and remediation:
+
+   | Notify error | Cause | Action |
+   |---|---|---|
+   | 403 `invalid_token` | `NOTIFY_API_KEY` secret wrong or rotated | Rotate the secret; reset row to `PENDING` |
+   | 400 `BadRequestError` (template) | `NOTIFY_*_TEMPLATE_ID` misconfigured | Correct the template ID config; reset row |
+   | 400 `ValidationError` (email address) | Recipient address rejected by Notify | Investigate upstream data; do not redrive |
+
+4. To re-attempt delivery after fixing the root cause, reset the row to `PENDING`:
+   ```sql
+   UPDATE email_outbox
+   SET status = 'PENDING', claimed_at = NULL, claimed_by = NULL, last_error = NULL
+   WHERE status = 'FAILED'
+   AND event_id = '<event_id>';
+   ```
+   The relay will re-claim and re-dispatch on its next cycle.
 
 ---
 # Investigation Process
@@ -17,18 +66,32 @@ An alert will notify the team when a message has been moved to the DLQ.
 
 The DLQ Message ID is the primary identifier used to correlate failures across Application Insights and OpenSearch.
 
+### Distinguish the Message Schema First
+
+Because `email-notifications-dlq` is shared, first identify whether the failed
+message is an ingestion payload or an `EMAILSEND` payload.
+
+- Ingestion payload indicators: S3 metadata fields such as bucket/object key and
+  email parsing fields (subject/forwarding address/original sender).
+- `EMAILSEND` payload indicators: outbox/event fields such as `event_id` and
+  send-attempt context from the outbox worker flow.
+
 ### Information Available in the Message Payload
 
-The `Message` field of the DLQ payload will have the following information:
+The DLQ payload schema depends on the failing flow:
 
-- Original SQS Message ID
-- S3 Object Key
-- S3 Bucket Name
-- Email Subject
-- Email Forwarding Address
-- Email Original Sender
+- Ingestion failures commonly include:
+  - Original SQS Message ID
+  - S3 Object Key
+  - S3 Bucket Name
+  - Email Subject
+  - Email Forwarding Address
+  - Email Original Sender
+- `EMAILSEND` exhausted-retry failures commonly include identifiers that let you
+  correlate to `email_outbox` (for example `event_id`) and worker processing logs.
 
-These values can assist in determining the root cause of the failure.
+Use the schema type to choose the right investigation path (ingestion parsing/
+validation vs outbox send/retry behavior).
 
 ---
 

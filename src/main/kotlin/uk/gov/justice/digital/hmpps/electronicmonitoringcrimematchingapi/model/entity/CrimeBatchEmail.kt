@@ -35,4 +35,9 @@ data class CrimeBatchEmail(
   val originalSender: String,
   val subject: String,
   val sentAt: Date,
-)
+) {
+  // JPA entities should not include bidirectional associations in equality.
+  override fun equals(other: Any?): Boolean = this === other || (other is CrimeBatchEmail && id == other.id)
+
+  override fun hashCode(): Int = id.hashCode()
+}

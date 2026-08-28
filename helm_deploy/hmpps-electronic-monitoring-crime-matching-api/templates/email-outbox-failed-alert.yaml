@@ -1,0 +1,34 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: email-outbox-failed-alert
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+spec:
+  groups:
+    - name: email-outbox-failed
+      rules:
+        - alert: EmailOutboxFailed
+          # Fires when any email_outbox row is permanently marked FAILED (Notify 4xx).
+          # These failures do NOT produce a DLQ entry — the worker returns without
+          # rethrowing so SQS deletes the message after one delivery. This alert is
+          # the only automated signal that FAILED rows exist.
+          #
+          # Investigate via event_id in OpenSearch / App Insights and consult the
+          # email-notifications-dlq-runbook.md for remediation options.
+          expr: |
+            increase(email_outbox_event_total{status="FAILED"}[10m]) > 0
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Permanent email send failure (Notify 4xx)"
+            description: >
+              One or more email_outbox rows have been marked FAILED in the last 10 minutes.
+              A permanent Notify 4xx response was received; the SQS message has been deleted
+              and no DLQ entry will be produced. Investigate via event_id in OpenSearch or
+              App Insights and consult the runbook.
+            runbook_url: "https://github.com/ministryofjustice/hmpps-electronic-monitoring-crime-matching-api/blob/main/docs/email-notifications-dlq-runbook.md"
+
+

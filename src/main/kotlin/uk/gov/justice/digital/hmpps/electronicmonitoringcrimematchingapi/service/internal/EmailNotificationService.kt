@@ -12,12 +12,21 @@ import java.time.LocalDate
 
 @Service
 class EmailNotificationService(
-  private val featureFlagService: FeatureFlagService,
   private val notifyClient: NotificationClient,
   private val properties: NotifyProperties,
 ) {
-  fun sendEmails(
+
+  /**
+   * Sends the ingestion outcome email to a single recipient. Used by the outbox send worker so
+   * each recipient is tracked independently. The outbox worker can submit to Notify at-least-once,
+   * so [reference] is set to the outbox event id and Notify is relied upon to deduplicate
+   * deliveries for the same reference:
+   * https://docs.notifications.service.gov.uk/java.html#reference-required
+   */
+  fun sendEmail(
     ingestionOutcome: EmailIngestionOutcome,
+    emailAddress: String,
+    reference: String,
   ) {
     val templateId = emailTemplateId(ingestionOutcome.ingestionStatus)
 
@@ -32,21 +41,12 @@ class EmailNotificationService(
       recordCount = ingestionOutcome.recordCount,
     )
 
-    val emailAddresses = buildList {
-      add(ingestionOutcome.emailData.sender)
-      if (featureFlagService.policeConfirmationEmailsEnabled()) {
-        add(ingestionOutcome.emailData.originalSender)
-      }
-    }
-
-    for (emailAddress in emailAddresses) {
-      sendEmail(
-        templateId = templateId,
-        emailAddress = emailAddress,
-        personalisation = personalisation,
-        reference = ingestionOutcome.batchId,
-      )
-    }
+    sendEmail(
+      templateId = templateId,
+      emailAddress = emailAddress,
+      personalisation = personalisation,
+      reference = reference,
+    )
   }
 
   private fun sendEmail(

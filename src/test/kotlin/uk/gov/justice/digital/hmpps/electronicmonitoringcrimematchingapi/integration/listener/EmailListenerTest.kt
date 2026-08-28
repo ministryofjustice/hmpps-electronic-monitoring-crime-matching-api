@@ -49,6 +49,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.outbox.EmailOutboxRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.FeatureFlagService
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -97,6 +98,9 @@ class EmailListenerTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var crimeBatchEmailAttachmentIngestionErrorRepository: CrimeBatchEmailAttachmentIngestionErrorRepository
 
+  @Autowired
+  lateinit var emailOutboxRepository: EmailOutboxRepository
+
   @MockitoBean
   lateinit var featureFlagService: FeatureFlagService
 
@@ -128,6 +132,7 @@ class EmailListenerTest : IntegrationTestBase() {
     matchingNotificationsSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
     )
+    emailOutboxRepository.deleteAll()
     crimeBatchRepository.deleteAll()
     crimeRepository.deleteAll()
     crimeBatchIngestionAttemptRepository.deleteAll()
@@ -516,9 +521,11 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      // Verify Notify Emails
-      notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
-      notifyMockServer.verifyEmailSentTo("test@email.com", 1)
+      // Verify Notify Emails (sent asynchronously via the outbox relay + send worker)
+      await().untilAsserted {
+        notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
+        notifyMockServer.verifyEmailSentTo("test@email.com", 1)
+      }
     }
 
     @Test
@@ -540,9 +547,73 @@ class EmailListenerTest : IntegrationTestBase() {
 
       await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
 
-      // Verify Notify Emails
-      notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
+      // Verify Notify Emails (sent asynchronously via the outbox relay + send worker)
+      await().untilAsserted {
+        notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
+      }
       notifyMockServer.verifyEmailSentTo("test@email.com", 0)
+    }
+
+    // --- Idempotency / duplicate-delivery tests ---
+
+    @Test
+    fun `it should not create a duplicate ingestion attempt or crime batch when the same message is redelivered`() {
+      val csvContent = listOf(createCsvRow()).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      // First delivery
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      assertThat(crimeBatchIngestionAttemptRepository.findAll()).hasSize(1)
+      assertThat(crimeBatchRepository.findAll()).hasSize(1)
+
+      // Second delivery (duplicate SQS redelivery)
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      // No new ingestion attempt or crime batch must be created
+      assertThat(crimeBatchIngestionAttemptRepository.findAll()).hasSize(1)
+      assertThat(crimeBatchRepository.findAll()).hasSize(1)
+      assertThat(emailOutboxRepository.findAll()).hasSize(1)
+    }
+
+    @Test
+    fun `it should retry publishMatchingRequest on duplicate delivery when prior state is PENDING_OR_UNCONFIRMED`() {
+      val csvContent = listOf(createCsvRow()).joinToString("\n")
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      // First delivery
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      val attempt = crimeBatchIngestionAttemptRepository.findAll().single()
+
+      // Simulate publish state not being persisted (e.g. crash after successful SNS call)
+      jdbcTemplate.update(
+        "UPDATE crime_batch_ingestion_attempt SET matching_publish_state = 'PENDING_OR_UNCONFIRMED' WHERE id = ?",
+        attempt.id,
+      )
+
+      // Drain the matching notifications queue so we can count the retry
+      matchingNotificationsSqsClient.purgeQueue(
+        PurgeQueueRequest.builder().queueUrl(matchingNotificationsSqsUrl).build(),
+      ).get()
+
+      // Second delivery from the retryable state — should retry publish.
+      sendDomainSqsMessage(getMessage(OBJECT_KEY))
+      await().until { getNumberOfMessagesCurrentlyOnQueue() == 0 }
+
+      // Matching notification must have been re-published
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(1)
+      // Still only one ingestion attempt
+      assertThat(crimeBatchIngestionAttemptRepository.findAll()).hasSize(1)
     }
 
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(

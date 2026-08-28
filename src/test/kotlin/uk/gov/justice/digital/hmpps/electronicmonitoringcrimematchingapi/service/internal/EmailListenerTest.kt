@@ -15,10 +15,13 @@ import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.SimpleTransactionStatus
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.emailIngestion.EmailIngestionProperties
@@ -31,10 +34,12 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.MatchingPublishState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.outbox.EmailOutboxService
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
@@ -47,10 +52,11 @@ class EmailListenerTest {
   private lateinit var crimeBatchCsvService: CrimeBatchCsvService
   private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
   private lateinit var crimeBatchService: CrimeBatchService
-  private lateinit var emailNotificationService: EmailNotificationService
+  private lateinit var emailOutboxService: EmailOutboxService
   private lateinit var emailParserService: EmailParserService
   private lateinit var matchingNotificationService: MatchingNotificationService
   private lateinit var metricsService: MetricsService
+  private lateinit var transactionManager: PlatformTransactionManager
 
   private val mapper: ObjectMapper = jacksonObjectMapper()
   private val emailIngestionProperties: EmailIngestionProperties = EmailIngestionProperties(
@@ -63,11 +69,13 @@ class EmailListenerTest {
     crimeBatchCsvService = CrimeBatchCsvService()
     crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
+    emailOutboxService = Mockito.mock(EmailOutboxService::class.java)
     emailParserService = EmailParserService(emailIngestionProperties)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService, matchingNotificationService, metricsService)
+    transactionManager = Mockito.mock(PlatformTransactionManager::class.java)
+    whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailOutboxService, emailParserService, matchingNotificationService, metricsService, transactionManager)
   }
 
   @Nested
@@ -152,14 +160,14 @@ class EmailListenerTest {
       val inOrder = inOrder(
         crimeBatchService,
         matchingNotificationService,
-        emailNotificationService,
+        emailOutboxService,
         metricsService,
       )
 
       inOrder.verify(crimeBatchService, times(1)).createCrimeBatch(any(), any())
+      inOrder.verify(emailOutboxService, times(1)).enqueue(any())
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
       inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
-      inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
 
       assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatch.id.toString())
     }
@@ -240,7 +248,7 @@ class EmailListenerTest {
 
       val notificationCaptor = argumentCaptor<String>()
       verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
-      verify(emailNotificationService, times(1)).sendEmails(any())
+      verify(emailOutboxService, times(1)).enqueue(any())
       verify(metricsService, times(1)).recordOutcome(any())
 
       assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatch.id.toString())
@@ -371,5 +379,96 @@ class EmailListenerTest {
       }
       assertThat(exception.message).isEqualTo("No redirect email")
     }
+
+    // --- Duplicate / idempotency tests ---
+
+    @Test
+    fun `it should not ingest or enqueue when the same s3 object has already been ingested with PUBLISHED state`() {
+      val existingAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file",
+        matchingPublishState = MatchingPublishState.PUBLISHED,
+        crimeBatchId = UUID.randomUUID(),
+      )
+      whenever(crimeBatchEmailIngestionService.findIngestionAttemptBySource("emails", "email-file"))
+        .thenReturn(existingAttempt)
+
+      val message = buildMessage("emails", "email-file")
+      assertDoesNotThrow { listener.receiveEmailNotification(SqsMessage("Notification", message, UUID.randomUUID())) }
+
+      verify(s3Service, never()).getObject(any(), any(), any())
+      verify(emailOutboxService, never()).enqueue(any())
+      verify(matchingNotificationService, never()).publishMatchingRequest(any())
+      verify(metricsService, never()).recordOutcome(any())
+    }
+
+    @Test
+    fun `it should not ingest or publish when the same s3 object has already been ingested with NOT_REQUIRED state`() {
+      val existingAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file",
+        matchingPublishState = MatchingPublishState.NOT_REQUIRED,
+        crimeBatchId = null,
+      )
+      whenever(crimeBatchEmailIngestionService.findIngestionAttemptBySource("emails", "email-file"))
+        .thenReturn(existingAttempt)
+
+      val message = buildMessage("emails", "email-file")
+      assertDoesNotThrow { listener.receiveEmailNotification(SqsMessage("Notification", message, UUID.randomUUID())) }
+
+      verify(s3Service, never()).getObject(any(), any(), any())
+      verify(matchingNotificationService, never()).publishMatchingRequest(any())
+    }
+
+    @Test
+    fun `it should retry publishMatchingRequest on duplicate when prior state is PENDING_OR_UNCONFIRMED`() {
+      val crimeBatchId = UUID.randomUUID()
+      val existingAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file",
+        matchingPublishState = MatchingPublishState.PENDING_OR_UNCONFIRMED,
+        crimeBatchId = crimeBatchId,
+      )
+      whenever(crimeBatchEmailIngestionService.findIngestionAttemptBySource("emails", "email-file"))
+        .thenReturn(existingAttempt)
+
+      val message = buildMessage("emails", "email-file")
+      assertDoesNotThrow { listener.receiveEmailNotification(SqsMessage("Notification", message, UUID.randomUUID())) }
+
+      verify(s3Service, never()).getObject(any(), any(), any())
+      verify(emailOutboxService, never()).enqueue(any())
+      verify(matchingNotificationService, times(1)).publishMatchingRequest(crimeBatchId.toString())
+      verify(crimeBatchEmailIngestionService, times(1))
+        .markMatchingPublishState(existingAttempt.id, MatchingPublishState.PUBLISHED)
+    }
+
+    @Test
+    fun `it should not publish on duplicate when prior state is PENDING_OR_UNCONFIRMED but crimeBatchId is null`() {
+      // No crimeBatchId means there is nothing to re-publish on duplicate delivery.
+      val existingAttempt = CrimeBatchIngestionAttempt(
+        bucket = "emails",
+        objectName = "email-file",
+        matchingPublishState = MatchingPublishState.PENDING_OR_UNCONFIRMED,
+        crimeBatchId = null,
+      )
+      whenever(crimeBatchEmailIngestionService.findIngestionAttemptBySource("emails", "email-file"))
+        .thenReturn(existingAttempt)
+
+      val message = buildMessage("emails", "email-file")
+      assertDoesNotThrow { listener.receiveEmailNotification(SqsMessage("Notification", message, UUID.randomUUID())) }
+
+      verify(matchingNotificationService, never()).publishMatchingRequest(any())
+    }
+
+    private fun buildMessage(bucketName: String, objectKey: String): String = """
+      {
+        "receipt" : {
+          "action" : {
+            "bucketName" : "$bucketName",
+            "objectKey" : "$objectKey"
+          }
+        }
+      }
+    """.trimIndent()
   }
 }
