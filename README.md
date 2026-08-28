@@ -155,7 +155,7 @@ bash scripts/localstack-ingest-sample-email.sh
 
 ### Using the Notify stub locally
 
-The `notify-stub` service in `docker-compose.yml` mounts `wiremock/active-mappings/notify-send-email.json`.
+The `wiremock` service in `docker-compose.yml` mounts `wiremock/active-mappings/notify-send-email.json`.
 The default active file is the `201` response mapping.
 
 This will only be used if `notify.enabled: true` in `application-local.yml` or via env.
@@ -165,10 +165,10 @@ This will only be used if `notify.enabled: true` in `application-local.yml` or v
 Switch the active Notify response mode with:
 
 ```bash
-./scripts/notify-stub-mode.sh 201
-./scripts/notify-stub-mode.sh 400
-./scripts/notify-stub-mode.sh 500
-./scripts/notify-stub-mode.sh 500-then-201
+./scripts/wiremock-notify-mode.sh 201
+./scripts/wiremock-notify-mode.sh 400
+./scripts/wiremock-notify-mode.sh 500
+./scripts/wiremock-notify-mode.sh 500-then-201
 ```
 
 #### Without the helper script
@@ -177,10 +177,10 @@ If you prefer to avoid the script, copy one of the committed mappings into the a
 
 ```bash
 cp wiremock/mappings/notify-send-email-400.json wiremock/active-mappings/notify-send-email.json
-docker compose restart notify-stub
+docker compose restart wiremock
 ```
 
-To return to the default `201` response, copy `wiremock/mappings/notify-send-email-201.json` back into `wiremock/active-mappings/notify-send-email.json` and restart `notify-stub`.
+To return to the default `201` response, copy `wiremock/mappings/notify-send-email-201.json` back into `wiremock/active-mappings/notify-send-email.json` and restart `wiremock`.
 
 ### Using Postman to locally test API requests
 The crime ingestion flow in this service is event-driven. There is no REST endpoint to directly trigger ingestion.

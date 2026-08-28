@@ -31,8 +31,8 @@ else
   cp "$SOURCE_MAPPING_DIR/notify-send-email-$MODE.json" "$ACTIVE_MAPPING_DIR/notify-send-email.json"
 fi
 
-docker compose up -d notify-stub >/dev/null
-docker compose restart notify-stub >/dev/null
+docker compose up -d wiremock >/dev/null
+docker compose restart wiremock >/dev/null
 
 for _ in {1..30}; do
   if curl -fsS http://localhost:8093/__admin/mappings >/dev/null 2>&1; then
@@ -42,11 +42,11 @@ for _ in {1..30}; do
 done
 
 if ! curl -fsS http://localhost:8093/__admin/mappings >/dev/null 2>&1; then
-  echo "notify-stub did not become ready on http://localhost:8093"
+  echo "wiremock did not become ready on http://localhost:8093"
   exit 1
 fi
 
-echo "notify-stub mode set to $MODE"
+echo "wiremock mode set to $MODE"
 
 
 
