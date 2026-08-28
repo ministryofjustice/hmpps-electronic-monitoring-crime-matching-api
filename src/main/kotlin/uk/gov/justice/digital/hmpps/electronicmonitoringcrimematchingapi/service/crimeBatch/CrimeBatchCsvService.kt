@@ -57,7 +57,7 @@ class CrimeBatchCsvService {
     val crimeReference = parseCrimeReference(record.crimeReference().trim())
     val crimeDateFrom = parseDateValue("dateFrom", record.crimeDateTimeFrom(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_FROM_DATE_FORMAT)
     val crimeDateTo = parseCrimeDateTo(record.crimeDateTimeTo(), crimeDateFrom)
-    val easting = parseLocationValue(record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..600000.0)
+    val easting = parseLocationValue(record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..700000.0)
     val northing = parseLocationValue(record.northing(), "northing", record.easting(), Pair(record.latitude(), record.longitude()), 0.0..1300000.0)
     val latitude = parseLocationValue(record.latitude(), "latitude", record.longitude(), Pair(record.easting(), record.northing()), 49.5..61.5)
     val longitude = parseLocationValue(record.longitude(), "longitude", record.latitude(), Pair(record.easting(), record.northing()), -8.5..2.6)
