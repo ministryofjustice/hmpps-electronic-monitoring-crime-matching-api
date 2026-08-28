@@ -253,7 +253,7 @@ class QueryBuilderTest {
       }
       .prepare()
 
-    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE CAST(test_table.test_column_1 AS Date) = current_date")
+    assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE CAST(test_table.test_column_1 AS DATE) = current_date")
   }
 
   @Test

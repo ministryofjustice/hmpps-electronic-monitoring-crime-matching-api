@@ -6,5 +6,5 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 object ExpressionExtensions {
   fun <T> Expression<*>.cast(type: SqlType<T>): Cast<T> = Cast(this, type)
 
-  fun <T> Expression<T>.lower(): Lower<T> = Lower(this)
+  fun Expression<String>.lower(): Lower = Lower(this)
 }

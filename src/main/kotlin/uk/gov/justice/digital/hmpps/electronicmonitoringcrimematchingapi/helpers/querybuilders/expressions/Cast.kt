@@ -9,5 +9,5 @@ class Cast<T>(
 ) : Expression<T>() {
   override fun parameters() = expression.parameters()
 
-  override fun toString() = "CAST($expression AS $type)"
+  override fun toString() = "CAST($expression AS ${type.sql})"
 }

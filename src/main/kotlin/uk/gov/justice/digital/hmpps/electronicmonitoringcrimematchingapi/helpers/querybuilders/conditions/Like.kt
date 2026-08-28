@@ -2,4 +2,4 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Expression
 
-class Like<T>(left: Expression<T>, right: Expression<T>) : ComparisonCondition<T>(left, right, "LIKE")
+class Like(left: Expression<String>, right: Expression<String>) : ComparisonCondition<String>(left, right, "LIKE")

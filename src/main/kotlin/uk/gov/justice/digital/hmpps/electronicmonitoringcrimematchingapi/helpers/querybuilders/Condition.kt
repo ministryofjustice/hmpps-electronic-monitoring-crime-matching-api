@@ -35,7 +35,7 @@ abstract class Condition {
     addCondition(Equal(this, value))
   }
 
-  infix fun <T> Expression<T>.like(value: T) {
+  infix fun Expression<String>.like(value: String) {
     addCondition(Like(this, Parameter(value)))
   }
 
