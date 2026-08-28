@@ -1,9 +1,10 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders
 
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.expressions.Cast
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.expressions.Lower
 
 object ExpressionExtensions {
-  fun <T> Expression<*>.cast(type: SqlType<T>): CastColumn<T> = CastColumn(this, type)
+  fun <T> Expression<*>.cast(type: SqlType<T>): Cast<T> = Cast(this, type)
 
   fun <T> Expression<T>.lower(): Lower<T> = Lower(this)
 }
