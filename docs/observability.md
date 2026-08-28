@@ -3,14 +3,23 @@
 ## Tooling
 
 ### Grafana Dashboards
-- [Kubernetes Pod View](https://grafana.live.cloud-platform.service.justice.gov.uk/goto/N4dsvOPvg?orgId=1) 
+- [Resource Usage](https://grafana.live.cloud-platform.service.justice.gov.uk/d/a164a7f0339f99e89cea5cb47e9be617/kubernetes-compute-resources-workload)
+  - Filter by namespace & workload
+    - e.g namespace = hmpps-electronic-monitoring-crime-matching-{environment}
+    - workload = hmpps-electronic-monitoring-crime-matching-api
+- [Kubernetes Pod View](https://grafana.live.cloud-platform.service.justice.gov.uk/d/k8s_views_pods/kubernetes-views-pods) 
   - Filter by namespace & pod
-- [Nginx Ingress Controller](https://grafana.live.cloud-platform.service.justice.gov.uk/goto/BtylDdEDR?orgId=1) 
+    - e.g namespace = hmpps-electronic-monitoring-crime-matching-{environment}
+    - pod = hmpps-electronic-monitoring-crime-matching-api-*
+- [Nginx Ingress Controller](https://grafana.live.cloud-platform.service.justice.gov.uk/d/nginx-ingress-controller/nginx-ingress-controller) 
   - Filter by namespace & service
+    - e.g namespace = hmpps-electronic-monitoring-crime-matching-{environment}
+    - service = hmpps-electronic-monitoring-crime-matching-api
 - [AWS RDS](https://grafana.live.cloud-platform.service.justice.gov.uk/d/VR46pmwWk/aws-rds)
-  - Filter by instance identifier
-- [Application Alerts](https://grafana.live.cloud-platform.service.justice.gov.uk/goto/9yAyKdPDR?orgId=1)
+  - Filter by instance identifier acquired from secrets
+- [Application Alerts](https://grafana.live.cloud-platform.service.justice.gov.uk/d/application-alerts/application-alerts)
   - Filter by namespace 
+    - e.g hmpps-electronic-monitoring-crime-matching-{environment}
 
 ### OpenSearch
 - Dev - [OpenSearch Logs](https://app-logs.cloud-platform.service.justice.gov.uk/_dashboards/goto/e20d441cafa106b88469eb0699463c90?security_tenant=global)
