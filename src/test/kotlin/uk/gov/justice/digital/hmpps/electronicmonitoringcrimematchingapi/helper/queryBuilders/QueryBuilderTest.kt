@@ -6,7 +6,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.queryBuilders.TestTable.testColumn1
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.ExpressionExtensions.cast
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.JoinType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.SqlType
@@ -103,7 +102,7 @@ class QueryBuilderTest {
   fun `it should build a query with a null check`() {
     val query = TestTable
       .selectAll()
-      .where { testColumn1 eq null }
+      .where { TestTable.testColumn1 eq null }
       .prepare()
 
     assertThat(query.queryString).isEqualTo("SELECT * FROM test_table WHERE test_table.test_column_1 is NULL")
