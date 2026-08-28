@@ -77,11 +77,11 @@ services:
       - "./localstack:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
-  notify-stub:
+  wiremock:
     image: wiremock/wiremock:latest
     networks:
       - hmpps
-    container_name: notify-stub
+    container_name: wiremock
     ports:
       - "8093:8080"
     volumes:

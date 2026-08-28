@@ -3,7 +3,7 @@
   "requiredScenarioState": "succeeded-after-initial-failure",
   "request": {
     "method": "POST",
-    "url": "/v2/notifications/email"
+    "url": "/notify/v2/notifications/email"
   },
   "response": {
     "status": 201,

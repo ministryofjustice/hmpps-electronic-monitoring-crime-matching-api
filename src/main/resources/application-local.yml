@@ -26,8 +26,8 @@ aws:
     endpoint-url: http://localhost:4566
 
 notify:
-  enabled: false # If set to true, requires `docker compose up -d notify-stub`
-  base-url: http://localhost:8093
+  enabled: false # If set to true, requires `docker compose up -d wiremock`
+  base-url: http://localhost:8093/notify
   apikey: test-key-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
 
 flipt:
