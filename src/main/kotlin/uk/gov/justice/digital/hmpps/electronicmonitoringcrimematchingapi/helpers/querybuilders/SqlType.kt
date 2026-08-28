@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders
 
-enum class SqlType {
-  Date,
+import java.time.ZonedDateTime
+
+sealed class SqlType<T>(val sql: String) {
+  data object Date : SqlType<ZonedDateTime>("DATE")
 }

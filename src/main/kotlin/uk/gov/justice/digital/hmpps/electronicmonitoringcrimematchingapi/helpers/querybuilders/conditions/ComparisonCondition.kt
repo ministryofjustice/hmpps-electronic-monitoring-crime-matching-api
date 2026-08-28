@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Condition
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.querybuilders.Expression
 
-open class ComparisonCondition(private val left: Expression, private val right: Expression, private val operator: String) : Condition() {
+open class ComparisonCondition<T>(private val left: Expression<T>, private val right: Expression<T>, private val operator: String) : Condition() {
   override fun addCondition(condition: Condition): Unit = throw IllegalStateException("Can't add a nested condition to the Equal Operator")
 
   override fun parameters(): List<String> = left.parameters() + right.parameters()

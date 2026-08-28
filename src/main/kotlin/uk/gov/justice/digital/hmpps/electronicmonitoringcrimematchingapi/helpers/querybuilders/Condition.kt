@@ -22,7 +22,7 @@ abstract class Condition {
     addCondition(Or().apply(block))
   }
 
-  infix fun <T> Column<T>.eq(value: T?) {
+  infix fun <T> Expression<T>.eq(value: T?) {
     addCondition(
       when (value) {
         null -> IsNull(this)
@@ -31,27 +31,27 @@ abstract class Condition {
     )
   }
 
-  infix fun <T> Column<T>.eq(value: Expression) {
+  infix fun <T> Expression<T>.eq(value: Expression<T>) {
     addCondition(Equal(this, value))
   }
 
-  infix fun <T> Column<T>.like(value: String) {
+  infix fun <T> Expression<T>.like(value: T) {
     addCondition(Like(this, Parameter(value)))
   }
 
-  infix fun <T> Column<T>.gte(value: T) {
+  infix fun <T> Expression<T>.gte(value: T) {
     addCondition(GreaterThanEqual(this, Parameter(value)))
   }
 
-  infix fun <T> Column<T>.gte(value: Expression) {
+  infix fun <T> Expression<T>.gte(value: Expression<T>) {
     addCondition(GreaterThanEqual(this, value))
   }
 
-  infix fun <T> Column<T>.lte(value: T) {
+  infix fun <T> Expression<T>.lte(value: T) {
     addCondition(LessThanEqual(this, Parameter(value)))
   }
 
-  infix fun <T> Column<T>.lte(value: Expression) {
+  infix fun <T> Expression<T>.lte(value: Expression<T>) {
     addCondition(LessThanEqual(this, value))
   }
 }

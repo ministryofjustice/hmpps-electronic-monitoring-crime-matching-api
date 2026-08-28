@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers
 import java.time.ZonedDateTime
 
 object AthenaFunctions {
-  fun fromIso8601Timestamp(timestamp: ZonedDateTime): Function = Function(
+  fun fromIso8601Timestamp(timestamp: ZonedDateTime): Function<ZonedDateTime> = Function(
     "from_iso8601_timestamp",
     listOf(
       Parameter(timestamp),
