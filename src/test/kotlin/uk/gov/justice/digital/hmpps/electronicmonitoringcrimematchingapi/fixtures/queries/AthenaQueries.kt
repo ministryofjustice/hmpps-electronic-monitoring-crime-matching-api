@@ -54,7 +54,7 @@ object AthenaQueries {
       caseload
     INNER JOIN
       device_activations ON caseload.mdss_person_id = device_activations.person_id
-    WHERE ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? )
+    WHERE ( LOWER(caseload.first_name) LIKE ? OR LOWER(caseload.last_name) LIKE ? )
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
@@ -80,8 +80,8 @@ object AthenaQueries {
     INNER JOIN
       device_activations ON caseload.mdss_person_id = device_activations.person_id
     WHERE ( 
-      ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? ) AND 
-      ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? ) 
+      ( LOWER(caseload.first_name) LIKE ? OR LOWER(caseload.last_name) LIKE ? ) AND 
+      ( LOWER(caseload.first_name) LIKE ? OR LOWER(caseload.last_name) LIKE ? ) 
     )
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
@@ -107,7 +107,7 @@ object AthenaQueries {
       caseload 
     INNER JOIN 
       device_activations ON caseload.mdss_person_id = device_activations.person_id 
-    WHERE  caseload.nomis_id LIKE ?
+    WHERE LOWER(caseload.nomis_id) LIKE ?
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 

@@ -31,7 +31,7 @@ class GetPersonsTest {
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByNameTokensLike,
     )
-    assertThat(query.parameters).isEqualTo(listOf("'%Joe%'", "'%Joe%'", "'%Bloggs%'", "'%Bloggs%'"))
+    assertThat(query.parameters).isEqualTo(listOf("'%joe%'", "'%joe%'", "'%bloggs%'", "'%bloggs%'"))
   }
 
   @Test
@@ -44,7 +44,7 @@ class GetPersonsTest {
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByNameTokensLike,
     )
-    assertThat(query.parameters).isEqualTo(listOf("'%Joe%'", "'%Joe%'", "'%Bloggs%'", "'%Bloggs%'"))
+    assertThat(query.parameters).isEqualTo(listOf("'%joe%'", "'%joe%'", "'%bloggs%'", "'%bloggs%'"))
   }
 
   @Test
