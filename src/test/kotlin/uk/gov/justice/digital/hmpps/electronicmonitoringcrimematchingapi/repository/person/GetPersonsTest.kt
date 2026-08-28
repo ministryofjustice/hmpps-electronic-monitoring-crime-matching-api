@@ -22,6 +22,19 @@ class GetPersonsTest {
   }
 
   @Test
+  fun `it should build a valid query that matches both first name and last name`() {
+    val personsQueryCriteria = PersonsQueryCriteria(name = "Joe Bloggs")
+    val query = GetPersonsQueryBuilder(
+      personsQueryCriteria,
+    ).build()
+
+    assertThat(query.queryString).isEqualTo(
+      AthenaQueries.SelectPersonsByNamesLike,
+    )
+    assertThat(query.parameters).isEqualTo(listOf("'%Joe%'", "'%Joe%'", "'%Bloggs%'", "'%Bloggs%'"))
+  }
+
+  @Test
   fun `it should build a valid query with a nomis id filter`() {
     val personsQueryCriteria = PersonsQueryCriteria(nomisId = "foo")
     val query = GetPersonsQueryBuilder(
