@@ -561,7 +561,7 @@ class CrimeBatchCsvServiceTest {
     @JvmStatic
     fun invalidLocationValues() = listOf(
       Arguments.of("-1", "1", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "-1.0"),
-      Arguments.of("600001", "1", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "600001.0"),
+      Arguments.of("700001", "1", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "700001.0"),
       Arguments.of("1", "", "", "", "easting", CrimeBatchEmailAttachmentIngestionErrorType.DEPENDENT_LOCATION_DATA, "1"),
       Arguments.of("1", "-1", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "-1.0"),
       Arguments.of("1", "1300001", "", "", "northing", CrimeBatchEmailAttachmentIngestionErrorType.INVALID_LOCATION_DATA_RANGE, "1300001.0"),
