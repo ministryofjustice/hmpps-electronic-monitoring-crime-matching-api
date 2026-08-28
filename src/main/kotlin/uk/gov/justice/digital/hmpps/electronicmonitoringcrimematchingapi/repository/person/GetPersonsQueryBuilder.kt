@@ -29,12 +29,16 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
       DeviceActivation.deviceDeactivationDate,
     )
     .where {
-      personsQueryCriteria.name?.let {
-        or {
-          Person.firstName like "%$it%"
-          Person.lastName like "%$it%"
+      personsQueryCriteria.name
+        ?.trim()
+        ?.split(Regex("\\s+"))
+        ?.filter { it.isNotBlank() }
+        ?.forEach { token ->
+          or {
+            Person.firstName like "%$token%"
+            Person.lastName like "%$token%"
+          }
         }
-      }
 
       personsQueryCriteria.nomisId?.let {
         Person.nomisId like "%$it%"

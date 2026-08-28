@@ -58,6 +58,34 @@ object AthenaQueries {
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
+  val SelectPersonsByNameTokensLike = """
+    SELECT
+      caseload.unique_device_wearer_id,
+      caseload.first_name,
+      caseload.last_name,
+      caseload.nomis_id,
+      caseload.pnc_id,
+      caseload.date_of_birth,
+      caseload.responsible_officer_name,
+      caseload.postcode,
+      caseload.city_or_town,
+      caseload.house_number_and_street_name,
+      device_activations.device_id,
+      device_activations.device_activation_id,
+      device_activations.device_serial_number,
+      device_activations.device_activation_date,
+      device_activations.device_deactivation_date
+    FROM
+      caseload
+    INNER JOIN
+      device_activations ON caseload.mdss_person_id = device_activations.person_id
+    WHERE ( 
+      ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? ) AND 
+      ( caseload.first_name LIKE ? OR caseload.last_name LIKE ? ) 
+    )
+    ORDER BY device_activations.device_activation_date DESC
+  """.trimIndent().replace("\\s+".toRegex(), " ")
+
   val SelectPersonsByNomisIdLike = """
     SELECT 
       caseload.unique_device_wearer_id,
