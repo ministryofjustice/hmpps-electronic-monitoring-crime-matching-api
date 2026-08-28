@@ -22,14 +22,27 @@ class GetPersonsTest {
   }
 
   @Test
-  fun `it should build a valid query that matches both first name and last name`() {
+  fun `it should build a valid query that matches every name token against either first name or last name`() {
     val personsQueryCriteria = PersonsQueryCriteria(name = "Joe Bloggs")
     val query = GetPersonsQueryBuilder(
       personsQueryCriteria,
     ).build()
 
     assertThat(query.queryString).isEqualTo(
-      AthenaQueries.SelectPersonsByNamesLike,
+      AthenaQueries.SelectPersonsByNameTokensLike,
+    )
+    assertThat(query.parameters).isEqualTo(listOf("'%Joe%'", "'%Joe%'", "'%Bloggs%'", "'%Bloggs%'"))
+  }
+
+  @Test
+  fun `it should build a valid query that normalises whitespace in a name search`() {
+    val personsQueryCriteria = PersonsQueryCriteria(name = "  Joe   Bloggs  ")
+    val query = GetPersonsQueryBuilder(
+      personsQueryCriteria,
+    ).build()
+
+    assertThat(query.queryString).isEqualTo(
+      AthenaQueries.SelectPersonsByNameTokensLike,
     )
     assertThat(query.parameters).isEqualTo(listOf("'%Joe%'", "'%Joe%'", "'%Bloggs%'", "'%Bloggs%'"))
   }

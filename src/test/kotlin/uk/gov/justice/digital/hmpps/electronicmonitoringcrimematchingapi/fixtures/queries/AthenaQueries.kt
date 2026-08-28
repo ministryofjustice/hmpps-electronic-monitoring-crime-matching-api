@@ -58,7 +58,7 @@ object AthenaQueries {
     ORDER BY device_activations.device_activation_date DESC
   """.trimIndent().replace("\\s+".toRegex(), " ")
 
-  val SelectPersonsByNamesLike = """
+  val SelectPersonsByNameTokensLike = """
     SELECT
       caseload.unique_device_wearer_id,
       caseload.first_name,
