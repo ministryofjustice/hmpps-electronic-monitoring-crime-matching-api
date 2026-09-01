@@ -149,6 +149,49 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         assertThat(run.results[0].deviceWearers[0].deviceName).isEqualTo("deviceName")
       }
     }
+
+    @Test
+    fun `it should be possible to create a run with missing device wearer details`() {
+      val (crimeBatchId, _) = createCrimeBatchWithCrimeVersion()
+
+      val response = webTestClient.post()
+        .uri("/crime-matching-run")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RW")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("create-crime-matching-run-request-missing-device-wearer-details".loadJson())
+        .exchange()
+        .expectStatus().isCreated
+        .expectBody<Response<CreateCrimeMatchingRunResponse>>()
+        .returnResult().responseBody!!
+
+      assertThat(crimeMatchingRunRepository.count()).isEqualTo(1)
+
+      transactionTemplate.executeWithoutResult {
+        val run = crimeMatchingRunRepository
+          .findById(UUID.fromString(response.data.id))
+          .orElseThrow()
+
+        assertThat(run.algorithmVersion).isEqualTo("e83c5163316f89bfbde7d9ab23ca2e25604af290")
+        assertThat(run.crimeBatch.id).isEqualTo(crimeBatchId)
+        assertThat(run.triggerType.name).isEqualTo("AUTO")
+        assertThat(run.status.name).isEqualTo("SUCCESS")
+        assertThat(run.results.size).isEqualTo(1)
+        assertThat(run.results[0].deviceWearers).hasSize(1)
+
+        // Name and device id are required
+        assertThat(run.results[0].deviceWearers[0].name).isEqualTo("Richard Gibbons")
+        assertThat(run.results[0].deviceWearers[0].deviceId).isEqualTo(604008982)
+
+        // All other fields optional
+        assertThat(run.results[0].deviceWearers[0].address).isEqualTo("")
+        assertThat(run.results[0].deviceWearers[0].dateOfBirth).isNull()
+        assertThat(run.results[0].deviceWearers[0].identifier).isEqualTo("")
+        assertThat(run.results[0].deviceWearers[0].nomisId).isEqualTo("")
+        assertThat(run.results[0].deviceWearers[0].pncRef).isEqualTo("")
+        assertThat(run.results[0].deviceWearers[0].deviceSerialNumber).isEqualTo("")
+        assertThat(run.results[0].deviceWearers[0].deviceName).isEqualTo("")
+      }
+    }
   }
 
   // Creates a CrimeBatch, plus a Crime + CrimeVersion, and returns their IDs.
