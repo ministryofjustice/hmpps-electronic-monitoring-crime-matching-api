@@ -278,5 +278,48 @@ class CrimeMatchingResultControllerTest : IntegrationTestBase() {
         .jsonPath("$.data[0].crimeDateTimeFrom").isEqualTo("2025-01-30T01:00:00Z")
         .jsonPath("$.data[0].crimeDateTimeTo").isEqualTo("2025-01-30T01:00:00Z")
     }
+
+    @Test
+    fun `it should return crime matches with missing device wearer details`() {
+      // Given a batch with matching results with incomplete device wearer details
+      val batch = crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1") {
+          withMatchingRun {
+            withMatchedDeviceWearer(
+              // Name and deviceId are required
+              name = "name",
+              deviceId = 1,
+
+              // All other device wearer fields are optional
+              address = "",
+              deviceSerialNumber = "",
+              deviceName = "",
+              dateOfBirth = null,
+              identifier = "",
+              nomisId = "",
+              pncRef = "",
+            )
+          }
+        }
+      }
+
+      // When the client requests matching result, expect the device wearer details to be empty
+      webTestClient.get()
+        .uri("/crime-matching-results?batchId=" + batch.id)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_MATCHING_RESULTS__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data[0].deviceId").isEqualTo("1")
+        .jsonPath("$.data[0].subjectName").isEqualTo("name")
+        .jsonPath("$.data[0].subjectDateOfBirth").isEqualTo("")
+        .jsonPath("$.data[0].subjectAddress").isEqualTo("")
+        .jsonPath("$.data[0].subjectNomisId").isEqualTo("")
+        .jsonPath("$.data[0].subjectPncRef").isEqualTo("")
+        .jsonPath("$.data[0].subjectId").isEqualTo("")
+        .jsonPath("$.data[0].deviceSerialNumber").isEqualTo("")
+        .jsonPath("$.data[0].deviceName").isEqualTo("")
+    }
   }
 }

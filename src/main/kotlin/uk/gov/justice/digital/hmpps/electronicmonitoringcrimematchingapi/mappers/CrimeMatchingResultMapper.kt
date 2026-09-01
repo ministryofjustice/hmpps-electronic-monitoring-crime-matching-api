@@ -32,7 +32,7 @@ class CrimeMatchingResultMapper(
       subjectNomisId = matchingResult.nomisId,
       subjectPncRef = matchingResult.pncRef,
       subjectAddress = matchingResult.address,
-      subjectDateOfBirth = matchingResult.dateOfBirth.toString(),
+      subjectDateOfBirth = matchingResult.dateOfBirth?.toString() ?: "",
       subjectManager = "", // Always an empty string
     )
   }

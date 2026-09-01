@@ -50,7 +50,7 @@ class CrimeVersionMapper(
 
     val deviceWearer = DeviceWearerResponse(
       address = deviceWearer.address,
-      dateOfBirth = deviceWearer.dateOfBirth.toString(),
+      dateOfBirth = deviceWearer.dateOfBirth?.toString() ?: "",
       deviceId = deviceWearer.deviceId,
       deviceSerialNumber = deviceWearer.deviceSerialNumber,
       name = deviceWearer.name,

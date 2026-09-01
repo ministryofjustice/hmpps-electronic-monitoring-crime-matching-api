@@ -28,8 +28,8 @@ data class CrimeMatchingResultDeviceWearer(
   @Column(nullable = false)
   val address: String,
 
-  @Column(nullable = false)
-  val dateOfBirth: LocalDateTime,
+  @Column
+  val dateOfBirth: LocalDateTime?,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crime_matching_result_id", nullable = false)
