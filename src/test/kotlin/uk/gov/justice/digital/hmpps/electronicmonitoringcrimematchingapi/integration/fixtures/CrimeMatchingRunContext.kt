@@ -12,7 +12,7 @@ class CrimeMatchingRunContext(
     deviceId: Long,
     deviceSerialNumber: String = "123456789",
     deviceName: String = "deviceName",
-    dateOfBirth: LocalDateTime = LocalDateTime.of(2025, 1, 1, 1, 1),
+    dateOfBirth: LocalDateTime? = LocalDateTime.of(2025, 1, 1, 1, 1),
     identifier: String = "1",
     name: String = "name",
     nomisId: String = "nomisId",

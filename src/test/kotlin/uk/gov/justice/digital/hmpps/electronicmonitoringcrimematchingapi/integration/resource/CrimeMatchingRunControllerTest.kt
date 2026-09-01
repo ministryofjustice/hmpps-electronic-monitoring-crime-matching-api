@@ -182,7 +182,7 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         assertThat(run.results[0].deviceWearers[0].name).isEqualTo("Richard Gibbons")
         assertThat(run.results[0].deviceWearers[0].deviceId).isEqualTo(604008982)
 
-        // All other fields optional
+        // All other device wearer fields are optional
         assertThat(run.results[0].deviceWearers[0].address).isEqualTo("")
         assertThat(run.results[0].deviceWearers[0].dateOfBirth).isNull()
         assertThat(run.results[0].deviceWearers[0].identifier).isEqualTo("")
