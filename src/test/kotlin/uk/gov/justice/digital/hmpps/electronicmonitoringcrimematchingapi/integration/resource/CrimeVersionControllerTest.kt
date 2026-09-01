@@ -783,7 +783,6 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         .jsonPath("$.data.matching.deviceWearers[0].nomisId").isEqualTo("")
         .jsonPath("$.data.matching.deviceWearers[0].pncRef").isEqualTo("")
         .jsonPath("$.data.matching.deviceWearers[0].deviceSerialNumber").isEqualTo("")
-
     }
   }
 }
