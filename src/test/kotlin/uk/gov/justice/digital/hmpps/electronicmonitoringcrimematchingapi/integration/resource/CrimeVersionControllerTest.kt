@@ -742,5 +742,48 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         JSONCompareMode.STRICT,
       )
     }
+
+    @Test
+    fun `it should return a crime version with missing device wearer details`() {
+      // Given a batch with matching results with incomplete device wearer details
+      val versionId = UUID.fromString("11111111-1111-1111-1111-111111111111")
+      val batch = crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1", id = versionId) {
+          withMatchingRun {
+            withMatchedDeviceWearer(
+              // Name and deviceId are required
+              name = "name",
+              deviceId = 1,
+
+              // All other device wearer fields are optional
+              address = "",
+              deviceSerialNumber = "",
+              deviceName = "",
+              dateOfBirth = null,
+              identifier = "",
+              nomisId = "",
+              pncRef = "",
+            )
+          }
+        }
+      }
+
+      // When the client requests a crime version, expect the device wearer details to be empty
+      val body = webTestClient.get()
+        .uri("/crime-versions/$versionId")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("$.data.matching.deviceWearers[0].deviceId").isEqualTo("1")
+        .jsonPath("$.data.matching.deviceWearers[0].name").isEqualTo("name")
+        .jsonPath("$.data.matching.deviceWearers[0].dateOfBirth").isEqualTo("")
+        .jsonPath("$.data.matching.deviceWearers[0].address").isEqualTo("")
+        .jsonPath("$.data.matching.deviceWearers[0].nomisId").isEqualTo("")
+        .jsonPath("$.data.matching.deviceWearers[0].pncRef").isEqualTo("")
+        .jsonPath("$.data.matching.deviceWearers[0].deviceSerialNumber").isEqualTo("")
+
+    }
   }
 }
