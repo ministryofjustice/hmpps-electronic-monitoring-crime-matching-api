@@ -1,3 +1,7 @@
+-- Identifies crimes that have been ingested more than once by finding crime records
+-- with multiple versions for the same police force area and crime reference.
+-- Results are ordered by the number of versions, highest first.
+
 SELECT
     *
 FROM (
@@ -12,4 +16,3 @@ FROM (
 )
 WHERE duplicates > 1
 ORDER BY duplicates DESC
-

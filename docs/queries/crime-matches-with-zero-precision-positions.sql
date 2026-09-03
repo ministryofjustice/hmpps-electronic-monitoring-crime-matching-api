@@ -1,3 +1,7 @@
+-- Lists crime matches containing one or more matched positions with zero precision.
+-- Shows the total number of matched positions and zero-precision positions for each
+-- crime version and device wearer, ordered by the number of zero-precision positions.
+
 SELECT
     *
 FROM (
@@ -21,4 +25,3 @@ FROM (
 )
 WHERE num_zero_precision_locs > 0
 ORDER BY num_zero_precision_locs DESC
-

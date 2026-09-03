@@ -1,3 +1,6 @@
+-- Lists each crime version with the number of device wearers matched to it.
+-- Results are ordered by the number of matched device wearers, highest first.
+
 SELECT
     police_force_area,
     crime_reference,
@@ -12,4 +15,3 @@ INNER JOIN crime_matching_result_device_wearer
 ON crime_matching_result.id = crime_matching_result_device_wearer.crime_matching_result_id
 GROUP BY police_force_area, crime_reference, crime_version.id
 ORDER BY num_matched_device_wearers DESC
-

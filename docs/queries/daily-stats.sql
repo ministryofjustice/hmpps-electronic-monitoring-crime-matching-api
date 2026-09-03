@@ -1,3 +1,13 @@
+-- Produces daily ingestion and matching statistics for reconciliation and monitoring.
+-- Shows the number of ingestion attempts, crimes sent, crimes successfully ingested,
+-- crimes not ingested, and matched device wearers for each date.
+--
+-- not_ingested_crimes is calculated as the difference between the number of crimes
+-- contained in submitted email attachments and the number of crime versions created.
+--
+-- Full outer joins ensure dates are included even when one of the metrics has no
+-- corresponding records for that date.
+
 WITH ingestion_attempts AS (
     SELECT
         created_at::date AS date,
