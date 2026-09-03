@@ -65,7 +65,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
+        "w": 5,
         "x": 0,
         "y": 1
       },
@@ -148,8 +148,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
-        "x": 6,
+        "w": 5,
+        "x": 5,
         "y": 1
       },
       "id": 27,
@@ -219,8 +219,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
-        "x": 12,
+        "w": 4,
+        "x": 10,
         "y": 1
       },
       "id": 28,
@@ -301,8 +301,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
-        "x": 18,
+        "w": 5,
+        "x": 14,
         "y": 1
       },
       "id": 29,
@@ -340,6 +340,88 @@
         }
       ],
       "title": "Total Emails Failed Ingestion",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 19,
+        "y": 1
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.6+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(email_ingestion_outcome_total{ingestionStatus=\"ERROR\",namespace=\"hmpps-electronic-monitoring-crime-matching-${environment}\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Emails Error Ingestion",
       "type": "stat"
     },
     {
@@ -2340,8 +2422,8 @@
     "list": [
       {
         "current": {
-          "text": "preprod",
-          "value": "preprod"
+          "text": "prod",
+          "value": "prod"
         },
         "label": "Environment",
         "name": "environment",
@@ -2352,12 +2434,12 @@
             "value": "dev"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "preprod",
             "value": "preprod"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "prod",
             "value": "prod"
           }
@@ -2368,13 +2450,13 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-12h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "HMPPS Electronic Monitoring Crime Matching Tool",
   "uid": "afsdv98od660we",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
