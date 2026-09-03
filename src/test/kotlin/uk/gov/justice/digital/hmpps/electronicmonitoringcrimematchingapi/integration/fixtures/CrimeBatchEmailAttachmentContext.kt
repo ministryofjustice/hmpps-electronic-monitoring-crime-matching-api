@@ -7,14 +7,18 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 class CrimeBatchEmailAttachmentContext(
   private val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
 ) {
-  fun withAttachmentIngestionError() {
+  fun withAttachmentIngestionError(
+    crimeReference: String? = null,
+    fieldName: String? = "crimeReference",
+    errorType: CrimeBatchEmailAttachmentIngestionErrorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+  ) {
     crimeBatchEmailAttachment.crimeBatchEmailAttachmentIngestionErrors.add(
       CrimeBatchEmailAttachmentIngestionError(
         rowNumber = 1,
-        crimeReference = null,
-        fieldName = "crimeReference",
+        crimeReference = crimeReference,
+        fieldName = fieldName,
         value = null,
-        errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+        errorType = errorType,
         crimeTypeId = null,
         crimeBatchEmailAttachment = crimeBatchEmailAttachment,
       ),

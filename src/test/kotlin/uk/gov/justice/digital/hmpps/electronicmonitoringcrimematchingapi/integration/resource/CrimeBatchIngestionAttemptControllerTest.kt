@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.charset.StandardCharsets
@@ -490,6 +491,39 @@ class CrimeBatchIngestionAttemptControllerTest : IntegrationTestBase() {
 
       JSONAssert.assertEquals(
         "get-ingestion-attempt-partial-ingestion-response".loadJson(),
+        String(body, StandardCharsets.UTF_8),
+        JSONCompareMode.NON_EXTENSIBLE,
+      )
+    }
+
+    @Test
+    fun `it should return a partial ingestion attempt with multiple errors on a single row`() {
+      val ingestionAttempt = crimeMatchingFixtures.givenIngestionAttempt(
+        id = UUID.fromString("aefa6993-2bed-4e69-a96e-afb562046a6f"),
+      ) {
+        withAttachment(rowCount = 2) {
+          withAttachmentIngestionError()
+          withAttachmentIngestionError(crimeReference = "crimeRef", fieldName = "easting", errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_LOCATION_DATA)
+        }
+      }
+
+      val batchId = UUID.fromString("22134a17-c192-4475-88ab-39d90c92f036")
+      crimeMatchingFixtures.givenBatch(crimeBatchId = batchId, ingestionAttempt = ingestionAttempt, batchId = "Batch1") {
+        withCrime("crime1") {}
+      }
+
+      val body = webTestClient.get()
+        .uri("/ingestion-attempts/aefa6993-2bed-4e69-a96e-afb562046a6f")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIME_BATCHES__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        "get-ingestion-attempt-partial-ingestion-multiple-row-errors-response".loadJson(),
         String(body, StandardCharsets.UTF_8),
         JSONCompareMode.NON_EXTENSIBLE,
       )
