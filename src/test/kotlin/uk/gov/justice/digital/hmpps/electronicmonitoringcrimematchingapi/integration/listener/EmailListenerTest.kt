@@ -9,6 +9,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
@@ -118,6 +121,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun beforeEach() {
+    Mockito.reset(crimeBatchRepository)
     s3Client.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build())
     emailQueueSqsClient.purgeQueue(
       PurgeQueueRequest.builder().queueUrl(emailQueueSqsUrl).build(),
@@ -362,6 +366,49 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Check that notification to start algo was not generated
       assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+    }
+
+    @Test
+    fun `it should rollback ingestion writes when crime batch save fails`() {
+      val outcomeMetric = meterRegistry.get("email.ingestion.outcome").tags(
+        "ingestionStatus",
+        IngestionStatus.SUCCESSFUL.name,
+      ).counter()
+      val countBefore = outcomeMetric.count()
+
+      val csvContent = listOf(
+        createCsvRow(),
+        createCsvRow(crimeReference = "CRI00000002"),
+      ).joinToString("\n")
+
+      val encoded = Base64.encode(csvContent.toByteArray())
+      val email = createEmailFile(encoded)
+
+      s3Client.putObject(PutObjectRequest.builder().bucket(BUCKET_NAME).key(OBJECT_KEY).build(), RequestBody.fromString(email))
+
+      doThrow(RuntimeException("Simulated crime batch save failure"))
+        .whenever(crimeBatchRepository)
+        .save(any<CrimeBatch>())
+
+      val message = getMessage(OBJECT_KEY)
+      sendDomainSqsMessage(message)
+
+      await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
+
+      val dlqMessage = getMessagesCurrentlyOnDeadLetterQueue().messages().first()
+      assertThat(dlqMessage.body()).isEqualTo(message)
+
+      assertThat(crimeBatchIngestionAttemptRepository.findAll()).isEmpty()
+      assertThat(crimeBatchRepository.findAll()).isEmpty()
+      assertThat(crimeRepository.findAll()).isEmpty()
+      assertThat(crimeVersionRepository.findAll()).isEmpty()
+      assertThat(crimeBatchEmailAttachmentIngestionErrorRepository.findAll()).isEmpty()
+
+      // Check that notification to start algo was not generated
+      assertThat(getNumberOfMessagesCurrentlyOnMatchingNotificationsQueue()).isEqualTo(0)
+
+      // Check outcome metric was not incremented because ingestion finalization failed
+      assertThat(outcomeMetric.count()).isEqualTo(countBefore)
     }
 
     @Test
