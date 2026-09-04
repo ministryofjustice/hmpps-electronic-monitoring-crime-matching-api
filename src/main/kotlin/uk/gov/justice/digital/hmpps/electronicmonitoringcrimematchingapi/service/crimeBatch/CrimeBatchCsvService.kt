@@ -30,17 +30,18 @@ class CrimeBatchCsvService {
   fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordRequest>()
     val errors = mutableListOf<EmailAttachmentIngestionError>()
-    val unparsedRecords = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
     var recordCount = 0
 
-    val records = unparsedRecords.records // So we can iterate over them multiple times
-    val duplicateCrimeReferences = findDuplicateCrimeReferences(records)
+    CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT).use { parser ->
+      val records = parser.records // Materialise so we can iterate over them multiple times
+      val duplicateCrimeReferences = findDuplicateCrimeReferences(records)
 
-    for (record in records) {
-      recordCount++
-      when (val result = parseRecord(record, duplicateCrimeReferences)) {
-        is ValidationResult.Success -> crimes.add(result.value)
-        is ValidationResult.Failure -> errors.addAll(result.errors)
+      for (record in records) {
+        recordCount++
+        when (val result = parseRecord(record, duplicateCrimeReferences)) {
+          is ValidationResult.Success -> crimes.add(result.value)
+          is ValidationResult.Failure -> errors.addAll(result.errors)
+        }
       }
     }
 
