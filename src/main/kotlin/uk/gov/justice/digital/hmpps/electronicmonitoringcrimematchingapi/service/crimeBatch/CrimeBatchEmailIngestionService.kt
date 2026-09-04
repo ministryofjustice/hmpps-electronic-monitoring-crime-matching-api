@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
+import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
@@ -7,13 +8,15 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 
 @Service
 class CrimeBatchEmailIngestionService(
-  private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
+  private val entityManager: EntityManager,
 ) {
-  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
+  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt {
+    entityManager.persist(crimeBatchIngestionAttempt)
+    return crimeBatchIngestionAttempt
+  }
 
   fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
     bucket = bucketName,
