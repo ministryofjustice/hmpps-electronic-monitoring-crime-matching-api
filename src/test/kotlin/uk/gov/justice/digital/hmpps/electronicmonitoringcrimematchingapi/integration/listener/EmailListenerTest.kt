@@ -267,7 +267,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val csvContent = listOf(
         createCsvRow(),
-        createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.identifier, batchId = "BFD20250126"),
+        createCsvRow(policeForce = PoliceForce.BEDFORDSHIRE.identifier, batchId = "BFD20250126", crimeReference = "CRI00000002"),
       ).joinToString("\n")
       val encoded = Base64.encode(csvContent.toByteArray())
       val email = createEmailFile(encoded)
@@ -301,7 +301,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val csvContent = listOf(
         createCsvRow(),
-        createCsvRow(batchId = "MPS20260123"),
+        createCsvRow(crimeReference = "CRI00000002", batchId = "MPS20260123"),
       ).joinToString("\n")
 
       val encoded = Base64.encode(csvContent.toByteArray())
@@ -374,8 +374,8 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val csvContent = listOf(
         createCsvRow(),
-        createCsvRow(crimeTypeId = "invalid"),
-        createCsvRow(crimeReference = "CRI00000002"),
+        createCsvRow(crimeTypeId = "invalid", crimeReference = "CRI00000002"),
+        createCsvRow(crimeReference = "CRI00000003"),
       ).joinToString("\n")
 
       val encoded = Base64.encode(csvContent.toByteArray())
@@ -417,7 +417,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       val csvContent = listOf(
         createCsvRow(latitude = "invalid"),
-        createCsvRow(crimeTypeId = "invalid"),
+        createCsvRow(crimeTypeId = "invalid", crimeReference = "CRI00000002"),
         createCsvRow(crimeReference = ""),
       ).joinToString("\n")
 

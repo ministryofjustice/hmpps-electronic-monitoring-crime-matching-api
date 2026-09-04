@@ -30,21 +30,25 @@ class CrimeBatchCsvService {
   fun parseCsvFile(inputStream: InputStream): ParseResult {
     val crimes = mutableListOf<CrimeRecordRequest>()
     val errors = mutableListOf<EmailAttachmentIngestionError>()
-    val records = CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT)
     var recordCount = 0
 
-    for (record in records) {
-      recordCount++
-      when (val result = parseRecord(record)) {
-        is ValidationResult.Success -> crimes.add(result.value)
-        is ValidationResult.Failure -> errors.addAll(result.errors)
+    CSVParser.parse(inputStream, Charsets.UTF_8, CSVFormat.DEFAULT).use { parser ->
+      val records = parser.records // Materialise so we can iterate over them multiple times
+      val duplicateCrimeReferences = findDuplicateCrimeReferences(records)
+
+      for (record in records) {
+        recordCount++
+        when (val result = parseRecord(record, duplicateCrimeReferences)) {
+          is ValidationResult.Success -> crimes.add(result.value)
+          is ValidationResult.Failure -> errors.addAll(result.errors)
+        }
       }
     }
 
     return ParseResult(recordCount, crimes, errors)
   }
 
-  private fun parseRecord(record: CSVRecord): ValidationResult<CrimeRecordRequest> {
+  private fun parseRecord(record: CSVRecord, duplicateCrimeReferences: Set<String>): ValidationResult<CrimeRecordRequest> {
     if (record.size() != CrimeBatchCsvConfig.COLUMN_COUNT) {
       return ValidationResult.Failure(
         listOf(EmailAttachmentIngestionError(rowNumber = record.recordNumber, crimeReference = null, crimeTypeId = null, errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT)),
@@ -54,7 +58,7 @@ class CrimeBatchCsvService {
     val policeForce = parsePoliceForce(record.policeForce())
     val crimeTypeId = parseEnumValue<CrimeType>("crimeType", record.crimeTypeId(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE)
     val batchId = parseBatchId(record.batchId().trim(), policeForce.value)
-    val crimeReference = parseCrimeReference(record.crimeReference().trim())
+    val crimeReference = parseCrimeReference(record.crimeReference().trim(), duplicateCrimeReferences)
     val crimeDateFrom = parseDateValue("dateFrom", record.crimeDateTimeFrom(), CrimeBatchEmailAttachmentIngestionErrorType.INVALID_FROM_DATE_FORMAT)
     val crimeDateTo = parseCrimeDateTo(record.crimeDateTimeTo(), crimeDateFrom)
     val easting = parseLocationValue(record.easting(), "easting", record.northing(), Pair(record.latitude(), record.longitude()), 0.0..700000.0)
@@ -148,7 +152,7 @@ class CrimeBatchCsvService {
     }
   }
 
-  private fun parseCrimeReference(value: String): FieldValidationResult<String> {
+  private fun parseCrimeReference(value: String, duplicateCrimeReferences: Set<String>): FieldValidationResult<String> {
     val fieldName = "crimeReference"
     val parsed = parseStringValue(fieldName, value)
 
@@ -156,6 +160,15 @@ class CrimeBatchCsvService {
       return FieldValidationResult(
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
         field = fieldName,
+      )
+    }
+
+    if (duplicateCrimeReferences.contains(parsed.value)) {
+      return FieldValidationResult(
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
+        field = fieldName,
+        input = value,
+        value = parsed.value,
       )
     }
 
@@ -307,6 +320,14 @@ class CrimeBatchCsvService {
 
     return FieldValidationResult()
   }
+
+  private fun findDuplicateCrimeReferences(records: List<CSVRecord>): Set<String> = records
+    .filter { it.size() == CrimeBatchCsvConfig.COLUMN_COUNT }
+    .map { it.crimeReference().trim() }
+    .groupingBy { it }
+    .eachCount()
+    .filter { it.value > 1 }
+    .keys
 
   private fun CSVRecord.policeForce() = this[CrimeBatchCsvConfig.ColumnsIndices.POLICE_FORCE]
   private fun CSVRecord.crimeTypeId() = this[CrimeBatchCsvConfig.ColumnsIndices.CRIME_TYPE_ID]

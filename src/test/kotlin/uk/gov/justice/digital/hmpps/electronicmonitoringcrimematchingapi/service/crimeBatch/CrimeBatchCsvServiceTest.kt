@@ -280,6 +280,163 @@ class CrimeBatchCsvServiceTest {
   }
 
   @Test
+  fun `it should not parse crimes with duplicate crime references`() {
+    val crimeData = listOf(
+      createCsvRow(crimeReference = "valid_but_duplicate"),
+      createCsvRow(crimeReference = "valid_but_duplicate"),
+    ).joinToString("\n").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "valid_but_duplicate",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
+          field = "crimeReference",
+          value = "valid_but_duplicate",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 2,
+          crimeReference = "valid_but_duplicate",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
+          field = "crimeReference",
+          value = "valid_but_duplicate",
+        ),
+      ),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(2)
+  }
+
+  @Test
+  fun `it should not parse crimes with duplicate crime references even if there is extra whitespace`() {
+    val crimeData = listOf(
+      createCsvRow(crimeReference = "valid_but_duplicate   "),
+      createCsvRow(crimeReference = "   valid_but_duplicate"),
+    ).joinToString("\n").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "valid_but_duplicate",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
+          field = "crimeReference",
+          value = "valid_but_duplicate",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 2,
+          crimeReference = "valid_but_duplicate",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
+          field = "crimeReference",
+          value = "valid_but_duplicate",
+        ),
+      ),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(2)
+  }
+
+  @Test
+  fun `it should raise duplicate crime reference errors alongside other errors`() {
+    val crimeData = listOf(
+      createCsvRow(crimeReference = "valid_but_duplicate", batchId = ""),
+      createCsvRow(crimeReference = "valid_but_duplicate"),
+    ).joinToString("\n").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "valid_but_duplicate",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
+          field = "batchId",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = "valid_but_duplicate",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
+          field = "crimeReference",
+          value = "valid_but_duplicate",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 2,
+          crimeReference = "valid_but_duplicate",
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
+          field = "crimeReference",
+          value = "valid_but_duplicate",
+        ),
+      ),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(2)
+  }
+
+  @Test
+  fun `it should not raise duplicate crime reference errors alongside 'missing crime reference' errors`() {
+    val crimeData = listOf(
+      createCsvRow(crimeReference = ""),
+      createCsvRow(crimeReference = ""),
+    ).joinToString("\n").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(0)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 1,
+          crimeReference = null,
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+          field = "crimeReference",
+        ),
+        EmailAttachmentIngestionError(
+          rowNumber = 2,
+          crimeReference = null,
+          crimeTypeId = CrimeType.TOMV,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+          field = "crimeReference",
+        ),
+      ),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(2)
+  }
+
+  @Test
+  fun `it should not raise a duplicate crime reference error for records with an invalid column count`() {
+    val crimeRowWithCrimeReferenceButInvalidColumnCount = ",,,valid_but_duplicate,,"
+    val crimeData = listOf(
+      createCsvRow(crimeReference = "valid_but_duplicate"),
+      crimeRowWithCrimeReferenceButInvalidColumnCount,
+    ).joinToString("\n").byteInputStream()
+    val parseResult = service.parseCsvFile(crimeData)
+
+    assertThat(parseResult.records).hasSize(1)
+    assertThat(parseResult.errors).isEqualTo(
+      listOf(
+        EmailAttachmentIngestionError(
+          rowNumber = 2,
+          crimeReference = null,
+          crimeTypeId = null,
+          errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
+          field = null,
+        ),
+      ),
+    )
+    assertThat(parseResult.recordCount).isEqualTo(2)
+  }
+
+  @Test
   fun `it should not parse an invalid crime date from`() {
     val crimeData = createCsvRow(crimeDateTimeFrom = "").byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
@@ -447,8 +604,8 @@ class CrimeBatchCsvServiceTest {
   fun `it should be possible to identify which row the error was on`() {
     val crimeData = listOf(
       createCsvRow(),
-      createCsvRow(crimeTypeId = "invalid"),
-      createCsvRow(crimeDateTimeFrom = "invalid"),
+      createCsvRow(crimeReference = "CRI00000002", crimeTypeId = "invalid"),
+      createCsvRow(crimeReference = "CRI00000003", crimeDateTimeFrom = "invalid"),
     ).joinToString("\n").byteInputStream()
     val parseResult = service.parseCsvFile(crimeData)
 
@@ -457,7 +614,7 @@ class CrimeBatchCsvServiceTest {
       listOf(
         EmailAttachmentIngestionError(
           rowNumber = 2,
-          crimeReference = "CRI00000001",
+          crimeReference = "CRI00000002",
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
           field = "crimeType",
@@ -465,7 +622,7 @@ class CrimeBatchCsvServiceTest {
         ),
         EmailAttachmentIngestionError(
           rowNumber = 3,
-          crimeReference = "CRI00000001",
+          crimeReference = "CRI00000003",
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_FROM_DATE_FORMAT,
           field = "dateFrom",
