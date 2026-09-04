@@ -35,4 +35,13 @@ data class CrimeBatchEmail(
   val originalSender: String,
   val subject: String,
   val sentAt: Date,
-)
+) {
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is CrimeBatchEmail) return false
+
+    return id == other.id
+  }
+
+  override fun hashCode(): Int = id.hashCode()
+}

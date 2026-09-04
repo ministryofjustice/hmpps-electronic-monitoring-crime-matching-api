@@ -23,4 +23,13 @@ data class CrimeBatchIngestionAttempt(
   val bucket: String,
   val objectName: String,
   val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is CrimeBatchIngestionAttempt) return false
+
+    return id == other.id
+  }
+
+  override fun hashCode(): Int = id.hashCode()
+}

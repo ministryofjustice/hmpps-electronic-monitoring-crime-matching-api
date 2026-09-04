@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 
 @Service
 class EmailListener(
@@ -26,7 +25,7 @@ class EmailListener(
   private val s3Service: S3Service,
   private val crimeBatchCsvService: CrimeBatchCsvService,
   private val crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService,
-  private val crimeBatchService: CrimeBatchService,
+  private val emailIngestionFinalisationService: EmailIngestionFinalisationService,
   private val emailNotificationService: EmailNotificationService,
   private val emailParserService: EmailParserService,
   private val matchingNotificationService: MatchingNotificationService,
@@ -52,7 +51,8 @@ class EmailListener(
     val emailData = emailFile.use { emailParserService.extractEmailData(it) }
 
     // Once basic email checks have completed, process the email contents
-    val ingestionOutcome = processEmail(emailData, bucketName, objectKey)
+    val preparation = processEmail(emailData, bucketName, objectKey)
+    val ingestionOutcome = emailIngestionFinalisationService.persistIngestion(preparation)
 
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)
@@ -68,7 +68,7 @@ class EmailListener(
     }
   }
 
-  private fun processEmail(emailData: EmailData, bucketName: String, objectKey: String): EmailIngestionOutcome {
+  private fun processEmail(emailData: EmailData, bucketName: String, objectKey: String): EmailIngestionPreparation {
     // Initialise ingestion attempt
     val crimeBatchIngestionAttempt = crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt(bucketName, objectKey)
 
@@ -78,10 +78,13 @@ class EmailListener(
 
     validateAttachment(emailData)?.let {
       saveIngestionAttemptError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
-      return EmailIngestionOutcome(
-        emailData = emailData,
-        ingestionStatus = IngestionStatus.FAILED,
-        errorType = it,
+      return EmailIngestionPreparation(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        ingestionOutcome = EmailIngestionOutcome(
+          emailData = emailData,
+          ingestionStatus = IngestionStatus.FAILED,
+          errorType = it,
+        ),
       )
     }
 
@@ -98,10 +101,13 @@ class EmailListener(
     validateBatch(parseResult)?.let {
       crimeBatchEmail.crimeBatchEmailAttachments += crimeBatchEmailAttachment
       saveIngestionAttemptError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
-      return EmailIngestionOutcome(
-        emailData = emailData,
-        ingestionStatus = IngestionStatus.FAILED,
-        errorType = it,
+      return EmailIngestionPreparation(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        ingestionOutcome = EmailIngestionOutcome(
+          emailData = emailData,
+          ingestionStatus = IngestionStatus.FAILED,
+          errorType = it,
+        ),
       )
     }
 
@@ -115,33 +121,33 @@ class EmailListener(
 
     crimeBatchEmail.crimeBatchEmailAttachments += crimeBatchEmailAttachment
 
-    crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt)
-
     // Create batch if records present
     if (parseResult.records.isNotEmpty()) {
-      val crimeBatch = crimeBatchService.createCrimeBatch(parseResult.records, crimeBatchEmailAttachment)
       val policeForce = parseResult.records.first().policeForce
-      val batchId = crimeBatch.batchId
-      val crimeBatchId = crimeBatch.id.toString()
       val status = if (parseResult.errors.isEmpty()) IngestionStatus.SUCCESSFUL else IngestionStatus.PARTIAL
-      return EmailIngestionOutcome(
-        batchId = batchId,
-        crimeBatchId = crimeBatchId,
-        policeForce = policeForce.label,
-        errors = parseResult.errors,
-        emailData = emailData,
-        records = parseResult.records,
-        recordCount = parseResult.recordCount,
-        ingestionStatus = status,
+      return EmailIngestionPreparation(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        ingestionOutcome = EmailIngestionOutcome(
+          batchId = parseResult.records.first().batchId,
+          policeForce = policeForce.label,
+          errors = parseResult.errors,
+          emailData = emailData,
+          records = parseResult.records,
+          recordCount = parseResult.recordCount,
+          ingestionStatus = status,
+        ),
       )
     }
 
-    return EmailIngestionOutcome(
-      emailData = emailData,
-      errors = parseResult.errors,
-      recordCount = parseResult.recordCount,
-      errorType = CrimeBatchEmailIngestionErrorType.ALL_RECORDS_FAILED,
-      ingestionStatus = IngestionStatus.ERROR,
+    return EmailIngestionPreparation(
+      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+      ingestionOutcome = EmailIngestionOutcome(
+        emailData = emailData,
+        errors = parseResult.errors,
+        recordCount = parseResult.recordCount,
+        errorType = CrimeBatchEmailIngestionErrorType.ALL_RECORDS_FAILED,
+        ingestionStatus = IngestionStatus.ERROR,
+      ),
     )
   }
 
@@ -172,6 +178,5 @@ class EmailListener(
     )
     crimeBatchEmail.crimeBatchEmailIngestionError = crimeBatchEmailIngestionError
     crimeBatchIngestionAttempt.crimeBatchEmail = crimeBatchEmail
-    crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt)
   }
 }
