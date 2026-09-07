@@ -25,7 +25,6 @@ class EmailListener(
   private val s3Service: S3Service,
   private val crimeBatchCsvService: CrimeBatchCsvService,
   private val crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService,
-  private val emailIngestionFinalisationService: EmailIngestionFinalisationService,
   private val emailNotificationService: EmailNotificationService,
   private val emailParserService: EmailParserService,
   private val matchingNotificationService: MatchingNotificationService,
@@ -52,7 +51,7 @@ class EmailListener(
 
     // Once basic email checks have completed, process the email contents
     val preparation = processEmail(emailData, bucketName, objectKey)
-    val ingestionOutcome = emailIngestionFinalisationService.persistIngestion(preparation)
+    val ingestionOutcome = crimeBatchEmailIngestionService.persistIngestion(preparation)
 
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)

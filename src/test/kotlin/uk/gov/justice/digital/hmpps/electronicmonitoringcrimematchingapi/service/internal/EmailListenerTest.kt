@@ -47,7 +47,6 @@ class EmailListenerTest {
   private lateinit var s3Service: S3Service
   private lateinit var crimeBatchCsvService: CrimeBatchCsvService
   private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
-  private lateinit var emailIngestionFinalisationService: EmailIngestionFinalisationService
   private lateinit var emailNotificationService: EmailNotificationService
   private lateinit var emailParserService: EmailParserService
   private lateinit var matchingNotificationService: MatchingNotificationService
@@ -63,12 +62,11 @@ class EmailListenerTest {
     s3Service = Mockito.mock(S3Service::class.java)
     crimeBatchCsvService = CrimeBatchCsvService()
     crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
-    emailIngestionFinalisationService = Mockito.mock(EmailIngestionFinalisationService::class.java)
     emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
     emailParserService = EmailParserService(emailIngestionProperties)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, emailIngestionFinalisationService, emailNotificationService, emailParserService, matchingNotificationService, metricsService)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, emailNotificationService, emailParserService, matchingNotificationService, metricsService)
   }
 
   @Nested
@@ -142,7 +140,7 @@ class EmailListenerTest {
         ),
       )
 
-      whenever(emailIngestionFinalisationService.persistIngestion(any())).thenReturn(
+      whenever(crimeBatchEmailIngestionService.persistIngestion(any())).thenReturn(
         EmailIngestionOutcome(
           batchId = crimeBatch.batchId,
           crimeBatchId = crimeBatch.id.toString(),
@@ -159,13 +157,13 @@ class EmailListenerTest {
       val notificationCaptor = argumentCaptor<String>()
 
       val inOrder = inOrder(
-        emailIngestionFinalisationService,
+        crimeBatchEmailIngestionService,
         matchingNotificationService,
         emailNotificationService,
         metricsService,
       )
 
-      inOrder.verify(emailIngestionFinalisationService, times(1)).persistIngestion(any())
+      inOrder.verify(crimeBatchEmailIngestionService, times(1)).persistIngestion(any())
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
       inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
       inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
@@ -241,7 +239,7 @@ class EmailListenerTest {
         ),
       )
 
-      whenever(emailIngestionFinalisationService.persistIngestion(any())).thenReturn(
+      whenever(crimeBatchEmailIngestionService.persistIngestion(any())).thenReturn(
         EmailIngestionOutcome(
           batchId = crimeBatch.batchId,
           crimeBatchId = crimeBatch.id.toString(),

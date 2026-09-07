@@ -1,5 +1,6 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,21 +20,20 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailIngestionPreparation
 import java.time.Instant
 import java.util.Date
 
-class EmailIngestionFinalisationServiceTest {
-  private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
+class CrimeBatchEmailIngestionServiceTest {
+  private lateinit var entityManager: EntityManager
   private lateinit var crimeBatchService: CrimeBatchService
-  private lateinit var service: EmailIngestionFinalisationService
+  private lateinit var service: CrimeBatchEmailIngestionService
 
   @BeforeEach
   fun setup() {
-    crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
+    entityManager = Mockito.mock(EntityManager::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    service = EmailIngestionFinalisationService(crimeBatchEmailIngestionService, crimeBatchService)
+    service = CrimeBatchEmailIngestionService(entityManager, crimeBatchService)
   }
 
   @Test
@@ -90,12 +90,11 @@ class EmailIngestionFinalisationServiceTest {
       crimeBatchEmailAttachment = attachment,
     )
 
-    whenever(crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(attempt)).thenReturn(attempt)
     whenever(crimeBatchService.createCrimeBatch(listOf(record), attachment)).thenReturn(crimeBatch)
 
     val outcome = service.persistIngestion(preparation)
 
-    verify(crimeBatchEmailIngestionService, times(1)).saveCrimeBatchIngestionAttempt(attempt)
+    verify(entityManager, times(1)).persist(attempt)
     verify(crimeBatchService, times(1)).createCrimeBatch(listOf(record), attachment)
     assertThat(outcome.batchId).isEqualTo(crimeBatch.batchId)
     assertThat(outcome.crimeBatchId).isEqualTo(crimeBatch.id.toString())
@@ -118,11 +117,9 @@ class EmailIngestionFinalisationServiceTest {
       ),
     )
 
-    whenever(crimeBatchEmailIngestionService.saveCrimeBatchIngestionAttempt(attempt)).thenReturn(attempt)
-
     val outcome = service.persistIngestion(preparation)
 
-    verify(crimeBatchEmailIngestionService, times(1)).saveCrimeBatchIngestionAttempt(attempt)
+    verify(entityManager, times(1)).persist(attempt)
     verify(crimeBatchService, never()).createCrimeBatch(any(), any())
     assertThat(outcome.ingestionStatus).isEqualTo(IngestionStatus.FAILED)
   }

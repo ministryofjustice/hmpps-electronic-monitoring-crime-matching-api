@@ -2,20 +2,43 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailIngestionPreparation
 
 @Service
 class CrimeBatchEmailIngestionService(
   private val entityManager: EntityManager,
+  private val crimeBatchService: CrimeBatchService,
 ) {
-  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt {
-    entityManager.persist(crimeBatchIngestionAttempt)
-    return crimeBatchIngestionAttempt
+  @Transactional
+  fun persistIngestion(preparation: EmailIngestionPreparation): EmailIngestionOutcome {
+    val persistedAttempt = preparation.crimeBatchIngestionAttempt
+    entityManager.persist(persistedAttempt)
+    val outcome = preparation.ingestionOutcome
+
+    if (outcome.ingestionStatus == IngestionStatus.SUCCESSFUL || outcome.ingestionStatus == IngestionStatus.PARTIAL) {
+      val attachment = persistedAttempt.crimeBatchEmail
+        ?.crimeBatchEmailAttachments
+        ?.singleOrNull()
+        ?: throw IllegalStateException("Expected exactly one persisted email attachment for successful ingestion")
+
+      val crimeBatch = crimeBatchService.createCrimeBatch(outcome.records, attachment)
+
+      return outcome.copy(
+        batchId = crimeBatch.batchId,
+        crimeBatchId = crimeBatch.id.toString(),
+      )
+    }
+
+    return outcome
   }
 
   fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
