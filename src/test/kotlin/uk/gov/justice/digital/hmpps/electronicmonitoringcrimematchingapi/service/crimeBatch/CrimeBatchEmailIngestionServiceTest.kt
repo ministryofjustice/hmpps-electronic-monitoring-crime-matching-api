@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailIngestionPreparation
 import java.time.Instant
 import java.util.Date
 
@@ -68,21 +67,18 @@ class CrimeBatchEmailIngestionServiceTest {
       crimeText = "Theft",
     )
 
-    val preparation = EmailIngestionPreparation(
-      crimeBatchIngestionAttempt = attempt,
-      ingestionOutcome = EmailIngestionOutcome(
-        batchId = record.batchId,
-        policeForce = record.policeForce.label,
-        records = listOf(record),
-        emailData = EmailData(
-          sender = "sender@test.local",
-          originalSender = "sender@test.local",
-          subject = "Crime Mapping Request",
-          sentAt = Date.from(Instant.now()),
-          attachments = emptyList(),
-        ),
-        ingestionStatus = IngestionStatus.SUCCESSFUL,
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = record.batchId,
+      policeForce = record.policeForce.label,
+      records = listOf(record),
+      emailData = EmailData(
+        sender = "sender@test.local",
+        originalSender = "sender@test.local",
+        subject = "Crime Mapping Request",
+        sentAt = Date.from(Instant.now()),
+        attachments = emptyList(),
       ),
+      ingestionStatus = IngestionStatus.SUCCESSFUL,
     )
 
     val crimeBatch = CrimeBatch(
@@ -92,7 +88,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     whenever(crimeBatchService.createCrimeBatch(listOf(record), attachment)).thenReturn(crimeBatch)
 
-    val outcome = service.persistIngestion(preparation)
+    val outcome = service.persistIngestion(attempt, ingestionOutcome)
 
     verify(entityManager, times(1)).persist(attempt)
     verify(crimeBatchService, times(1)).createCrimeBatch(listOf(record), attachment)
@@ -103,21 +99,18 @@ class CrimeBatchEmailIngestionServiceTest {
   @Test
   fun `it should persist ingestion without creating a batch for failed outcomes`() {
     val attempt = CrimeBatchIngestionAttempt(bucket = "emails", objectName = "object")
-    val preparation = EmailIngestionPreparation(
-      crimeBatchIngestionAttempt = attempt,
-      ingestionOutcome = EmailIngestionOutcome(
-        emailData = EmailData(
-          sender = "sender@test.local",
-          originalSender = "sender@test.local",
-          subject = "Crime Mapping Request",
-          sentAt = Date.from(Instant.now()),
-          attachments = emptyList(),
-        ),
-        ingestionStatus = IngestionStatus.FAILED,
+    val ingestionOutcome = EmailIngestionOutcome(
+      emailData = EmailData(
+        sender = "sender@test.local",
+        originalSender = "sender@test.local",
+        subject = "Crime Mapping Request",
+        sentAt = Date.from(Instant.now()),
+        attachments = emptyList(),
       ),
+      ingestionStatus = IngestionStatus.FAILED,
     )
 
-    val outcome = service.persistIngestion(preparation)
+    val outcome = service.persistIngestion(attempt, ingestionOutcome)
 
     verify(entityManager, times(1)).persist(attempt)
     verify(crimeBatchService, never()).createCrimeBatch(any(), any())

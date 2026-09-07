@@ -50,8 +50,12 @@ class EmailListener(
     val emailData = emailFile.use { emailParserService.extractEmailData(it) }
 
     // Once basic email checks have completed, process the email contents
-    val preparation = processEmail(emailData, bucketName, objectKey)
-    val ingestionOutcome = crimeBatchEmailIngestionService.persistIngestion(preparation)
+    val crimeBatchIngestionAttempt = crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt(bucketName, objectKey)
+    val preparedOutcome = processEmail(emailData, crimeBatchIngestionAttempt)
+    val ingestionOutcome = crimeBatchEmailIngestionService.persistIngestion(
+      crimeBatchIngestionAttempt,
+      preparedOutcome,
+    )
 
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)
@@ -67,23 +71,20 @@ class EmailListener(
     }
   }
 
-  private fun processEmail(emailData: EmailData, bucketName: String, objectKey: String): EmailIngestionPreparation {
-    // Initialise ingestion attempt
-    val crimeBatchIngestionAttempt = crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt(bucketName, objectKey)
-
+  private fun processEmail(
+    emailData: EmailData,
+    crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
+  ): EmailIngestionOutcome {
     // Initialise crime batch email
     val crimeBatchEmail = crimeBatchEmailIngestionService.createCrimeBatchEmail(emailData, crimeBatchIngestionAttempt)
       .also { crimeBatchIngestionAttempt.crimeBatchEmail = it }
 
     validateAttachment(emailData)?.let {
-      saveIngestionAttemptError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
-      return EmailIngestionPreparation(
-        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-        ingestionOutcome = EmailIngestionOutcome(
-          emailData = emailData,
-          ingestionStatus = IngestionStatus.FAILED,
-          errorType = it,
-        ),
+      attachIngestionError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
+      return EmailIngestionOutcome(
+        emailData = emailData,
+        ingestionStatus = IngestionStatus.FAILED,
+        errorType = it,
       )
     }
 
@@ -99,14 +100,11 @@ class EmailListener(
 
     validateBatch(parseResult)?.let {
       crimeBatchEmail.crimeBatchEmailAttachments += crimeBatchEmailAttachment
-      saveIngestionAttemptError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
-      return EmailIngestionPreparation(
-        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-        ingestionOutcome = EmailIngestionOutcome(
-          emailData = emailData,
-          ingestionStatus = IngestionStatus.FAILED,
-          errorType = it,
-        ),
+      attachIngestionError(it, crimeBatchIngestionAttempt, crimeBatchEmail)
+      return EmailIngestionOutcome(
+        emailData = emailData,
+        ingestionStatus = IngestionStatus.FAILED,
+        errorType = it,
       )
     }
 
@@ -124,29 +122,23 @@ class EmailListener(
     if (parseResult.records.isNotEmpty()) {
       val policeForce = parseResult.records.first().policeForce
       val status = if (parseResult.errors.isEmpty()) IngestionStatus.SUCCESSFUL else IngestionStatus.PARTIAL
-      return EmailIngestionPreparation(
-        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-        ingestionOutcome = EmailIngestionOutcome(
-          batchId = parseResult.records.first().batchId,
-          policeForce = policeForce.label,
-          errors = parseResult.errors,
-          emailData = emailData,
-          records = parseResult.records,
-          recordCount = parseResult.recordCount,
-          ingestionStatus = status,
-        ),
+      return EmailIngestionOutcome(
+        batchId = parseResult.records.first().batchId,
+        policeForce = policeForce.label,
+        errors = parseResult.errors,
+        emailData = emailData,
+        records = parseResult.records,
+        recordCount = parseResult.recordCount,
+        ingestionStatus = status,
       )
     }
 
-    return EmailIngestionPreparation(
-      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
-      ingestionOutcome = EmailIngestionOutcome(
-        emailData = emailData,
-        errors = parseResult.errors,
-        recordCount = parseResult.recordCount,
-        errorType = CrimeBatchEmailIngestionErrorType.ALL_RECORDS_FAILED,
-        ingestionStatus = IngestionStatus.ERROR,
-      ),
+    return EmailIngestionOutcome(
+      emailData = emailData,
+      errors = parseResult.errors,
+      recordCount = parseResult.recordCount,
+      errorType = CrimeBatchEmailIngestionErrorType.ALL_RECORDS_FAILED,
+      ingestionStatus = IngestionStatus.ERROR,
     )
   }
 
@@ -166,7 +158,7 @@ class EmailListener(
     return null
   }
 
-  private fun saveIngestionAttemptError(
+  private fun attachIngestionError(
     errorType: CrimeBatchEmailIngestionErrorType,
     crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt,
     crimeBatchEmail: CrimeBatchEmail,

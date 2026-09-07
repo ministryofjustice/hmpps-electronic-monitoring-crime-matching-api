@@ -140,7 +140,7 @@ class EmailListenerTest {
         ),
       )
 
-      whenever(crimeBatchEmailIngestionService.persistIngestion(any())).thenReturn(
+      whenever(crimeBatchEmailIngestionService.persistIngestion(any(), any())).thenReturn(
         EmailIngestionOutcome(
           batchId = crimeBatch.batchId,
           crimeBatchId = crimeBatch.id.toString(),
@@ -163,7 +163,7 @@ class EmailListenerTest {
         metricsService,
       )
 
-      inOrder.verify(crimeBatchEmailIngestionService, times(1)).persistIngestion(any())
+      inOrder.verify(crimeBatchEmailIngestionService, times(1)).persistIngestion(any(), any())
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
       inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
       inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
@@ -239,7 +239,7 @@ class EmailListenerTest {
         ),
       )
 
-      whenever(crimeBatchEmailIngestionService.persistIngestion(any())).thenReturn(
+      whenever(crimeBatchEmailIngestionService.persistIngestion(any(), any())).thenReturn(
         EmailIngestionOutcome(
           batchId = crimeBatch.batchId,
           crimeBatchId = crimeBatch.id.toString(),

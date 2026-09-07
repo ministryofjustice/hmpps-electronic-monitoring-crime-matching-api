@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailIngestionPreparation
 
 @Service
 class CrimeBatchEmailIngestionService(
@@ -19,13 +18,14 @@ class CrimeBatchEmailIngestionService(
   private val crimeBatchService: CrimeBatchService,
 ) {
   @Transactional
-  fun persistIngestion(preparation: EmailIngestionPreparation): EmailIngestionOutcome {
-    val persistedAttempt = preparation.crimeBatchIngestionAttempt
-    entityManager.persist(persistedAttempt)
-    val outcome = preparation.ingestionOutcome
+  fun persistIngestion(
+    ingestionAttempt: CrimeBatchIngestionAttempt,
+    outcome: EmailIngestionOutcome,
+  ): EmailIngestionOutcome {
+    entityManager.persist(ingestionAttempt)
 
     if (outcome.ingestionStatus == IngestionStatus.SUCCESSFUL || outcome.ingestionStatus == IngestionStatus.PARTIAL) {
-      val attachment = persistedAttempt.crimeBatchEmail
+      val attachment = ingestionAttempt.crimeBatchEmail
         ?.crimeBatchEmailAttachments
         ?.singleOrNull()
         ?: throw IllegalStateException("Expected exactly one persisted email attachment for successful ingestion")
