@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
-import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
@@ -11,10 +10,11 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 
 @Service
 class CrimeBatchEmailIngestionService(
-  private val entityManager: EntityManager,
+  private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
   private val crimeBatchService: CrimeBatchService,
 ) {
   @Transactional
@@ -22,7 +22,7 @@ class CrimeBatchEmailIngestionService(
     ingestionAttempt: CrimeBatchIngestionAttempt,
     outcome: EmailIngestionOutcome,
   ): EmailIngestionOutcome {
-    entityManager.persist(ingestionAttempt)
+    crimeBatchIngestionAttemptRepository.save(ingestionAttempt)
 
     if (outcome.ingestionStatus == IngestionStatus.SUCCESSFUL || outcome.ingestionStatus == IngestionStatus.PARTIAL) {
       val attachment = ingestionAttempt.crimeBatchEmail
