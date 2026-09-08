@@ -12,7 +12,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "crime_matching_result_position")
-data class CrimeMatchingResultPosition(
+class CrimeMatchingResultPosition(
   @Id
   @Column(name = "id", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),

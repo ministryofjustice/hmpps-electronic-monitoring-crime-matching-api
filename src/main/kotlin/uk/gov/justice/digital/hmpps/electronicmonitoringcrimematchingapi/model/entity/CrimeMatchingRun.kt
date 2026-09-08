@@ -18,7 +18,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "crime_matching_run")
-data class CrimeMatchingRun(
+class CrimeMatchingRun(
   @Id
   @Column(name = "id", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),

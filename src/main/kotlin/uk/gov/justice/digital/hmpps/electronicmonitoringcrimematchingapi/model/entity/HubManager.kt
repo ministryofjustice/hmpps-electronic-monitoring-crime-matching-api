@@ -8,7 +8,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "hub_manager")
-data class HubManager(
+class HubManager(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
