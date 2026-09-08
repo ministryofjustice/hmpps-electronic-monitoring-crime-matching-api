@@ -25,12 +25,10 @@ class CrimeBatchEmailIngestionService(
     crimeBatchIngestionAttemptRepository.save(ingestionAttempt)
 
     if (outcome.ingestionStatus == IngestionStatus.SUCCESSFUL || outcome.ingestionStatus == IngestionStatus.PARTIAL) {
-      val attachment = ingestionAttempt.crimeBatchEmail
-        ?.crimeBatchEmailAttachments
-        ?.singleOrNull()
-        ?: throw IllegalStateException("Expected exactly one persisted email attachment for successful ingestion")
-
-      val crimeBatch = crimeBatchService.createCrimeBatch(outcome.records, attachment)
+      val crimeBatch = crimeBatchService.createCrimeBatch(
+        outcome.records,
+        ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first(),
+      )
 
       return outcome.copy(
         batchId = crimeBatch.batchId,
