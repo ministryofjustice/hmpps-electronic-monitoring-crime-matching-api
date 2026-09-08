@@ -15,7 +15,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "crime_batch_email")
-data class CrimeBatchEmail(
+class CrimeBatchEmail(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
@@ -35,15 +35,4 @@ data class CrimeBatchEmail(
   val originalSender: String,
   val subject: String,
   val sentAt: Date,
-) {
-  // equals and hashCode required due to bidirectional relationship between
-  // CrimeBatchIngestionAttempt and CrimeBatchEmail, otherwise Hibernate will throw a StackOverflowError
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is CrimeBatchEmail) return false
-
-    return id == other.id
-  }
-
-  override fun hashCode(): Int = id.hashCode()
-}
+)

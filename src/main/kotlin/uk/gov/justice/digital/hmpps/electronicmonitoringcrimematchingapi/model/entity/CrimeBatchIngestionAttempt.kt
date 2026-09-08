@@ -12,7 +12,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "crime_batch_ingestion_attempt")
-data class CrimeBatchIngestionAttempt(
+class CrimeBatchIngestionAttempt(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
@@ -23,15 +23,4 @@ data class CrimeBatchIngestionAttempt(
   val bucket: String,
   val objectName: String,
   val createdAt: LocalDateTime = LocalDateTime.now(),
-) {
-  // equals and hashCode required due to bidirectional relationship between
-  // CrimeBatchIngestionAttempt and CrimeBatchEmail, otherwise Hibernate will throw a StackOverflowError
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is CrimeBatchIngestionAttempt) return false
-
-    return id == other.id
-  }
-
-  override fun hashCode(): Int = id.hashCode()
-}
+)
