@@ -348,7 +348,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
             precision = 100,
             speed = 1,
             direction = 52,
-            timestamp = "2025-09-10T07:51:08",
+            timestamp = "2025-09-10T07:51:08Z",
             geolocationMechanism = "GPS",
           ),
           PositionResponse(
@@ -358,7 +358,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
             precision = 400,
             speed = 10,
             direction = 27,
-            timestamp = "2025-09-08T17:30:07",
+            timestamp = "2025-09-08T17:30:07Z",
             geolocationMechanism = "RF",
           ),
           PositionResponse(
@@ -368,7 +368,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
             precision = 400,
             speed = 10,
             direction = 27,
-            timestamp = "2025-09-08T17:30:08",
+            timestamp = "2025-09-08T17:30:08Z",
             geolocationMechanism = "LBS",
           ),
           PositionResponse(
@@ -378,7 +378,7 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
             precision = 400,
             speed = 10,
             direction = 27,
-            timestamp = "2025-09-08T17:30:09",
+            timestamp = "2025-09-08T17:30:09Z",
             geolocationMechanism = "WIFI",
           ),
         ),

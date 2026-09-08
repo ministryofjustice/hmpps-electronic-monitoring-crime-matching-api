@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.GeolocationMechanism
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Position
+import java.time.ZoneOffset
 
 data class PositionResponse(
   val positionId: Long,
@@ -20,7 +21,7 @@ data class PositionResponse(
     precision = position.positionPrecision,
     speed = position.positionSpeed,
     direction = position.positionDirection,
-    timestamp = position.positionGpsDate.toString(),
+    timestamp = position.positionGpsDate.atOffset(ZoneOffset.UTC).toString(),
     geolocationMechanism = GeolocationMechanism.from(position.positionLbs).toString(),
   )
 }
