@@ -36,7 +36,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should persist ingestion and create crime batch for successful outcomes`() {
+  fun `it should persist ingestion attempt and create crime batch for SUCCESSFUL outcomes`() {
     val attempt = CrimeBatchIngestionAttempt(bucket = "emails", objectName = "object")
     val email = CrimeBatchEmail(
       crimeBatchIngestionAttempt = attempt,
@@ -98,7 +98,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should persist ingestion without creating a batch for failed outcomes`() {
+  fun `it should persist ingestion attempt without creating a batch for FAILED outcomes`() {
     val attempt = CrimeBatchIngestionAttempt(bucket = "emails", objectName = "object")
     val ingestionOutcome = EmailIngestionOutcome(
       emailData = EmailData(

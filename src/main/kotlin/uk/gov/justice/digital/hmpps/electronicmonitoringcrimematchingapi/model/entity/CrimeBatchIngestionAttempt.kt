@@ -24,6 +24,8 @@ data class CrimeBatchIngestionAttempt(
   val objectName: String,
   val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
+  // equals and hashCode required due to bidirectional relationship between
+  // CrimeBatchIngestionAttempt and CrimeBatchEmail, otherwise Hibernate will throw a StackOverflowError
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is CrimeBatchIngestionAttempt) return false

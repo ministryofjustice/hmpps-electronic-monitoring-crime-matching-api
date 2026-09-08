@@ -36,6 +36,8 @@ data class CrimeBatchEmail(
   val subject: String,
   val sentAt: Date,
 ) {
+  // equals and hashCode required due to bidirectional relationship between
+  // CrimeBatchIngestionAttempt and CrimeBatchEmail, otherwise Hibernate will throw a StackOverflowError
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is CrimeBatchEmail) return false

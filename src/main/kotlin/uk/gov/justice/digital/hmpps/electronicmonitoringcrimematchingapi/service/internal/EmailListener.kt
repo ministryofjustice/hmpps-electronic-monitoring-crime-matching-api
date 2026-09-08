@@ -51,10 +51,10 @@ class EmailListener(
 
     // Once basic email checks have completed, process the email contents
     val crimeBatchIngestionAttempt = crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt(bucketName, objectKey)
-    val preparedOutcome = processEmail(emailData, crimeBatchIngestionAttempt)
+    val provisionalOutcome = processEmail(emailData, crimeBatchIngestionAttempt)
     val ingestionOutcome = crimeBatchEmailIngestionService.persistIngestion(
       crimeBatchIngestionAttempt,
-      preparedOutcome,
+      provisionalOutcome,
     )
 
     // Record ingestion outcome
@@ -123,7 +123,6 @@ class EmailListener(
       val policeForce = parseResult.records.first().policeForce
       val status = if (parseResult.errors.isEmpty()) IngestionStatus.SUCCESSFUL else IngestionStatus.PARTIAL
       return EmailIngestionOutcome(
-        batchId = parseResult.records.first().batchId,
         policeForce = policeForce.label,
         errors = parseResult.errors,
         emailData = emailData,
