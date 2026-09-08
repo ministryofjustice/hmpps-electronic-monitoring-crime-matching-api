@@ -20,7 +20,7 @@ import java.util.UUID
     UniqueConstraint(columnNames = ["crime_matching_result_id", "device_id"]),
   ],
 )
-data class CrimeMatchingResultDeviceWearer(
+class CrimeMatchingResultDeviceWearer(
   @Id
   @Column(name = "id", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),

@@ -21,7 +21,7 @@ import java.util.UUID
     UniqueConstraint(columnNames = ["police_force_area", "crime_reference"]),
   ],
 )
-data class Crime(
+class Crime(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
