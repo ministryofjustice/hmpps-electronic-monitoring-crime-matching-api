@@ -150,7 +150,7 @@ awslocal sns publish \
 This uses a different test file and fetches IDs from Postgres to be used in Postman API requests (see next section).
 
 ```bash
-bash scripts/localstack-ingest-sample-email.sh
+bash scripts/localstack-ingest-sample-emails.sh
 ```
 
 ### Using the Notify stub locally
