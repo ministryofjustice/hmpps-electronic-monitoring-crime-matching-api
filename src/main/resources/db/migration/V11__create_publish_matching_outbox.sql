@@ -1,7 +1,7 @@
 CREATE TABLE publish_matching_outbox
 (
     id               UUID NOT NULL,
-    crime_batch_ingestion_attempt_id UUID NOT NULL,
+    crime_batch_ingestion_attempt_id UUID NOT NULL UNIQUE,
     state       VARCHAR(30) NOT NULL,
     created_at        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     CONSTRAINT pk_publish_matching_outbox PRIMARY KEY (id)

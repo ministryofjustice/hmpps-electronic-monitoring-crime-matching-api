@@ -20,7 +20,6 @@ import software.amazon.awssdk.services.sns.model.PublishResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.exception.PublishEventException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -59,7 +58,7 @@ class MatchingNotificationServiceTest {
       objectName = "objectName",
     )
 
-    service.publishMatchingRequestIfRequired(batchId, IngestionStatus.SUCCESSFUL, ingestionAttempt)
+    service.publishMatchingRequest(batchId, ingestionAttempt)
 
     val captor = argumentCaptor<PublishRequest>()
 
@@ -71,7 +70,7 @@ class MatchingNotificationServiceTest {
   }
 
   @Test
-  fun `it should leave the state of the PublishMatchingRequest as PENDING_OR_UNCONFIRMED if an error occurs`() {
+  fun `it does not save the state of the PublishMatchingRequest if an error occurs`() {
     whenever(publishMatchingOutboxRepository.save(any<PublishMatchingOutbox>())).thenAnswer { it.arguments[0] }
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenThrow(RuntimeException("SNS error"))
@@ -81,16 +80,11 @@ class MatchingNotificationServiceTest {
       objectName = "objectName",
     )
 
-    assertThrows<PublishEventException> { service.publishMatchingRequestIfRequired(batchId, IngestionStatus.SUCCESSFUL, ingestionAttempt) }
-
-    val captor = argumentCaptor<PublishMatchingOutbox>()
+    assertThrows<PublishEventException> { service.publishMatchingRequest(batchId, ingestionAttempt) }
 
     verify(hmppsQueueService, times(1)).findByTopicId(any<String>())
     verify(snsClient, atLeastOnce()).publish(any<PublishRequest>()) // triggers retry policy
-    verify(publishMatchingOutboxRepository, times(1)).save(captor.capture())
-
-    assertThat(captor.allValues).hasSize(1)
-    assertThat(captor.allValues.first().state).isEqualTo(PublishMatchingState.PENDING_OR_UNCONFIRMED)
+    verify(publishMatchingOutboxRepository, times(0)).save(any())
   }
 
   @Test
@@ -102,47 +96,22 @@ class MatchingNotificationServiceTest {
       bucket = "bucket",
       objectName = "objectName",
     )
-    whenever(publishMatchingOutboxRepository.save(any<PublishMatchingOutbox>())).thenAnswer {
+    whenever(publishMatchingOutboxRepository.findByCrimeBatchIngestionAttempt(any<CrimeBatchIngestionAttempt>())).thenReturn(
       PublishMatchingOutbox(
-        id = UUID.randomUUID(),
         crimeBatchIngestionAttempt = ingestionAttempt,
-        state = (it.arguments[0] as PublishMatchingOutbox).state,
-      )
-    }
+        state = PublishMatchingState.PENDING_OR_UNCONFIRMED,
+      ),
+    )
 
-    service.publishMatchingRequestIfRequired(batchId, IngestionStatus.SUCCESSFUL, ingestionAttempt)
+    service.publishMatchingRequest(batchId, ingestionAttempt)
 
     val captor = argumentCaptor<PublishMatchingOutbox>()
 
     verify(hmppsQueueService, times(1)).findByTopicId(any<String>())
     verify(snsClient, times(1)).publish(any<PublishRequest>())
-    verify(publishMatchingOutboxRepository, times(2)).save(captor.capture())
-
-    assertThat(captor.allValues).hasSize(2)
-    assertThat(captor.allValues.first().state).isEqualTo(PublishMatchingState.PENDING_OR_UNCONFIRMED)
-    assertThat(captor.allValues.last().state).isEqualTo(PublishMatchingState.PUBLISHED)
-  }
-
-  @Test
-  fun `it should not send a crime matching request to the SNS topic if the ingestion was not successful`() {
-    whenever(publishMatchingOutboxRepository.save(any<PublishMatchingOutbox>())).thenAnswer { it.arguments[0] }
-    whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
-    whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
-    val batchId = UUID.randomUUID().toString()
-    val ingestionAttempt = CrimeBatchIngestionAttempt(
-      bucket = "bucket",
-      objectName = "objectName",
-    )
-
-    service.publishMatchingRequestIfRequired(batchId, IngestionStatus.FAILED, ingestionAttempt)
-
-    val captor = argumentCaptor<PublishMatchingOutbox>()
-
-    verify(hmppsQueueService, times(0)).findByTopicId(any<String>())
-    verify(snsClient, times(0)).publish(any<PublishRequest>())
     verify(publishMatchingOutboxRepository, times(1)).save(captor.capture())
 
     assertThat(captor.allValues).hasSize(1)
-    assertThat(captor.allValues.first().state).isEqualTo(PublishMatchingState.NOT_REQUIRED)
+    assertThat(captor.allValues.first().state).isEqualTo(PublishMatchingState.PUBLISHED)
   }
 }

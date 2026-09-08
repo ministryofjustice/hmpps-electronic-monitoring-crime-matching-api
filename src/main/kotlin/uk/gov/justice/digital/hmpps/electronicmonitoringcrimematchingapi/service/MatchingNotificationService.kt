@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.excepti
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -42,44 +41,24 @@ class MatchingNotificationService(
     throw PublishEventException(message, e)
   }
 
-  fun publishMatchingRequestIfRequired(crimeBatchId: String, ingestionStatus: IngestionStatus, ingestionAttempt: CrimeBatchIngestionAttempt) {
-    if (ingestionStatus == IngestionStatus.SUCCESSFUL || ingestionStatus == IngestionStatus.PARTIAL) {
-      val outboxRow = savePendingState(ingestionAttempt)
-      publish(
-        MatchingNotification(
-          type = CRIME_MATCHING_REQUEST,
-          crimeBatchId = crimeBatchId,
-        ),
-      )
-      savePublishedState(outboxRow)
-    } else {
-      saveNotRequiredState(ingestionAttempt)
-    }
-  }
-
-  @Transactional
-  private fun saveNotRequiredState(ingestionAttempt: CrimeBatchIngestionAttempt) {
-    publishMatchingOutboxRepository.save(
-      PublishMatchingOutbox(
-        crimeBatchIngestionAttempt = ingestionAttempt,
-        state = PublishMatchingState.NOT_REQUIRED,
+  fun publishMatchingRequest(crimeBatchId: String, ingestionAttempt: CrimeBatchIngestionAttempt) {
+    publish(
+      MatchingNotification(
+        type = CRIME_MATCHING_REQUEST,
+        crimeBatchId = crimeBatchId,
       ),
     )
+    savePublishedState(ingestionAttempt)
   }
 
   @Transactional
-  private fun savePendingState(ingestionAttempt: CrimeBatchIngestionAttempt): PublishMatchingOutbox = publishMatchingOutboxRepository.save(
-    PublishMatchingOutbox(
-      crimeBatchIngestionAttempt = ingestionAttempt,
-      state = PublishMatchingState.PENDING_OR_UNCONFIRMED,
-    ),
-  )
-
-  @Transactional
-  private fun savePublishedState(outboxRow: PublishMatchingOutbox) {
-    outboxRow.state = PublishMatchingState.PUBLISHED
-    publishMatchingOutboxRepository.save(
-      outboxRow,
-    )
+  private fun savePublishedState(ingestionAttempt: CrimeBatchIngestionAttempt) {
+    val outboxRow: PublishMatchingOutbox? = publishMatchingOutboxRepository.findByCrimeBatchIngestionAttempt(ingestionAttempt)
+    outboxRow?.let {
+      it.state = PublishMatchingState.PUBLISHED
+      publishMatchingOutboxRepository.save(
+        it,
+      )
+    }
   }
 }
