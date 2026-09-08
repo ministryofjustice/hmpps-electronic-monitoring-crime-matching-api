@@ -60,9 +60,8 @@ class EmailListener(
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)
 
-    if (ingestionOutcome.ingestionStatus == IngestionStatus.SUCCESSFUL || ingestionOutcome.ingestionStatus == IngestionStatus.PARTIAL) {
-      matchingNotificationService.publishMatchingRequest(ingestionOutcome.crimeBatchId)
-    }
+    // Publish matching request if ingestion was successful or partially successful
+    matchingNotificationService.publishMatchingRequestIfRequired(ingestionOutcome.crimeBatchId, ingestionOutcome.ingestionStatus, crimeBatchIngestionAttempt)
 
     try {
       emailNotificationService.sendEmails(ingestionOutcome)

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -165,7 +166,11 @@ class EmailListenerTest {
 
       inOrder.verify(crimeBatchEmailIngestionService, times(1)).persistIngestion(any(), any())
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
-      inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
+      inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequestIfRequired(
+        notificationCaptor.capture(),
+        eq(IngestionStatus.SUCCESSFUL),
+        any(),
+      )
       inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
 
       assertThat(notificationCaptor.allValues.first()).isEqualTo(crimeBatch.id.toString())
@@ -254,7 +259,7 @@ class EmailListenerTest {
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
 
       val notificationCaptor = argumentCaptor<String>()
-      verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
+      verify(matchingNotificationService, times(1)).publishMatchingRequestIfRequired(notificationCaptor.capture(), eq(IngestionStatus.SUCCESSFUL), any())
       verify(emailNotificationService, times(1)).sendEmails(any())
       verify(metricsService, times(1)).recordOutcome(any())
 
