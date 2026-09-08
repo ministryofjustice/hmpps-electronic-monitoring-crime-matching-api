@@ -6,8 +6,16 @@ BUCKET=police-emails
 QUEUE_NAME=email
 LOCALSTACK_ENDPOINT="http://localhost:4566"
 
-EMAIL_FILE=./scripts/fixtures/email-file.eml
-S3_KEY="samples/email-file.eml"
+# Optional first arg: fixture name in scripts/fixtures (with or without .eml).
+# Defaults to email-file(.eml).
+FIXTURE_NAME="${1:-email-file}"
+if [[ "$FIXTURE_NAME" == *.eml ]]; then
+  FIXTURE_FILE="$FIXTURE_NAME"
+else
+  FIXTURE_FILE="${FIXTURE_NAME}.eml"
+fi
+EMAIL_FILE="./scripts/fixtures/${FIXTURE_FILE}"
+S3_KEY="samples/${FIXTURE_FILE}"
 
 DB_CONTAINER="query-db"
 DB_USER="postgres"
