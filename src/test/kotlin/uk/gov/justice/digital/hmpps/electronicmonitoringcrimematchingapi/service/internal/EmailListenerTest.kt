@@ -26,15 +26,16 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFile
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoFromAddress
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helper.createEmailFileNoRedirect
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.SqsMessage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchService
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
@@ -46,7 +47,6 @@ class EmailListenerTest {
   private lateinit var s3Service: S3Service
   private lateinit var crimeBatchCsvService: CrimeBatchCsvService
   private lateinit var crimeBatchEmailIngestionService: CrimeBatchEmailIngestionService
-  private lateinit var crimeBatchService: CrimeBatchService
   private lateinit var emailNotificationService: EmailNotificationService
   private lateinit var emailParserService: EmailParserService
   private lateinit var matchingNotificationService: MatchingNotificationService
@@ -62,12 +62,11 @@ class EmailListenerTest {
     s3Service = Mockito.mock(S3Service::class.java)
     crimeBatchCsvService = CrimeBatchCsvService()
     crimeBatchEmailIngestionService = Mockito.mock(CrimeBatchEmailIngestionService::class.java)
-    crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
     emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
     emailParserService = EmailParserService(emailIngestionProperties)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
     metricsService = Mockito.mock(MetricsService::class.java)
-    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, crimeBatchService, emailNotificationService, emailParserService, matchingNotificationService, metricsService)
+    listener = EmailListener(mapper, s3Service, crimeBatchCsvService, crimeBatchEmailIngestionService, emailNotificationService, emailParserService, matchingNotificationService, metricsService)
   }
 
   @Nested
@@ -131,10 +130,6 @@ class EmailListenerTest {
         crimeBatchEmailAttachment,
       )
 
-      whenever(crimeBatchService.createCrimeBatch(any(), any())).thenReturn(
-        crimeBatch,
-      )
-
       whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
         CrimeBatchEmail(
           crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
@@ -145,18 +140,30 @@ class EmailListenerTest {
         ),
       )
 
+      whenever(crimeBatchEmailIngestionService.persistIngestion(any(), any())).thenReturn(
+        EmailIngestionOutcome(
+          batchId = crimeBatch.batchId,
+          crimeBatchId = crimeBatch.id.toString(),
+          policeForce = "Metropolitan Police Service",
+          emailData = emailParserService.extractEmailData(
+            createEmailFile(encoded).byteInputStream(),
+          ),
+          ingestionStatus = IngestionStatus.SUCCESSFUL,
+        ),
+      )
+
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
 
       val notificationCaptor = argumentCaptor<String>()
 
       val inOrder = inOrder(
-        crimeBatchService,
+        crimeBatchEmailIngestionService,
         matchingNotificationService,
         emailNotificationService,
         metricsService,
       )
 
-      inOrder.verify(crimeBatchService, times(1)).createCrimeBatch(any(), any())
+      inOrder.verify(crimeBatchEmailIngestionService, times(1)).persistIngestion(any(), any())
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
       inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
       inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
@@ -222,10 +229,6 @@ class EmailListenerTest {
         crimeBatchEmailAttachment,
       )
 
-      whenever(crimeBatchService.createCrimeBatch(any(), any())).thenReturn(
-        crimeBatch,
-      )
-
       whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
         CrimeBatchEmail(
           crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
@@ -233,6 +236,18 @@ class EmailListenerTest {
           originalSender = "originalSender",
           subject = "subject",
           sentAt = Date.from(Instant.now()),
+        ),
+      )
+
+      whenever(crimeBatchEmailIngestionService.persistIngestion(any(), any())).thenReturn(
+        EmailIngestionOutcome(
+          batchId = crimeBatch.batchId,
+          crimeBatchId = crimeBatch.id.toString(),
+          policeForce = "Metropolitan Police Service",
+          emailData = emailParserService.extractEmailData(
+            createEmailFile(csvContent = encoded, subject = "Crime Mapping Request").byteInputStream(),
+          ),
+          ingestionStatus = IngestionStatus.SUCCESSFUL,
         ),
       )
 

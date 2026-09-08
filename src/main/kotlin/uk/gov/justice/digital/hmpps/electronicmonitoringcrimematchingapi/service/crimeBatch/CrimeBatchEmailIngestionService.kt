@@ -1,19 +1,43 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 
 @Service
 class CrimeBatchEmailIngestionService(
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
+  private val crimeBatchService: CrimeBatchService,
 ) {
-  fun saveCrimeBatchIngestionAttempt(crimeBatchIngestionAttempt: CrimeBatchIngestionAttempt): CrimeBatchIngestionAttempt = crimeBatchIngestionAttemptRepository.save(crimeBatchIngestionAttempt)
+  @Transactional
+  fun persistIngestion(
+    ingestionAttempt: CrimeBatchIngestionAttempt,
+    outcome: EmailIngestionOutcome,
+  ): EmailIngestionOutcome {
+    crimeBatchIngestionAttemptRepository.save(ingestionAttempt)
+
+    if (outcome.ingestionStatus == IngestionStatus.SUCCESSFUL || outcome.ingestionStatus == IngestionStatus.PARTIAL) {
+      val crimeBatch = crimeBatchService.createCrimeBatch(
+        outcome.records,
+        ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first(),
+      )
+
+      return outcome.copy(
+        batchId = crimeBatch.batchId,
+        crimeBatchId = crimeBatch.id.toString(),
+      )
+    }
+
+    return outcome
+  }
 
   fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
     bucket = bucketName,

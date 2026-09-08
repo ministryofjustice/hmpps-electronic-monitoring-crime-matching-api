@@ -15,7 +15,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "crime_batch_email")
-data class CrimeBatchEmail(
+class CrimeBatchEmail(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
