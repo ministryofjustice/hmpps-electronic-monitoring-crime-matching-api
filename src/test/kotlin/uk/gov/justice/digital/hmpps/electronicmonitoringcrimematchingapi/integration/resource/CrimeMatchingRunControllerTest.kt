@@ -147,6 +147,15 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         assertThat(run.results[0].deviceWearers[0].deviceId).isEqualTo(604008982)
         assertThat(run.results[0].deviceWearers[0].deviceSerialNumber).isEqualTo("123456789")
         assertThat(run.results[0].deviceWearers[0].deviceName).isEqualTo("deviceName")
+        assertThat(run.results[0].deviceWearers[0].positions).hasSize(4)
+        assertThat(run.results[0].deviceWearers[0].positions[0].entryBearing).isEqualTo(244.80)
+        assertThat(run.results[0].deviceWearers[0].positions[0].exitBearing).isEqualTo(243.10)
+        assertThat(run.results[0].deviceWearers[0].positions[1].entryBearing).isEqualTo(243.10)
+        assertThat(run.results[0].deviceWearers[0].positions[1].exitBearing).isEqualTo(242.05)
+        assertThat(run.results[0].deviceWearers[0].positions[2].entryBearing).isEqualTo(242.05)
+        assertThat(run.results[0].deviceWearers[0].positions[2].exitBearing).isEqualTo(240.00)
+        assertThat(run.results[0].deviceWearers[0].positions[3].entryBearing).isNull()
+        assertThat(run.results[0].deviceWearers[0].positions[3].exitBearing).isNull()
       }
     }
 

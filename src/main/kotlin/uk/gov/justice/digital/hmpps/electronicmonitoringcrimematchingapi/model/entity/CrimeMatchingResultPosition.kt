@@ -26,6 +26,10 @@ class CrimeMatchingResultPosition(
 
   val direction: Long,
 
+  val entryBearing: Double?,
+
+  val exitBearing: Double?,
+
   val latitude: Double,
 
   val longitude: Double,

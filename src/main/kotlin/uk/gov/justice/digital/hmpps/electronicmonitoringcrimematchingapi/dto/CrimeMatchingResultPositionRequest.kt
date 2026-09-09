@@ -11,6 +11,10 @@ data class CrimeMatchingResultPositionRequest(
   @field:NotNull(message = "direction is required")
   val direction: Long,
 
+  val entryBearing: Double?,
+
+  val exitBearing: Double?,
+
   @field:NotNull(message = "latitude is required")
   val latitude: Double,
 

@@ -23,6 +23,8 @@
             {
               "capturedDateTime": "2026-01-16T08:12:03+00:00",
               "direction": 10,
+              "entryBearing": null,
+              "exitBearing": null,
               "latitude": 51.574865,
               "longitude": 0.060977,
               "precision": 30,
@@ -32,6 +34,8 @@
             {
               "capturedDateTime": "2026-01-16T08:13:03+00:00",
               "direction": 10,
+              "entryBearing": null,
+              "exitBearing": null,
               "latitude": 51.574153,
               "longitude": 0.058536,
               "precision": 52,
