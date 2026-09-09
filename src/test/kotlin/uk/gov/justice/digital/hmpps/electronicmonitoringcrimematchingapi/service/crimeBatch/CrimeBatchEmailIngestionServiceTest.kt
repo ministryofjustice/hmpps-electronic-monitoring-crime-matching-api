@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -13,6 +12,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.Instant
@@ -117,7 +116,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    verify(matchingNotificationService, times(1)).savePublishMatchingOutboxState(any(), eq(PublishMatchingState.PENDING_OR_UNCONFIRMED))
+    verify(matchingNotificationService, times(1)).savePublishMatchingRequest(any<MatchingNotification>())
   }
 
   @Test
@@ -135,7 +134,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    verify(matchingNotificationService, times(1)).savePublishMatchingOutboxState(any(), eq(PublishMatchingState.PENDING_OR_UNCONFIRMED))
+    verify(matchingNotificationService, times(1)).savePublishMatchingRequest(any<MatchingNotification>())
   }
 
   @Test
@@ -179,7 +178,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    verify(matchingNotificationService, times(0)).savePublishMatchingOutboxState(any(), any())
+    verify(matchingNotificationService, times(0)).savePublishMatchingRequest(any())
   }
 
   private fun givenIngestionAttemptWithAttachment(): CrimeBatchIngestionAttempt {

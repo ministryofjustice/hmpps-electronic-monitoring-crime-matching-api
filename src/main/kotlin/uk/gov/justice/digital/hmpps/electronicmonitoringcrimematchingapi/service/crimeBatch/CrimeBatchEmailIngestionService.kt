@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
@@ -34,12 +33,11 @@ class CrimeBatchEmailIngestionService(
         ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first(),
       )
 
-      matchingNotificationService.savePublishMatchingOutboxState(
+      matchingNotificationService.savePublishMatchingRequest(
         MatchingNotification(
           type = MatchingNotificationService.CRIME_MATCHING_REQUEST,
           crimeBatchId = crimeBatch.id.toString(),
         ),
-        PublishMatchingState.PENDING_OR_UNCONFIRMED,
       )
 
       return outcome.copy(

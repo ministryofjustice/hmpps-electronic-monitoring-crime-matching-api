@@ -23,5 +23,12 @@ class PublishMatchingOutbox(
   @Enumerated(EnumType.STRING)
   var state: PublishMatchingState,
 
+  var attempts: Int = 0,
+
+  @Column(nullable = true, columnDefinition = "TEXT")
+  var lastError: String? = null,
+
+  var claimedAt: LocalDateTime? = null,
+
   val createdAt: LocalDateTime = LocalDateTime.now(),
 )

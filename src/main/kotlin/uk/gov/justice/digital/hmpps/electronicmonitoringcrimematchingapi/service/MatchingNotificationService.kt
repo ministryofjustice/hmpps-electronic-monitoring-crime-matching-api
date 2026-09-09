@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.publish
+import java.time.LocalDateTime
 
 @Service
 class MatchingNotificationService(
@@ -40,24 +41,45 @@ class MatchingNotificationService(
     throw PublishEventException(message, e)
   }
 
-  fun publishMatchingRequest(crimeBatchId: String) {
-    val payloadEvent = MatchingNotification(
-      type = CRIME_MATCHING_REQUEST,
-      crimeBatchId = crimeBatchId,
-    )
-    publish(payloadEvent)
-    savePublishMatchingOutboxState(payloadEvent, PublishMatchingState.PUBLISHED)
+  fun publishMatchingRequests() {
+    val claimedRows = claimEligibleOutboxRows()
+    claimedRows.forEach { row ->
+      val payloadEvent = objectMapper.readValue(row.payload, MatchingNotification::class.java)
+      try {
+        publish(payloadEvent)
+
+        row.state = PublishMatchingState.PUBLISHED
+        row.attempts += 1
+        row.lastError = null
+        publishMatchingOutboxRepository.save(row)
+      } catch (e: Throwable) {
+        row.state = PublishMatchingState.FAILED
+        row.attempts += 1
+        row.lastError = e.message
+        publishMatchingOutboxRepository.save(row)
+      }
+    }
   }
 
   @Transactional
-  fun savePublishMatchingOutboxState(payloadEvent: MatchingNotification, state: PublishMatchingState) {
-    val serialisedPayload = objectMapper.writeValueAsString(payloadEvent)
-    val outboxRows: List<PublishMatchingOutbox> = publishMatchingOutboxRepository.findAllByPayload(serialisedPayload)
-    outboxRows.forEach {
-      it.state = state
-      publishMatchingOutboxRepository.save(
-        it,
-      )
-    }
+  fun claimEligibleOutboxRows(): List<PublishMatchingOutbox> {
+    val now = LocalDateTime.now()
+    val cutoff = now.minusMinutes(1)
+
+    return publishMatchingOutboxRepository.claimEligibleRows(
+      pendingState = PublishMatchingState.PENDING.name,
+      cutoff = cutoff,
+      now = now,
+    )
+  }
+
+  @Transactional
+  fun savePublishMatchingRequest(payloadEvent: MatchingNotification) {
+    publishMatchingOutboxRepository.save(
+      PublishMatchingOutbox(
+        payload = objectMapper.writeValueAsString(payloadEvent),
+        state = PublishMatchingState.PENDING,
+      ),
+    )
   }
 }
