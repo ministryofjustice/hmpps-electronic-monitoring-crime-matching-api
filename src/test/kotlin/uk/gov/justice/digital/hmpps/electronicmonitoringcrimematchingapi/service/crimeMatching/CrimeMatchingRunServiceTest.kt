@@ -229,7 +229,6 @@ class CrimeMatchingRunServiceTest {
 
       val firstPos = savedWearer.positions.first()
       assertThat(firstPos.capturedDateTime).isEqualTo(Instant.parse("2026-01-16T08:12:00Z"))
-
       assertThat(firstPos.direction).isEqualTo(10)
       assertThat(firstPos.latitude).isEqualTo(51.574865)
       assertThat(firstPos.longitude).isEqualTo(0.060977)
