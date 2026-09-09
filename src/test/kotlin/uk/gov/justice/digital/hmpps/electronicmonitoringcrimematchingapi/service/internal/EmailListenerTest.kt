@@ -167,7 +167,6 @@ class EmailListenerTest {
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
       inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequest(
         notificationCaptor.capture(),
-        any(),
       )
       inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
 
@@ -257,7 +256,7 @@ class EmailListenerTest {
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
 
       val notificationCaptor = argumentCaptor<String>()
-      verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture(), any())
+      verify(matchingNotificationService, times(1)).publishMatchingRequest(notificationCaptor.capture())
       verify(emailNotificationService, times(1)).sendEmails(any())
       verify(metricsService, times(1)).recordOutcome(any())
 

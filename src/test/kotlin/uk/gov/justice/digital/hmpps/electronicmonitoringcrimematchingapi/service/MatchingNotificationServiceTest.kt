@@ -18,6 +18,7 @@ import software.amazon.awssdk.services.sns.SnsAsyncClient
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sns.model.PublishResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.exception.PublishEventException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
@@ -58,7 +59,7 @@ class MatchingNotificationServiceTest {
       objectName = "objectName",
     )
 
-    service.publishMatchingRequest(batchId, ingestionAttempt)
+    service.publishMatchingRequest(batchId)
 
     val captor = argumentCaptor<PublishRequest>()
 
@@ -80,7 +81,7 @@ class MatchingNotificationServiceTest {
       objectName = "objectName",
     )
 
-    assertThrows<PublishEventException> { service.publishMatchingRequest(batchId, ingestionAttempt) }
+    assertThrows<PublishEventException> { service.publishMatchingRequest(batchId) }
 
     verify(hmppsQueueService, times(1)).findByTopicId(any<String>())
     verify(snsClient, atLeastOnce()).publish(any<PublishRequest>()) // triggers retry policy
@@ -96,14 +97,21 @@ class MatchingNotificationServiceTest {
       bucket = "bucket",
       objectName = "objectName",
     )
-    whenever(publishMatchingOutboxRepository.findByCrimeBatchIngestionAttempt(any<CrimeBatchIngestionAttempt>())).thenReturn(
-      PublishMatchingOutbox(
-        crimeBatchIngestionAttempt = ingestionAttempt,
-        state = PublishMatchingState.PENDING_OR_UNCONFIRMED,
+    whenever(publishMatchingOutboxRepository.findAllByPayload(any<String>())).thenReturn(
+      listOf(
+        PublishMatchingOutbox(
+          payload = mapper.writeValueAsString(
+            MatchingNotification(
+              type = MatchingNotificationService.CRIME_MATCHING_REQUEST,
+              crimeBatchId = batchId,
+            ),
+          ),
+          state = PublishMatchingState.PENDING_OR_UNCONFIRMED,
+        ),
       ),
     )
 
-    service.publishMatchingRequest(batchId, ingestionAttempt)
+    service.publishMatchingRequest(batchId)
 
     val captor = argumentCaptor<PublishMatchingOutbox>()
 

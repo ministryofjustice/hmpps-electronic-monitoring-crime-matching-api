@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -22,22 +22,22 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import java.time.Instant
 import java.util.Date
 
 class CrimeBatchEmailIngestionServiceTest {
   private lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
   private lateinit var crimeBatchService: CrimeBatchService
-  private lateinit var publishMatchingOutboxRepository: PublishMatchingOutboxRepository
+  private lateinit var matchingNotificationService: MatchingNotificationService
   private lateinit var service: CrimeBatchEmailIngestionService
 
   @BeforeEach
   fun setup() {
     crimeBatchIngestionAttemptRepository = Mockito.mock(CrimeBatchIngestionAttemptRepository::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
-    publishMatchingOutboxRepository = Mockito.mock(PublishMatchingOutboxRepository::class.java)
-    service = CrimeBatchEmailIngestionService(crimeBatchIngestionAttemptRepository, crimeBatchService, publishMatchingOutboxRepository)
+    matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
+    service = CrimeBatchEmailIngestionService(crimeBatchIngestionAttemptRepository, crimeBatchService, matchingNotificationService)
   }
 
   @Test
@@ -117,10 +117,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    val captor = argumentCaptor<uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox>()
-
-    verify(publishMatchingOutboxRepository, times(1)).save(captor.capture())
-    assertThat(captor.firstValue.state).isEqualTo(PublishMatchingState.PENDING_OR_UNCONFIRMED)
+    verify(matchingNotificationService, times(1)).savePublishMatchingOutboxState(any(), eq(PublishMatchingState.PENDING_OR_UNCONFIRMED))
   }
 
   @Test
@@ -138,10 +135,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    val captor = argumentCaptor<uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox>()
-
-    verify(publishMatchingOutboxRepository, times(1)).save(captor.capture())
-    assertThat(captor.firstValue.state).isEqualTo(PublishMatchingState.PENDING_OR_UNCONFIRMED)
+    verify(matchingNotificationService, times(1)).savePublishMatchingOutboxState(any(), eq(PublishMatchingState.PENDING_OR_UNCONFIRMED))
   }
 
   @Test
@@ -185,7 +179,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    verify(publishMatchingOutboxRepository, times(0)).save(any())
+    verify(matchingNotificationService, times(0)).savePublishMatchingOutboxState(any(), any())
   }
 
   private fun givenIngestionAttemptWithAttachment(): CrimeBatchIngestionAttempt {

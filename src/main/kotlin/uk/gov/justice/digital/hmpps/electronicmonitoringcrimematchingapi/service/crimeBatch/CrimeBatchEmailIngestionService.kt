@@ -4,22 +4,22 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 
 @Service
 class CrimeBatchEmailIngestionService(
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
   private val crimeBatchService: CrimeBatchService,
-  private val publishMatchingOutboxRepository: PublishMatchingOutboxRepository,
+  private val matchingNotificationService: MatchingNotificationService,
 ) {
   @Transactional
   fun persistIngestion(
@@ -34,7 +34,13 @@ class CrimeBatchEmailIngestionService(
         ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first(),
       )
 
-      savePublishMatchingOutboxState(ingestionAttempt, PublishMatchingState.PENDING_OR_UNCONFIRMED)
+      matchingNotificationService.savePublishMatchingOutboxState(
+        MatchingNotification(
+          type = MatchingNotificationService.CRIME_MATCHING_REQUEST,
+          crimeBatchId = crimeBatch.id.toString(),
+        ),
+        PublishMatchingState.PENDING_OR_UNCONFIRMED,
+      )
 
       return outcome.copy(
         batchId = crimeBatch.batchId,
@@ -43,15 +49,6 @@ class CrimeBatchEmailIngestionService(
     }
 
     return outcome
-  }
-
-  private fun savePublishMatchingOutboxState(ingestionAttempt: CrimeBatchIngestionAttempt, state: PublishMatchingState) {
-    publishMatchingOutboxRepository.save(
-      PublishMatchingOutbox(
-        crimeBatchIngestionAttempt = ingestionAttempt,
-        state = state,
-      ),
-    )
   }
 
   fun createCrimeBatchIngestionAttempt(bucketName: String, objectKey: String): CrimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.exception.PublishEventException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
@@ -41,21 +40,21 @@ class MatchingNotificationService(
     throw PublishEventException(message, e)
   }
 
-  fun publishMatchingRequest(crimeBatchId: String, ingestionAttempt: CrimeBatchIngestionAttempt) {
-    publish(
-      MatchingNotification(
-        type = CRIME_MATCHING_REQUEST,
-        crimeBatchId = crimeBatchId,
-      ),
+  fun publishMatchingRequest(crimeBatchId: String) {
+    val payloadEvent = MatchingNotification(
+      type = CRIME_MATCHING_REQUEST,
+      crimeBatchId = crimeBatchId,
     )
-    savePublishedState(ingestionAttempt)
+    publish(payloadEvent)
+    savePublishMatchingOutboxState(payloadEvent, PublishMatchingState.PUBLISHED)
   }
 
   @Transactional
-  private fun savePublishedState(ingestionAttempt: CrimeBatchIngestionAttempt) {
-    val outboxRow: PublishMatchingOutbox? = publishMatchingOutboxRepository.findByCrimeBatchIngestionAttempt(ingestionAttempt)
-    outboxRow?.let {
-      it.state = PublishMatchingState.PUBLISHED
+  fun savePublishMatchingOutboxState(payloadEvent: MatchingNotification, state: PublishMatchingState) {
+    val serialisedPayload = objectMapper.writeValueAsString(payloadEvent)
+    val outboxRows: List<PublishMatchingOutbox> = publishMatchingOutboxRepository.findAllByPayload(serialisedPayload)
+    outboxRows.forEach {
+      it.state = state
       publishMatchingOutboxRepository.save(
         it,
       )
