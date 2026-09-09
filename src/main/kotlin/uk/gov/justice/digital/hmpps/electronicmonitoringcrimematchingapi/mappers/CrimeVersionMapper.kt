@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultDeviceWearer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultPosition
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeVersion
-import java.time.ZoneOffset
 
 @Component
 class CrimeVersionMapper(
@@ -67,7 +66,7 @@ class CrimeVersionMapper(
     longitude = position.longitude,
     sequenceLabel = position.sequenceLabel,
     precision = position.precision,
-    capturedDateTime = position.capturedDateTime.atOffset(ZoneOffset.UTC).toString(),
+    capturedDateTime = position.capturedDateTime.toString(),
     direction = position.direction,
     speed = position.speed,
   )

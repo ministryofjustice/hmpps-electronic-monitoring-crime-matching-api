@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeVersionFieldName
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -689,11 +690,11 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
         withCrime("crime1", id = versionId) {
           withMatchingRun {
             withMatchedDeviceWearer(deviceId = 1) {
-              withPosition(sequenceLabel = "A2", capturedDateTime = LocalDateTime.of(2025, 1, 1, 2, 0))
+              withPosition(sequenceLabel = "A2", capturedDateTime = Instant.parse("2025-01-01T02:00:00Z"))
               withPosition()
             }
             withMatchedDeviceWearer(deviceId = 2) {
-              withPosition(sequenceLabel = "A2", capturedDateTime = LocalDateTime.of(2025, 1, 1, 2, 0))
+              withPosition(sequenceLabel = "A2", capturedDateTime = Instant.parse("2025-01-01T02:00:00Z"))
               withPosition()
             }
           }

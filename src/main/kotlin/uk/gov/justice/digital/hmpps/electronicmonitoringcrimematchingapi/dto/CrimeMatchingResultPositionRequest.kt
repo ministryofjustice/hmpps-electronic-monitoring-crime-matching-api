@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import java.time.LocalDateTime
+import java.time.Instant
 
 data class CrimeMatchingResultPositionRequest(
   @field:NotNull(message = "capturedDateTime is required")
-  val capturedDateTime: LocalDateTime,
+  val capturedDateTime: Instant,
 
   @field:NotNull(message = "direction is required")
   val direction: Long,
