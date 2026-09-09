@@ -32,8 +32,8 @@ class CrimeVersionMapper(
       crimeDateTimeFrom = crimeVersion.crimeDateTimeFrom.toString(),
       crimeDateTimeTo = crimeVersion.crimeDateTimeTo.toString(),
       crimeText = crimeVersion.crimeText,
-      latitude = coords.latitude.roundTo(6),
-      longitude = coords.longitude.roundTo(6),
+      latitude = coords.latitude.roundTo(8),
+      longitude = coords.longitude.roundTo(8),
       matching = crimeVersion.matchingResults.maxByOrNull { it.createdAt }?.let { matchingResultToDto(it) },
       versionLabel = crimeVersion.versionLabel,
     )
@@ -53,6 +53,7 @@ class CrimeVersionMapper(
       dateOfBirth = deviceWearer.dateOfBirth?.toString() ?: "",
       deviceId = deviceWearer.deviceId,
       deviceSerialNumber = deviceWearer.deviceSerialNumber,
+      identifier = deviceWearer.identifier,
       name = deviceWearer.name,
       nomisId = deviceWearer.nomisId,
       pncRef = deviceWearer.pncRef,

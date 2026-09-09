@@ -20,6 +20,7 @@
           "dateOfBirth": "2025-01-01T01:01",
           "deviceId": 1,
           "deviceSerialNumber": "123456789",
+          "identifier": "DEVWR0000001",
           "name": "name",
           "nomisId": "nomisId",
           "pncRef": "pncRef",
@@ -50,6 +51,7 @@
           "name": "name",
           "deviceId": 2,
           "deviceSerialNumber": "123456789",
+          "identifier": "DEVWR0000001",
           "nomisId": "nomisId",
           "pncRef": "pncRef",
           "positions": [
