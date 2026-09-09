@@ -168,7 +168,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should save the publish matching outbox as NOT_REQUIRED for FAILED outcomes`() {
+  fun `it should not save a row to the publish matching outbox for FAILED outcomes`() {
     val attempt = CrimeBatchIngestionAttempt(bucket = "emails", objectName = "object")
     val ingestionOutcome = EmailIngestionOutcome(
       emailData = EmailData(
@@ -185,10 +185,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    val captor = argumentCaptor<uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox>()
-
-    verify(publishMatchingOutboxRepository, times(1)).save(captor.capture())
-    assertThat(captor.firstValue.state).isEqualTo(PublishMatchingState.NOT_REQUIRED)
+    verify(publishMatchingOutboxRepository, times(0)).save(any())
   }
 
   private fun givenIngestionAttemptWithAttachment(): CrimeBatchIngestionAttempt {

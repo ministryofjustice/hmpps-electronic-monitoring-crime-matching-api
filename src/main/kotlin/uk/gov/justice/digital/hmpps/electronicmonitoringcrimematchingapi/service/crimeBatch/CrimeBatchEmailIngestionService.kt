@@ -42,7 +42,6 @@ class CrimeBatchEmailIngestionService(
       )
     }
 
-    savePublishMatchingOutboxState(ingestionAttempt, PublishMatchingState.NOT_REQUIRED)
     return outcome
   }
 
