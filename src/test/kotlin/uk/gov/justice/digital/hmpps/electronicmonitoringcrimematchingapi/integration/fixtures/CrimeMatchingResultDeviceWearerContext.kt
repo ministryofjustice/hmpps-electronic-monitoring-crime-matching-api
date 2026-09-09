@@ -2,13 +2,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultDeviceWearer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultPosition
-import java.time.LocalDateTime
+import java.time.Instant
 
 class CrimeMatchingResultDeviceWearerContext(
   private val crimeMatchingResultDeviceWearer: CrimeMatchingResultDeviceWearer,
 ) {
   fun withPosition(
-    capturedDateTime: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
+    capturedDateTime: Instant = Instant.parse("2025-01-01T00:00:00Z"),
     sequenceLabel: String = "A1",
   ) {
     crimeMatchingResultDeviceWearer.positions.add(

@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposi
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.UUID
 
 interface CrimeVersionProjection {
@@ -28,5 +27,5 @@ interface CrimeVersionProjection {
   val precision: Int?
   val speed: Int?
   val direction: Int?
-  val capturedDateTime: LocalDateTime?
+  val capturedDateTime: Instant?
 }

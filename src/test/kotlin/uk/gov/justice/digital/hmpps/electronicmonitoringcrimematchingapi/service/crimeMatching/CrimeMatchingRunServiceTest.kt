@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeVersionRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
@@ -180,7 +181,7 @@ class CrimeMatchingRunServiceTest {
                 pncRef = "ABC",
                 positions = listOf(
                   CrimeMatchingResultPositionRequest(
-                    capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),
+                    capturedDateTime = Instant.parse("2026-01-16T08:12:00Z"),
                     direction = 10,
                     latitude = 51.574865,
                     longitude = 0.060977,
@@ -189,7 +190,7 @@ class CrimeMatchingRunServiceTest {
                     speed = 10,
                   ),
                   CrimeMatchingResultPositionRequest(
-                    capturedDateTime = LocalDateTime.of(2026, 1, 16, 8, 12, 0),
+                    capturedDateTime = Instant.parse("2026-01-16T08:12:00Z"),
                     direction = 10,
                     latitude = 51.574153,
                     longitude = 0.058536,
@@ -227,7 +228,8 @@ class CrimeMatchingRunServiceTest {
       assertThat(savedWearer.positions).hasSize(2)
 
       val firstPos = savedWearer.positions.first()
-      assertThat(firstPos.capturedDateTime).isEqualTo(LocalDateTime.of(2026, 1, 16, 8, 12, 0))
+      assertThat(firstPos.capturedDateTime).isEqualTo(Instant.parse("2026-01-16T08:12:00Z"))
+
       assertThat(firstPos.direction).isEqualTo(10)
       assertThat(firstPos.latitude).isEqualTo(51.574865)
       assertThat(firstPos.longitude).isEqualTo(0.060977)

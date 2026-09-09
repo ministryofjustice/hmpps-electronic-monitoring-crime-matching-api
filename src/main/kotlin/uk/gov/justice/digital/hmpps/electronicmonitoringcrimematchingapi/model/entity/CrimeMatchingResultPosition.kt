@@ -7,7 +7,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.UUID
 
 @Entity
@@ -18,7 +18,7 @@ class CrimeMatchingResultPosition(
   val id: UUID = UUID.randomUUID(),
 
   @Column(nullable = false)
-  val capturedDateTime: LocalDateTime,
+  val capturedDateTime: Instant,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crime_matching_result_device_wearer_id", nullable = false)
