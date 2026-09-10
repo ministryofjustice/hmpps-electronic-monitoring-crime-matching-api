@@ -41,7 +41,7 @@ class MatchingNotificationService(
     throw PublishEventException(message, e)
   }
 
-  // Using the outbox table for Publish Matching, submit all eligible Publish Matching requests
+  // Using the outbox table for Publish Matching, submit eligible Publish Matching requests
   // We want to guarantee at-least-once delivery. Some requests may be published more than once.
   fun publishMatchingRequests() {
     val claimedRows = claimEligibleOutboxRows()
