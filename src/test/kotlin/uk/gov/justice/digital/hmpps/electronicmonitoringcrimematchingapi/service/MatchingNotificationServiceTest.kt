@@ -48,7 +48,7 @@ class MatchingNotificationServiceTest {
   }
 
   @Test
-  fun `it should send a crime matching request to the SNS topic`() {
+  fun `it should send one crime matching request to the SNS topic`() {
     whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
@@ -77,6 +77,54 @@ class MatchingNotificationServiceTest {
 
     assertThat(captor.allValues).hasSize(1)
     assertThat(captor.allValues.first().message()).isEqualTo("{\"type\":\"CRIME_MATCHING_REQUEST\",\"crime_batch_id\":\"${batchId}\"}")
+  }
+
+  @Test
+  fun `it should send two crime matching requests to the SNS topic`() {
+    whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
+    whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
+    whenever(snsClient.publish(any<PublishRequest>()))
+      .thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
+      .thenReturn(completedFuture(PublishResponse.builder().messageId("2").build()))
+    val batchId1 = UUID.randomUUID().toString()
+    val batchId2 = UUID.randomUUID().toString()
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
+      listOf(
+        PublishMatchingOutbox(
+          payload = mapper.writeValueAsString(
+            MatchingNotification(
+              type = MatchingNotificationService.CRIME_MATCHING_REQUEST,
+              crimeBatchId = batchId1,
+            ),
+          ),
+          state = PublishMatchingState.PENDING,
+          claimedAt = Instant.parse("2026-01-01T00:10:00Z"),
+        ),
+        PublishMatchingOutbox(
+          payload = mapper.writeValueAsString(
+            MatchingNotification(
+              type = MatchingNotificationService.CRIME_MATCHING_REQUEST,
+              crimeBatchId = batchId2,
+            ),
+          ),
+          state = PublishMatchingState.PENDING,
+          claimedAt = Instant.parse("2026-01-01T00:10:00Z"),
+        ),
+      ),
+    )
+
+    service.publishMatchingRequests()
+
+    val captor = argumentCaptor<PublishRequest>()
+
+    verify(hmppsQueueService, times(1)).findByTopicId(any<String>())
+    verify(snsClient, times(2)).publish(captor.capture())
+
+    assertThat(captor.allValues).hasSize(2)
+    assertThat(captor.allValues.map { it.message() }).containsExactly(
+      "{\"type\":\"CRIME_MATCHING_REQUEST\",\"crime_batch_id\":\"${batchId1}\"}",
+      "{\"type\":\"CRIME_MATCHING_REQUEST\",\"crime_batch_id\":\"${batchId2}\"}",
+    )
   }
 
   @Test
