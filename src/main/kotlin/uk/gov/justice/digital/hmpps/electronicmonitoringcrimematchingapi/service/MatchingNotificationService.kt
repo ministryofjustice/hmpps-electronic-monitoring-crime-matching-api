@@ -49,10 +49,11 @@ class MatchingNotificationService(
       val payloadEvent = objectMapper.readValue(row.payload, MatchingNotification::class.java)
       try {
         publish(payloadEvent)
-        completeClaimedRow(row, PublishMatchingState.PUBLISHED, null)
       } catch (e: Throwable) {
         completeClaimedRow(row, PublishMatchingState.FAILED, e.message)
+        return@forEach
       }
+      completeClaimedRow(row, PublishMatchingState.PUBLISHED, null)
     }
   }
 
