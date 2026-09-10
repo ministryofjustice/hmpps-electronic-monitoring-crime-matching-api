@@ -101,7 +101,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should save the publish matching outbox as PENDING_OR_UNCONFIRMED for SUCCESSFUL outcomes`() {
+  fun `it should create a matching request for SUCCESSFUL outcomes`() {
     val attempt = givenIngestionAttemptWithAttachment()
     val record = givenCrimeRecordRequest(batchId = "MPS20260123")
     val ingestionOutcome = givenIngestionOutcome(record = record, ingestionStatus = IngestionStatus.SUCCESSFUL)
@@ -119,7 +119,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should save the publish matching outbox as PENDING_OR_UNCONFIRMED for PARTIAL outcomes`() {
+  fun `it should create a matching request for PARTIAL outcomes`() {
     val attempt = givenIngestionAttemptWithAttachment()
     val record = givenCrimeRecordRequest(batchId = "MPS20260124")
     val ingestionOutcome = givenIngestionOutcome(record = record, ingestionStatus = IngestionStatus.PARTIAL)
@@ -160,7 +160,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should not save a row to the publish matching outbox for FAILED outcomes`() {
+  fun `it should not create a matching request for FAILED outcomes`() {
     val attempt = CrimeBatchIngestionAttempt(bucket = "emails", objectName = "object")
     val ingestionOutcome = EmailIngestionOutcome(
       emailData = EmailData(
