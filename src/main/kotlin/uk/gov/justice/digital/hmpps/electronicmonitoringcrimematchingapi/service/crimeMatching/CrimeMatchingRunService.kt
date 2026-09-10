@@ -106,6 +106,8 @@ class CrimeMatchingRunService(
     crimeMatchingResultDeviceWearer = wearer,
     capturedDateTime = positionDto.capturedDateTime,
     direction = positionDto.direction,
+    entryBearing = positionDto.entryBearing,
+    exitBearing = positionDto.exitBearing,
     latitude = positionDto.latitude,
     longitude = positionDto.longitude,
     precision = positionDto.precision,

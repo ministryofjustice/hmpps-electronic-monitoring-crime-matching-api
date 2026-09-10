@@ -183,6 +183,8 @@ class CrimeMatchingRunServiceTest {
                   CrimeMatchingResultPositionRequest(
                     capturedDateTime = Instant.parse("2026-01-16T08:12:00Z"),
                     direction = 10,
+                    entryBearing = 244.80,
+                    exitBearing = 243.10,
                     latitude = 51.574865,
                     longitude = 0.060977,
                     precision = 30,
@@ -190,12 +192,36 @@ class CrimeMatchingRunServiceTest {
                     speed = 10,
                   ),
                   CrimeMatchingResultPositionRequest(
-                    capturedDateTime = Instant.parse("2026-01-16T08:12:00Z"),
+                    capturedDateTime = Instant.parse("2026-01-16T08:13:00Z"),
                     direction = 10,
+                    entryBearing = 243.10,
+                    exitBearing = 242.05,
                     latitude = 51.574153,
                     longitude = 0.058536,
                     precision = 30,
                     sequenceLabel = "A2",
+                    speed = 10,
+                  ),
+                  CrimeMatchingResultPositionRequest(
+                    capturedDateTime = Instant.parse("2026-01-16T08:14:00Z"),
+                    direction = 10,
+                    entryBearing = 242.05,
+                    exitBearing = 240.00,
+                    latitude = 51.573445,
+                    longitude = 0.057012,
+                    precision = 30,
+                    sequenceLabel = "A3",
+                    speed = 10,
+                  ),
+                  CrimeMatchingResultPositionRequest(
+                    capturedDateTime = Instant.parse("2026-01-16T08:15:00Z"),
+                    direction = 10,
+                    entryBearing = null,
+                    exitBearing = null,
+                    latitude = 51.572998,
+                    longitude = 0.056543,
+                    precision = 30,
+                    sequenceLabel = "A4",
                     speed = 10,
                   ),
                 ),
@@ -225,16 +251,33 @@ class CrimeMatchingRunServiceTest {
       assertThat(savedWearer.name).isEqualTo("Richard Gibbons")
       assertThat(savedWearer.nomisId).isEqualTo("A5128CZ")
       assertThat(savedWearer.pncRef).isEqualTo("ABC")
-      assertThat(savedWearer.positions).hasSize(2)
+      assertThat(savedWearer.positions).hasSize(4)
 
       val firstPos = savedWearer.positions.first()
       assertThat(firstPos.capturedDateTime).isEqualTo(Instant.parse("2026-01-16T08:12:00Z"))
       assertThat(firstPos.direction).isEqualTo(10)
+      assertThat(firstPos.entryBearing).isEqualTo(244.80)
+      assertThat(firstPos.exitBearing).isEqualTo(243.10)
       assertThat(firstPos.latitude).isEqualTo(51.574865)
       assertThat(firstPos.longitude).isEqualTo(0.060977)
       assertThat(firstPos.precision).isEqualTo(30)
       assertThat(firstPos.sequenceLabel).isEqualTo("A1")
       assertThat(firstPos.speed).isEqualTo(10)
+
+      val secondPos = savedWearer.positions[1]
+      assertThat(secondPos.sequenceLabel).isEqualTo("A2")
+      assertThat(secondPos.entryBearing).isEqualTo(243.10)
+      assertThat(secondPos.exitBearing).isEqualTo(242.05)
+
+      val thirdPos = savedWearer.positions[2]
+      assertThat(thirdPos.sequenceLabel).isEqualTo("A3")
+      assertThat(thirdPos.entryBearing).isEqualTo(242.05)
+      assertThat(thirdPos.exitBearing).isEqualTo(240.00)
+
+      val fourthPos = savedWearer.positions[3]
+      assertThat(fourthPos.sequenceLabel).isEqualTo("A4")
+      assertThat(fourthPos.entryBearing).isNull()
+      assertThat(fourthPos.exitBearing).isNull()
     }
   }
 }

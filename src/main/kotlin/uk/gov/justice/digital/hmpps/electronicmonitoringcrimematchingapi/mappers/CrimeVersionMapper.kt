@@ -69,6 +69,8 @@ class CrimeVersionMapper(
     precision = position.precision,
     capturedDateTime = position.capturedDateTime.toString(),
     direction = position.direction,
+    entryBearing = position.entryBearing,
+    exitBearing = position.exitBearing,
     speed = position.speed,
   )
 }
