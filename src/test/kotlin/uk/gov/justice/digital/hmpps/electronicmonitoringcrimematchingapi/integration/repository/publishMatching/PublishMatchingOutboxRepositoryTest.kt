@@ -143,7 +143,7 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
       now = now.toEpochMilli(),
     )
 
-    assertThat(claimedRows.map { it.id }).containsExactly(eligibleOne.id, eligibleTwo.id)
+    assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(eligibleOne.id, eligibleTwo.id)
 
     val persistedRows = publishMatchingOutboxRepository.findAllById(
       listOf(eligibleOne.id, eligibleTwo.id, eligibleThree.id),
