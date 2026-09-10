@@ -19,6 +19,7 @@ interface PublishMatchingOutboxRepository : JpaRepository<PublishMatchingOutbox,
       where state = :pendingState
         and (claimed_at is null or claimed_at < :cutoff)
       order by created_at
+      limit 2
       for update skip locked
     )
     update publish_matching_outbox p

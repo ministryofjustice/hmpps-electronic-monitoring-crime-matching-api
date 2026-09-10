@@ -77,7 +77,7 @@ class MatchingNotificationService(
     )
 
     if (updateCount == 0) {
-      log.debug("PublishMatchingOutbox row {} completion skipped: claim/version no longer owned", row.id)
+      log.warn("PublishMatchingOutbox row {} completion skipped: claim/version no longer owned", row.id)
     }
   }
 

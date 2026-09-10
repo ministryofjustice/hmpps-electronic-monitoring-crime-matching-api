@@ -117,6 +117,44 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `it should claim at most two eligible rows`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+
+    val eligibleOne = givenOutboxRow(
+      state = PublishMatchingState.PENDING,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:00:00Z"),
+    )
+    val eligibleTwo = givenOutboxRow(
+      state = PublishMatchingState.PENDING,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:01:00Z"),
+    )
+    val eligibleThree = givenOutboxRow(
+      state = PublishMatchingState.PENDING,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:02:00Z"),
+    )
+
+    val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
+      pendingState = PublishMatchingState.PENDING.name,
+      cutoff = cutoff.toEpochMilli(),
+      now = now.toEpochMilli(),
+    )
+
+    assertThat(claimedRows.map { it.id }).containsExactly(eligibleOne.id, eligibleTwo.id)
+
+    val persistedRows = publishMatchingOutboxRepository.findAllById(
+      listOf(eligibleOne.id, eligibleTwo.id, eligibleThree.id),
+    ).associateBy { it.id }
+
+    assertThat(persistedRows[eligibleOne.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleTwo.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleThree.id]!!.claimedAt).isNull()
+  }
+
+  @Test
   fun `it should skip a row already locked by another claim transaction`() {
     val row = givenOutboxRow(
       state = PublishMatchingState.PENDING,
