@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.publish
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Service
 class MatchingNotificationService(
@@ -63,13 +63,13 @@ class MatchingNotificationService(
 
   @Transactional
   fun claimEligibleOutboxRows(): List<PublishMatchingOutbox> {
-    val now = LocalDateTime.now()
-    val cutoff = now.minusMinutes(1)
+    val now = Instant.now()
+    val cutoff = now.minusSeconds(60)
 
     return publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
-      cutoff = cutoff,
-      now = now,
+      cutoff = cutoff.toEpochMilli(),
+      now = now.toEpochMilli(),
     )
   }
 

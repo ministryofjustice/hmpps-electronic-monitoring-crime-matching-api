@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox
-import java.time.LocalDateTime
 import java.util.UUID
 
 @Repository
@@ -30,7 +29,7 @@ interface PublishMatchingOutboxRepository : JpaRepository<PublishMatchingOutbox,
   )
   fun claimEligibleRows(
     @Param("pendingState") pendingState: String,
-    @Param("cutoff") cutoff: LocalDateTime,
-    @Param("now") now: LocalDateTime,
+    @Param("cutoff") cutoff: Long,
+    @Param("now") now: Long,
   ): List<PublishMatchingOutbox>
 }

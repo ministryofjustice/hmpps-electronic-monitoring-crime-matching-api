@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
-import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.CompletableFuture.completedFuture
 
@@ -53,7 +52,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<LocalDateTime>(), any<LocalDateTime>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -84,7 +83,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenThrow(RuntimeException("SNS error"))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<LocalDateTime>(), any<LocalDateTime>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -114,7 +113,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<LocalDateTime>(), any<LocalDateTime>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
