@@ -12,7 +12,6 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatch
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
@@ -116,7 +115,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    verify(matchingNotificationService, times(1)).savePublishMatchingRequest(any<MatchingNotification>())
+    verify(matchingNotificationService, times(1)).createMatchingRequest(crimeBatch.id.toString())
   }
 
   @Test
@@ -134,7 +133,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    verify(matchingNotificationService, times(1)).savePublishMatchingRequest(any<MatchingNotification>())
+    verify(matchingNotificationService, times(1)).createMatchingRequest(crimeBatch.id.toString())
   }
 
   @Test
@@ -178,7 +177,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     service.persistIngestion(attempt, ingestionOutcome)
 
-    verify(matchingNotificationService, times(0)).savePublishMatchingRequest(any())
+    verify(matchingNotificationService, times(0)).createMatchingRequest(any())
   }
 
   private fun givenIngestionAttemptWithAttachment(): CrimeBatchIngestionAttempt {

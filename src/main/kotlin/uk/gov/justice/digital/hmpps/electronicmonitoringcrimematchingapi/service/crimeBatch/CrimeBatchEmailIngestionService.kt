@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.MatchingNotification
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmail
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
@@ -33,11 +32,8 @@ class CrimeBatchEmailIngestionService(
         ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first(),
       )
 
-      matchingNotificationService.savePublishMatchingRequest(
-        MatchingNotification(
-          type = MatchingNotificationService.CRIME_MATCHING_REQUEST,
-          crimeBatchId = crimeBatch.id.toString(),
-        ),
+      matchingNotificationService.createMatchingRequest(
+        crimeBatch.id.toString(),
       )
 
       return outcome.copy(

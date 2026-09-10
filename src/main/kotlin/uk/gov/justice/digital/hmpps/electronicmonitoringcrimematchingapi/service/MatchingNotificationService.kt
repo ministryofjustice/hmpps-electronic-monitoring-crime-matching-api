@@ -74,10 +74,16 @@ class MatchingNotificationService(
   }
 
   @Transactional
-  fun savePublishMatchingRequest(payloadEvent: MatchingNotification) {
+  fun createMatchingRequest(crimeBatchId: String) {
+    val payloadEvent = objectMapper.writeValueAsString(
+      MatchingNotification(
+        type = CRIME_MATCHING_REQUEST,
+        crimeBatchId = crimeBatchId,
+      ),
+    )
     publishMatchingOutboxRepository.save(
       PublishMatchingOutbox(
-        payload = objectMapper.writeValueAsString(payloadEvent),
+        payload = payloadEvent,
         state = PublishMatchingState.PENDING,
       ),
     )
