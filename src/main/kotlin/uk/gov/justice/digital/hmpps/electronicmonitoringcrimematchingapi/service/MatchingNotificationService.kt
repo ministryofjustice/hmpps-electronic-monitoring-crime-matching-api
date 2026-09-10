@@ -49,17 +49,35 @@ class MatchingNotificationService(
       val payloadEvent = objectMapper.readValue(row.payload, MatchingNotification::class.java)
       try {
         publish(payloadEvent)
-
-        row.state = PublishMatchingState.PUBLISHED
-        row.attempts += 1
-        row.lastError = null
-        publishMatchingOutboxRepository.save(row)
+        completeClaimedRow(row, PublishMatchingState.PUBLISHED, null)
       } catch (e: Throwable) {
-        row.state = PublishMatchingState.FAILED
-        row.attempts += 1
-        row.lastError = e.message
-        publishMatchingOutboxRepository.save(row)
+        completeClaimedRow(row, PublishMatchingState.FAILED, e.message)
       }
+    }
+  }
+
+  private fun completeClaimedRow(
+    row: PublishMatchingOutbox,
+    state: PublishMatchingState,
+    lastError: String?,
+  ) {
+    val claimedAt = row.claimedAt?.toEpochMilli()
+    if (claimedAt == null) {
+      log.warn("Skipping PublishMatchingOutbox completion for row {} because claimedAt is null", row.id)
+      return
+    }
+
+    val updateCount = publishMatchingOutboxRepository.completeClaimedRow(
+      id = row.id,
+      claimedAt = claimedAt,
+      state = state.name,
+      attempts = row.attempts + 1,
+      lastError = lastError,
+      version = row.version,
+    )
+
+    if (updateCount == 0) {
+      log.debug("PublishMatchingOutbox row {} completion skipped: claim/version no longer owned", row.id)
     }
   }
 

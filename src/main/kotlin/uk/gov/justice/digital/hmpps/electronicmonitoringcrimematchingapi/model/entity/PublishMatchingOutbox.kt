@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.jpa.InstantToEpochMillisConverter
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import java.time.Instant
@@ -37,4 +38,8 @@ class PublishMatchingOutbox(
   @Convert(converter = InstantToEpochMillisConverter::class)
   @Column(nullable = false, columnDefinition = "BIGINT")
   val createdAt: Instant = Instant.now(),
+
+  @Version
+  @Column(nullable = false)
+  var version: Long = 0,
 )

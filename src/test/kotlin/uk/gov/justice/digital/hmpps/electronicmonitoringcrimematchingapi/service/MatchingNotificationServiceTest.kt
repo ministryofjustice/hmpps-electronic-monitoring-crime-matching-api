@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.publishMatching.PublishMatchingOutboxRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
+import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.CompletableFuture.completedFuture
 
@@ -48,7 +49,7 @@ class MatchingNotificationServiceTest {
 
   @Test
   fun `it should send a crime matching request to the SNS topic`() {
-    whenever(publishMatchingOutboxRepository.save(any<PublishMatchingOutbox>())).thenAnswer { it.arguments[0] }
+    whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
@@ -62,6 +63,7 @@ class MatchingNotificationServiceTest {
             ),
           ),
           state = PublishMatchingState.PENDING,
+          claimedAt = Instant.parse("2026-01-01T00:10:00Z"),
         ),
       ),
     )
@@ -79,7 +81,7 @@ class MatchingNotificationServiceTest {
 
   @Test
   fun `it should save the state of the PublishMatchingRequest as FAILED if an error occurs`() {
-    whenever(publishMatchingOutboxRepository.save(any<PublishMatchingOutbox>())).thenAnswer { it.arguments[0] }
+    whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenThrow(RuntimeException("SNS error"))
     val batchId = UUID.randomUUID().toString()
@@ -93,23 +95,21 @@ class MatchingNotificationServiceTest {
             ),
           ),
           state = PublishMatchingState.PENDING,
+          claimedAt = Instant.parse("2026-01-01T00:10:00Z"),
         ),
       ),
     )
 
     service.publishMatchingRequests()
 
-    val captor = argumentCaptor<PublishMatchingOutbox>()
-
     verify(hmppsQueueService, times(1)).findByTopicId(any<String>())
     verify(snsClient, atLeastOnce()).publish(any<PublishRequest>()) // triggers retry policy
-    verify(publishMatchingOutboxRepository, times(1)).save(captor.capture())
-
-    assertThat(captor.allValues.first().state).isEqualTo(PublishMatchingState.FAILED)
+    verify(publishMatchingOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(PublishMatchingState.FAILED.name), eq(1), any(), eq(0))
   }
 
   @Test
   fun `it should update the state of the PublishMatchingRequest to PUBLISHED if the publish happens successfully`() {
+    whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
@@ -123,19 +123,15 @@ class MatchingNotificationServiceTest {
             ),
           ),
           state = PublishMatchingState.PENDING,
+          claimedAt = Instant.parse("2026-01-01T00:10:00Z"),
         ),
       ),
     )
 
     service.publishMatchingRequests()
 
-    val captor = argumentCaptor<PublishMatchingOutbox>()
-
     verify(hmppsQueueService, times(1)).findByTopicId(any<String>())
     verify(snsClient, times(1)).publish(any<PublishRequest>())
-    verify(publishMatchingOutboxRepository, times(1)).save(captor.capture())
-
-    assertThat(captor.allValues).hasSize(1)
-    assertThat(captor.allValues.first().state).isEqualTo(PublishMatchingState.PUBLISHED)
+    verify(publishMatchingOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(PublishMatchingState.PUBLISHED.name), eq(1), eq(null), eq(0))
   }
 }

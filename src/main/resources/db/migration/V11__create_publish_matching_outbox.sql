@@ -7,6 +7,7 @@ CREATE TABLE publish_matching_outbox
     claimed_at    BIGINT,
     attempts      INTEGER NOT NULL,
     last_error    TEXT,
+    version       BIGINT NOT NULL DEFAULT 0;
     CONSTRAINT pk_publish_matching_outbox PRIMARY KEY (id)
 );
 

@@ -174,6 +174,67 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
     assertThat(persistedRow.claimedAt).isEqualTo(firstClaimNow)
   }
 
+  @Test
+  fun `it should complete a claimed row when claim timestamp and version both match`() {
+    val claimedAt = Instant.parse("2026-01-01T00:10:00Z")
+    val row = givenOutboxRow(
+      state = PublishMatchingState.PENDING,
+      claimedAt = claimedAt,
+    )
+
+    val updated = publishMatchingOutboxRepository.completeClaimedRow(
+      id = row.id,
+      claimedAt = claimedAt.toEpochMilli(),
+      state = PublishMatchingState.PUBLISHED.name,
+      attempts = 1,
+      lastError = null,
+      version = row.version,
+    )
+
+    assertThat(updated).isEqualTo(1)
+
+    val persisted = publishMatchingOutboxRepository.findById(row.id).orElseThrow()
+    assertThat(persisted.state).isEqualTo(PublishMatchingState.PUBLISHED)
+    assertThat(persisted.attempts).isEqualTo(1)
+    assertThat(persisted.lastError).isNull()
+    assertThat(persisted.version).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should ignore completion when claim timestamp or version no longer match`() {
+    val claimedAt = Instant.parse("2026-01-01T00:10:00Z")
+    val row = givenOutboxRow(
+      state = PublishMatchingState.PENDING,
+      claimedAt = claimedAt,
+    )
+
+    val updatedWithWrongClaim = publishMatchingOutboxRepository.completeClaimedRow(
+      id = row.id,
+      claimedAt = claimedAt.plusSeconds(1).toEpochMilli(),
+      state = PublishMatchingState.FAILED.name,
+      attempts = 1,
+      lastError = "stale claim",
+      version = row.version,
+    )
+    val updatedWithWrongVersion = publishMatchingOutboxRepository.completeClaimedRow(
+      id = row.id,
+      claimedAt = claimedAt.toEpochMilli(),
+      state = PublishMatchingState.FAILED.name,
+      attempts = 1,
+      lastError = "stale version",
+      version = row.version + 1,
+    )
+
+    assertThat(updatedWithWrongClaim).isZero()
+    assertThat(updatedWithWrongVersion).isZero()
+
+    val persisted = publishMatchingOutboxRepository.findById(row.id).orElseThrow()
+    assertThat(persisted.state).isEqualTo(PublishMatchingState.PENDING)
+    assertThat(persisted.attempts).isZero()
+    assertThat(persisted.lastError).isNull()
+    assertThat(persisted.version).isEqualTo(0)
+  }
+
   private fun givenOutboxRow(
     state: PublishMatchingState,
     claimedAt: Instant?,
