@@ -217,6 +217,152 @@ class EmailNotificationServiceTest {
   }
 
   @Test
+  fun `it should include a truncation message in partial ingestion emails when there are more errors than displayed`() {
+    whenever(notifyProperties.enabled).thenReturn(true)
+
+    val errors = (1..7).map { i ->
+      EmailAttachmentIngestionError(
+        rowNumber = i.toLong(),
+        crimeReference = "CRI0000000$i",
+        crimeTypeId = null,
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
+        field = "crimeTypeId",
+        value = "INVALID_$i",
+      )
+    }
+    val attachment = ByteArrayDataSource("data", "message/rfc822")
+    attachment.name = "attachment.csv"
+
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = listOf(attachment),
+    )
+
+    val uploadFile = JSONObject()
+    val batchId = "batchId"
+
+    val personalisation = mapOf(
+      "fileName" to "attachment.csv",
+      "ingestionDate" to LocalDate.now().toString(),
+      "batchId" to batchId,
+      "policeForce" to PoliceForce.METROPOLITAN.name,
+      "errorSummary" to """
+        Row 1: Field must be a valid ENUM value (crimeTypeId)
+        Row 2: Field must be a valid ENUM value (crimeTypeId)
+        Row 3: Field must be a valid ENUM value (crimeTypeId)
+        Row 4: Field must be a valid ENUM value (crimeTypeId)
+        Row 5: Field must be a valid ENUM value (crimeTypeId)
+        ...and 2 more errors
+      """.trimIndent(),
+      "totalCount" to 10,
+      "successCount" to 0,
+      "failedCount" to 10,
+      "linkToFile" to uploadFile,
+    )
+
+    mockStatic(NotificationClient::class.java).use { staticMock ->
+      staticMock
+        .`when`<Any> {
+          NotificationClient.prepareUpload(
+            any(),
+            any(),
+          )
+        }
+        .thenReturn(uploadFile)
+
+      val ingestionOutcome = EmailIngestionOutcome(
+        batchId = batchId,
+        policeForce = PoliceForce.METROPOLITAN.name,
+        emailData = emailData,
+        errors = errors,
+        ingestionStatus = IngestionStatus.PARTIAL,
+        recordCount = 10,
+      )
+
+      service.sendEmails(ingestionOutcome)
+    }
+
+    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "sender", personalisation, batchId)
+    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "originalSender", personalisation, batchId)
+  }
+
+  @Test
+  fun `it should include a truncation message in error ingestion emails when there are more errors than displayed`() {
+    whenever(notifyProperties.enabled).thenReturn(true)
+
+    val errors = (1..7).map { i ->
+      EmailAttachmentIngestionError(
+        rowNumber = i.toLong(),
+        crimeReference = "CRI0000000$i",
+        crimeTypeId = null,
+        errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
+        field = "crimeTypeId",
+        value = "INVALID_$i",
+      )
+    }
+    val attachment = ByteArrayDataSource("data", "message/rfc822")
+    attachment.name = "attachment.csv"
+
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = listOf(attachment),
+    )
+
+    val uploadFile = JSONObject()
+    val batchId = "batchId"
+
+    val personalisation = mapOf(
+      "fileName" to "attachment.csv",
+      "ingestionDate" to LocalDate.now().toString(),
+      "batchId" to batchId,
+      "policeForce" to PoliceForce.METROPOLITAN.name,
+      "errorSummary" to """
+        Row 1: Field must be a valid ENUM value (crimeTypeId)
+        Row 2: Field must be a valid ENUM value (crimeTypeId)
+        Row 3: Field must be a valid ENUM value (crimeTypeId)
+        Row 4: Field must be a valid ENUM value (crimeTypeId)
+        Row 5: Field must be a valid ENUM value (crimeTypeId)
+        ...and 2 more errors
+      """.trimIndent(),
+      "totalCount" to 10,
+      "successCount" to 0,
+      "failedCount" to 10,
+      "linkToFile" to uploadFile,
+    )
+
+    mockStatic(NotificationClient::class.java).use { staticMock ->
+      staticMock
+        .`when`<Any> {
+          NotificationClient.prepareUpload(
+            any(),
+            any(),
+          )
+        }
+        .thenReturn(uploadFile)
+
+      val ingestionOutcome = EmailIngestionOutcome(
+        batchId = batchId,
+        policeForce = PoliceForce.METROPOLITAN.name,
+        emailData = emailData,
+        errors = errors,
+        ingestionStatus = IngestionStatus.ERROR,
+        recordCount = 10,
+      )
+
+      service.sendEmails(ingestionOutcome)
+    }
+
+    verify(notifyClient, times(1)).sendEmail("errorTemplateId", "sender", personalisation, batchId)
+    verify(notifyClient, times(1)).sendEmail("errorTemplateId", "originalSender", personalisation, batchId)
+  }
+
+  @Test
   fun `it should send an error ingestion email with errorSummary and CSV attachment when notify is enabled`() {
     whenever(notifyProperties.enabled).thenReturn(true)
 

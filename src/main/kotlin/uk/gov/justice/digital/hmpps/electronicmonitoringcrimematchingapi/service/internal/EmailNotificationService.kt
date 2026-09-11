@@ -16,6 +16,10 @@ class EmailNotificationService(
   private val notifyClient: NotificationClient,
   private val properties: NotifyProperties,
 ) {
+  companion object {
+    const val NUM_ERRORS_TO_DISPLAY_IN_EMAIL_BODY = 5
+  }
+
   fun sendEmails(
     ingestionOutcome: EmailIngestionOutcome,
   ) {
@@ -101,9 +105,17 @@ class EmailNotificationService(
     append("\n")
   }
 
-  private fun buildInLineErrorSummary(errors: List<EmailAttachmentIngestionError>): String = errors.take(5).joinToString("\n") { error ->
-    "Row ${error.rowNumber}: ${error.errorType.message}" +
-      (if (error.field != null) " (${error.field})" else "")
+  private fun buildInLineErrorSummary(errors: List<EmailAttachmentIngestionError>): String {
+    val numTruncatedErrors = errors.size - NUM_ERRORS_TO_DISPLAY_IN_EMAIL_BODY
+    val truncationSuffix = when (numTruncatedErrors) {
+      1 -> "\n...and 1 more error"
+      in 2..Int.MAX_VALUE -> "\n...and $numTruncatedErrors more errors"
+      else -> ""
+    }
+    return errors.take(NUM_ERRORS_TO_DISPLAY_IN_EMAIL_BODY).joinToString("\n") { error ->
+      "Row ${error.rowNumber}: ${error.errorType.message}" +
+        (if (error.field != null) " (${error.field})" else "")
+    } + truncationSuffix
   }
 
   private fun buildErrorCsv(errors: List<EmailAttachmentIngestionError>): ByteArray = buildString {
