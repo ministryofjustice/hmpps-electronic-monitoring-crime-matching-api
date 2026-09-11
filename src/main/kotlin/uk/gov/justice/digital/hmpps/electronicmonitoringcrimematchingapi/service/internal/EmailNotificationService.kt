@@ -107,10 +107,15 @@ class EmailNotificationService(
 
   private fun buildInLineErrorSummary(errors: List<EmailAttachmentIngestionError>): String {
     val numTruncatedErrors = errors.size - NUM_ERRORS_TO_DISPLAY_IN_EMAIL_BODY
+    val truncationSuffix = when (numTruncatedErrors) {
+      1 -> "\n...and 1 more error"
+      in 2..Int.MAX_VALUE -> "\n...and $numTruncatedErrors more errors"
+      else -> ""
+    }
     return errors.take(NUM_ERRORS_TO_DISPLAY_IN_EMAIL_BODY).joinToString("\n") { error ->
       "Row ${error.rowNumber}: ${error.errorType.message}" +
         (if (error.field != null) " (${error.field})" else "")
-    } + if (numTruncatedErrors > 0) "\n...and $numTruncatedErrors more errors" else ""
+    } + truncationSuffix
   }
 
   private fun buildErrorCsv(errors: List<EmailAttachmentIngestionError>): ByteArray = buildString {
