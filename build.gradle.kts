@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.7"
-  kotlin("plugin.spring") version "2.4.10"
-  kotlin("plugin.jpa") version "2.4.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.8"
+  kotlin("plugin.spring") version "2.4.20"
+  kotlin("plugin.jpa") version "2.4.20"
   jacoco
 }
 
@@ -18,9 +18,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
-  implementation("software.amazon.awssdk:athena:2.54.12")
-  implementation("software.amazon.awssdk:s3:2.54.12")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+  implementation("software.amazon.awssdk:athena:2.54.16")
+  implementation("software.amazon.awssdk:s3:2.54.16")
   implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20260814")
   implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
@@ -31,7 +31,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
-  testImplementation("com.h2database:h2:2.4.240")
+  testImplementation("com.h2database:h2:2.5.250")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.1")
   testImplementation("org.mockito:mockito-core:5.23.0")
   testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
