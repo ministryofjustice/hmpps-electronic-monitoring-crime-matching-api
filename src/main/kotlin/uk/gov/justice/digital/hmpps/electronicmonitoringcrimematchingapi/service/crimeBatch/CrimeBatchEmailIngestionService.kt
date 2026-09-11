@@ -11,11 +11,13 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 
 @Service
 class CrimeBatchEmailIngestionService(
   private val crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository,
   private val crimeBatchService: CrimeBatchService,
+  private val matchingNotificationService: MatchingNotificationService,
 ) {
   @Transactional
   fun persistIngestion(
@@ -28,6 +30,10 @@ class CrimeBatchEmailIngestionService(
       val crimeBatch = crimeBatchService.createCrimeBatch(
         outcome.records,
         ingestionAttempt.crimeBatchEmail!!.crimeBatchEmailAttachments.first(),
+      )
+
+      matchingNotificationService.createMatchingRequest(
+        crimeBatch.id.toString(),
       )
 
       return outcome.copy(
