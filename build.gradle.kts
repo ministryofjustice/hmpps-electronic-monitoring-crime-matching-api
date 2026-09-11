@@ -7,6 +7,13 @@ plugins {
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
+  named("ktlint") {
+    resolutionStrategy.eachDependency {
+      if (requested.group == "org.jetbrains.kotlin") {
+        useVersion("2.2.0")
+      }
+    }
+  }
 }
 
 dependencies {
@@ -46,9 +53,11 @@ dependencies {
 
 kotlin {
   jvmToolchain(25)
-  compilerOptions {
-    freeCompilerArgs.addAll("-Xannotation-default-target=param-property")
-  }
+}
+
+ktlint {
+  // Override the convention plugin's older default (1.5.0).
+  version.set("1.7.1")
 }
 
 tasks {
