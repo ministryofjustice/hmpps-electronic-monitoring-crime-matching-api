@@ -108,7 +108,7 @@ class EmDatastoreClient(
 
   @Throws(AthenaClientException::class)
   private fun retrieveResults(athenaClient: AthenaClient, queryExecutionId: String?): ResultSet {
-    return try {
+    try {
       val getQueryResultsRequest = GetQueryResultsRequest.builder()
         .queryExecutionId(queryExecutionId)
         .build()
@@ -117,7 +117,6 @@ class EmDatastoreClient(
       return queryResults.resultSet()
     } catch (e: AthenaException) {
       throw AthenaClientException("Error submitting query to Athena: ${e.message}")
-      throw e
     }
   }
 }
