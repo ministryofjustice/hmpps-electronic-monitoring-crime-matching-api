@@ -15,7 +15,7 @@ configurations {
     // build successfully without this workaround, this can be removed.
     resolutionStrategy.eachDependency {
       if (requested.group == "org.jetbrains.kotlin") {
-        useVersion("2.2.0")
+        useVersion("2.4.10")
       }
     }
   }
