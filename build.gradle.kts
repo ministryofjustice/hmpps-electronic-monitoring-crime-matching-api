@@ -8,6 +8,11 @@ plugins {
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
   named("ktlint") {
+    // Since plugin.spring and plugin.jpa upgrade from 2.4.10 to 2.4.20, the hmpps.gradle-spring-boot plugin is
+    // causing a compatibility issue with KtLint, which only works with an older version of Kotlin.
+    // This is a workaround until the plugin is updated.
+    // When gradle runKtlintFormatOverTestSourceSet and gradle runKtlintFormatOverMainSourceSet
+    // build successfully without this workaround, this can be removed.
     resolutionStrategy.eachDependency {
       if (requested.group == "org.jetbrains.kotlin") {
         useVersion("2.2.0")
@@ -53,11 +58,6 @@ dependencies {
 
 kotlin {
   jvmToolchain(25)
-}
-
-ktlint {
-  // Override the convention plugin's older default (1.5.0).
-  version.set("1.7.1")
 }
 
 tasks {
