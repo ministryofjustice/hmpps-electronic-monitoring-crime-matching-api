@@ -58,8 +58,8 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
-      cutoff = cutoff.toEpochMilli(),
-      now = now.toEpochMilli(),
+      cutoff = cutoff,
+      now = now,
     )
 
     assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(
@@ -102,8 +102,8 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
-      cutoff = cutoff.toEpochMilli(),
-      now = now.toEpochMilli(),
+      cutoff = cutoff,
+      now = now,
     )
 
     assertThat(claimedRows).isEmpty()
@@ -139,8 +139,8 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
-      cutoff = cutoff.toEpochMilli(),
-      now = now.toEpochMilli(),
+      cutoff = cutoff,
+      now = now,
     )
 
     assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(eligibleOne.id, eligibleTwo.id)
@@ -176,8 +176,8 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
           firstClaimedRows.set(
             publishMatchingOutboxRepository.claimEligibleRows(
               pendingState = PublishMatchingState.PENDING.name,
-              cutoff = cutoff.toEpochMilli(),
-              now = firstClaimNow.toEpochMilli(),
+              cutoff = cutoff,
+              now = firstClaimNow,
             ),
           )
           firstClaimComplete.countDown()
@@ -191,8 +191,8 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
           secondClaimedRows.set(
             publishMatchingOutboxRepository.claimEligibleRows(
               pendingState = PublishMatchingState.PENDING.name,
-              cutoff = cutoff.toEpochMilli(),
-              now = secondClaimNow.toEpochMilli(),
+              cutoff = cutoff,
+              now = secondClaimNow,
             ),
           )
         }
@@ -222,7 +222,7 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val updated = publishMatchingOutboxRepository.completeClaimedRow(
       id = row.id,
-      claimedAt = claimedAt.toEpochMilli(),
+      claimedAt = claimedAt,
       state = PublishMatchingState.PUBLISHED.name,
       attempts = 1,
       lastError = null,
@@ -248,7 +248,7 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val updatedWithWrongClaim = publishMatchingOutboxRepository.completeClaimedRow(
       id = row.id,
-      claimedAt = claimedAt.plusSeconds(1).toEpochMilli(),
+      claimedAt = claimedAt.plusSeconds(1),
       state = PublishMatchingState.FAILED.name,
       attempts = 1,
       lastError = "stale claim",
@@ -256,7 +256,7 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
     )
     val updatedWithWrongVersion = publishMatchingOutboxRepository.completeClaimedRow(
       id = row.id,
-      claimedAt = claimedAt.toEpochMilli(),
+      claimedAt = claimedAt,
       state = PublishMatchingState.FAILED.name,
       attempts = 1,
       lastError = "stale version",

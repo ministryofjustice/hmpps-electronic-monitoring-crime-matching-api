@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity
 
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.Version
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.jpa.InstantToEpochMillisConverter
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PublishMatchingState
 import java.time.Instant
 import java.util.UUID
@@ -31,12 +29,10 @@ class PublishMatchingOutbox(
   @Column(nullable = true, columnDefinition = "TEXT")
   var lastError: String? = null,
 
-  @Convert(converter = InstantToEpochMillisConverter::class)
-  @Column(columnDefinition = "BIGINT")
+  @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
   var claimedAt: Instant? = null,
 
-  @Convert(converter = InstantToEpochMillisConverter::class)
-  @Column(nullable = false, columnDefinition = "BIGINT")
+  @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
   val createdAt: Instant = Instant.now(),
 
   @Version

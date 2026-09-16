@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.PublishMatchingOutbox
+import java.time.Instant
 import java.util.UUID
 
 @Repository
@@ -32,8 +33,8 @@ interface PublishMatchingOutboxRepository : JpaRepository<PublishMatchingOutbox,
   )
   fun claimEligibleRows(
     @Param("pendingState") pendingState: String,
-    @Param("cutoff") cutoff: Long,
-    @Param("now") now: Long,
+    @Param("cutoff") cutoff: Instant,
+    @Param("now") now: Instant,
   ): List<PublishMatchingOutbox>
 
   @Modifying
@@ -53,7 +54,7 @@ interface PublishMatchingOutboxRepository : JpaRepository<PublishMatchingOutbox,
   )
   fun completeClaimedRow(
     @Param("id") id: UUID,
-    @Param("claimedAt") claimedAt: Long,
+    @Param("claimedAt") claimedAt: Instant,
     @Param("state") state: String,
     @Param("attempts") attempts: Int,
     @Param("lastError") lastError: String?,

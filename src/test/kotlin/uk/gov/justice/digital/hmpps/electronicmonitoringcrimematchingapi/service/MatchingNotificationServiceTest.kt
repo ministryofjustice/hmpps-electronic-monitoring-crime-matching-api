@@ -53,7 +53,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -88,7 +88,7 @@ class MatchingNotificationServiceTest {
       .thenReturn(completedFuture(PublishResponse.builder().messageId("2").build()))
     val batchId1 = UUID.randomUUID().toString()
     val batchId2 = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -133,7 +133,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenThrow(RuntimeException("SNS error"))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -161,7 +161,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Long>(), any<Long>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(

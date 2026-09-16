@@ -62,7 +62,7 @@ class MatchingNotificationService(
     state: PublishMatchingState,
     lastError: String?,
   ) {
-    val claimedAt = row.claimedAt?.toEpochMilli()
+    val claimedAt = row.claimedAt
     if (claimedAt == null) {
       log.warn("Skipping PublishMatchingOutbox completion for row {} because claimedAt is null", row.id)
       return
@@ -89,8 +89,8 @@ class MatchingNotificationService(
 
     return publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
-      cutoff = cutoff.toEpochMilli(),
-      now = now.toEpochMilli(),
+      cutoff = cutoff,
+      now = now,
     )
   }
 
