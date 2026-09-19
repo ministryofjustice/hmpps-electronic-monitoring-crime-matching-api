@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.8"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.9"
   kotlin("plugin.spring") version "2.4.20"
   kotlin("plugin.jpa") version "2.4.20"
   jacoco
@@ -31,11 +31,11 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
-  implementation("software.amazon.awssdk:athena:2.54.16")
-  implementation("software.amazon.awssdk:s3:2.54.16")
+  implementation("software.amazon.awssdk:athena:2.55.1")
+  implementation("software.amazon.awssdk:s3:2.55.1")
   implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20260814")
-  implementation("uk.gov.service.notify:notifications-java-client:6.2.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:6.2.1-RELEASE")
   implementation("org.locationtech.proj4j:proj4j:1.4.3")
   implementation("org.locationtech.proj4j:proj4j-epsg:1.4.3")
   implementation("io.flipt:flipt-client-java:1.3.4")
