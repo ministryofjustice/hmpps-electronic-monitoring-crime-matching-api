@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeBatch.CrimeBatchIngestionAttemptRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.EmailNotificationService
 import java.time.Instant
 import java.util.Date
 
@@ -28,6 +29,7 @@ class CrimeBatchEmailIngestionServiceTest {
   private lateinit var crimeBatchIngestionAttemptRepository: CrimeBatchIngestionAttemptRepository
   private lateinit var crimeBatchService: CrimeBatchService
   private lateinit var matchingNotificationService: MatchingNotificationService
+  private lateinit var emailNotificationService: EmailNotificationService
   private lateinit var service: CrimeBatchEmailIngestionService
 
   @BeforeEach
@@ -35,7 +37,8 @@ class CrimeBatchEmailIngestionServiceTest {
     crimeBatchIngestionAttemptRepository = Mockito.mock(CrimeBatchIngestionAttemptRepository::class.java)
     crimeBatchService = Mockito.mock(CrimeBatchService::class.java)
     matchingNotificationService = Mockito.mock(MatchingNotificationService::class.java)
-    service = CrimeBatchEmailIngestionService(crimeBatchIngestionAttemptRepository, crimeBatchService, matchingNotificationService)
+    emailNotificationService = Mockito.mock(EmailNotificationService::class.java)
+    service = CrimeBatchEmailIngestionService(crimeBatchIngestionAttemptRepository, crimeBatchService, matchingNotificationService, emailNotificationService)
   }
 
   @Test

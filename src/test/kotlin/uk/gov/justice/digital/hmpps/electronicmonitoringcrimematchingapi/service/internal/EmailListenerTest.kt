@@ -163,7 +163,7 @@ class EmailListenerTest {
       inOrder.verify(crimeBatchEmailIngestionService, times(1)).persistIngestion(any(), any())
       inOrder.verify(metricsService, times(1)).recordOutcome(any())
       inOrder.verify(matchingNotificationService, times(1)).publishMatchingRequests()
-      inOrder.verify(emailNotificationService, times(1)).sendEmails(any())
+      inOrder.verify(emailNotificationService, times(1)).sendEmails()
     }
 
     @Test
@@ -249,7 +249,7 @@ class EmailListenerTest {
       assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
 
       verify(matchingNotificationService, times(1)).publishMatchingRequests()
-      verify(emailNotificationService, times(1)).sendEmails(any())
+      verify(emailNotificationService, times(1)).sendEmails()
       verify(metricsService, times(1)).recordOutcome(any())
     }
 

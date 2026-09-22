@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import jakarta.mail.util.ByteArrayDataSource
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
@@ -9,6 +11,7 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -17,11 +20,14 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.EmailOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.EmailOutboxState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.notifyEmailing.EmailOutboxRepository
 import uk.gov.service.notify.NotificationClient
 import java.time.Instant
 import java.time.LocalDate
@@ -31,6 +37,8 @@ import java.util.Date
 class EmailNotificationServiceTest {
   private lateinit var service: EmailNotificationService
   private lateinit var notifyClient: NotificationClient
+  private lateinit var emailOutboxRepository: EmailOutboxRepository
+  private val mapper: ObjectMapper = jacksonObjectMapper()
   private val notifyProperties: NotifyProperties = mock()
   private val featureFlagService: FeatureFlagService = mock()
 
@@ -42,7 +50,8 @@ class EmailNotificationServiceTest {
     whenever(notifyProperties.errorIngestionTemplateId).thenReturn("errorTemplateId")
     whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
     notifyClient = Mockito.mock(NotificationClient::class.java)
-    service = EmailNotificationService(featureFlagService, notifyClient, notifyProperties)
+    emailOutboxRepository = Mockito.mock(EmailOutboxRepository::class.java)
+    service = EmailNotificationService(featureFlagService, notifyClient, notifyProperties, emailOutboxRepository, mapper)
   }
 
   @Test
@@ -86,7 +95,14 @@ class EmailNotificationServiceTest {
         ingestionStatus = IngestionStatus.SUCCESSFUL,
       )
 
-      service.sendEmails(ingestionOutcome)
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
     }
 
     verify(notifyClient, times(1)).sendEmail("templateId", "sender", personalisation, "batchId")
@@ -99,14 +115,6 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
     val batchId = "batchId"
 
-    val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
-      subject = "subject",
-      sentAt = Date.from(Instant.now()),
-      attachments = listOf(attachment),
-    )
-
     val personalisation = mutableMapOf(
       "fileName" to "attachment.csv",
       "ingestionDate" to LocalDate.now().toString(),
@@ -114,14 +122,7 @@ class EmailNotificationServiceTest {
       "policeForce" to "BEDFORDSHIRE",
     )
 
-    val ingestionOutcome = EmailIngestionOutcome(
-      batchId = batchId,
-      policeForce = PoliceForce.BEDFORDSHIRE.name,
-      emailData = emailData,
-      ingestionStatus = IngestionStatus.SUCCESSFUL,
-    )
-
-    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
+    assertDoesNotThrow { service.sendEmails() }
     verify(notifyClient, times(0)).sendEmail("templateId", "sender", personalisation, batchId)
   }
 
@@ -154,7 +155,16 @@ class EmailNotificationServiceTest {
       ingestionStatus = IngestionStatus.FAILED,
     )
 
-    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
+    assertDoesNotThrow {
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+    }
 
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
@@ -208,8 +218,16 @@ class EmailNotificationServiceTest {
         recordCount = 10,
       )
 
-      service.sendEmails(ingestionOutcome)
-      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(1))
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+      // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
 
       verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("sender"), any(), eq(batchId))
       verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq(batchId))
@@ -282,7 +300,16 @@ class EmailNotificationServiceTest {
         recordCount = 10,
       )
 
-      service.sendEmails(ingestionOutcome)
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+      // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
     }
 
     verify(notifyClient, times(1)).sendEmail("partialTemplateId", "sender", personalisation, batchId)
@@ -355,7 +382,16 @@ class EmailNotificationServiceTest {
         recordCount = 10,
       )
 
-      service.sendEmails(ingestionOutcome)
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+      // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
     }
 
     verify(notifyClient, times(1)).sendEmail("errorTemplateId", "sender", personalisation, batchId)
@@ -410,8 +446,16 @@ class EmailNotificationServiceTest {
         recordCount = 1,
       )
 
-      service.sendEmails(ingestionOutcome)
-      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(1))
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+      // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
+      staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
 
       verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("sender"), any(), eq(batchId))
       verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("originalSender"), any(), eq(batchId))
@@ -448,7 +492,16 @@ class EmailNotificationServiceTest {
       ingestionStatus = IngestionStatus.FAILED,
     )
 
-    assertDoesNotThrow { service.sendEmails(ingestionOutcome) }
+    assertDoesNotThrow {
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(1)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+    }
 
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
     verify(notifyClient, times(0)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")

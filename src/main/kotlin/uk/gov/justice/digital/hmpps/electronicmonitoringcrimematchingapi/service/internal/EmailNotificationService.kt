@@ -1,13 +1,21 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.transaction.Transactional
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.NotifyEmailRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.EmailOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.EmailOutboxState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.notifyEmailing.EmailOutboxRepository
 import uk.gov.service.notify.NotificationClient
+import java.time.Instant
 import java.time.LocalDate
 
 @Service
@@ -15,41 +23,43 @@ class EmailNotificationService(
   private val featureFlagService: FeatureFlagService,
   private val notifyClient: NotificationClient,
   private val properties: NotifyProperties,
+  private val emailOutboxRepository: EmailOutboxRepository,
+  private val objectMapper: ObjectMapper,
 ) {
   companion object {
     const val NUM_ERRORS_TO_DISPLAY_IN_EMAIL_BODY = 5
+    const val NOTIFY_EMAIL_REQUEST = "NOTIFY_EMAIL_REQUEST"
   }
 
-  fun sendEmails(
-    ingestionOutcome: EmailIngestionOutcome,
-  ) {
-    val templateId = emailTemplateId(ingestionOutcome.ingestionStatus)
+  private val log = LoggerFactory.getLogger(this::class.java)
 
-    val personalisation = buildPersonalisation(
-      status = ingestionOutcome.ingestionStatus,
-      fileName = ingestionOutcome.emailData.attachments.firstOrNull()?.name ?: "Invalid File",
-      batchId = ingestionOutcome.batchId,
-      policeForce = ingestionOutcome.policeForce,
-      errorType = ingestionOutcome.errorType,
-      records = ingestionOutcome.records,
-      errors = ingestionOutcome.errors,
-      recordCount = ingestionOutcome.recordCount,
-    )
+  fun sendEmails() {
+    val claimedRows = claimEligibleOutboxRows()
+    claimedRows.forEach { row ->
+      val payloadEvent = objectMapper.readValue(row.payload, NotifyEmailRequest::class.java)
+      try {
+        val templateId = emailTemplateId(payloadEvent.ingestionStatus)
 
-    val emailAddresses = buildList {
-      add(ingestionOutcome.emailData.sender)
-      if (featureFlagService.policeConfirmationEmailsEnabled()) {
-        add(ingestionOutcome.emailData.originalSender)
+        val personalisation = buildPersonalisation(
+          status = payloadEvent.ingestionStatus,
+          fileName = payloadEvent.fileName,
+          batchId = payloadEvent.batchId,
+          policeForce = payloadEvent.policeForce,
+          errorType = payloadEvent.errorType,
+          records = payloadEvent.records,
+          errors = payloadEvent.errors,
+          recordCount = payloadEvent.recordCount,
+        )
+        sendEmail(
+          templateId = templateId,
+          emailAddress = payloadEvent.emailAddress,
+          personalisation = personalisation,
+          reference = payloadEvent.reference,
+        )
+        completeClaimedRow(row, EmailOutboxState.PUBLISHED, null)
+      } catch (e: Throwable) {
+        completeClaimedRow(row, EmailOutboxState.FAILED, e.message)
       }
-    }
-
-    for (emailAddress in emailAddresses) {
-      sendEmail(
-        templateId = templateId,
-        emailAddress = emailAddress,
-        personalisation = personalisation,
-        reference = ingestionOutcome.batchId,
-      )
     }
   }
 
@@ -59,13 +69,86 @@ class EmailNotificationService(
     personalisation: Map<String, Any>,
     reference: String,
   ) {
-    if (properties.enabled) {
-      notifyClient.sendEmail(
-        templateId,
-        emailAddress,
-        personalisation,
-        reference,
+    notifyClient.sendEmail(
+      templateId,
+      emailAddress,
+      personalisation,
+      reference,
+    )
+  }
+
+  @Transactional
+  fun claimEligibleOutboxRows(): List<EmailOutbox> {
+    val now = Instant.now()
+    val cutoff = now.minusSeconds(60)
+
+    return emailOutboxRepository.claimEligibleRows(
+      pendingState = EmailOutboxState.PENDING.name,
+      cutoff = cutoff,
+      now = now,
+    )
+  }
+
+  @Transactional
+  fun createEmailOutboxRequest(ingestionOutcome: EmailIngestionOutcome) {
+    if (!properties.enabled) {
+      return
+    }
+
+    val emailAddresses = buildList {
+      add(ingestionOutcome.emailData.sender)
+      if (featureFlagService.policeConfirmationEmailsEnabled()) {
+        add(ingestionOutcome.emailData.originalSender)
+      }
+    }
+
+    for (emailAddress in emailAddresses) {
+      val payloadEvent = objectMapper.writeValueAsString(
+        NotifyEmailRequest(
+          type = NOTIFY_EMAIL_REQUEST,
+          emailAddress = emailAddress,
+          reference = ingestionOutcome.batchId,
+          ingestionStatus = ingestionOutcome.ingestionStatus,
+          fileName = ingestionOutcome.emailData.attachments.firstOrNull()?.name ?: "Invalid File",
+          batchId = ingestionOutcome.batchId,
+          policeForce = ingestionOutcome.policeForce,
+          errorType = ingestionOutcome.errorType,
+          records = ingestionOutcome.records,
+          errors = ingestionOutcome.errors,
+          recordCount = ingestionOutcome.recordCount,
+        ),
       )
+      emailOutboxRepository.save(
+        EmailOutbox(
+          payload = payloadEvent,
+          state = EmailOutboxState.PENDING,
+        ),
+      )
+    }
+  }
+
+  private fun completeClaimedRow(
+    row: EmailOutbox,
+    state: EmailOutboxState,
+    lastError: String?,
+  ) {
+    val claimedAt = row.claimedAt
+    if (claimedAt == null) {
+      log.warn("Skipping EmailOutbox completion for row {} because claimedAt is null", row.id)
+      return
+    }
+
+    val updateCount = emailOutboxRepository.completeClaimedRow(
+      id = row.id,
+      claimedAt = claimedAt,
+      state = state.name,
+      attempts = row.attempts + 1,
+      lastError = lastError,
+      version = row.version,
+    )
+
+    if (updateCount == 0) {
+      log.warn("EmailOutbox row {} completion skipped: claim/version no longer owned", row.id)
     }
   }
 
