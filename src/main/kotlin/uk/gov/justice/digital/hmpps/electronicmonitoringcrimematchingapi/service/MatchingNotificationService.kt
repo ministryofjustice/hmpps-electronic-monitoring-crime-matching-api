@@ -22,6 +22,7 @@ class MatchingNotificationService(
   companion object {
     const val TOPIC_ID = "matchingnotificationstopic"
     const val CRIME_MATCHING_REQUEST = "CRIME_MATCHING_REQUEST"
+    const val MAX_PUBLISH_ATTEMPTS = 3
   }
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -50,15 +51,21 @@ class MatchingNotificationService(
       try {
         publish(payloadEvent)
       } catch (e: Throwable) {
-        completeClaimedRow(row, PublishMatchingState.FAILED, e.message)
+        completeClaimedRow(
+          row,
+          row.attempts + 1,
+          if (row.attempts + 1 < MAX_PUBLISH_ATTEMPTS) PublishMatchingState.FAILED else PublishMatchingState.DEAD,
+          e.message,
+        )
         return@forEach
       }
-      completeClaimedRow(row, PublishMatchingState.PUBLISHED, null)
+      completeClaimedRow(row, row.attempts + 1, PublishMatchingState.PUBLISHED, null)
     }
   }
 
   private fun completeClaimedRow(
     row: PublishMatchingOutbox,
+    attempts: Int,
     state: PublishMatchingState,
     lastError: String?,
   ) {
@@ -72,7 +79,7 @@ class MatchingNotificationService(
       id = row.id,
       claimedAt = claimedAt,
       state = state.name,
-      attempts = row.attempts + 1,
+      attempts = attempts,
       lastError = lastError,
       version = row.version,
     )
@@ -89,8 +96,10 @@ class MatchingNotificationService(
 
     return publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
+      failedState = PublishMatchingState.FAILED.name,
       cutoff = cutoff,
       now = now,
+      maxAttempts = MAX_PUBLISH_ATTEMPTS,
     )
   }
 

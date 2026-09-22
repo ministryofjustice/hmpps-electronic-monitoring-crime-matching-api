@@ -31,7 +31,7 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `it should claim only pending rows that are unclaimed or claimed before cutoff`() {
+  fun `it should claim pending rows that are unclaimed or claimed before cutoff`() {
     val now = Instant.parse("2026-01-01T00:10:00Z")
     val cutoff = now.minusSeconds(60)
 
@@ -58,8 +58,10 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
+      failedState = PublishMatchingState.FAILED.name,
       cutoff = cutoff,
       now = now,
+      maxAttempts = 1,
     )
 
     assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(
@@ -87,6 +89,95 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `it should claim failed rows that are unclaimed or claimed before cutoff`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+
+    val eligibleUnclaimed = givenOutboxRow(
+      state = PublishMatchingState.FAILED,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:00:00Z"),
+    )
+    val eligibleStaleClaim = givenOutboxRow(
+      state = PublishMatchingState.FAILED,
+      claimedAt = cutoff.minusMillis(1),
+      createdAt = Instant.parse("2026-01-01T00:01:00Z"),
+    )
+    val ineligibleRecentClaim = givenOutboxRow(
+      state = PublishMatchingState.FAILED,
+      claimedAt = cutoff.plusMillis(1),
+      createdAt = Instant.parse("2026-01-01T00:02:00Z"),
+    )
+
+    val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
+      pendingState = PublishMatchingState.PENDING.name,
+      failedState = PublishMatchingState.FAILED.name,
+      cutoff = cutoff,
+      now = now,
+      maxAttempts = 1,
+    )
+
+    assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(
+      eligibleUnclaimed.id,
+      eligibleStaleClaim.id,
+    )
+    assertThat(claimedRows).allSatisfy { claimed ->
+      assertThat(claimed.claimedAt).isEqualTo(now)
+      assertThat(claimed.state).isEqualTo(PublishMatchingState.FAILED)
+    }
+
+    val persistedRows = publishMatchingOutboxRepository.findAllById(
+      listOf(
+        eligibleUnclaimed.id,
+        eligibleStaleClaim.id,
+        ineligibleRecentClaim.id,
+      ),
+    ).associateBy { it.id }
+
+    assertThat(persistedRows[eligibleUnclaimed.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleStaleClaim.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[ineligibleRecentClaim.id]!!.claimedAt).isEqualTo(cutoff.plusMillis(1))
+  }
+
+  @Test
+  fun `it should not claim failed rows that exceed the max attempts or are dead`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+
+    val ineligibleMaxAttemptsReached = givenOutboxRow(
+      state = PublishMatchingState.FAILED,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:02:00Z"),
+      attempts = 1,
+    )
+    val ineligibleDead = givenOutboxRow(
+      state = PublishMatchingState.DEAD,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:00:00Z"),
+    )
+
+    val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
+      pendingState = PublishMatchingState.PENDING.name,
+      failedState = PublishMatchingState.FAILED.name,
+      cutoff = cutoff,
+      now = now,
+      maxAttempts = 1,
+    )
+
+    assertThat(claimedRows.size).isEqualTo(0)
+
+    val persistedRows = publishMatchingOutboxRepository.findAllById(
+      listOf(
+        ineligibleMaxAttemptsReached.id,
+        ineligibleDead.id,
+      ),
+    ).associateBy { it.id }
+
+    assertThat(persistedRows[ineligibleMaxAttemptsReached.id]!!.claimedAt).isNull()
+    assertThat(persistedRows[ineligibleDead.id]!!.claimedAt).isNull()
+  }
+
+  @Test
   fun `it should return no rows when there are no eligible rows`() {
     val now = Instant.parse("2026-01-01T00:10:00Z")
     val cutoff = now.minusSeconds(60)
@@ -102,8 +193,10 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
+      failedState = PublishMatchingState.FAILED.name,
       cutoff = cutoff,
       now = now,
+      maxAttempts = 1,
     )
 
     assertThat(claimedRows).isEmpty()
@@ -139,8 +232,10 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = publishMatchingOutboxRepository.claimEligibleRows(
       pendingState = PublishMatchingState.PENDING.name,
+      failedState = PublishMatchingState.FAILED.name,
       cutoff = cutoff,
       now = now,
+      maxAttempts = 1,
     )
 
     assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(eligibleOne.id, eligibleTwo.id)
@@ -176,8 +271,10 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
           firstClaimedRows.set(
             publishMatchingOutboxRepository.claimEligibleRows(
               pendingState = PublishMatchingState.PENDING.name,
+              failedState = PublishMatchingState.FAILED.name,
               cutoff = cutoff,
               now = firstClaimNow,
+              maxAttempts = 1,
             ),
           )
           firstClaimComplete.countDown()
@@ -191,8 +288,10 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
           secondClaimedRows.set(
             publishMatchingOutboxRepository.claimEligibleRows(
               pendingState = PublishMatchingState.PENDING.name,
+              failedState = PublishMatchingState.FAILED.name,
               cutoff = cutoff,
               now = secondClaimNow,
+              maxAttempts = 1,
             ),
           )
         }
@@ -277,12 +376,14 @@ class PublishMatchingOutboxRepositoryTest : IntegrationTestBase() {
     state: PublishMatchingState,
     claimedAt: Instant?,
     createdAt: Instant = Instant.parse("2026-01-01T00:00:00Z"),
+    attempts: Int = 0,
   ): PublishMatchingOutbox = publishMatchingOutboxRepository.save(
     PublishMatchingOutbox(
       payload = "{\"type\":\"CRIME_MATCHING_REQUEST\",\"crime_batch_id\":\"batch-id\"}",
       state = state,
       claimedAt = claimedAt,
       createdAt = createdAt,
+      attempts = attempts,
     ),
   )
 }

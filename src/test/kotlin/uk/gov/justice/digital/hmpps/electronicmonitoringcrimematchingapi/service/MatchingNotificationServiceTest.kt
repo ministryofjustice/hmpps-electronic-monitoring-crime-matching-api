@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -53,7 +54,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), eq(PublishMatchingState.FAILED.name), any<Instant>(), any<Instant>(), any<Int>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -88,7 +89,7 @@ class MatchingNotificationServiceTest {
       .thenReturn(completedFuture(PublishResponse.builder().messageId("2").build()))
     val batchId1 = UUID.randomUUID().toString()
     val batchId2 = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), eq(PublishMatchingState.FAILED.name), any<Instant>(), any<Instant>(), any<Int>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -133,7 +134,7 @@ class MatchingNotificationServiceTest {
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenThrow(RuntimeException("SNS error"))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), eq(PublishMatchingState.FAILED.name), any<Instant>(), any<Instant>(), any<Int>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
@@ -156,12 +157,46 @@ class MatchingNotificationServiceTest {
   }
 
   @Test
+  fun `it should transition the state of the PublishMatchingRequest to DEAD if the max attempts is reached`() {
+    whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
+    whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
+    whenever(snsClient.publish(any<PublishRequest>())).thenThrow(RuntimeException("SNS error"))
+    val batchId = UUID.randomUUID().toString()
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), eq(PublishMatchingState.FAILED.name), any<Instant>(), any<Instant>(), any<Int>())).thenReturn(
+      listOf(
+        PublishMatchingOutbox(
+          payload = mapper.writeValueAsString(
+            MatchingNotification(
+              type = MatchingNotificationService.CRIME_MATCHING_REQUEST,
+              crimeBatchId = batchId,
+            ),
+          ),
+          attempts = MatchingNotificationService.MAX_PUBLISH_ATTEMPTS - 1,
+          state = PublishMatchingState.PENDING,
+          claimedAt = Instant.parse("2026-01-01T00:10:00Z"),
+        ),
+      ),
+    )
+
+    service.publishMatchingRequests()
+
+    val stateCaptor = argumentCaptor<String>()
+    val attemptsCaptor = argumentCaptor<Int>()
+
+    verify(hmppsQueueService, times(1)).findByTopicId(any<String>())
+    verify(snsClient, atLeastOnce()).publish(any<PublishRequest>()) // triggers retry policy
+    verify(publishMatchingOutboxRepository, times(1)).completeClaimedRow(any(), any(), stateCaptor.capture(), attemptsCaptor.capture(), any(), eq(0))
+    assertEquals(PublishMatchingState.DEAD.name, stateCaptor.firstValue)
+    assertEquals(MatchingNotificationService.MAX_PUBLISH_ATTEMPTS, attemptsCaptor.firstValue)
+  }
+
+  @Test
   fun `it should update the state of the PublishMatchingRequest to PUBLISHED if the publish happens successfully`() {
     whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
     whenever(hmppsQueueService.findByTopicId("matchingnotificationstopic")).thenReturn(HmppsTopic("id", "topicArn", snsClient))
     whenever(snsClient.publish(any<PublishRequest>())).thenReturn(completedFuture(PublishResponse.builder().messageId("1").build()))
     val batchId = UUID.randomUUID().toString()
-    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), any<Instant>(), any<Instant>())).thenReturn(
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), eq(PublishMatchingState.FAILED.name), any<Instant>(), any<Instant>(), any<Int>())).thenReturn(
       listOf(
         PublishMatchingOutbox(
           payload = mapper.writeValueAsString(
