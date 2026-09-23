@@ -144,7 +144,7 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
     val eligibleFive = givenOutboxRow(
       state = EmailOutboxState.PENDING,
       claimedAt = null,
-      createdAt = Instant.parse("2026-01-01T00:02:00Z"),
+      createdAt = Instant.parse("2026-01-01T00:02:01Z"),
     )
 
     val claimedRows = emailOutboxRepository.claimEligibleRows(
