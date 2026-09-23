@@ -36,8 +36,9 @@ class EmailNotificationService(
   fun sendEmails() {
     val claimedRows = claimEligibleOutboxRows()
     claimedRows.forEach { row ->
-      val payloadEvent = objectMapper.readValue(row.payload, NotifyEmailRequest::class.java)
       try {
+        val payloadEvent = objectMapper.readValue(row.payload, NotifyEmailRequest::class.java)
+
         val templateId = emailTemplateId(payloadEvent.ingestionStatus)
 
         val personalisation = buildPersonalisation(

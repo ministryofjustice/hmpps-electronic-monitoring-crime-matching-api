@@ -217,4 +217,39 @@ class MatchingNotificationServiceTest {
     verify(snsClient, times(1)).publish(any<PublishRequest>())
     verify(publishMatchingOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(PublishMatchingState.PUBLISHED.name), eq(1), eq(null), eq(0))
   }
+
+  @Test
+  fun `it should catch exception from objectMapper readValue and mark row as FAILED`() {
+    val mockObjectMapper = Mockito.mock(ObjectMapper::class.java)
+    val testException = RuntimeException("Failed to deserialize JSON")
+
+    whenever(mockObjectMapper.readValue(any<String>(), any<Class<*>>())).thenThrow(testException)
+
+    val serviceWithMockedMapper = MatchingNotificationService(
+      hmppsQueueService = hmppsQueueService,
+      objectMapper = mockObjectMapper,
+      publishMatchingOutboxRepository = publishMatchingOutboxRepository,
+    )
+
+    val claimedAt = Instant.parse("2026-01-01T00:10:00Z")
+    val publishMatchingOutbox = PublishMatchingOutbox(
+      payload = """{"type":"CRIME_MATCHING_REQUEST","crime_batch_id":"test-batch"}""",
+      state = PublishMatchingState.PENDING,
+      claimedAt = claimedAt,
+    )
+
+    whenever(publishMatchingOutboxRepository.claimEligibleRows(eq(PublishMatchingState.PENDING.name), eq(PublishMatchingState.FAILED.name), any(), any(), any())).thenReturn(listOf(publishMatchingOutbox))
+    whenever(publishMatchingOutboxRepository.completeClaimedRow(any(), any(), any(), any(), any(), any())).thenReturn(1)
+
+    serviceWithMockedMapper.publishMatchingRequests()
+
+    verify(publishMatchingOutboxRepository, times(1)).completeClaimedRow(
+      id = publishMatchingOutbox.id,
+      claimedAt = claimedAt,
+      state = PublishMatchingState.FAILED.name,
+      attempts = 1,
+      lastError = "Failed to deserialize JSON",
+      version = publishMatchingOutbox.version,
+    )
+  }
 }

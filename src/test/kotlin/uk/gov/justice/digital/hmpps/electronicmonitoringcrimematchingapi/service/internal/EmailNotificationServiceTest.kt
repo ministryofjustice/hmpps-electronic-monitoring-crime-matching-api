@@ -506,4 +506,41 @@ class EmailNotificationServiceTest {
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
     verify(notifyClient, times(0)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
   }
+
+  @Test
+  fun `it should catch exception from objectMapper readValue and mark row as FAILED`() {
+    val mockObjectMapper = mock<ObjectMapper>()
+    val testException = RuntimeException("Failed to deserialize JSON")
+
+    whenever(mockObjectMapper.readValue(any<String>(), any<Class<*>>())).thenThrow(testException)
+
+    val serviceWithMockedMapper = EmailNotificationService(
+      featureFlagService,
+      notifyClient,
+      notifyProperties,
+      emailOutboxRepository,
+      mockObjectMapper,
+    )
+
+    val claimedAt = Instant.now()
+    val emailOutbox = EmailOutbox(
+      payload = """{"type":"NOTIFY_EMAIL_REQUEST"}""",
+      state = EmailOutboxState.PENDING,
+      claimedAt = claimedAt,
+    )
+
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(listOf(emailOutbox))
+
+    serviceWithMockedMapper.sendEmails()
+
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(
+      id = emailOutbox.id,
+      claimedAt = claimedAt,
+      state = EmailOutboxState.FAILED.name,
+      attempts = 1,
+      lastError = "Failed to deserialize JSON",
+      version = emailOutbox.version,
+    )
+    verify(notifyClient, times(0)).sendEmail(any(), any(), any(), any())
+  }
 }
