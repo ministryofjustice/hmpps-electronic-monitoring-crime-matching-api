@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.v
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.notifyEmailing.EmailOutboxRepository
 import uk.gov.service.notify.NotificationClient
 import java.time.Instant
-import java.time.LocalDate
+import java.time.ZoneOffset
 
 @Service
 class EmailNotificationService(
@@ -43,6 +43,7 @@ class EmailNotificationService(
 
         val personalisation = buildPersonalisation(
           status = payloadEvent.ingestionStatus,
+          ingestionDate = payloadEvent.ingestionDate,
           fileName = payloadEvent.fileName,
           batchId = payloadEvent.batchId,
           policeForce = payloadEvent.policeForce,
@@ -102,6 +103,7 @@ class EmailNotificationService(
         add(ingestionOutcome.emailData.originalSender)
       }
     }
+    val ingestionDate = currentUtcDate()
 
     for (emailAddress in emailAddresses) {
       val payloadEvent = objectMapper.writeValueAsString(
@@ -110,6 +112,7 @@ class EmailNotificationService(
           emailAddress = emailAddress,
           reference = ingestionOutcome.batchId,
           ingestionStatus = ingestionOutcome.ingestionStatus,
+          ingestionDate = ingestionDate,
           fileName = ingestionOutcome.emailData.attachments.firstOrNull()?.name ?: "Invalid File",
           batchId = ingestionOutcome.batchId,
           policeForce = ingestionOutcome.policeForce,
@@ -152,6 +155,8 @@ class EmailNotificationService(
       log.warn("EmailOutbox row {} completion skipped: claim/version no longer owned", row.id)
     }
   }
+
+  private fun currentUtcDate(): String = Instant.now().atZone(ZoneOffset.UTC).toLocalDate().toString()
 
   private fun emailTemplateId(
     status: IngestionStatus,
@@ -213,6 +218,7 @@ class EmailNotificationService(
 
   private fun buildPersonalisation(
     status: IngestionStatus,
+    ingestionDate: String,
     fileName: String,
     batchId: String,
     policeForce: String,
@@ -223,7 +229,7 @@ class EmailNotificationService(
   ): Map<String, Any> {
     val personalisation = hashMapOf<String, Any>()
     personalisation["fileName"] = fileName
-    personalisation["ingestionDate"] = LocalDate.now().toString()
+    personalisation["ingestionDate"] = ingestionDate
     personalisation["batchId"] = batchId
     personalisation["policeForce"] = policeForce
 

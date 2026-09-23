@@ -15,6 +15,9 @@ data class NotifyEmailRequest(
   @JsonProperty("reference")
   val reference: String,
 
+  @JsonProperty("ingestion_date")
+  val ingestionDate: String,
+
   @JsonProperty("ingestion_status")
   val ingestionStatus: IngestionStatus,
 

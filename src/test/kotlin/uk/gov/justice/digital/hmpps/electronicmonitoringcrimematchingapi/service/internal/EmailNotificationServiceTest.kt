@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.v
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.notifyEmailing.EmailOutboxRepository
 import uk.gov.service.notify.NotificationClient
 import java.time.Instant
-import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.Date
 
 @ActiveProfiles("test")
@@ -41,6 +41,7 @@ class EmailNotificationServiceTest {
   private val mapper: ObjectMapper = jacksonObjectMapper()
   private val notifyProperties: NotifyProperties = mock()
   private val featureFlagService: FeatureFlagService = mock()
+  private val utcToday: String = Instant.now().atZone(ZoneOffset.UTC).toLocalDate().toString()
 
   @BeforeEach
   fun setup() {
@@ -72,7 +73,7 @@ class EmailNotificationServiceTest {
 
     val personalisation = mutableMapOf(
       "fileName" to "attachment.csv",
-      "ingestionDate" to LocalDate.now().toString(),
+      "ingestionDate" to utcToday,
       "batchId" to "batchId",
       "policeForce" to "BEDFORDSHIRE",
       "linkToFile" to uploadFile,
@@ -117,7 +118,7 @@ class EmailNotificationServiceTest {
 
     val personalisation = mutableMapOf(
       "fileName" to "attachment.csv",
-      "ingestionDate" to LocalDate.now().toString(),
+      "ingestionDate" to utcToday,
       "batchId" to batchId,
       "policeForce" to "BEDFORDSHIRE",
     )
@@ -140,7 +141,7 @@ class EmailNotificationServiceTest {
 
     val personalisation = mapOf(
       "fileName" to "Invalid File",
-      "ingestionDate" to LocalDate.now().toString(),
+      "ingestionDate" to utcToday,
       "batchId" to "Unknown due to an error",
       "policeForce" to "Unknown due to an error",
       "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
@@ -264,7 +265,7 @@ class EmailNotificationServiceTest {
 
     val personalisation = mapOf(
       "fileName" to "attachment.csv",
-      "ingestionDate" to LocalDate.now().toString(),
+      "ingestionDate" to utcToday,
       "batchId" to batchId,
       "policeForce" to PoliceForce.METROPOLITAN.name,
       "errorSummary" to """
@@ -346,7 +347,7 @@ class EmailNotificationServiceTest {
 
     val personalisation = mapOf(
       "fileName" to "attachment.csv",
-      "ingestionDate" to LocalDate.now().toString(),
+      "ingestionDate" to utcToday,
       "batchId" to batchId,
       "policeForce" to PoliceForce.METROPOLITAN.name,
       "errorSummary" to """
@@ -477,7 +478,7 @@ class EmailNotificationServiceTest {
 
     val personalisation = mapOf(
       "fileName" to "Invalid File",
-      "ingestionDate" to LocalDate.now().toString(),
+      "ingestionDate" to utcToday,
       "batchId" to "Unknown due to an error",
       "policeForce" to "Unknown due to an error",
       "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
