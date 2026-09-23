@@ -104,7 +104,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should create a matching request for SUCCESSFUL outcomes`() {
+  fun `it should create a matching request and an email outbox request for SUCCESSFUL outcomes`() {
     val attempt = givenIngestionAttemptWithAttachment()
     val record = givenCrimeRecordRequest(batchId = "MPS20260123")
     val ingestionOutcome = givenIngestionOutcome(record = record, ingestionStatus = IngestionStatus.SUCCESSFUL)
@@ -119,10 +119,15 @@ class CrimeBatchEmailIngestionServiceTest {
     service.persistIngestion(attempt, ingestionOutcome)
 
     verify(matchingNotificationService, times(1)).createMatchingRequest(crimeBatch.id.toString())
+    val expectedOutcome = ingestionOutcome.copy(
+      batchId = record.batchId,
+      crimeBatchId = crimeBatch.id.toString(),
+    )
+    verify(emailNotificationService, times(1)).createEmailOutboxRequest(expectedOutcome)
   }
 
   @Test
-  fun `it should create a matching request for PARTIAL outcomes`() {
+  fun `it should create a matching request and an email outbox request for PARTIAL outcomes`() {
     val attempt = givenIngestionAttemptWithAttachment()
     val record = givenCrimeRecordRequest(batchId = "MPS20260124")
     val ingestionOutcome = givenIngestionOutcome(record = record, ingestionStatus = IngestionStatus.PARTIAL)
@@ -137,6 +142,11 @@ class CrimeBatchEmailIngestionServiceTest {
     service.persistIngestion(attempt, ingestionOutcome)
 
     verify(matchingNotificationService, times(1)).createMatchingRequest(crimeBatch.id.toString())
+    val expectedOutcome = ingestionOutcome.copy(
+      batchId = record.batchId,
+      crimeBatchId = crimeBatch.id.toString(),
+    )
+    verify(emailNotificationService, times(1)).createEmailOutboxRequest(expectedOutcome)
   }
 
   @Test
@@ -163,7 +173,7 @@ class CrimeBatchEmailIngestionServiceTest {
   }
 
   @Test
-  fun `it should not create a matching request for FAILED outcomes`() {
+  fun `it should NOT create a matching request for FAILED outcomes BUT should create an email outbox request`() {
     val attempt = CrimeBatchIngestionAttempt(bucket = "emails", objectName = "object")
     val ingestionOutcome = EmailIngestionOutcome(
       emailData = EmailData(
@@ -181,6 +191,7 @@ class CrimeBatchEmailIngestionServiceTest {
     service.persistIngestion(attempt, ingestionOutcome)
 
     verify(matchingNotificationService, times(0)).createMatchingRequest(any())
+    verify(emailNotificationService, times(1)).createEmailOutboxRequest(ingestionOutcome)
   }
 
   private fun givenIngestionAttemptWithAttachment(): CrimeBatchIngestionAttempt {

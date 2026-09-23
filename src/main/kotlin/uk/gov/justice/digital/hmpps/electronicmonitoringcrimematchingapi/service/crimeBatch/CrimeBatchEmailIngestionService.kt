@@ -48,6 +48,8 @@ class CrimeBatchEmailIngestionService(
       return updatedOutcome
     }
 
+    emailNotificationService.createEmailOutboxRequest(outcome)
+
     return outcome
   }
 
