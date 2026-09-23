@@ -543,4 +543,57 @@ class EmailNotificationServiceTest {
     )
     verify(notifyClient, times(0)).sendEmail(any(), any(), any(), any())
   }
+
+  @Test
+  fun `it should send emails from outbox even if notify is disabled to ensure all committed emails are sent`() {
+    // This behaviour is important to ensure that old emails are not sent when notify is enabled after a long time.
+    whenever(notifyProperties.enabled).thenReturn(false)
+    whenever(notifyProperties.successfulIngestionTemplateId).thenReturn("successTemplateId")
+
+    val attachment = ByteArrayDataSource("data", "message/rfc822")
+    attachment.name = "attachment.csv"
+
+    val emailData = EmailData(
+      sender = "sender@example.com",
+      originalSender = "originalSender@example.com",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = listOf(attachment),
+    )
+
+    mockStatic(NotificationClient::class.java).use { staticMock ->
+      staticMock
+        .`when`<Any> {
+          NotificationClient.prepareUpload(
+            any(),
+            any(),
+          )
+        }
+        .thenReturn(JSONObject())
+
+      val ingestionOutcome = EmailIngestionOutcome(
+        batchId = "batchId",
+        policeForce = "BEDFORDSHIRE",
+        emailData = emailData,
+        ingestionStatus = IngestionStatus.SUCCESSFUL,
+      )
+
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      // Create the email outbox when notify is enabled
+      whenever(notifyProperties.enabled).thenReturn(true)
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+
+      // Now disable notify, but the emails should still be sent from outbox
+      whenever(notifyProperties.enabled).thenReturn(false)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+    }
+
+    // Verify that emails were still sent even though notify is now disabled
+    verify(notifyClient, times(2)).sendEmail(eq("successTemplateId"), any(), any(), eq("batchId"))
+  }
 }
