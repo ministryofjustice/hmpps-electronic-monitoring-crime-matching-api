@@ -7,12 +7,14 @@ import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -623,5 +625,51 @@ class EmailNotificationServiceTest {
 
     // Verify that emails were still sent even though notify is now disabled
     verify(notifyClient, times(2)).sendEmail(eq("successTemplateId"), any(), any(), eq("batchId"))
+  }
+
+  @Test
+  fun `it should not attempt to mark a row as FAILED when recording PUBLISHED throws after send succeeds`() {
+    whenever(notifyProperties.enabled).thenReturn(true)
+    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(false)
+
+    val attachment = ByteArrayDataSource("data", "message/rfc822")
+    attachment.name = "attachment.csv"
+
+    val emailData = EmailData(
+      sender = "sender@example.com",
+      originalSender = "originalSender@example.com",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = listOf(attachment),
+    )
+
+    val batchId = "batchId"
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = batchId,
+      policeForce = "BEDFORDSHIRE",
+      emailData = emailData,
+      ingestionStatus = IngestionStatus.SUCCESSFUL,
+    )
+
+    val outboxCaptor = argumentCaptor<EmailOutbox>()
+    service.createEmailOutboxRequest(ingestionOutcome)
+    verify(emailOutboxRepository, times(1)).save(outboxCaptor.capture())
+
+    val claimedRows = outboxCaptor.allValues
+    claimedRows.forEach { row -> row.claimedAt = Instant.now() }
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+    whenever(emailOutboxRepository.completeClaimedRow(any(), any(), eq(EmailOutboxState.PUBLISHED.name), any(), isNull(), any()))
+      .thenThrow(RuntimeException("Could not record success"))
+    whenever(emailOutboxRepository.completeClaimedRow(any(), any(), eq(EmailOutboxState.FAILED.name), any(), any(), any()))
+      .thenReturn(1)
+
+    assertThrows<RuntimeException> {
+      service.sendEmails()
+    }
+
+    verify(notifyClient, times(1)).sendEmail(eq("templateId"), any(), any(), eq(batchId))
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(EmailOutboxState.PUBLISHED.name), any(), isNull(), any())
+    verify(emailOutboxRepository, times(0)).completeClaimedRow(any(), any(), eq(EmailOutboxState.FAILED.name), any(), any(), any())
   }
 }

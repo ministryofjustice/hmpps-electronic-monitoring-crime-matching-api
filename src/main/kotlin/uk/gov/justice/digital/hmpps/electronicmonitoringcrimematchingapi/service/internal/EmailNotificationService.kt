@@ -33,6 +33,9 @@ class EmailNotificationService(
 
   private val log = LoggerFactory.getLogger(this::class.java)
 
+  // Using the outbox table for Gov Notify emails, send eligible emails.
+  // We want to guarantee at-least-once delivery.
+  // Some emails may be sent more than once because Gov Uk Notify is not an idempotent consumer.
   fun sendEmails() {
     val claimedRows = claimEligibleOutboxRows()
     claimedRows.forEach { row ->
@@ -58,10 +61,11 @@ class EmailNotificationService(
           personalisation = personalisation,
           reference = payloadEvent.reference,
         )
-        completeClaimedRow(row, EmailOutboxState.PUBLISHED, null)
       } catch (e: Throwable) {
         completeClaimedRow(row, EmailOutboxState.FAILED, e.message)
+        return@forEach
       }
+      completeClaimedRow(row, EmailOutboxState.PUBLISHED, null)
     }
   }
 
