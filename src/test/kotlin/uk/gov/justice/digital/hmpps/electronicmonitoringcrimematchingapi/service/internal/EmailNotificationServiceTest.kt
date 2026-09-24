@@ -101,6 +101,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
       whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
@@ -111,10 +112,18 @@ class EmailNotificationServiceTest {
   }
 
   @Test
-  fun `it should not send a successful ingestion email when notify is not enabled`() {
+  fun `it should not queue an outbox row for a successful ingestion email when notify is not enabled`() {
     val attachment = ByteArrayDataSource("data", "message/rfc822")
     attachment.name = "attachment.csv"
     val batchId = "batchId"
+
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = listOf(attachment),
+    )
 
     val personalisation = mutableMapOf(
       "fileName" to "attachment.csv",
@@ -123,7 +132,19 @@ class EmailNotificationServiceTest {
       "policeForce" to "BEDFORDSHIRE",
     )
 
-    assertDoesNotThrow { service.sendEmails() }
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "batchId",
+      policeForce = "BEDFORDSHIRE",
+      emailData = emailData,
+      ingestionStatus = IngestionStatus.SUCCESSFUL,
+    )
+
+    assertDoesNotThrow {
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(0)).save(outboxCaptor.capture())
+    }
     verify(notifyClient, times(0)).sendEmail("templateId", "sender", personalisation, batchId)
   }
 
@@ -162,6 +183,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
       whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
@@ -224,6 +246,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
       whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
@@ -306,6 +329,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
       whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
@@ -388,6 +412,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
       whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
@@ -452,6 +477,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
       whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
@@ -499,6 +525,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(1)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
       whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
