@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
@@ -35,6 +36,18 @@ class PersonController(
   fun getPersons(
     @Parameter(description = "The search criteria for the query", required = true)
     personsQueryCriteria: PersonsQueryCriteria,
+    @Parameter(
+      description = "Page number (0-based). Defaults to 0.",
+      example = "0",
+    )
+    @RequestParam(defaultValue = "0")
+    page: Int = 0,
+    @Parameter(
+      description = "Number of items per page. Defaults to 30.",
+      example = "30",
+    )
+    @RequestParam(defaultValue = "30")
+    pageSize: Int = 30,
   ): ResponseEntity<PagedResponse<PersonResponse>> {
     if (!personsQueryCriteria.isValid()) {
       throw ResponseStatusException(
@@ -42,8 +55,15 @@ class PersonController(
         "Query parameters are invalid: $personsQueryCriteria",
       )
     }
-    val result = personService.getPersons(personsQueryCriteria)
-    return ResponseEntity.ok(PagedResponse(result.map { PersonResponse(it) }))
+    val result = personService.getPersons(personsQueryCriteria, page, pageSize)
+    return ResponseEntity.ok(
+      PagedResponse(
+        data = result.data.map { PersonResponse(it) },
+        pageSize = pageSize,
+        pageNumber = page,
+        pageCount = result.pageCount,
+      ),
+    )
   }
 
   @Operation(
