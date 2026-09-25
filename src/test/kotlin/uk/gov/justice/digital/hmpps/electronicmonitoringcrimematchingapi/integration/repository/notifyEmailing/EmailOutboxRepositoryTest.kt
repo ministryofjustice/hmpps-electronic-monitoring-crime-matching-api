@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.repository.notifyEmailing
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -58,17 +58,19 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = emailOutboxRepository.claimEligibleRows(
       pendingState = EmailOutboxState.PENDING.name,
+      failedState = EmailOutboxState.FAILED.name,
       cutoff = cutoff,
       now = now,
+      maxAttempts = 1,
     )
 
-    Assertions.assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(
+    assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(
       eligibleUnclaimed.id,
       eligibleStaleClaim.id,
     )
-    Assertions.assertThat(claimedRows).allSatisfy { claimed ->
-      Assertions.assertThat(claimed.claimedAt).isEqualTo(now)
-      Assertions.assertThat(claimed.state).isEqualTo(EmailOutboxState.PENDING)
+    assertThat(claimedRows).allSatisfy { claimed ->
+      assertThat(claimed.claimedAt).isEqualTo(now)
+      assertThat(claimed.state).isEqualTo(EmailOutboxState.PENDING)
     }
 
     val persistedRows = emailOutboxRepository.findAllById(
@@ -80,10 +82,99 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
       ),
     ).associateBy { it.id }
 
-    Assertions.assertThat(persistedRows[eligibleUnclaimed.id]!!.claimedAt).isEqualTo(now)
-    Assertions.assertThat(persistedRows[eligibleStaleClaim.id]!!.claimedAt).isEqualTo(now)
-    Assertions.assertThat(persistedRows[ineligibleRecentClaim.id]!!.claimedAt).isEqualTo(cutoff.plusMillis(1))
-    Assertions.assertThat(persistedRows[ineligiblePublished.id]!!.claimedAt).isNull()
+    assertThat(persistedRows[eligibleUnclaimed.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleStaleClaim.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[ineligibleRecentClaim.id]!!.claimedAt).isEqualTo(cutoff.plusMillis(1))
+    assertThat(persistedRows[ineligiblePublished.id]!!.claimedAt).isNull()
+  }
+
+  @Test
+  fun `it should claim failed rows that are unclaimed or claimed before cutoff`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+
+    val eligibleUnclaimed = givenOutboxRow(
+      state = EmailOutboxState.FAILED,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:00:00Z"),
+    )
+    val eligibleStaleClaim = givenOutboxRow(
+      state = EmailOutboxState.FAILED,
+      claimedAt = cutoff.minusMillis(1),
+      createdAt = Instant.parse("2026-01-01T00:01:00Z"),
+    )
+    val ineligibleRecentClaim = givenOutboxRow(
+      state = EmailOutboxState.FAILED,
+      claimedAt = cutoff.plusMillis(1),
+      createdAt = Instant.parse("2026-01-01T00:02:00Z"),
+    )
+
+    val claimedRows = emailOutboxRepository.claimEligibleRows(
+      pendingState = EmailOutboxState.PENDING.name,
+      failedState = EmailOutboxState.FAILED.name,
+      cutoff = cutoff,
+      now = now,
+      maxAttempts = 1,
+    )
+
+    assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(
+      eligibleUnclaimed.id,
+      eligibleStaleClaim.id,
+    )
+    assertThat(claimedRows).allSatisfy { claimed ->
+      assertThat(claimed.claimedAt).isEqualTo(now)
+      assertThat(claimed.state).isEqualTo(EmailOutboxState.FAILED)
+    }
+
+    val persistedRows = emailOutboxRepository.findAllById(
+      listOf(
+        eligibleUnclaimed.id,
+        eligibleStaleClaim.id,
+        ineligibleRecentClaim.id,
+      ),
+    ).associateBy { it.id }
+
+    assertThat(persistedRows[eligibleUnclaimed.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleStaleClaim.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[ineligibleRecentClaim.id]!!.claimedAt).isEqualTo(cutoff.plusMillis(1))
+  }
+
+  @Test
+  fun `it should not claim failed rows that exceed the max attempts or are dead`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+
+    val ineligibleMaxAttemptsReached = givenOutboxRow(
+      state = EmailOutboxState.FAILED,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:02:00Z"),
+      attempts = 1,
+    )
+    val ineligibleDead = givenOutboxRow(
+      state = EmailOutboxState.DEAD,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:00:00Z"),
+    )
+
+    val claimedRows = emailOutboxRepository.claimEligibleRows(
+      pendingState = EmailOutboxState.PENDING.name,
+      failedState = EmailOutboxState.FAILED.name,
+      cutoff = cutoff,
+      now = now,
+      maxAttempts = 1,
+    )
+
+    assertThat(claimedRows.size).isEqualTo(0)
+
+    val persistedRows = emailOutboxRepository.findAllById(
+      listOf(
+        ineligibleMaxAttemptsReached.id,
+        ineligibleDead.id,
+      ),
+    ).associateBy { it.id }
+
+    assertThat(persistedRows[ineligibleMaxAttemptsReached.id]!!.claimedAt).isNull()
+    assertThat(persistedRows[ineligibleDead.id]!!.claimedAt).isNull()
   }
 
   @Test
@@ -102,18 +193,20 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = emailOutboxRepository.claimEligibleRows(
       pendingState = EmailOutboxState.PENDING.name,
+      failedState = EmailOutboxState.FAILED.name,
       cutoff = cutoff,
       now = now,
+      maxAttempts = 1,
     )
 
-    Assertions.assertThat(claimedRows).isEmpty()
+    assertThat(claimedRows).isEmpty()
 
     val persistedRows = emailOutboxRepository.findAllById(
       listOf(pendingRecentClaim.id, published.id),
     ).associateBy { it.id }
 
-    Assertions.assertThat(persistedRows[pendingRecentClaim.id]!!.claimedAt).isEqualTo(cutoff.plusMillis(5))
-    Assertions.assertThat(persistedRows[published.id]!!.claimedAt).isNull()
+    assertThat(persistedRows[pendingRecentClaim.id]!!.claimedAt).isEqualTo(cutoff.plusMillis(5))
+    assertThat(persistedRows[published.id]!!.claimedAt).isNull()
   }
 
   @Test
@@ -149,22 +242,23 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = emailOutboxRepository.claimEligibleRows(
       pendingState = EmailOutboxState.PENDING.name,
+      failedState = EmailOutboxState.FAILED.name,
       cutoff = cutoff,
       now = now,
+      maxAttempts = 1,
     )
 
-    Assertions.assertThat(claimedRows.map { it.id })
-      .containsExactlyInAnyOrder(eligibleOne.id, eligibleTwo.id, eligibleThree.id, eligibleFour.id)
+    assertThat(claimedRows.map { it.id }).containsExactlyInAnyOrder(eligibleOne.id, eligibleTwo.id, eligibleThree.id, eligibleFour.id)
 
     val persistedRows = emailOutboxRepository.findAllById(
       listOf(eligibleOne.id, eligibleTwo.id, eligibleThree.id, eligibleFour.id, eligibleFive.id),
     ).associateBy { it.id }
 
-    Assertions.assertThat(persistedRows[eligibleOne.id]!!.claimedAt).isEqualTo(now)
-    Assertions.assertThat(persistedRows[eligibleTwo.id]!!.claimedAt).isEqualTo(now)
-    Assertions.assertThat(persistedRows[eligibleThree.id]!!.claimedAt).isEqualTo(now)
-    Assertions.assertThat(persistedRows[eligibleFour.id]!!.claimedAt).isEqualTo(now)
-    Assertions.assertThat(persistedRows[eligibleFive.id]!!.claimedAt).isNull()
+    assertThat(persistedRows[eligibleOne.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleTwo.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleThree.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleFour.id]!!.claimedAt).isEqualTo(now)
+    assertThat(persistedRows[eligibleFive.id]!!.claimedAt).isNull()
   }
 
   @Test
@@ -189,23 +283,27 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
           firstClaimedRows.set(
             emailOutboxRepository.claimEligibleRows(
               pendingState = EmailOutboxState.PENDING.name,
+              failedState = EmailOutboxState.FAILED.name,
               cutoff = cutoff,
               now = firstClaimNow,
+              maxAttempts = 1,
             ),
           )
           firstClaimComplete.countDown()
-          Assertions.assertThat(secondClaimAttempted.await(5, TimeUnit.SECONDS)).isTrue()
+          assertThat(secondClaimAttempted.await(5, TimeUnit.SECONDS)).isTrue()
         }
       }
 
       val secondFuture = executor.submit {
-        Assertions.assertThat(firstClaimComplete.await(5, TimeUnit.SECONDS)).isTrue()
+        assertThat(firstClaimComplete.await(5, TimeUnit.SECONDS)).isTrue()
         transactionTemplate.executeWithoutResult {
           secondClaimedRows.set(
             emailOutboxRepository.claimEligibleRows(
               pendingState = EmailOutboxState.PENDING.name,
+              failedState = EmailOutboxState.FAILED.name,
               cutoff = cutoff,
               now = secondClaimNow,
+              maxAttempts = 1,
             ),
           )
         }
@@ -218,11 +316,11 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
       executor.shutdownNow()
     }
 
-    Assertions.assertThat(firstClaimedRows.get().map { it.id }).containsExactly(row.id)
-    Assertions.assertThat(secondClaimedRows.get()).isEmpty()
+    assertThat(firstClaimedRows.get().map { it.id }).containsExactly(row.id)
+    assertThat(secondClaimedRows.get()).isEmpty()
 
     val persistedRow = emailOutboxRepository.findById(row.id).orElseThrow()
-    Assertions.assertThat(persistedRow.claimedAt).isEqualTo(firstClaimNow)
+    assertThat(persistedRow.claimedAt).isEqualTo(firstClaimNow)
   }
 
   @Test
@@ -242,13 +340,13 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
       version = row.version,
     )
 
-    Assertions.assertThat(updated).isEqualTo(1)
+    assertThat(updated).isEqualTo(1)
 
     val persisted = emailOutboxRepository.findById(row.id).orElseThrow()
-    Assertions.assertThat(persisted.state).isEqualTo(EmailOutboxState.PUBLISHED)
-    Assertions.assertThat(persisted.attempts).isEqualTo(1)
-    Assertions.assertThat(persisted.lastError).isNull()
-    Assertions.assertThat(persisted.version).isEqualTo(1)
+    assertThat(persisted.state).isEqualTo(EmailOutboxState.PUBLISHED)
+    assertThat(persisted.attempts).isEqualTo(1)
+    assertThat(persisted.lastError).isNull()
+    assertThat(persisted.version).isEqualTo(1)
   }
 
   @Test
@@ -276,14 +374,14 @@ class EmailOutboxRepositoryTest : IntegrationTestBase() {
       version = row.version + 1,
     )
 
-    Assertions.assertThat(updatedWithWrongClaim).isZero()
-    Assertions.assertThat(updatedWithWrongVersion).isZero()
+    assertThat(updatedWithWrongClaim).isZero()
+    assertThat(updatedWithWrongVersion).isZero()
 
     val persisted = emailOutboxRepository.findById(row.id).orElseThrow()
-    Assertions.assertThat(persisted.state).isEqualTo(EmailOutboxState.PENDING)
-    Assertions.assertThat(persisted.attempts).isZero()
-    Assertions.assertThat(persisted.lastError).isNull()
-    Assertions.assertThat(persisted.version).isEqualTo(0)
+    assertThat(persisted.state).isEqualTo(EmailOutboxState.PENDING)
+    assertThat(persisted.attempts).isZero()
+    assertThat(persisted.lastError).isNull()
+    assertThat(persisted.version).isEqualTo(0)
   }
 
   private fun givenOutboxRow(

@@ -29,6 +29,7 @@ class EmailNotificationService(
   companion object {
     const val NUM_ERRORS_TO_DISPLAY_IN_EMAIL_BODY = 5
     const val NOTIFY_EMAIL_REQUEST = "NOTIFY_EMAIL_REQUEST"
+    const val MAX_EMAIL_ATTEMPTS = 3
   }
 
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -62,10 +63,15 @@ class EmailNotificationService(
           reference = payloadEvent.reference,
         )
       } catch (e: Throwable) {
-        completeClaimedRow(row, EmailOutboxState.FAILED, e.message)
+        completeClaimedRow(
+          row,
+          row.attempts + 1,
+          if (row.attempts + 1 < MAX_EMAIL_ATTEMPTS) EmailOutboxState.FAILED else EmailOutboxState.DEAD,
+          e.message,
+        )
         return@forEach
       }
-      completeClaimedRow(row, EmailOutboxState.PUBLISHED, null)
+      completeClaimedRow(row, row.attempts + 1, EmailOutboxState.PUBLISHED, null)
     }
   }
 
@@ -90,6 +96,8 @@ class EmailNotificationService(
 
     return emailOutboxRepository.claimEligibleRows(
       pendingState = EmailOutboxState.PENDING.name,
+      failedState = EmailOutboxState.FAILED.name,
+      maxAttempts = MAX_EMAIL_ATTEMPTS,
       cutoff = cutoff,
       now = now,
     )
@@ -137,6 +145,7 @@ class EmailNotificationService(
 
   private fun completeClaimedRow(
     row: EmailOutbox,
+    attempts: Int,
     state: EmailOutboxState,
     lastError: String?,
   ) {
@@ -150,7 +159,7 @@ class EmailNotificationService(
       id = row.id,
       claimedAt = claimedAt,
       state = state.name,
-      attempts = row.attempts + 1,
+      attempts = attempts,
       lastError = lastError,
       version = row.version,
     )

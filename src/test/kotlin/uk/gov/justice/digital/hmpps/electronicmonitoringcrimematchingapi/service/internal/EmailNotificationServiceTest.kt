@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import jakarta.mail.util.ByteArrayDataSource
 import org.json.JSONObject
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -22,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.NotifyEmailRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.EmailOutbox
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
@@ -104,7 +106,7 @@ class EmailNotificationServiceTest {
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
       claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
     }
@@ -186,7 +188,7 @@ class EmailNotificationServiceTest {
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
       claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
     }
@@ -249,7 +251,7 @@ class EmailNotificationServiceTest {
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
       claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
       // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
@@ -332,7 +334,7 @@ class EmailNotificationServiceTest {
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
       claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
       // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
@@ -415,7 +417,7 @@ class EmailNotificationServiceTest {
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
       claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
       // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
@@ -480,7 +482,7 @@ class EmailNotificationServiceTest {
       verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
       claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
       // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
@@ -528,7 +530,7 @@ class EmailNotificationServiceTest {
       verify(emailOutboxRepository, times(1)).save(outboxCaptor.capture())
       val claimedRows = outboxCaptor.allValues
       claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
     }
@@ -559,7 +561,7 @@ class EmailNotificationServiceTest {
       claimedAt = claimedAt,
     )
 
-    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(listOf(emailOutbox))
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any(), any(), any())).thenReturn(listOf(emailOutbox))
 
     serviceWithMockedMapper.sendEmails()
 
@@ -618,7 +620,7 @@ class EmailNotificationServiceTest {
 
       // Now disable notify, but the emails should still be sent from outbox
       whenever(notifyProperties.enabled).thenReturn(false)
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any(), any(), any())).thenReturn(claimedRows)
 
       service.sendEmails()
     }
@@ -657,11 +659,31 @@ class EmailNotificationServiceTest {
 
     val claimedRows = outboxCaptor.allValues
     claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any(), any(), any())).thenReturn(
+      claimedRows,
+    )
 
-    whenever(emailOutboxRepository.completeClaimedRow(any(), any(), eq(EmailOutboxState.PUBLISHED.name), any(), isNull(), any()))
+    whenever(
+      emailOutboxRepository.completeClaimedRow(
+        any(),
+        any(),
+        eq(EmailOutboxState.PUBLISHED.name),
+        any(),
+        isNull(),
+        any(),
+      ),
+    )
       .thenThrow(RuntimeException("Could not record success"))
-    whenever(emailOutboxRepository.completeClaimedRow(any(), any(), eq(EmailOutboxState.FAILED.name), any(), any(), any()))
+    whenever(
+      emailOutboxRepository.completeClaimedRow(
+        any(),
+        any(),
+        eq(EmailOutboxState.FAILED.name),
+        any(),
+        any(),
+        any(),
+      ),
+    )
       .thenReturn(1)
 
     assertThrows<RuntimeException> {
@@ -669,7 +691,173 @@ class EmailNotificationServiceTest {
     }
 
     verify(notifyClient, times(1)).sendEmail(eq("templateId"), any(), any(), eq(batchId))
-    verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(EmailOutboxState.PUBLISHED.name), any(), isNull(), any())
-    verify(emailOutboxRepository, times(0)).completeClaimedRow(any(), any(), eq(EmailOutboxState.FAILED.name), any(), any(), any())
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(
+      any(),
+      any(),
+      eq(EmailOutboxState.PUBLISHED.name),
+      any(),
+      isNull(),
+      any(),
+    )
+    verify(emailOutboxRepository, times(0)).completeClaimedRow(
+      any(),
+      any(),
+      eq(EmailOutboxState.FAILED.name),
+      any(),
+      any(),
+      any(),
+    )
+  }
+
+  @Test
+  fun `it should save the state of the outbox row as FAILED if an error occurs`() {
+    whenever(notifyClient.sendEmail(any(), any(), any(), any())).thenThrow(RuntimeException("Notify error"))
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = "Unknown due to an error",
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    val claimedRows = listOf(
+      EmailOutbox(
+        payload = mapper.writeValueAsString(
+          NotifyEmailRequest(
+            type = "NOTIFY_EMAIL_REQUEST",
+            emailAddress = ingestionOutcome.emailData.sender,
+            reference = ingestionOutcome.batchId,
+            ingestionStatus = ingestionOutcome.ingestionStatus,
+            ingestionDate = utcToday,
+            fileName = "example.csv",
+            batchId = ingestionOutcome.batchId,
+            policeForce = ingestionOutcome.policeForce,
+            errorType = ingestionOutcome.errorType,
+            records = ingestionOutcome.records,
+            errors = ingestionOutcome.errors,
+            recordCount = ingestionOutcome.recordCount,
+          ),
+        ),
+        state = EmailOutboxState.PENDING,
+        attempts = 0,
+        claimedAt = Instant.now(),
+      ),
+    )
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
+    assertDoesNotThrow {
+      service.sendEmails()
+    }
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(EmailOutboxState.FAILED.name), eq(1), any(), eq(0))
+  }
+
+  @Test
+  fun `it should transition the state of the outbox row to DEAD if the max attempts is reached`() {
+    whenever(notifyClient.sendEmail(any(), any(), any(), any())).thenThrow(RuntimeException("Notify error"))
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = "Unknown due to an error",
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    val claimedRows = listOf(
+      EmailOutbox(
+        payload = mapper.writeValueAsString(
+          NotifyEmailRequest(
+            type = "NOTIFY_EMAIL_REQUEST",
+            emailAddress = ingestionOutcome.emailData.sender,
+            reference = ingestionOutcome.batchId,
+            ingestionStatus = ingestionOutcome.ingestionStatus,
+            ingestionDate = utcToday,
+            fileName = "example.csv",
+            batchId = ingestionOutcome.batchId,
+            policeForce = ingestionOutcome.policeForce,
+            errorType = ingestionOutcome.errorType,
+            records = ingestionOutcome.records,
+            errors = ingestionOutcome.errors,
+            recordCount = ingestionOutcome.recordCount,
+          ),
+        ),
+        state = EmailOutboxState.FAILED,
+        attempts = EmailNotificationService.MAX_EMAIL_ATTEMPTS - 1,
+        claimedAt = Instant.now(),
+      ),
+    )
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
+    assertDoesNotThrow {
+      service.sendEmails()
+    }
+
+    val stateCaptor = argumentCaptor<String>()
+    val attemptsCaptor = argumentCaptor<Int>()
+
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), stateCaptor.capture(), attemptsCaptor.capture(), any(), eq(0))
+    assertEquals(EmailOutboxState.DEAD.name, stateCaptor.firstValue)
+    assertEquals(EmailNotificationService.MAX_EMAIL_ATTEMPTS, attemptsCaptor.firstValue)
+  }
+
+  @Test
+  fun `it should update the state of the outbox row to PUBLISHED if the publish happens successfully`() {
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = "Unknown due to an error",
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    val claimedRows = listOf(
+      EmailOutbox(
+        payload = mapper.writeValueAsString(
+          NotifyEmailRequest(
+            type = "NOTIFY_EMAIL_REQUEST",
+            emailAddress = ingestionOutcome.emailData.sender,
+            reference = ingestionOutcome.batchId,
+            ingestionStatus = ingestionOutcome.ingestionStatus,
+            ingestionDate = utcToday,
+            fileName = "example.csv",
+            batchId = ingestionOutcome.batchId,
+            policeForce = ingestionOutcome.policeForce,
+            errorType = ingestionOutcome.errorType,
+            records = ingestionOutcome.records,
+            errors = ingestionOutcome.errors,
+            recordCount = ingestionOutcome.recordCount,
+          ),
+        ),
+        state = EmailOutboxState.PENDING,
+        attempts = 0,
+        claimedAt = Instant.now(),
+      ),
+    )
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
+    assertDoesNotThrow {
+      service.sendEmails()
+    }
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(EmailOutboxState.PUBLISHED.name), eq(1), eq(null), eq(0))
   }
 }
