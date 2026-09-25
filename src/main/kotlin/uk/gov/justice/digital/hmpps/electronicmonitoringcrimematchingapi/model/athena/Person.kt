@@ -11,7 +11,9 @@ object Person : Table(name = "caseload") {
   val pncId = varchar("pnc_id")
   val dateOfBirth = date("date_of_birth")
   val responsibleOfficerName = varchar("responsible_officer_name")
+  val country = varchar("country")
   val postcode = varchar("postcode")
+  val county = varchar("county")
   val cityOrTown = varchar("city_or_town")
   val street = varchar("house_number_and_street_name")
 }

@@ -19,7 +19,13 @@ data class PersonResponse(
     pncRef = entity.pncRef,
     dateOfBirth = entity.dateOfBirth,
     probationPractitioner = entity.probationPractitioner,
-    address = "${entity.street}, ${entity.cityOrTown}, ${entity.postcode}",
+    address = listOfNotNull(
+      entity.street,
+      entity.cityOrTown,
+      entity.county,
+      entity.postcode,
+      entity.country,
+    ).filter { it.isNotBlank() }.joinToString(", "),
     deviceActivations = entity.deviceActivations.map {
       DeviceActivationResponse(it)
     },
