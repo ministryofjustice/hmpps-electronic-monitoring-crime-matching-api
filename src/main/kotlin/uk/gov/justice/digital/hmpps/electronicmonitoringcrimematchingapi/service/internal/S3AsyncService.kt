@@ -1,6 +1,6 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal
 
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.model.CSVInput
 import software.amazon.awssdk.services.s3.model.CSVOutput
@@ -19,12 +19,10 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-@Component
-class AwsS3SelectReader(
-  private val s3AsyncClient: S3AsyncClient,
-) : S3SelectReader {
+@Service
+class S3AsyncService(private val s3AsyncClient: S3AsyncClient) {
 
-  override fun selectObjectContent(bucket: String, key: String, sqlExpression: String): String {
+  fun selectObjectContent(bucket: String, key: String, sqlExpression: String): String {
     val request = SelectObjectContentRequest.builder()
       .bucket(bucket)
       .key(key)

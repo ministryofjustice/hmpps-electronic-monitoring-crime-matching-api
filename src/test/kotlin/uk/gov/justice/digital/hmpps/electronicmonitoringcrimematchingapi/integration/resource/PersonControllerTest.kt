@@ -10,19 +10,19 @@ import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.expectBody
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.S3SelectReader
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Response
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.S3AsyncService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @ActiveProfiles("integration")
 class PersonControllerTest : IntegrationTestBase() {
 
   @MockitoBean
-  lateinit var s3SelectReader: S3SelectReader
+  lateinit var s3AsyncService: S3AsyncService
 
   @Nested
   @DisplayName("GET /persons")
@@ -324,7 +324,7 @@ class PersonControllerTest : IntegrationTestBase() {
       "1",
     ).joinToString(",")
 
-    whenever(s3SelectReader.selectObjectContent(any(), any(), any())).thenAnswer { invocation ->
+    whenever(s3AsyncService.selectObjectContent(any(), any(), any())).thenAnswer { invocation ->
       val sqlExpression = invocation.getArgument<String>(2)
       if (sqlExpression.contains("COUNT(*)")) "1\n" else "$personRow\n"
     }

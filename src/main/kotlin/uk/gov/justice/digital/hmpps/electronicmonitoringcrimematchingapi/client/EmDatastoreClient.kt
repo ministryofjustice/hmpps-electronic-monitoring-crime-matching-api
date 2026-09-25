@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.datastore.DatastoreProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.AthenaQuery
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.athena.PagedResultSet
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.S3AsyncService
 import java.io.StringReader
 import java.net.URI
 
@@ -31,7 +32,7 @@ import java.net.URI
 @Component
 class EmDatastoreClient(
   val athenaClient: AthenaClient,
-  val s3SelectReader: S3SelectReader,
+  val s3AsyncService: S3AsyncService,
   val properties: DatastoreProperties,
 ) {
 
@@ -51,7 +52,7 @@ class EmDatastoreClient(
     val metadata = retrieveColumnMetadata(queryExecutionId)
 
     val offset = page * pageSize
-    val pageCsv = s3SelectReader.selectObjectContent(
+    val pageCsv = s3AsyncService.selectObjectContent(
       bucket = bucket,
       key = key,
       sqlExpression = "SELECT * FROM s3object WHERE CAST(row_number AS INT) > $offset LIMIT $pageSize",
@@ -162,7 +163,7 @@ class EmDatastoreClient(
   }
 
   private fun countRows(bucket: String, key: String): Long {
-    val csv = s3SelectReader.selectObjectContent(bucket, key, "SELECT COUNT(*) FROM s3object")
+    val csv = s3AsyncService.selectObjectContent(bucket, key, "SELECT COUNT(*) FROM s3object")
     return csv.trim().lines().first().trim().toLong()
   }
 
