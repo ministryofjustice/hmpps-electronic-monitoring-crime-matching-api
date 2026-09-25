@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import software.amazon.awssdk.services.athena.AthenaClient
+import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sts.StsClient
 import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
@@ -40,14 +41,8 @@ class AwsConfig(
       clientBuilder.endpointOverride(URI(properties.athena.endpointUrl))
     }
 
-    if (properties.athena.role != null) {
-      clientBuilder.credentialsProvider(
-        StsAssumeRoleCredentialsProvider.builder().stsClient(stsClient())
-          .refreshRequest { builder ->
-            builder.roleArn(properties.athena.role).roleSessionName(sessionId)
-          }
-          .build(),
-      )
+    assumeRoleCredentialsProvider(properties.athena.role)?.let {
+      clientBuilder.credentialsProvider(it)
     }
 
     return clientBuilder.build()
@@ -64,5 +59,23 @@ class AwsConfig(
     }
 
     return clientBuilder.build()
+  }
+
+  @Bean
+  fun s3AsyncClient(): S3AsyncClient = S3AsyncClient.builder()
+    .region(properties.region)
+    .apply {
+      if (!properties.s3.endpointUrl.isNullOrBlank()) {
+        endpointOverride(URI.create(properties.s3.endpointUrl))
+        forcePathStyle(true)
+      }
+      assumeRoleCredentialsProvider(properties.athena.role)?.let { credentialsProvider(it) }
+    }
+    .build()
+
+  private fun assumeRoleCredentialsProvider(roleArn: String?): StsAssumeRoleCredentialsProvider? = roleArn?.let {
+    StsAssumeRoleCredentialsProvider.builder().stsClient(stsClient())
+      .refreshRequest { builder -> builder.roleArn(it).roleSessionName(sessionId) }
+      .build()
   }
 }

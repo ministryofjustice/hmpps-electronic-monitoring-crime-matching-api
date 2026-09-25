@@ -83,7 +83,11 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
     )
   }
 
-  fun stubAthenaGetQueryExecution(retryCount: Int, finalQueryExecutionState: String) {
+  fun stubAthenaGetQueryExecution(
+    retryCount: Int,
+    finalQueryExecutionState: String,
+    outputLocation: String = "",
+  ) {
     (1..retryCount).forEach {
       stubFor(
         post(
@@ -103,7 +107,7 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
                 "Query": "",
                 "StatementType": "",
                 "ResultConfiguration": {
-                  "OutputLocation": ""
+                  "OutputLocation": "$outputLocation"
                 },
                 "QueryExecutionContext": {
                   "Database": "",
