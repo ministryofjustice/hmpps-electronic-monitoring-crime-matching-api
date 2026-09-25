@@ -4,9 +4,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.client.S3SelectReader
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.DeviceActivationResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
@@ -16,6 +20,9 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @ActiveProfiles("integration")
 class PersonControllerTest : IntegrationTestBase() {
+
+  @MockitoBean
+  lateinit var s3SelectReader: S3SelectReader
 
   @Nested
   @DisplayName("GET /persons")
@@ -28,6 +35,8 @@ class PersonControllerTest : IntegrationTestBase() {
         "SUCCEEDED",
         "athenaResponses/persons.device-activations.success.json",
       )
+
+      stubPagedPersonS3Select("2024-05-18 00:00:00.000")
 
       val result = webTestClient.get()
         .uri("/persons?name=name")
@@ -76,6 +85,8 @@ class PersonControllerTest : IntegrationTestBase() {
         "SUCCEEDED",
         "athenaResponses/persons.device-activations-sentinel-date-value.success.json",
       )
+
+      stubPagedPersonS3Select("9999-12-31 00:00:00.000")
 
       val result = webTestClient.get()
         .uri("/persons?name=name")
@@ -290,6 +301,32 @@ class PersonControllerTest : IntegrationTestBase() {
       verifyAthenaGetQueryExecutionCount(3)
       // The results of the existing query should have been used twice
       verifyAthenaGetQueryResultsCount(1)
+    }
+  }
+
+  private fun stubPagedPersonS3Select(deviceDeactivationDate: String) {
+    val personRow = listOf(
+      "1",
+      "first_name",
+      "last_name",
+      "nomis_id",
+      "pnc_id",
+      "2000-05-29",
+      "responsible_officer_name",
+      "zip",
+      "city",
+      "street",
+      "12345",
+      "54321",
+      "987654321",
+      "2023-05-18 00:00:00.000",
+      deviceDeactivationDate,
+      "1",
+    ).joinToString(",")
+
+    whenever(s3SelectReader.selectObjectContent(any(), any(), any())).thenAnswer { invocation ->
+      val sqlExpression = invocation.getArgument<String>(2)
+      if (sqlExpression.contains("COUNT(*)")) "1\n" else "$personRow\n"
     }
   }
 }

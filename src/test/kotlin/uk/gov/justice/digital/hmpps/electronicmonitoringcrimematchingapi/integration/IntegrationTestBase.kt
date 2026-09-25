@@ -103,9 +103,10 @@ abstract class IntegrationTestBase {
     retryCount: Int,
     finalQueryExecutionStatus: String,
     queryResponseFile: String,
+    outputLocation: String = "s3://test-output-bucket/$queryExecutionId.csv",
   ) {
     awsMockServer.stubAthenaStartQueryExecution(queryExecutionId)
-    awsMockServer.stubAthenaGetQueryExecution(retryCount, finalQueryExecutionStatus)
+    awsMockServer.stubAthenaGetQueryExecution(retryCount, finalQueryExecutionStatus, outputLocation)
     awsMockServer.stubAthenaGetQueryResults(queryResponseFile)
   }
 

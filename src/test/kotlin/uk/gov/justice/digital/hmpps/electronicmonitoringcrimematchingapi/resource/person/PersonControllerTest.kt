@@ -10,6 +10,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.server.ResponseStatusException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
@@ -46,25 +47,28 @@ class PersonControllerTest {
         ),
       )
 
-      whenever(service.getPersons(personsQueryCriteria)).thenReturn(
-        listOf(
-          Person(
-            personId = "1",
-            firstName = "firstName",
-            lastName = "lastName",
-            nomisId = "nomis",
-            pncRef = "pncId",
-            dateOfBirth = "1990-01-01",
-            probationPractitioner = "responsibleOfficerName",
-            postcode = "zip",
-            cityOrTown = "city",
-            street = "street",
-            deviceActivations = mutableListOf(),
+      whenever(service.getPersons(personsQueryCriteria, page = 1, pageSize = 10)).thenReturn(
+        PagedResult(
+          listOf(
+            Person(
+              personId = "1",
+              firstName = "firstName",
+              lastName = "lastName",
+              nomisId = "nomis",
+              pncRef = "pncId",
+              dateOfBirth = "1990-01-01",
+              probationPractitioner = "responsibleOfficerName",
+              postcode = "zip",
+              cityOrTown = "city",
+              street = "street",
+              deviceActivations = mutableListOf(),
+            ),
           ),
+          pageCount = 1,
         ),
       )
 
-      val result = controller.getPersons(personsQueryCriteria)
+      val result = controller.getPersons(personsQueryCriteria, page = 1, pageSize = 10)
       assertThat(result.body).isNotNull()
       assertThat(result.body?.data).isNotNull()
       assertThat(result.body?.data).isEqualTo(expectedResult)
