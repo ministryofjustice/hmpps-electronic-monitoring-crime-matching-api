@@ -13,7 +13,9 @@ class GetPersonByIdQueryBuilder(private val id: String) {
       Person.pncId,
       Person.dateOfBirth,
       Person.responsibleOfficerName,
+      Person.country,
       Person.postcode,
+      Person.county,
       Person.cityOrTown,
       Person.street,
     )

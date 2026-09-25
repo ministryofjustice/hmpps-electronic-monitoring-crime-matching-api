@@ -41,7 +41,9 @@ class PersonServiceTest {
           pncRef = "pncId",
           probationPractitioner = "responsibleOfficerName",
           dateOfBirth = "1990-01-01",
+          country = "England",
           postcode = "FK12 3FA",
+          county = "Fake County",
           cityOrTown = "Fakesville",
           street = "123 Fake Street",
           deviceActivations = mutableListOf(

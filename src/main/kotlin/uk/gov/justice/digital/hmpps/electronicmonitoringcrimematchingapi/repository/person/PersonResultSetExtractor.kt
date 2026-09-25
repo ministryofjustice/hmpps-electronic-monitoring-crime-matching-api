@@ -24,14 +24,16 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
           pncRef = row[4],
           dateOfBirth = row[5],
           probationPractitioner = row[6],
-          postcode = row[7],
-          cityOrTown = row[8],
-          street = row[9],
+          country = row[7],
+          postcode = row[8],
+          county = row[9],
+          cityOrTown = row[10],
+          street = row[11],
           deviceActivations = mutableListOf(),
         )
       }
 
-      if (row.size == 15) {
+      if (row.size == 17) {
         val deviceActivation = DeviceActivation(
           deviceActivationId = row[11].toLong(),
           deviceId = row[10].toLong(),
