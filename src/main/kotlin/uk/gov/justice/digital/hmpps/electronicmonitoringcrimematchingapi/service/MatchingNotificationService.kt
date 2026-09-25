@@ -47,8 +47,8 @@ class MatchingNotificationService(
   fun publishMatchingRequests() {
     val claimedRows = claimEligibleOutboxRows()
     claimedRows.forEach { row ->
-      val payloadEvent = objectMapper.readValue(row.payload, MatchingNotification::class.java)
       try {
+        val payloadEvent = objectMapper.readValue(row.payload, MatchingNotification::class.java)
         publish(payloadEvent)
       } catch (e: Throwable) {
         completeClaimedRow(

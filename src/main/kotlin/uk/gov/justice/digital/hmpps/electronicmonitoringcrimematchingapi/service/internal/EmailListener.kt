@@ -63,7 +63,7 @@ class EmailListener(
     matchingNotificationService.publishMatchingRequests()
 
     try {
-      emailNotificationService.sendEmails(ingestionOutcome)
+      emailNotificationService.sendEmails()
     } catch (notifyEx: Exception) {
       log.warn("Failed to send failed ingestion notification email: ${notifyEx.message}", notifyEx)
     }
