@@ -60,12 +60,10 @@ class EmailListener(
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)
 
-    if (ingestionOutcome.ingestionStatus == IngestionStatus.SUCCESSFUL || ingestionOutcome.ingestionStatus == IngestionStatus.PARTIAL) {
-      matchingNotificationService.publishMatchingRequest(ingestionOutcome.crimeBatchId)
-    }
+    matchingNotificationService.publishMatchingRequests()
 
     try {
-      emailNotificationService.sendEmails(ingestionOutcome)
+      emailNotificationService.sendEmails()
     } catch (notifyEx: Exception) {
       log.warn("Failed to send failed ingestion notification email: ${notifyEx.message}", notifyEx)
     }
