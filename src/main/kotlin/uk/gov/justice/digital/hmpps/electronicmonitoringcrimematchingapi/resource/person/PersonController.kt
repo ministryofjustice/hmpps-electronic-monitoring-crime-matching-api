@@ -43,11 +43,11 @@ class PersonController(
     @RequestParam(defaultValue = "0")
     page: Int = 0,
     @Parameter(
-      description = "Number of items per page. Defaults to 30.",
-      example = "30",
+      description = "Number of items per page. Defaults to 10.",
+      example = "10",
     )
-    @RequestParam(defaultValue = "30")
-    pageSize: Int = 30,
+    @RequestParam(defaultValue = "10")
+    pageSize: Int = 10,
   ): ResponseEntity<PagedResponse<PersonResponse>> {
     if (!personsQueryCriteria.isValid()) {
       throw ResponseStatusException(
