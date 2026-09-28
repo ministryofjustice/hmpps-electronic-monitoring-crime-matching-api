@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.9"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.10"
   kotlin("plugin.spring") version "2.4.20"
   kotlin("plugin.jpa") version "2.4.20"
   jacoco
@@ -22,7 +22,7 @@ configurations {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.3")
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
@@ -31,8 +31,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
-  implementation("software.amazon.awssdk:athena:2.55.2")
-  implementation("software.amazon.awssdk:s3:2.55.2")
+  implementation("software.amazon.awssdk:athena:2.55.6")
+  implementation("software.amazon.awssdk:s3:2.55.6")
   implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20260814")
   implementation("uk.gov.service.notify:notifications-java-client:6.2.1-RELEASE")
@@ -43,10 +43,10 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
-  testImplementation("com.h2database:h2:2.5.250")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.2")
-  testImplementation("org.mockito:mockito-core:5.23.0")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+  testImplementation("com.h2database:h2:2.5.252")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.3")
+  testImplementation("org.mockito:mockito-core:5.24.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.testcontainers:postgresql:1.21.4")
