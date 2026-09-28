@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -50,7 +49,7 @@ class CrimeMatchingResultMapperTest {
   }
 
   @Test
-  fun `should throw exception when crime type id is not a valid enum value`() {
+  fun `should return empty string when crime type id is not a valid enum value`() {
     // Given
     val mockProjection = createMockProjection(crimeTypeId = "INVALID")
     val expectedCoordinates = Wgs84(longitude = -0.1278, latitude = 51.5074)
@@ -63,9 +62,11 @@ class CrimeMatchingResultMapperTest {
       ),
     ).thenReturn(expectedCoordinates)
 
-    // When & Then
-    assertThatThrownBy { mapper.toDto(mockProjection) }
-      .isInstanceOf(NoSuchElementException::class.java)
+    // When
+    val result = mapper.toDto(mockProjection)
+
+    // Then
+    assertThat(result.crimeType).isEmpty()
   }
 
   @Test
