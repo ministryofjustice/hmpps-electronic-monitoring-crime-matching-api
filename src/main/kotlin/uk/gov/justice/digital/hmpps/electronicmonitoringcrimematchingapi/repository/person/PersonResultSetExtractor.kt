@@ -31,7 +31,7 @@ class PersonResultSetExtractor : AthenaResultSetExtractor<Person> {
         )
       }
 
-      if (row.size == 15) {
+      if (row.size == 16) {
         val deviceActivation = DeviceActivation(
           deviceActivationId = row[11].toLong(),
           deviceId = row[10].toLong(),

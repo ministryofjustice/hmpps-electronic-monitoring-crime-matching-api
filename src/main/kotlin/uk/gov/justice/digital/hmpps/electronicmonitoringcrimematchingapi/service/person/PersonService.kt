@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PersonsQueryCriteria
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.Person
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.person.PersonRepository
@@ -10,8 +11,12 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.reposit
 class PersonService(
   val personRepository: PersonRepository,
 ) {
-  fun getPersons(personsQueryCriteria: PersonsQueryCriteria): List<Person> = this.personRepository
-    .getPersons(personsQueryCriteria)
+  fun getPersons(personsQueryCriteria: PersonsQueryCriteria, page: Int, pageSize: Int): PagedResult<Person> = this.personRepository
+    .getPersons(
+      personsQueryCriteria,
+      page,
+      pageSize,
+    )
 
   fun getPerson(id: String): Person = this.personRepository
     .findById(id)
