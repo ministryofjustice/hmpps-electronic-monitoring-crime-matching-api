@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.geo.CoordinateResolver
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.roundTo
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeMatchingResultProjection
 
 @Component
@@ -18,7 +19,7 @@ class CrimeMatchingResultMapper(
       policeForce = matchingResult.policeForceArea,
       batchId = matchingResult.batchId,
       crimeRef = matchingResult.crimeReference,
-      crimeType = matchingResult.crimeTypeId,
+      crimeType = CrimeType.from(matchingResult.crimeTypeId).value,
       crimeDateTimeFrom = matchingResult.crimeDateTimeFrom.toString(),
       crimeDateTimeTo = matchingResult.crimeDateTimeTo.toString(),
       crimeLatitude = coords.latitude.roundTo(8),
