@@ -41,7 +41,8 @@ class CrimeMatchingResultMapperTest {
 
     // Then
     assertThat(result).isNotNull
-    assertThat(result.crimeType).isEqualTo("Robbery")
+    assertThat(result.crimeType).isEqualTo("RB")
+    assertThat(result.crimeTypeDescription).isEqualTo("Robbery")
     assertThat(result.policeForce).isEqualTo("Test Police Force")
     assertThat(result.crimeRef).isEqualTo("TEST/2026/001")
     assertThat(result.crimeLatitude).isEqualTo(51.5074)
@@ -49,7 +50,7 @@ class CrimeMatchingResultMapperTest {
   }
 
   @Test
-  fun `should return empty string when crime type id is not a valid enum value`() {
+  fun `should return empty string for crime description when crime type id is not a valid enum value`() {
     // Given
     val mockProjection = createMockProjection(crimeTypeId = "INVALID")
     val expectedCoordinates = Wgs84(longitude = -0.1278, latitude = 51.5074)
@@ -66,7 +67,8 @@ class CrimeMatchingResultMapperTest {
     val result = mapper.toDto(mockProjection)
 
     // Then
-    assertThat(result.crimeType).isEmpty()
+    assertThat(result.crimeType).isEqualTo("INVALID")
+    assertThat(result.crimeTypeDescription).isEmpty()
   }
 
   @Test
@@ -100,7 +102,8 @@ class CrimeMatchingResultMapperTest {
       val result = mapper.toDto(mockProjection)
 
       // Then
-      assertThat(result.crimeType).isEqualTo(expectedDescription)
+      assertThat(result.crimeType).isEqualTo(crimeTypeId)
+      assertThat(result.crimeTypeDescription).isEqualTo(expectedDescription)
     }
   }
 
