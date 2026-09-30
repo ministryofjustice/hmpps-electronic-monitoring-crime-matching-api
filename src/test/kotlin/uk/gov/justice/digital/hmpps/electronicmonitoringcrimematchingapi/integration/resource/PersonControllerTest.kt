@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -17,6 +19,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Res
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.internal.S3AsyncService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.io.StringWriter
 
 @ActiveProfiles("integration")
 class PersonControllerTest : IntegrationTestBase() {
@@ -36,10 +39,14 @@ class PersonControllerTest : IntegrationTestBase() {
         "athenaResponses/persons.device-activations.success.json",
       )
 
-      stubPagedPersonS3Select("2024-05-18 00:00:00.000")
+      val sqlExpressions = stubPagedPersonS3Select(
+        listOf(
+          personCsvRow(),
+        ),
+      )
 
       val result = webTestClient.get()
-        .uri("/persons?name=name")
+        .uri("/persons?name=name&page=0&pageSize=1")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
         .exchange()
         .expectStatus()
@@ -75,6 +82,165 @@ class PersonControllerTest : IntegrationTestBase() {
           ),
         ),
       )
+      assertThat(result.pageCount).isEqualTo(1)
+      assertThat(result.pageSize).isEqualTo(1)
+      assertThat(result.pageNumber).isEqualTo(0)
+      assertThat(sqlExpressions).containsExactly(
+        "SELECT * FROM s3object WHERE CAST(row_number AS INT) > 0 LIMIT 1",
+        "SELECT COUNT(*) FROM s3object",
+      )
+    }
+
+    @Test
+    fun `it should return the second page of persons with device activations`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/persons.device-activations.success.json",
+      )
+
+      val sqlExpressions = stubPagedPersonS3Select(
+        listOf(
+          personCsvRow(),
+          personCsvRow(personId = "2", rowNumber = 2),
+        ),
+        offset = 1,
+        limit = 1,
+      )
+
+      val result = webTestClient.get()
+        .uri("/persons?name=name&page=1&pageSize=1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<PagedResponse<PersonResponse>>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(1)
+      assertThat(result.data[0].deviceActivations).hasSize(1)
+      assertThat(result.data[0]).isEqualTo(
+        PersonResponse(
+          personId = "2",
+          name = "first_name last_name",
+          nomisId = "nomis_id",
+          pncRef = "pnc_id",
+          dateOfBirth = "2000-05-29",
+          probationPractitioner = "responsible_officer_name",
+          address = "street, city, zip",
+          deviceActivations = listOf(
+            DeviceActivationResponse(
+              deviceActivationId = 54321,
+              deviceId = 12345,
+              deviceName = "",
+              deviceSerialNumber = "987654321",
+              personId = "2",
+              deviceActivationDate = "2023-05-18T00:00",
+              deviceDeactivationDate = "2024-05-18T00:00",
+              orderStart = "",
+              orderEnd = "",
+            ),
+          ),
+        ),
+      )
+      assertThat(result.pageCount).isEqualTo(2)
+      assertThat(result.pageSize).isEqualTo(1)
+      assertThat(result.pageNumber).isEqualTo(1)
+      assertThat(sqlExpressions).containsExactly(
+        "SELECT * FROM s3object WHERE CAST(row_number AS INT) > 1 LIMIT 1",
+        "SELECT COUNT(*) FROM s3object",
+      )
+    }
+
+    @Test
+    fun `it should return persons with a field containing a comma`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/persons.device-activations.success.json",
+      )
+
+      stubPagedPersonS3Select(
+        listOf(
+          personCsvRow(street = "next,street"),
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/persons?name=name")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<PagedResponse<PersonResponse>>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(1)
+      assertThat(result.data[0].deviceActivations).hasSize(1)
+      assertThat(result.data[0]).isEqualTo(
+        PersonResponse(
+          personId = "1",
+          name = "first_name last_name",
+          nomisId = "nomis_id",
+          pncRef = "pnc_id",
+          dateOfBirth = "2000-05-29",
+          probationPractitioner = "responsible_officer_name",
+          address = "next,street, city, zip",
+          deviceActivations = listOf(
+            DeviceActivationResponse(
+              deviceActivationId = 54321,
+              deviceId = 12345,
+              deviceName = "",
+              deviceSerialNumber = "987654321",
+              personId = "1",
+              deviceActivationDate = "2023-05-18T00:00",
+              deviceDeactivationDate = "2024-05-18T00:00",
+              orderStart = "",
+              orderEnd = "",
+            ),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `it should return an empty result when no persons exist`() {
+      stubQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        "athenaResponses/persons.device-activations.empty.success.json",
+      )
+
+      val sqlExpressions = stubPagedPersonS3Select(
+        personRows = emptyList(),
+      )
+
+      val result = webTestClient.get()
+        .uri("/persons?name=name&page=0&pageSize=1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CASELOAD__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<PagedResponse<PersonResponse>>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.data).isNotNull()
+      assertThat(result.data).hasSize(0)
+      assertThat(result.pageCount).isEqualTo(0)
+      assertThat(result.pageSize).isEqualTo(1)
+      assertThat(result.pageNumber).isEqualTo(0)
+      assertThat(sqlExpressions).containsExactly(
+        "SELECT * FROM s3object WHERE CAST(row_number AS INT) > 0 LIMIT 1",
+        "SELECT COUNT(*) FROM s3object",
+      )
     }
 
     @Test
@@ -86,7 +252,11 @@ class PersonControllerTest : IntegrationTestBase() {
         "athenaResponses/persons.device-activations-sentinel-date-value.success.json",
       )
 
-      stubPagedPersonS3Select("9999-12-31 00:00:00.000")
+      stubPagedPersonS3Select(
+        listOf(
+          personCsvRow(deactivationDate = "9999-12-31 00:00:00.000"),
+        ),
+      )
 
       val result = webTestClient.get()
         .uri("/persons?name=name")
@@ -304,29 +474,61 @@ class PersonControllerTest : IntegrationTestBase() {
     }
   }
 
-  private fun stubPagedPersonS3Select(deviceDeactivationDate: String) {
-    val personRow = listOf(
-      "1",
-      "first_name",
-      "last_name",
-      "nomis_id",
-      "pnc_id",
-      "2000-05-29",
-      "responsible_officer_name",
-      "zip",
-      "city",
-      "street",
-      "12345",
-      "54321",
-      "987654321",
-      "2023-05-18 00:00:00.000",
-      deviceDeactivationDate,
-      "1",
-    ).joinToString(",")
+  private fun stubPagedPersonS3Select(
+    personRows: List<List<String>>,
+    totalRecords: Int = personRows.size,
+    offset: Int = 0,
+    limit: Int = 1,
+  ): List<String> {
+    val sqlExpressions = mutableListOf<String>()
 
     whenever(s3AsyncService.selectObjectContent(any(), any(), any())).thenAnswer { invocation ->
       val sqlExpression = invocation.getArgument<String>(2)
-      if (sqlExpression.contains("COUNT(*)")) "1\n" else "$personRow\n"
+      sqlExpressions += sqlExpression
+
+      if (sqlExpression.contains("COUNT(*)")) {
+        "$totalRecords\n"
+      } else {
+        personRows
+          .filter { it.last().toInt() > offset }
+          .take(limit)
+          .joinToString(separator = "") { rowAsCsv(it) }
+      }
     }
+
+    return sqlExpressions
+  }
+
+  private fun personCsvRow(
+    personId: String = "1",
+    firstName: String = "first_name",
+    lastName: String = "last_name",
+    street: String = "street",
+    deactivationDate: String = "2024-05-18 00:00:00.000",
+    rowNumber: Int = 1,
+  ): List<String> = listOf(
+    personId,
+    firstName,
+    lastName,
+    "nomis_id",
+    "pnc_id",
+    "2000-05-29",
+    "responsible_officer_name",
+    "zip",
+    "city",
+    street,
+    "12345",
+    "54321",
+    "987654321",
+    "2023-05-18 00:00:00.000",
+    deactivationDate,
+    rowNumber.toString(),
+  )
+
+  private fun rowAsCsv(row: List<String>): String = StringWriter().use { writer ->
+    CSVPrinter(writer, CSVFormat.DEFAULT).use { printer ->
+      printer.printRecord(row)
+    }
+    writer.toString()
   }
 }
