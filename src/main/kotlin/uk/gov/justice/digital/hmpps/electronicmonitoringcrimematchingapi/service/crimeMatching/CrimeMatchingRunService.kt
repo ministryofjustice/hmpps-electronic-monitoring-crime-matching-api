@@ -88,6 +88,7 @@ class CrimeMatchingRunService(
       deviceId = wearerDto.deviceId,
       deviceSerialNumber = wearerDto.deviceSerialNumber,
       deviceName = wearerDto.deviceName,
+      deviceModelName = wearerDto.deviceModelName,
       identifier = wearerDto.identifier,
       name = wearerDto.name,
       nomisId = wearerDto.nomisId,

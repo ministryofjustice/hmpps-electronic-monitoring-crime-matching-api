@@ -43,6 +43,9 @@ class CrimeMatchingResultDeviceWearer(
   val deviceName: String,
 
   @Column(nullable = false)
+  val deviceModelName: String,
+
+  @Column(nullable = false)
   val identifier: String,
 
   @Column(nullable = false)

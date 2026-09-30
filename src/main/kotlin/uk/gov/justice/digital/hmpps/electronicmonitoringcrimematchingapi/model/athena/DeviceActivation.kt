@@ -6,6 +6,7 @@ object DeviceActivation : Table(name = "device_activations") {
   val deviceActivationId = long("device_activation_id")
   val deviceId = long("device_id")
   val deviceSerialNumber = varchar("device_serial_number")
+  val deviceModelName = varchar("device_model_name")
   val personId = long("person_id")
   val deviceActivationDate = date("device_activation_date")
   val deviceDeactivationDate = date("device_deactivation_date")

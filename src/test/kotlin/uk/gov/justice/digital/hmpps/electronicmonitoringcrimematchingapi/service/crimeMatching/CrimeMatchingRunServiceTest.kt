@@ -175,6 +175,7 @@ class CrimeMatchingRunServiceTest {
                 deviceId = 604008982,
                 deviceSerialNumber = "123456789",
                 deviceName = "deviceName",
+                deviceModelName = "deviceModelName",
                 identifier = "identifier",
                 name = "Richard Gibbons",
                 nomisId = "A5128CZ",

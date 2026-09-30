@@ -26,6 +26,7 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
       DeviceActivation.deviceId,
       DeviceActivation.deviceActivationId,
       DeviceActivation.deviceSerialNumber,
+      DeviceActivation.deviceModelName,
       DeviceActivation.deviceActivationDate,
       DeviceActivation.deviceDeactivationDate,
     )
@@ -73,6 +74,7 @@ class GetPersonsQueryBuilder(private val personsQueryCriteria: PersonsQueryCrite
         DeviceActivation.deviceId,
         DeviceActivation.deviceActivationId,
         DeviceActivation.deviceSerialNumber,
+        DeviceActivation.deviceModelName,
         DeviceActivation.deviceActivationDate,
         DeviceActivation.deviceDeactivationDate,
       )

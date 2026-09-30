@@ -19,6 +19,7 @@ interface CrimeMatchingResultProjection {
   val dateOfBirth: LocalDateTime?
   val deviceId: Long
   val deviceSerialNumber: String
+  val deviceModelName: String
   val deviceName: String
   val identifier: String
   val name: String

@@ -124,6 +124,7 @@ class CrimeMatchingResultMapperTest {
     deviceId: Long = 1L,
     deviceSerialNumber: String = "SERIAL123",
     deviceName: String = "Device Name",
+    deviceModelName: String = "Device Model Name",
     identifier: String = "ID123",
     name: String = "Test Name",
     nomisId: String = "NOMIS123",
@@ -145,6 +146,7 @@ class CrimeMatchingResultMapperTest {
     override val deviceId = deviceId
     override val deviceSerialNumber = deviceSerialNumber
     override val deviceName = deviceName
+    override val deviceModelName = deviceModelName
     override val identifier = identifier
     override val name = name
     override val nomisId = nomisId

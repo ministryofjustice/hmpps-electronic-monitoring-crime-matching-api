@@ -40,6 +40,7 @@ class CrimeMatchingResultMapper(
       deviceId = matchingResult.deviceId,
       deviceSerialNumber = matchingResult.deviceSerialNumber,
       deviceName = matchingResult.deviceName,
+      deviceModelName = matchingResult.deviceModelName,
       subjectId = matchingResult.identifier,
       subjectName = matchingResult.name,
       subjectNomisId = matchingResult.nomisId,
