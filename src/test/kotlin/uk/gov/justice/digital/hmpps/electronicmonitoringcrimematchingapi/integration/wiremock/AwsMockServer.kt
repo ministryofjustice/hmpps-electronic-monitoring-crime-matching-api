@@ -148,4 +148,25 @@ class AwsMockServer : WireMockServer(WIREMOCK_CONFIG) {
         ),
     )
   }
+
+  // Simulates Athena's GetQueryResults NextToken pagination by returning each response file
+  // in sequence, one per page, regardless of how many pages are requested.
+  fun stubAthenaGetQueryResultsPages(responseFiles: List<String>) {
+    responseFiles.forEachIndexed { index, responseFile ->
+      stubFor(
+        post(
+          urlPathEqualTo("/"),
+        )
+          .withHeader("X-Amz-Target", equalTo("AmazonAthena.GetQueryResults"))
+          .inScenario("GetQueryResultsPages")
+          .whenScenarioStateIs(if (index == 0) Scenario.STARTED else "PAGE$index")
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withBodyFile(responseFile),
+          )
+          .willSetStateTo("PAGE${index + 1}"),
+      )
+    }
+  }
 }
