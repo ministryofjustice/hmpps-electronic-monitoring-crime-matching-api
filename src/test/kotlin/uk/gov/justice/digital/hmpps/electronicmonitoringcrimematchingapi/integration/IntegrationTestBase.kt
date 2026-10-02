@@ -117,6 +117,18 @@ abstract class IntegrationTestBase {
     awsMockServer.stubAthenaGetQueryExecution(1, "FAILED")
   }
 
+  protected fun stubPagedQueryExecution(
+    queryExecutionId: String,
+    retryCount: Int,
+    finalQueryExecutionStatus: String,
+    queryResponseFiles: List<String>,
+    outputLocation: String = "s3://test-output-bucket/$queryExecutionId.csv",
+  ) {
+    awsMockServer.stubAthenaStartQueryExecution(queryExecutionId)
+    awsMockServer.stubAthenaGetQueryExecution(retryCount, finalQueryExecutionStatus, outputLocation)
+    awsMockServer.stubAthenaGetQueryResultsPages(queryResponseFiles)
+  }
+
   protected fun verifyAthenaStartQueryExecutionCount(
     count: Int,
   ) {

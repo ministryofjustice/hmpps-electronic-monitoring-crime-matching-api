@@ -386,6 +386,56 @@ class DeviceActivationControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return all positions across multiple Athena GetQueryResults pages`() {
+      stubPagedQueryExecution(
+        "123",
+        1,
+        "SUCCEEDED",
+        listOf(
+          "athenaResponses/device-activation.positions.page1.success.json",
+          "athenaResponses/device-activation.positions.page2.success.json",
+        ),
+      )
+
+      val result = webTestClient.get()
+        .uri("/device-activations/1/positions")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DEVICE_ACTIVATIONS__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<Response<List<PositionResponse>>>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.data).isEqualTo(
+        listOf(
+          PositionResponse(
+            positionId = 1,
+            latitude = 51.574865,
+            longitude = 0.060977,
+            precision = 100,
+            speed = 1,
+            direction = 52,
+            timestamp = "2025-09-10T07:51:08Z",
+            geolocationMechanism = "GPS",
+          ),
+          PositionResponse(
+            positionId = 2,
+            latitude = 51.574153,
+            longitude = 0.058536,
+            precision = 400,
+            speed = 10,
+            direction = 27,
+            timestamp = "2025-09-08T17:30:07Z",
+            geolocationMechanism = "RF",
+          ),
+        ),
+      )
+
+      verifyAthenaGetQueryResultsCount(2)
+    }
+
+    @Test
     fun `it should return a BAD_REQUEST response if geolocation mechanism is not valid`() {
       stubQueryExecution(
         "123",

@@ -138,15 +138,31 @@ class EmDatastoreClient(
     }
   }
 
+  // Athena's GetQueryResults API caps each response at 1000 rows. Loop through all
+  // pages using the returned NextToken until the full result set has been retrieved.
   @Throws(AthenaClientException::class)
   private fun retrieveResults(queryExecutionId: String): ResultSet {
     try {
-      val getQueryResultsRequest = GetQueryResultsRequest.builder()
-        .queryExecutionId(queryExecutionId)
-        .build()
+      val rows = mutableListOf<Row>()
+      var resultSetMetadata: ResultSetMetadata? = null
+      var nextToken: String? = null
 
-      val queryResults: GetQueryResultsResponse = athenaClient.getQueryResults(getQueryResultsRequest)
-      return queryResults.resultSet()
+      do {
+        val getQueryResultsRequest = GetQueryResultsRequest.builder()
+          .queryExecutionId(queryExecutionId)
+          .nextToken(nextToken)
+          .build()
+
+        val queryResults: GetQueryResultsResponse = athenaClient.getQueryResults(getQueryResultsRequest)
+        resultSetMetadata = queryResults.resultSet().resultSetMetadata()
+        rows.addAll(queryResults.resultSet().rows())
+        nextToken = queryResults.nextToken()
+      } while (nextToken != null)
+
+      return ResultSet.builder()
+        .resultSetMetadata(resultSetMetadata)
+        .rows(rows)
+        .build()
     } catch (e: AthenaException) {
       throw AthenaClientException("Error submitting query to Athena: ${e.message}")
     }
