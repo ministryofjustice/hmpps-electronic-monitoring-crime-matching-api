@@ -12,7 +12,6 @@ import software.amazon.awssdk.services.athena.model.Datum
 import software.amazon.awssdk.services.athena.model.GetQueryExecutionRequest
 import software.amazon.awssdk.services.athena.model.GetQueryExecutionResponse
 import software.amazon.awssdk.services.athena.model.GetQueryResultsRequest
-import software.amazon.awssdk.services.athena.model.GetQueryResultsResponse
 import software.amazon.awssdk.services.athena.model.QueryExecutionContext
 import software.amazon.awssdk.services.athena.model.QueryExecutionState
 import software.amazon.awssdk.services.athena.model.ResultConfiguration
@@ -138,26 +137,18 @@ class EmDatastoreClient(
     }
   }
 
-  // Athena's GetQueryResults API caps each response at 1000 rows. Loop through all
-  // pages using the returned NextToken until the full result set has been retrieved.
+  // Athena's GetQueryResults API caps each response at 1000 rows. The SDK's paginator
+  // transparently follows NextToken under the hood until the full result set is retrieved.
   @Throws(AthenaClientException::class)
   private fun retrieveResults(queryExecutionId: String): ResultSet {
     try {
-      val rows = mutableListOf<Row>()
-      var resultSetMetadata: ResultSetMetadata? = null
-      var nextToken: String? = null
+      val getQueryResultsRequest = GetQueryResultsRequest.builder()
+        .queryExecutionId(queryExecutionId)
+        .build()
 
-      do {
-        val getQueryResultsRequest = GetQueryResultsRequest.builder()
-          .queryExecutionId(queryExecutionId)
-          .nextToken(nextToken)
-          .build()
-
-        val queryResults: GetQueryResultsResponse = athenaClient.getQueryResults(getQueryResultsRequest)
-        resultSetMetadata = queryResults.resultSet().resultSetMetadata()
-        rows.addAll(queryResults.resultSet().rows())
-        nextToken = queryResults.nextToken()
-      } while (nextToken != null)
+      val responses = athenaClient.getQueryResultsPaginator(getQueryResultsRequest).toList()
+      val rows = responses.flatMap { it.resultSet().rows() }
+      val resultSetMetadata = responses.first().resultSet().resultSetMetadata()
 
       return ResultSet.builder()
         .resultSetMetadata(resultSetMetadata)
