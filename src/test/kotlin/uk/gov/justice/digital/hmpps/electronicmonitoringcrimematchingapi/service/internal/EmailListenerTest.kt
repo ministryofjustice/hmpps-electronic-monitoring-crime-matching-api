@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchIngestionAttempt
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.MatchingNotificationService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchCsvService
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.crimeBatch.CrimeBatchEmailIngestionService
@@ -143,7 +144,7 @@ class EmailListenerTest {
         EmailIngestionOutcome(
           batchId = crimeBatch.batchId,
           crimeBatchId = crimeBatch.id.toString(),
-          policeForce = "Metropolitan Police Service",
+          policeForce = PoliceForce.METROPOLITAN,
           emailData = emailParserService.extractEmailData(
             createEmailFile(encoded).byteInputStream(),
           ),
@@ -238,7 +239,7 @@ class EmailListenerTest {
         EmailIngestionOutcome(
           batchId = crimeBatch.batchId,
           crimeBatchId = crimeBatch.id.toString(),
-          policeForce = "Metropolitan Police Service",
+          policeForce = PoliceForce.METROPOLITAN,
           emailData = emailParserService.extractEmailData(
             createEmailFile(csvContent = encoded, subject = "Crime Mapping Request").byteInputStream(),
           ),
