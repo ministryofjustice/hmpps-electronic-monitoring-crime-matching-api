@@ -9,6 +9,14 @@ generic-service:
   ingress:
     host: electronic-monitoring-crime-matching-api-preprod.hmpps.service.justice.gov.uk
 
+  scheduledDowntime:
+    enabled: true
+
+  allowlist:
+    groups:
+      - global_protect
+      - moj_cloud_platform
+
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
     HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
