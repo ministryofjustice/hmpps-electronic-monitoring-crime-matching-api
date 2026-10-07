@@ -51,6 +51,14 @@ class EmailNotificationServiceTest {
     whenever(notifyProperties.failedIngestionTemplateId).thenReturn("failedTemplateId")
     whenever(notifyProperties.partialIngestionTemplateId).thenReturn("partialTemplateId")
     whenever(notifyProperties.errorIngestionTemplateId).thenReturn("errorTemplateId")
+    whenever(notifyProperties.kentEmailAddress).thenReturn("kent@email.com")
+    whenever(notifyProperties.policeForceRecipientEmails).thenReturn(
+      mapOf(
+        PoliceForce.BEDFORDSHIRE.name to listOf("bedfordshire@email.com"),
+        PoliceForce.METROPOLITAN.name to listOf("metropolitan@email.com"),
+        PoliceForce.ESSEX.name to listOf("essex@email.com"),
+      ),
+    )
     whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
     notifyClient = Mockito.mock(NotificationClient::class.java)
     emailOutboxRepository = Mockito.mock(EmailOutboxRepository::class.java)
@@ -64,8 +72,8 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
 
     val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
+      sender = "hub@email.com",
+      originalSender = "bedfordshire@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -93,7 +101,7 @@ class EmailNotificationServiceTest {
 
       val ingestionOutcome = EmailIngestionOutcome(
         batchId = "batchId",
-        policeForce = "BEDFORDSHIRE",
+        policeForce = PoliceForce.BEDFORDSHIRE,
         emailData = emailData,
         ingestionStatus = IngestionStatus.SUCCESSFUL,
       )
@@ -109,8 +117,8 @@ class EmailNotificationServiceTest {
       service.sendEmails()
     }
 
-    verify(notifyClient, times(1)).sendEmail("templateId", "sender", personalisation, "batchId")
-    verify(notifyClient, times(1)).sendEmail("templateId", "originalSender", personalisation, "batchId")
+    verify(notifyClient, times(1)).sendEmail("templateId", "hub@email.com", personalisation, "batchId")
+    verify(notifyClient, times(1)).sendEmail("templateId", "bedfordshire@email.com", personalisation, "batchId")
   }
 
   @Test
@@ -120,8 +128,8 @@ class EmailNotificationServiceTest {
     val batchId = "batchId"
 
     val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
+      sender = "hub@email.com",
+      originalSender = "bedfordshire@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -136,7 +144,7 @@ class EmailNotificationServiceTest {
 
     val ingestionOutcome = EmailIngestionOutcome(
       batchId = "batchId",
-      policeForce = "BEDFORDSHIRE",
+      policeForce = PoliceForce.BEDFORDSHIRE,
       emailData = emailData,
       ingestionStatus = IngestionStatus.SUCCESSFUL,
     )
@@ -147,52 +155,7 @@ class EmailNotificationServiceTest {
       service.createEmailOutboxRequest(ingestionOutcome)
       verify(emailOutboxRepository, times(0)).save(outboxCaptor.capture())
     }
-    verify(notifyClient, times(0)).sendEmail("templateId", "sender", personalisation, batchId)
-  }
-
-  @Test
-  fun `it should send a failed ingestion email when notify is enabled`() {
-    whenever(notifyProperties.enabled).thenReturn(true)
-
-    val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
-      subject = "subject",
-      sentAt = Date.from(Instant.now()),
-      attachments = emptyList(),
-    )
-
-    val personalisation = mapOf(
-      "fileName" to "Invalid File",
-      "ingestionDate" to utcToday,
-      "batchId" to "Unknown due to an error",
-      "policeForce" to "Unknown due to an error",
-      "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
-      "totalCount" to 0,
-    )
-
-    val ingestionOutcome = EmailIngestionOutcome(
-      batchId = "Unknown due to an error",
-      policeForce = "Unknown due to an error",
-      emailData = emailData,
-      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
-      ingestionStatus = IngestionStatus.FAILED,
-    )
-
-    assertDoesNotThrow {
-      val outboxCaptor = argumentCaptor<EmailOutbox>()
-
-      service.createEmailOutboxRequest(ingestionOutcome)
-      verify(emailOutboxRepository, times(2)).save(outboxCaptor.capture())
-      val claimedRows = outboxCaptor.allValues
-      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
-      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
-
-      service.sendEmails()
-    }
-
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(0)).sendEmail("templateId", "hub@email.com", personalisation, batchId)
   }
 
   @Test
@@ -213,8 +176,8 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
 
     val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
+      sender = "hub@email.com",
+      originalSender = "metropolitan@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -236,7 +199,7 @@ class EmailNotificationServiceTest {
 
       val ingestionOutcome = EmailIngestionOutcome(
         batchId = batchId,
-        policeForce = PoliceForce.METROPOLITAN.name,
+        policeForce = PoliceForce.METROPOLITAN,
         emailData = emailData,
         errors = errors,
         ingestionStatus = IngestionStatus.PARTIAL,
@@ -255,8 +218,8 @@ class EmailNotificationServiceTest {
       // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
       staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
 
-      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("sender"), any(), eq(batchId))
-      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("originalSender"), any(), eq(batchId))
+      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("hub@email.com"), any(), eq(batchId))
+      verify(notifyClient, times(1)).sendEmail(eq("partialTemplateId"), eq("metropolitan@email.com"), any(), eq(batchId))
     }
   }
 
@@ -278,8 +241,8 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
 
     val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
+      sender = "hub@email.com",
+      originalSender = "bedfordshire@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -319,7 +282,7 @@ class EmailNotificationServiceTest {
 
       val ingestionOutcome = EmailIngestionOutcome(
         batchId = batchId,
-        policeForce = PoliceForce.METROPOLITAN.name,
+        policeForce = PoliceForce.METROPOLITAN,
         emailData = emailData,
         errors = errors,
         ingestionStatus = IngestionStatus.PARTIAL,
@@ -339,8 +302,8 @@ class EmailNotificationServiceTest {
       staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
     }
 
-    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "sender", personalisation, batchId)
-    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "originalSender", personalisation, batchId)
+    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "hub@email.com", personalisation, batchId)
+    verify(notifyClient, times(1)).sendEmail("partialTemplateId", "metropolitan@email.com", personalisation, batchId)
   }
 
   @Test
@@ -361,8 +324,8 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
 
     val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
+      sender = "hub@email.com",
+      originalSender = "metropolitan@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -402,7 +365,7 @@ class EmailNotificationServiceTest {
 
       val ingestionOutcome = EmailIngestionOutcome(
         batchId = batchId,
-        policeForce = PoliceForce.METROPOLITAN.name,
+        policeForce = PoliceForce.METROPOLITAN,
         emailData = emailData,
         errors = errors,
         ingestionStatus = IngestionStatus.ERROR,
@@ -422,8 +385,8 @@ class EmailNotificationServiceTest {
       staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
     }
 
-    verify(notifyClient, times(1)).sendEmail("errorTemplateId", "sender", personalisation, batchId)
-    verify(notifyClient, times(1)).sendEmail("errorTemplateId", "originalSender", personalisation, batchId)
+    verify(notifyClient, times(1)).sendEmail("errorTemplateId", "hub@email.com", personalisation, batchId)
+    verify(notifyClient, times(1)).sendEmail("errorTemplateId", "metropolitan@email.com", personalisation, batchId)
   }
 
   @Test
@@ -444,8 +407,8 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
 
     val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
+      sender = "hub@email.com",
+      originalSender = "metropolitan@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -467,7 +430,7 @@ class EmailNotificationServiceTest {
 
       val ingestionOutcome = EmailIngestionOutcome(
         batchId = batchId,
-        policeForce = PoliceForce.METROPOLITAN.name,
+        policeForce = PoliceForce.METROPOLITAN,
         emailData = emailData,
         errors = errors,
         ingestionStatus = IngestionStatus.ERROR,
@@ -486,19 +449,19 @@ class EmailNotificationServiceTest {
       // Now that we have an email outbox, we need to build the personalisation twice and can't share it between two calls to sendEmail:
       staticMock.verify({ NotificationClient.prepareUpload(any(), any()) }, times(2))
 
-      verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("sender"), any(), eq(batchId))
-      verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("originalSender"), any(), eq(batchId))
+      verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("hub@email.com"), any(), eq(batchId))
+      verify(notifyClient, times(1)).sendEmail(eq("errorTemplateId"), eq("metropolitan@email.com"), any(), eq(batchId))
     }
   }
 
   @Test
-  fun `it should not send an email to the original sender when the send police email flag is false`() {
+  fun `it should only email the hub when the send police email flag is false`() {
     whenever(notifyProperties.enabled).thenReturn(true)
     whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(false)
 
     val emailData = EmailData(
-      sender = "sender",
-      originalSender = "originalSender",
+      sender = "hub@email.com",
+      originalSender = "bedfordshire@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = emptyList(),
@@ -508,14 +471,14 @@ class EmailNotificationServiceTest {
       "fileName" to "Invalid File",
       "ingestionDate" to utcToday,
       "batchId" to "Unknown due to an error",
-      "policeForce" to "Unknown due to an error",
+      "policeForce" to PoliceForce.BEDFORDSHIRE.name,
       "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
       "totalCount" to 0,
     )
 
     val ingestionOutcome = EmailIngestionOutcome(
       batchId = "Unknown due to an error",
-      policeForce = "Unknown due to an error",
+      policeForce = PoliceForce.BEDFORDSHIRE,
       emailData = emailData,
       errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
       ingestionStatus = IngestionStatus.FAILED,
@@ -533,8 +496,100 @@ class EmailNotificationServiceTest {
       service.sendEmails()
     }
 
-    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "sender", personalisation, "Unknown due to an error")
-    verify(notifyClient, times(0)).sendEmail("failedTemplateId", "originalSender", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "hub@email.com", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(0)).sendEmail("failedTemplateId", "bedfordshire@email.com", personalisation, "Unknown due to an error")
+  }
+
+  @Test
+  fun `it should only email the hub when the ingestion has failed and the police force is unknown`() {
+    whenever(notifyProperties.enabled).thenReturn(true)
+    whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(false)
+
+    val emailData = EmailData(
+      sender = "hub@email.com",
+      originalSender = "bedfordshire@email.com",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val personalisation = mapOf(
+      "fileName" to "Invalid File",
+      "ingestionDate" to utcToday,
+      "batchId" to "Unknown due to an error",
+      "policeForce" to PoliceForce.UNKNOWN.label,
+      "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
+      "totalCount" to 0,
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = PoliceForce.UNKNOWN,
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    assertDoesNotThrow {
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(1)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+    }
+
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "hub@email.com", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(0)).sendEmail("failedTemplateId", "bedfordshire@email.com", personalisation, "Unknown due to an error")
+  }
+
+  @Test
+  fun `it should email the Kent recipient address when the ingestion has failed and the police force is Essex`() {
+    whenever(notifyProperties.enabled).thenReturn(true)
+
+    val emailData = EmailData(
+      sender = "hub@email.com",
+      originalSender = "essex@email.com",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val personalisation = mapOf(
+      "fileName" to "Invalid File",
+      "ingestionDate" to utcToday,
+      "batchId" to "Unknown due to an error",
+      "policeForce" to PoliceForce.ESSEX.name,
+      "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
+      "totalCount" to 0,
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = PoliceForce.ESSEX,
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    assertDoesNotThrow {
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(3)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+    }
+
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "hub@email.com", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "essex@email.com", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "kent@email.com", personalisation, "Unknown due to an error")
   }
 
   @Test
@@ -584,8 +639,8 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
 
     val emailData = EmailData(
-      sender = "sender@example.com",
-      originalSender = "originalSender@example.com",
+      sender = "hub@email.com",
+      originalSender = "bedfordshire@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -603,7 +658,7 @@ class EmailNotificationServiceTest {
 
       val ingestionOutcome = EmailIngestionOutcome(
         batchId = "batchId",
-        policeForce = "BEDFORDSHIRE",
+        policeForce = PoliceForce.BEDFORDSHIRE,
         emailData = emailData,
         ingestionStatus = IngestionStatus.SUCCESSFUL,
       )
@@ -636,8 +691,8 @@ class EmailNotificationServiceTest {
     attachment.name = "attachment.csv"
 
     val emailData = EmailData(
-      sender = "sender@example.com",
-      originalSender = "originalSender@example.com",
+      sender = "hub@email.com",
+      originalSender = "bedfordshire@email.com",
       subject = "subject",
       sentAt = Date.from(Instant.now()),
       attachments = listOf(attachment),
@@ -646,7 +701,7 @@ class EmailNotificationServiceTest {
     val batchId = "batchId"
     val ingestionOutcome = EmailIngestionOutcome(
       batchId = batchId,
-      policeForce = "BEDFORDSHIRE",
+      policeForce = PoliceForce.BEDFORDSHIRE,
       emailData = emailData,
       ingestionStatus = IngestionStatus.SUCCESSFUL,
     )

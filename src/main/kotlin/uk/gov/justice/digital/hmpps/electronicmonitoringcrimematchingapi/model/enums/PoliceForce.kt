@@ -96,6 +96,11 @@ enum class PoliceForce(val identifier: String, val label: String, val code: Stri
     "West Midlands",
     "WMP",
   ),
+  UNKNOWN(
+    "Unknown",
+    "Unknown due to an error",
+    "UNK",
+  ),
   ;
 
   companion object {

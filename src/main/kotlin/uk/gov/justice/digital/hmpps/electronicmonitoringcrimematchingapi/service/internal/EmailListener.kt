@@ -121,7 +121,7 @@ class EmailListener(
       val policeForce = parseResult.records.first().policeForce
       val status = if (parseResult.errors.isEmpty()) IngestionStatus.SUCCESSFUL else IngestionStatus.PARTIAL
       return EmailIngestionOutcome(
-        policeForce = policeForce.label,
+        policeForce = policeForce,
         errors = parseResult.errors,
         emailData = emailData,
         records = parseResult.records,

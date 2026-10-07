@@ -75,7 +75,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
     val ingestionOutcome = EmailIngestionOutcome(
       batchId = record.batchId,
-      policeForce = record.policeForce.label,
+      policeForce = record.policeForce,
       records = listOf(record),
       emailData = EmailData(
         sender = "sender@test.local",
@@ -229,7 +229,7 @@ class CrimeBatchEmailIngestionServiceTest {
 
   private fun givenIngestionOutcome(record: CrimeRecordRequest, ingestionStatus: IngestionStatus) = EmailIngestionOutcome(
     batchId = record.batchId,
-    policeForce = record.policeForce.label,
+    policeForce = record.policeForce,
     records = listOf(record),
     emailData = EmailData(
       sender = "sender@test.local",

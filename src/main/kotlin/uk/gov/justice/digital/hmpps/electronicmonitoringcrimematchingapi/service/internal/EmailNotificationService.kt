@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.EmailOutboxState
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.notifyEmailing.EmailOutboxRepository
 import uk.gov.service.notify.NotificationClient
@@ -104,7 +105,13 @@ class EmailNotificationService(
     val emailAddresses = buildList {
       add(ingestionOutcome.emailData.sender)
       if (featureFlagService.policeConfirmationEmailsEnabled()) {
-        add(ingestionOutcome.emailData.originalSender)
+        properties.policeForceRecipientEmails[ingestionOutcome.policeForce.name]?.forEach { emailAddress ->
+          add(emailAddress)
+        }
+        // Edge case for Kent IT team to receive Essex ingestion issues as they submit Essex batches
+        if (ingestionOutcome.policeForce == PoliceForce.ESSEX && ingestionOutcome.ingestionStatus != IngestionStatus.SUCCESSFUL) {
+          add(properties.kentEmailAddress)
+        }
       }
     }
     val ingestionDate = currentUtcDate()
@@ -119,7 +126,7 @@ class EmailNotificationService(
           ingestionDate = ingestionDate,
           fileName = ingestionOutcome.emailData.attachments.firstOrNull()?.name ?: "Invalid File",
           batchId = ingestionOutcome.batchId,
-          policeForce = ingestionOutcome.policeForce,
+          policeForce = if (ingestionOutcome.policeForce == PoliceForce.UNKNOWN) ingestionOutcome.policeForce.label else ingestionOutcome.policeForce.name,
           errorType = ingestionOutcome.errorType,
           records = ingestionOutcome.records,
           errors = ingestionOutcome.errors,
