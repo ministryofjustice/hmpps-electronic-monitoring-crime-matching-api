@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.EmailIngestionOutcome
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 
 @ActiveProfiles("test")
 class MetricsServiceTest {
@@ -33,7 +34,7 @@ class MetricsServiceTest {
     )
 
     val ingestionOutcome = EmailIngestionOutcome(
-      policeForce = "Bedfordshire",
+      policeForce = PoliceForce.BEDFORDSHIRE,
       ingestionStatus = IngestionStatus.SUCCESSFUL,
       emailData = emailData,
       records = emptyList(),

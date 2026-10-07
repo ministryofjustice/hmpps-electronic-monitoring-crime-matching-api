@@ -565,7 +565,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Verify Notify Emails
       notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
-      notifyMockServer.verifyEmailSentTo("test@email.com", 1)
+      notifyMockServer.verifyEmailSentTo("metropolitan@email.com", 1)
     }
 
     @Test
@@ -589,7 +589,7 @@ class EmailListenerTest : IntegrationTestBase() {
 
       // Verify Notify Emails
       notifyMockServer.verifyEmailSentTo("shared-mailbox@email.com", 1)
-      notifyMockServer.verifyEmailSentTo("test@email.com", 0)
+      notifyMockServer.verifyEmailSentTo("metropolitan@email.com", 0)
     }
 
     fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = emailQueueSqsClient.sendMessage(

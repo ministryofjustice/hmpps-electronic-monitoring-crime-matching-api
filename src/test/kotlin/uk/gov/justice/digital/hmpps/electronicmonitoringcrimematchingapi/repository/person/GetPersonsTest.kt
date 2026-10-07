@@ -13,7 +13,7 @@ class GetPersonsTest {
     val personsQueryCriteria = PersonsQueryCriteria(name = "foo")
     val query = GetPersonsQueryBuilder(
       personsQueryCriteria,
-    ).build()
+    ).buildPaginated()
 
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByNameLike,
@@ -26,7 +26,7 @@ class GetPersonsTest {
     val personsQueryCriteria = PersonsQueryCriteria(name = "Joe Bloggs")
     val query = GetPersonsQueryBuilder(
       personsQueryCriteria,
-    ).build()
+    ).buildPaginated()
 
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByNameTokensLike,
@@ -39,7 +39,7 @@ class GetPersonsTest {
     val personsQueryCriteria = PersonsQueryCriteria(name = "  Joe   Bloggs  ")
     val query = GetPersonsQueryBuilder(
       personsQueryCriteria,
-    ).build()
+    ).buildPaginated()
 
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByNameTokensLike,
@@ -52,7 +52,7 @@ class GetPersonsTest {
     val personsQueryCriteria = PersonsQueryCriteria(nomisId = "foo")
     val query = GetPersonsQueryBuilder(
       personsQueryCriteria,
-    ).build()
+    ).buildPaginated()
 
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByNomisIdLike,
@@ -65,7 +65,7 @@ class GetPersonsTest {
     val personsQueryCriteria = PersonsQueryCriteria(deviceId = "1")
     val query = GetPersonsQueryBuilder(
       personsQueryCriteria,
-    ).build()
+    ).buildPaginated()
 
     assertThat(query.queryString).isEqualTo(
       AthenaQueries.SelectPersonsByDeviceIdLike,

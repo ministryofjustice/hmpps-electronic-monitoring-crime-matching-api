@@ -5,6 +5,7 @@ data class CrimeMatchingResultResponse(
   val batchId: String,
   val crimeRef: String,
   val crimeType: String,
+  val crimeTypeDescription: String,
   val crimeDateTimeFrom: String,
   val crimeDateTimeTo: String,
   val crimeLatitude: Double,

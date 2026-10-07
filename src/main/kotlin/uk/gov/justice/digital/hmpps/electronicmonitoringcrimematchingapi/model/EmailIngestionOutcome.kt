@@ -4,12 +4,13 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.Cri
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.IngestionStatus
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 
 data class EmailIngestionOutcome(
   val batchId: String = "Unknown due to an error",
   val crimeBatchId: String = "Unknown due to an error",
-  val policeForce: String = "Unknown due to an error",
+  val policeForce: PoliceForce = PoliceForce.UNKNOWN,
   val errorType: CrimeBatchEmailIngestionErrorType = CrimeBatchEmailIngestionErrorType.UNKNOWN,
   val errors: List<EmailAttachmentIngestionError> = emptyList(),
   val emailData: EmailData,
