@@ -1,35 +1,50 @@
 NAMESPACE="${NAMESPACE:-hmpps-electronic-monitoring-crime-matching-dev}"
-SECRET_NAME="hmpps-electronic-monitoring-crime-matching-api-valid-ingestion-emails"
+POLICE_FORCE_EMAILS_SECRET_NAME="hmpps-electronic-monitoring-crime-matching-api-police-force-recipient-emails"
+KENT_EMAIL_SECRET_NAME="hmpps-electronic-monitoring-crime-matching-api-kent-email-address"
 DEPLOYMENT="deployment/hmpps-electronic-monitoring-crime-matching-api"
 
-# Delete existing secret
-kubectl -n $NAMESPACE \
-  delete secret $SECRET_NAME --ignore-not-found
+SPRING_APPLICATION_JSON='{
+  "notify": {
+    "police-force-recipient-emails": {
+      "AVON_AND_SOMERSET": ["xxx@justice.gov.uk"],
+      "BEDFORDSHIRE": ["xxx@justice.gov.uk"],
+      "CHESHIRE": ["xxx@justice.gov.uk"],
+      "CITY_OF_LONDON": ["xxx@justice.gov.uk"],
+      "CUMBRIA": ["xxx@justice.gov.uk"],
+      "DERBYSHIRE": ["xxx@justice.gov.uk"],
+      "DURHAM": ["xxx@justice.gov.uk"],
+      "ESSEX": ["xxx@justice.gov.uk"],
+      "GLOUCESTERSHIRE": ["xxx@justice.gov.uk"],
+      "GWENT": ["xxx@justice.gov.uk"],
+      "HAMPSHIRE": ["xxx@justice.gov.uk"],
+      "HERTFORDSHIRE": ["xxx@justice.gov.uk"],
+      "HUMBERSIDE": ["xxx@justice.gov.uk"],
+      "KENT": ["xxx@justice.gov.uk"],
+      "METROPOLITAN": ["xxx@justice.gov.uk"],
+      "NORTH_WALES": ["xxx@justice.gov.uk"],
+      "NOTTINGHAMSHIRE": ["xxx@justice.gov.uk"],
+      "SUSSEX": ["xxx@justice.gov.uk"],
+      "WEST_MIDLANDS": ["xxx@justice.gov.uk"]
+    }
+  }
+}'
 
-# Create new secret
-kubectl -n $NAMESPACE \
-  create secret generic $SECRET_NAME \
-  --from-literal="avon-and-somerset"=xxx@justice.gov.uk \
-  --from-literal="bedfordshire"=xxx@justice.gov.uk \
-  --from-literal="cheshire"=xxx@justice.gov.uk \
-  --from-literal="city-of-london"=xxx@justice.gov.uk \
-  --from-literal="cumbrian"=xxx@justice.gov.uk \
-  --from-literal="derbyshire"=xxx@justice.gov.uk \
-  --from-literal="durham"=xxx@justice.gov.uk \
-  --from-literal="essex"=xxx@justice.gov.uk \
-  --from-literal="gloucestershire"=xxx@justice.gov.uk \
-  --from-literal="gwent"=xxx@justice.gov.uk \
-  --from-literal="hampshire"=xxx@justice.gov.uk \
-  --from-literal="hertfordshire"=xxx@justice.gov.uk \
-  --from-literal="humberside"=xxx@justice.gov.uk \
-  --from-literal="kent"=xxx@justice.gov.uk \
-  --from-literal="metropolitan"=xxx@justice.gov.uk \
-  --from-literal="north-wales"=xxx@justice.gov.uk \
-  --from-literal="nottinghamshire"=xxx@justice.gov.uk \
-  --from-literal="sussex"=xxx@justice.gov.uk \
-  --from-literal="west-midlands"=xxx@justice.gov.uk
+# Delete existing secrets
+kubectl -n "$NAMESPACE" \
+  delete secret "$POLICE_FORCE_EMAILS_SECRET_NAME" --ignore-not-found
 
-# Refresh API pods (to pick up updated secret)
-kubectl -n $NAMESPACE \
-  rollout restart $DEPLOYMENT
+kubectl -n "$NAMESPACE" \
+  delete secret "$KENT_EMAIL_SECRET_NAME" --ignore-not-found
 
+# Create new secrets
+kubectl -n "$NAMESPACE" \
+  create secret generic "$POLICE_FORCE_EMAILS_SECRET_NAME" \
+  --from-literal="SPRING_APPLICATION_JSON=${SPRING_APPLICATION_JSON}"
+
+kubectl -n "$NAMESPACE" \
+  create secret generic "$KENT_EMAIL_SECRET_NAME" \
+  --from-literal="kent_email_address=xxx@justice.gov.uk"
+
+# Refresh API pods (to pick up updated secrets)
+kubectl -n "$NAMESPACE" \
+  rollout restart "$DEPLOYMENT"
