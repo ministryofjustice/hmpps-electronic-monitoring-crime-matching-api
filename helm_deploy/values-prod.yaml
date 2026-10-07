@@ -16,6 +16,10 @@ generic-service:
     FLIPT_URL: "https://feature-toggles.hmpps.service.justice.gov.uk"
     NOTIFY_API_ENABLED: "false"
 
+  namespace_secrets:
+    hmpps-electronic-monitoring-crime-matching-api-police-force-recipient-emails:
+      SPRING_APPLICATION_JSON: "SPRING_APPLICATION_JSON"
+
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:

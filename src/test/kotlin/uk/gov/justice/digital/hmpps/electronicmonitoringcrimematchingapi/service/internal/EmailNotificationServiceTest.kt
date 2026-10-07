@@ -51,10 +51,12 @@ class EmailNotificationServiceTest {
     whenever(notifyProperties.failedIngestionTemplateId).thenReturn("failedTemplateId")
     whenever(notifyProperties.partialIngestionTemplateId).thenReturn("partialTemplateId")
     whenever(notifyProperties.errorIngestionTemplateId).thenReturn("errorTemplateId")
+    whenever(notifyProperties.kentEmailAddress).thenReturn("kent@email.com")
     whenever(notifyProperties.policeForceRecipientEmails).thenReturn(
       mapOf(
         PoliceForce.BEDFORDSHIRE.name to listOf("bedfordshire@email.com"),
         PoliceForce.METROPOLITAN.name to listOf("metropolitan@email.com"),
+        PoliceForce.ESSEX.name to listOf("essex@email.com"),
       ),
     )
     whenever(featureFlagService.policeConfirmationEmailsEnabled()).thenReturn(true)
@@ -542,6 +544,52 @@ class EmailNotificationServiceTest {
 
     verify(notifyClient, times(1)).sendEmail("failedTemplateId", "hub@email.com", personalisation, "Unknown due to an error")
     verify(notifyClient, times(0)).sendEmail("failedTemplateId", "bedfordshire@email.com", personalisation, "Unknown due to an error")
+  }
+
+  @Test
+  fun `it should email the Kent recipient address when the ingestion has failed and the police force is Essex`() {
+    whenever(notifyProperties.enabled).thenReturn(true)
+
+    val emailData = EmailData(
+      sender = "hub@email.com",
+      originalSender = "essex@email.com",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val personalisation = mapOf(
+      "fileName" to "Invalid File",
+      "ingestionDate" to utcToday,
+      "batchId" to "Unknown due to an error",
+      "policeForce" to PoliceForce.ESSEX.name,
+      "errorSummary" to CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT.message,
+      "totalCount" to 0,
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = PoliceForce.ESSEX,
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    assertDoesNotThrow {
+      val outboxCaptor = argumentCaptor<EmailOutbox>()
+
+      service.createEmailOutboxRequest(ingestionOutcome)
+      verify(emailOutboxRepository, times(3)).save(outboxCaptor.capture())
+      val claimedRows = outboxCaptor.allValues
+      claimedRows.forEach { row -> row.claimedAt = Instant.now() }
+      whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), any(), any())).thenReturn(claimedRows)
+
+      service.sendEmails()
+    }
+
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "hub@email.com", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "essex@email.com", personalisation, "Unknown due to an error")
+    verify(notifyClient, times(1)).sendEmail("failedTemplateId", "kent@email.com", personalisation, "Unknown due to an error")
   }
 
   @Test

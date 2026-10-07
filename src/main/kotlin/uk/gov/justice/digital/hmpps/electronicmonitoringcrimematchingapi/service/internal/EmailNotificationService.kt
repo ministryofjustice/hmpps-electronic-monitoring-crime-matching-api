@@ -108,6 +108,10 @@ class EmailNotificationService(
         properties.policeForceRecipientEmails[ingestionOutcome.policeForce.name]?.forEach { emailAddress ->
           add(emailAddress)
         }
+        // Edge case for Kent IT team to receive Essex ingestion issues as they submit Essex batches
+        if (ingestionOutcome.policeForce == PoliceForce.ESSEX && ingestionOutcome.ingestionStatus != IngestionStatus.SUCCESSFUL) {
+          add(properties.kentEmailAddress)
+        }
       }
     }
     val ingestionDate = currentUtcDate()

@@ -53,6 +53,8 @@ generic-service:
       NOTIFY_API_KEY: "notify_api_key"
     hmpps-electronic-monitoring-crime-matching-api-mailbox-address:
       MAILBOX_ADDRESS: "mailbox_address"
+    hmpps-electronic-monitoring-crime-matching-api-kent-email-address:
+      KENT_EMAIL_ADDRESS: "kent_email_address"
 
   allowlist:
     groups:

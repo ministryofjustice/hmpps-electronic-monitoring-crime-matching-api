@@ -12,4 +12,5 @@ data class NotifyProperties(
   val errorIngestionTemplateId: String,
   val apikey: String,
   val policeForceRecipientEmails: Map<String, List<String>>,
+  val kentEmailAddress: String,
 )

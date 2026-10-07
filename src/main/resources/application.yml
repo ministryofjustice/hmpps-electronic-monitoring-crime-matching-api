@@ -83,6 +83,7 @@ notify:
   partialIngestionTemplateId: 02a53929-0984-4d55-bb02-94e6f10d31a8
   errorIngestionTemplateId: 0357bd00-d129-423f-8a6f-0e1761cc13f8
   police-force-recipient-emails: { }
+  kent-email-address: ${KENT_EMAIL_ADDRESS}
 
 flipt:
   url: ${FLIPT_URL}
