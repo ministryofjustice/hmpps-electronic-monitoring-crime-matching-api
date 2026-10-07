@@ -60,12 +60,18 @@ class EmailListener(
     // Record ingestion outcome
     metricsService.recordOutcome(ingestionOutcome)
 
-    matchingNotificationService.publishMatchingRequests()
+    try {
+      matchingNotificationService.publishMatchingRequests()
+    } catch (e: Exception) {
+      // Failure is handled gracefully as part of the Publish Matching Outbox flow
+      log.warn("Failed to complete Publish Matching on first attempt: ${e.message}", e)
+    }
 
     try {
       emailNotificationService.sendEmails()
-    } catch (notifyEx: Exception) {
-      log.warn("Failed to send failed ingestion notification email: ${notifyEx.message}", notifyEx)
+    } catch (e: Exception) {
+      // Failure is handled gracefully as part of the Email Outbox flow
+      log.warn("Failed to send notification emails on first attempt: ${e.message}", e)
     }
   }
 

@@ -380,4 +380,176 @@ class EmailListenerTest {
       assertThat(exception.message).isEqualTo("No redirect email")
     }
   }
+
+  @Test
+  fun `it should not throw an exception when the Publish Matching fails`() {
+    // The publish matching outbox flow covers exception cases, so the EmailListener should not throw an exception, otherwise the
+    // SQS message will be retried.
+    val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file"
+            }
+          }
+        }
+    """.trimIndent()
+    val messageId = UUID.randomUUID()
+    val sqsMessage = SqsMessage("Notification", message, messageId)
+
+    val csvContent = listOf(
+      createCsvRow(),
+    ).joinToString("\n")
+    val encoded = Base64.encode(csvContent.toByteArray())
+
+    val responseStream = ResponseInputStream(
+      GetObjectResponse.builder().build(),
+      createEmailFile(encoded).byteInputStream(),
+    )
+
+    val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+      bucket = "emails",
+      objectName = "email-file",
+    )
+
+    whenever(s3Service.getObject(messageId, "email-file", "emails")).thenReturn(responseStream)
+    whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
+      crimeBatchIngestionAttempt,
+    )
+
+    val crimeBatchEmail = CrimeBatchEmail(
+      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+    )
+
+    val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+      crimeBatchEmail = crimeBatchEmail,
+      fileName = "filename",
+      rowCount = 1,
+    )
+
+    val crimeBatch = CrimeBatch(
+      batchId = "batchId",
+      crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+    )
+
+    whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any())).thenReturn(
+      crimeBatchEmailAttachment,
+    )
+
+    whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
+      CrimeBatchEmail(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+      ),
+    )
+
+    whenever(crimeBatchEmailIngestionService.persistIngestion(any(), any())).thenReturn(
+      EmailIngestionOutcome(
+        batchId = crimeBatch.batchId,
+        crimeBatchId = crimeBatch.id.toString(),
+        policeForce = PoliceForce.METROPOLITAN,
+        emailData = emailParserService.extractEmailData(
+          createEmailFile(encoded).byteInputStream(),
+        ),
+        ingestionStatus = IngestionStatus.SUCCESSFUL,
+      ),
+    )
+
+    whenever(matchingNotificationService.publishMatchingRequests()).thenThrow(RuntimeException("Publish Matching failed"))
+    assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
+  }
+
+  @Test
+  fun `it should not throw an exception when the sending Gov Notify emails fails`() {
+    // The email outbox flow covers exception cases, so the EmailListener should not throw an exception, otherwise the
+    // SQS message will be retried.
+    val message = """
+        {
+          "receipt" : {
+            "action" : {
+              "bucketName" : "emails",
+              "objectKey" : "email-file"
+            }
+          }
+        }
+    """.trimIndent()
+    val messageId = UUID.randomUUID()
+    val sqsMessage = SqsMessage("Notification", message, messageId)
+
+    val csvContent = listOf(
+      createCsvRow(),
+    ).joinToString("\n")
+    val encoded = Base64.encode(csvContent.toByteArray())
+
+    val responseStream = ResponseInputStream(
+      GetObjectResponse.builder().build(),
+      createEmailFile(encoded).byteInputStream(),
+    )
+
+    val crimeBatchIngestionAttempt = CrimeBatchIngestionAttempt(
+      bucket = "emails",
+      objectName = "email-file",
+    )
+
+    whenever(s3Service.getObject(messageId, "email-file", "emails")).thenReturn(responseStream)
+    whenever(crimeBatchEmailIngestionService.createCrimeBatchIngestionAttempt("emails", "email-file")).thenReturn(
+      crimeBatchIngestionAttempt,
+    )
+
+    val crimeBatchEmail = CrimeBatchEmail(
+      crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+    )
+
+    val crimeBatchEmailAttachment = CrimeBatchEmailAttachment(
+      crimeBatchEmail = crimeBatchEmail,
+      fileName = "filename",
+      rowCount = 1,
+    )
+
+    val crimeBatch = CrimeBatch(
+      batchId = "batchId",
+      crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+    )
+
+    whenever(crimeBatchEmailIngestionService.createCrimeBatchEmailAttachment(any(), any(), any())).thenReturn(
+      crimeBatchEmailAttachment,
+    )
+
+    whenever(crimeBatchEmailIngestionService.createCrimeBatchEmail(any(), any())).thenReturn(
+      CrimeBatchEmail(
+        crimeBatchIngestionAttempt = crimeBatchIngestionAttempt,
+        sender = "sender",
+        originalSender = "originalSender",
+        subject = "subject",
+        sentAt = Date.from(Instant.now()),
+      ),
+    )
+
+    whenever(crimeBatchEmailIngestionService.persistIngestion(any(), any())).thenReturn(
+      EmailIngestionOutcome(
+        batchId = crimeBatch.batchId,
+        crimeBatchId = crimeBatch.id.toString(),
+        policeForce = PoliceForce.METROPOLITAN,
+        emailData = emailParserService.extractEmailData(
+          createEmailFile(encoded).byteInputStream(),
+        ),
+        ingestionStatus = IngestionStatus.SUCCESSFUL,
+      ),
+    )
+
+    whenever(emailNotificationService.sendEmails()).thenThrow(RuntimeException("Gov Notify email sending failed"))
+    assertDoesNotThrow { listener.receiveEmailNotification(sqsMessage) }
+  }
 }
