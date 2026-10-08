@@ -9,6 +9,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
@@ -19,6 +22,7 @@ import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.helpers.EmailData
@@ -33,9 +37,11 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.notifyEmailing.EmailOutboxRepository
 import uk.gov.service.notify.NotificationClient
+import uk.gov.service.notify.NotificationClientException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.Date
+import java.util.stream.Stream
 
 @ActiveProfiles("test")
 class EmailNotificationServiceTest {
@@ -869,6 +875,126 @@ class EmailNotificationServiceTest {
   }
 
   @Test
+  fun `it should transition the state of the outbox row to DEAD if the Gov Notify returns a 4xx error`() {
+    val exception400 = mock<NotificationClientException>()
+    whenever(exception400.httpResult).thenReturn(400)
+    whenever(exception400.message).thenReturn("400 Bad Request")
+    whenever(notifyClient.sendEmail(any(), any(), any(), any())).thenThrow(exception400)
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = PoliceForce.UNKNOWN,
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    val claimedRows = listOf(
+      EmailOutbox(
+        payload = mapper.writeValueAsString(
+          NotifyEmailRequest(
+            type = "NOTIFY_EMAIL_REQUEST",
+            emailAddress = ingestionOutcome.emailData.sender,
+            reference = ingestionOutcome.batchId,
+            ingestionStatus = ingestionOutcome.ingestionStatus,
+            ingestionDate = utcToday,
+            fileName = "example.csv",
+            batchId = ingestionOutcome.batchId,
+            policeForce = ingestionOutcome.policeForce.label,
+            errorType = ingestionOutcome.errorType,
+            records = ingestionOutcome.records,
+            errors = ingestionOutcome.errors,
+            recordCount = ingestionOutcome.recordCount,
+          ),
+        ),
+        state = EmailOutboxState.FAILED,
+        attempts = 0,
+        claimedAt = Instant.now(),
+      ),
+    )
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
+    assertDoesNotThrow {
+      service.sendEmails()
+    }
+
+    val stateCaptor = argumentCaptor<String>()
+    val attemptsCaptor = argumentCaptor<Int>()
+
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), stateCaptor.capture(), attemptsCaptor.capture(), any(), eq(0))
+    assertEquals(EmailOutboxState.DEAD.name, stateCaptor.firstValue)
+    assertEquals(1, attemptsCaptor.firstValue)
+  }
+
+  @ParameterizedTest(name = "it should transition the state of the outbox row to FAILED if the Gov Notify returns {1} ({0})")
+  @MethodSource("transientNotifyErrors")
+  fun `it should transition the state of the outbox row to FAILED for transient 4xx failures`(
+    statusCode: Int,
+    statusName: String,
+  ) {
+    val responseError = mock<NotificationClientException>()
+    whenever(responseError.httpResult).thenReturn(statusCode)
+    whenever(responseError.message).thenReturn("Transient failure: $statusName")
+    whenever(notifyClient.sendEmail(any(), any(), any(), any())).thenThrow(responseError)
+    val emailData = EmailData(
+      sender = "sender",
+      originalSender = "originalSender",
+      subject = "subject",
+      sentAt = Date.from(Instant.now()),
+      attachments = emptyList(),
+    )
+
+    val ingestionOutcome = EmailIngestionOutcome(
+      batchId = "Unknown due to an error",
+      policeForce = PoliceForce.UNKNOWN,
+      emailData = emailData,
+      errorType = CrimeBatchEmailIngestionErrorType.INVALID_ATTACHMENT,
+      ingestionStatus = IngestionStatus.FAILED,
+    )
+
+    val claimedRows = listOf(
+      EmailOutbox(
+        payload = mapper.writeValueAsString(
+          NotifyEmailRequest(
+            type = "NOTIFY_EMAIL_REQUEST",
+            emailAddress = ingestionOutcome.emailData.sender,
+            reference = ingestionOutcome.batchId,
+            ingestionStatus = ingestionOutcome.ingestionStatus,
+            ingestionDate = utcToday,
+            fileName = "example.csv",
+            batchId = ingestionOutcome.batchId,
+            policeForce = ingestionOutcome.policeForce.label,
+            errorType = ingestionOutcome.errorType,
+            records = ingestionOutcome.records,
+            errors = ingestionOutcome.errors,
+            recordCount = ingestionOutcome.recordCount,
+          ),
+        ),
+        state = EmailOutboxState.FAILED,
+        attempts = 0,
+        claimedAt = Instant.now(),
+      ),
+    )
+    whenever(emailOutboxRepository.claimEligibleRows(eq(EmailOutboxState.PENDING.name), eq(EmailOutboxState.FAILED.name), any<Int>(), any(), any())).thenReturn(claimedRows)
+    assertDoesNotThrow {
+      service.sendEmails()
+    }
+
+    val stateCaptor = argumentCaptor<String>()
+    val attemptsCaptor = argumentCaptor<Int>()
+
+    verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), stateCaptor.capture(), attemptsCaptor.capture(), any(), eq(0))
+    assertEquals(EmailOutboxState.FAILED.name, stateCaptor.firstValue)
+    assertEquals(1, attemptsCaptor.firstValue)
+  }
+
+  @Test
   fun `it should update the state of the outbox row to PUBLISHED if the publish happens successfully`() {
     val emailData = EmailData(
       sender = "sender",
@@ -914,5 +1040,14 @@ class EmailNotificationServiceTest {
       service.sendEmails()
     }
     verify(emailOutboxRepository, times(1)).completeClaimedRow(any(), any(), eq(EmailOutboxState.PUBLISHED.name), eq(1), eq(null), eq(0))
+  }
+
+  companion object {
+    @JvmStatic
+    fun transientNotifyErrors(): Stream<Arguments> = Stream.of(
+      Arguments.of(HttpStatus.REQUEST_TIMEOUT.value(), HttpStatus.REQUEST_TIMEOUT.reasonPhrase),
+      Arguments.of(HttpStatus.TOO_MANY_REQUESTS.value(), HttpStatus.TOO_MANY_REQUESTS.reasonPhrase),
+      Arguments.of(HttpStatus.TOO_EARLY.value(), HttpStatus.TOO_EARLY.reasonPhrase),
+    )
   }
 }

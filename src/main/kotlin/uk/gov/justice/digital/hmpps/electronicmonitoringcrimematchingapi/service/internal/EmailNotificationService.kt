@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.config.notify.NotifyProperties
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeRecordRequest
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.validation.EmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.notifyEmailing.EmailOutboxRepository
 import uk.gov.service.notify.NotificationClient
+import uk.gov.service.notify.NotificationClientException
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -64,12 +66,21 @@ class EmailNotificationService(
           reference = payloadEvent.reference,
         )
       } catch (e: Throwable) {
-        completeClaimedRow(
-          row,
-          row.attempts + 1,
-          if (row.attempts + 1 < MAX_EMAIL_ATTEMPTS) EmailOutboxState.FAILED else EmailOutboxState.DEAD,
-          e.message,
-        )
+        if (e is NotificationClientException && e.httpResult in 400..499 && e.httpResult !in setOf(HttpStatus.REQUEST_TIMEOUT.value(), HttpStatus.TOO_EARLY.value(), HttpStatus.TOO_MANY_REQUESTS.value())) {
+          completeClaimedRow(
+            row,
+            row.attempts + 1,
+            EmailOutboxState.DEAD,
+            e.message,
+          )
+        } else {
+          completeClaimedRow(
+            row,
+            row.attempts + 1,
+            if (row.attempts + 1 < MAX_EMAIL_ATTEMPTS) EmailOutboxState.FAILED else EmailOutboxState.DEAD,
+            e.message,
+          )
+        }
         return@forEach
       }
       completeClaimedRow(row, row.attempts + 1, EmailOutboxState.PUBLISHED, null)
