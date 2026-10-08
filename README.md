@@ -223,3 +223,7 @@ Current flags:
   - Prod: false
   - Preprod: true
   - Dev: true
+
+### Outboxes
+
+See [docs/outboxes.md](docs/outboxes.md) for details of the outbox design and local testing instructions.
