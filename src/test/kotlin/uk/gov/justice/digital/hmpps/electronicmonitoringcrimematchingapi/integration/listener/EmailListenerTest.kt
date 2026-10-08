@@ -545,7 +545,7 @@ class EmailListenerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should send emails to both the original and redirecting address when the police emails feature flag is true`() {
+    fun `it should send emails to both the original and the expected police force address when the police emails feature flag is true`() {
       val csvContent = listOf(
         createCsvRow(),
         createCsvRow(crimeReference = "CRI00000002"),

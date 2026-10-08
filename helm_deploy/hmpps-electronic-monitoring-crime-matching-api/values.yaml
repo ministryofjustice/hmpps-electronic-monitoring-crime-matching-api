@@ -55,6 +55,8 @@ generic-service:
       MAILBOX_ADDRESS: "mailbox_address"
     hmpps-electronic-monitoring-crime-matching-api-kent-email-address:
       KENT_EMAIL_ADDRESS: "kent_email_address"
+    hmpps-electronic-monitoring-crime-matching-api-police-force-recipient-emails:
+      SPRING_APPLICATION_JSON: "SPRING_APPLICATION_JSON"
 
   custommetrics:
     enabled: true
