@@ -55,6 +55,16 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return 405 if the wrong http method is used`() {
+      webTestClient.put()
+        .uri("/crime-versions?crimeRef=CRI")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__CRIMES__RO")))
+        .exchange()
+        .expectStatus()
+        .isEqualTo(405)
+    }
+
+    @Test
     fun `it should return an empty result when no crime versions exist`() {
       val body = webTestClient.get()
         .uri("/crime-versions?crimeRef=CRI")

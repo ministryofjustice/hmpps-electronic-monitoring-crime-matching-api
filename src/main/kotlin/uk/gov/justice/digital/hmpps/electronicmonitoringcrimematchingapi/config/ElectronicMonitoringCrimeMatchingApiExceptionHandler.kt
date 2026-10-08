@@ -6,10 +6,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
+import org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.util.ObjectUtils
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
@@ -108,6 +110,17 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.info("Response status exception with message {}", e.message) }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+  fun handleMethodNotAllowedException(e: HttpRequestMethodNotSupportedException): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(METHOD_NOT_ALLOWED)
+    .body(
+      ErrorResponse(
+        status = METHOD_NOT_ALLOWED,
+        userMessage = "HTTP method ${e.method} is not supported for this endpoint.",
+        developerMessage = e.message,
+      ),
+    ).also { log.error("Endpoint called with the wrong method exception", e) }
 
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
