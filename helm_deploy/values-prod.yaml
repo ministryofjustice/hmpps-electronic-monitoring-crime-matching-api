@@ -7,6 +7,11 @@ generic-service:
   ingress:
     host: electronic-monitoring-crime-matching-api.hmpps.service.justice.gov.uk
 
+  allowlist:
+    groups:
+      - global_protect
+      - moj_cloud_platform
+
   env:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     ATHENA_OUTPUT_BUCKET: "s3://emds-prod-athena-query-results-20240918073115959600000002"

@@ -54,10 +54,6 @@ generic-service:
     hmpps-electronic-monitoring-crime-matching-api-mailbox-address:
       MAILBOX_ADDRESS: "mailbox_address"
 
-  allowlist:
-    groups:
-      - internal
-
   custommetrics:
     enabled: true
     scrapeInterval: 15s
