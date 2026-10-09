@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.parser
 
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import java.time.Instant
 
+@Component
 class DocumentRequestParameterParser {
   fun parse(type: DocumentType, parameters: Map<String, Any>): DocumentRequestParameters = when (type) {
     DocumentType.CONTEXTUAL_REPORT -> parseContextualReportParameters(parameters)
