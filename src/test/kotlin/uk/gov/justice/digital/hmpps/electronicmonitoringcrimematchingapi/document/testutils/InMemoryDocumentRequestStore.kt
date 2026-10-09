@@ -12,7 +12,7 @@ class InMemoryDocumentRequestStore : DocumentRequestStore {
     return documentRequest
   }
 
-  fun findById(id: UUID): DocumentRequest? = requests[id]
+  override fun findById(id: UUID): DocumentRequest? = requests[id]
 
   fun findAll(): List<DocumentRequest> = requests.values.toList()
 }
