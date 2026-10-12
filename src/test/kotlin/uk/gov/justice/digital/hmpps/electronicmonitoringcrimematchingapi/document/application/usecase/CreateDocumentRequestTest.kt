@@ -4,7 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidDocumentRequestParametersException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidRequestException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.mapper.DocumentRequestMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.parser.DocumentRequestParameterParser
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
@@ -72,10 +73,10 @@ class CreateDocumentRequestTest {
     assertThatThrownBy {
       useCase.create(invalidCommand, "user123")
     }
-      .isInstanceOf(InvalidDocumentRequestParametersException::class.java)
+      .isInstanceOf(InvalidRequestException::class.java)
       .hasMessage("'deviceId' must be a positive integer")
 
-    assertThat(store.findAll()).isEmpty()
+    assertThat(store.findAll(pagination = PaginationRequest(page = 0, size = 20)).data).isEmpty()
   }
 
   @Test
@@ -89,7 +90,7 @@ class CreateDocumentRequestTest {
 
     // Then the two requests should have been created
     assertThat(first.id).isNotEqualTo(second.id)
-    assertThat(store.findAll()).hasSize(2)
+    assertThat(store.findAll(pagination = PaginationRequest(page = 0, size = 20)).data).hasSize(2)
   }
 
   private fun givenCreateDocumentRequestCommand(

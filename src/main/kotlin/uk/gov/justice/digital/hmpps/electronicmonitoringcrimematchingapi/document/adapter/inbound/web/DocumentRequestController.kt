@@ -9,11 +9,15 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.DocumentRequestSummary
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.CreateDocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.GetDocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.ListDocumentRequests
 import java.util.UUID
 
 @RestController
@@ -22,6 +26,7 @@ import java.util.UUID
 class DocumentRequestController(
   private val createDocumentRequest: CreateDocumentRequest,
   private val getDocumentRequest: GetDocumentRequest,
+  private val listDocumentRequests: ListDocumentRequests,
 ) {
   @PostMapping
   fun createDocumentRequest(
@@ -45,6 +50,21 @@ class DocumentRequestController(
     documentRequestId: UUID,
   ): ResponseEntity<DocumentRequestSummary> {
     val result = getDocumentRequest.get(documentRequestId)
+
+    return ResponseEntity.ok(result)
+  }
+
+  @GetMapping
+  fun listDocumentRequests(
+    @RequestParam(defaultValue = "0") page: Int,
+    @RequestParam(defaultValue = "20") size: Int,
+  ): ResponseEntity<PaginationResult<DocumentRequestSummary>> {
+    val result = listDocumentRequests.list(
+      PaginationRequest(
+        page = page,
+        size = size,
+      ),
+    )
 
     return ResponseEntity.ok(result)
   }

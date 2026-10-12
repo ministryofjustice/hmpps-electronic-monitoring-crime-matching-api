@@ -19,7 +19,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestNotFoundException
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidDocumentRequestParametersException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidRequestException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
@@ -81,9 +81,9 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
       ),
     ).also { log.info("Document request not found exception: {}", e.message) }
 
-  @ExceptionHandler(InvalidDocumentRequestParametersException::class)
-  fun handleInvalidDocumentRequestParametersException(
-    e: InvalidDocumentRequestParametersException,
+  @ExceptionHandler(InvalidRequestException::class)
+  fun handleInvalidRequestException(
+    e: InvalidRequestException,
   ): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(BAD_REQUEST)
     .body(
@@ -92,7 +92,7 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
         userMessage = "Bad Request",
         developerMessage = e.message,
       ),
-    ).also { log.info("Invalid document request parameters exception: {}", e.message) }
+    ).also { log.info("Invalid request exception: {}", e.message) }
 
   @ExceptionHandler(HttpMessageNotReadableException::class)
   fun handleHttpMessageNotReadableException(

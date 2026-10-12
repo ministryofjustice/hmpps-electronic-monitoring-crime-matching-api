@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.persistence.DocumentRequestEntity
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.persistence.DocumentRequestRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.DocumentRequestSummary
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
@@ -229,20 +230,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       // Given an existing document request
       val id = UUID.randomUUID()
 
-      repository.save(
-        DocumentRequestEntity(
-          id = id,
-          type = DocumentType.CONTEXTUAL_REPORT,
-          status = DocumentRequestStatus.PENDING,
-          parameters = mapOf(
-            "deviceId" to 123456,
-            "from" to "2026-10-01T08:00:00Z",
-            "to" to "2026-10-02T08:00:00Z",
-          ),
-          createdBy = "test",
-          createdAt = Instant.parse("2026-10-08T12:00:00Z"),
-        ),
-      )
+      repository.save(givenDocumentRequestEntity(id))
 
       // When the request is retrieved
       val response = webTestClient.get()
@@ -283,4 +271,130 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
         .isBadRequest
     }
   }
+
+  @Nested
+  @DisplayName("GET /document-requests")
+  inner class ListDocumentRequests {
+    @Test
+    fun `it should return a 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri("/document-requests")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri("/document-requests")
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return a paginated list of document requests`() {
+      // Given three document requests
+      val requests = (1..3).map { day ->
+        givenDocumentRequestEntity(
+          createdAt = Instant.parse("2026-10-0${day}T12:00:00Z"),
+        ).also(repository::save)
+      }
+
+      // When the first page is requested
+      val response = webTestClient.get()
+        .uri("/document-requests?page=0&size=2")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<PaginationResult<DocumentRequestSummary>>()
+        .returnResult()
+        .responseBody!!
+
+      // Then the most recent requests should be returned
+      assertThat(response.data.map { it.id }).containsExactly(
+        requests[2].id.toString(),
+        requests[1].id.toString(),
+      )
+      assertThat(response.pageCount).isEqualTo(2)
+      assertThat(response.pageNumber).isEqualTo(0)
+      assertThat(response.pageSize).isEqualTo(2)
+    }
+
+    @Test
+    fun `it should return the second page of document requests`() {
+      // Given three document requests
+      val requests = (1..3).map { day ->
+        givenDocumentRequestEntity(
+          createdAt = Instant.parse("2026-10-0${day}T12:00:00Z"),
+        ).also(repository::save)
+      }
+
+      // When the second page is requested
+      val response = webTestClient.get()
+        .uri("/document-requests?page=1&size=2")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<PaginationResult<DocumentRequestSummary>>()
+        .returnResult()
+        .responseBody!!
+
+      // Then the oldest request should be returned
+      assertThat(response.data.map { it.id }).containsExactly(
+        requests[0].id.toString(),
+      )
+      assertThat(response.pageCount).isEqualTo(2)
+      assertThat(response.pageNumber).isEqualTo(1)
+      assertThat(response.pageSize).isEqualTo(2)
+    }
+
+    @Test
+    fun `it should return an empty list when no document requests exist`() {
+      val response = webTestClient.get()
+        .uri("/document-requests")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<PaginationResult<DocumentRequestSummary>>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response.data).isEmpty()
+      assertThat(response.pageCount).isZero()
+      assertThat(response.pageNumber).isZero()
+      assertThat(response.pageSize).isEqualTo(20)
+    }
+
+    @Test
+    fun `it should return a 400 for invalid pagination parameters`() {
+      webTestClient.get()
+        .uri("/document-requests?page=-1&size=0")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+    }
+  }
+
+  private fun givenDocumentRequestEntity(
+    id: UUID = UUID.randomUUID(),
+    createdAt: Instant = Instant.parse("2026-10-08T12:00:00Z"),
+  ): DocumentRequestEntity = DocumentRequestEntity(
+    id = id,
+    type = DocumentType.CONTEXTUAL_REPORT,
+    status = DocumentRequestStatus.PENDING,
+    parameters = mapOf(
+      "deviceId" to 123456,
+      "from" to "2026-10-01T08:00:00Z",
+      "to" to "2026-10-02T08:00:00Z",
+    ),
+    createdBy = "test",
+    createdAt = createdAt,
+  )
 }
