@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.util.ObjectUtils
 import org.springframework.web.HttpRequestMethodNotSupportedException
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidDocumentRequestParametersException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
@@ -66,6 +68,32 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.info("Entity not found exception: {}", e.message) }
+
+  @ExceptionHandler(InvalidDocumentRequestParametersException::class)
+  fun handleInvalidDocumentRequestParametersException(
+    e: InvalidDocumentRequestParametersException,
+  ): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_REQUEST)
+    .body(
+      ErrorResponse(
+        status = BAD_REQUEST,
+        userMessage = "Bad Request",
+        developerMessage = e.message,
+      ),
+    ).also { log.info("Invalid document request parameters exception: {}", e.message) }
+
+  @ExceptionHandler(HttpMessageNotReadableException::class)
+  fun handleHttpMessageNotReadableException(
+    e: HttpMessageNotReadableException,
+  ): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_REQUEST)
+    .body(
+      ErrorResponse(
+        status = BAD_REQUEST,
+        userMessage = "Invalid request body",
+        developerMessage = "Request body could not be deserialized",
+      ),
+    ).also { log.info("Invalid request body: {}", e.message) }
 
   @ExceptionHandler(AccessDeniedException::class)
   fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> = ResponseEntity
