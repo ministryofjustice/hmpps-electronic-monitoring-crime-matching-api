@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidDocumentRequestParametersException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.mapper.DocumentRequestMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.parser.DocumentRequestParameterParser
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
@@ -71,7 +72,7 @@ class CreateDocumentRequestTest {
     assertThatThrownBy {
       useCase.create(invalidCommand, "user123")
     }
-      .isInstanceOf(IllegalArgumentException::class.java)
+      .isInstanceOf(InvalidDocumentRequestParametersException::class.java)
       .hasMessage("'deviceId' must be a positive integer")
 
     assertThat(store.findAll()).isEmpty()

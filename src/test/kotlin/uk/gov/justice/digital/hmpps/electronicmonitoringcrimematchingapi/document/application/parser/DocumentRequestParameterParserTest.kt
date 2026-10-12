@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidDocumentRequestParametersException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import java.time.Instant
@@ -40,7 +41,7 @@ class DocumentRequestParameterParserTest {
         validParameters - "deviceId",
       )
     }
-      .isInstanceOf(IllegalArgumentException::class.java)
+      .isInstanceOf(InvalidDocumentRequestParametersException::class.java)
       .hasMessage("Missing or invalid 'deviceId' parameter")
   }
 
@@ -52,7 +53,7 @@ class DocumentRequestParameterParserTest {
         validParameters + ("deviceId" to "invalid"),
       )
     }
-      .isInstanceOf(IllegalArgumentException::class.java)
+      .isInstanceOf(InvalidDocumentRequestParametersException::class.java)
       .hasMessage("Missing or invalid 'deviceId' parameter")
   }
 
@@ -64,7 +65,7 @@ class DocumentRequestParameterParserTest {
         validParameters - "from",
       )
     }
-      .isInstanceOf(IllegalArgumentException::class.java)
+      .isInstanceOf(InvalidDocumentRequestParametersException::class.java)
       .hasMessage("Missing or invalid 'from' parameter")
   }
 
@@ -76,7 +77,7 @@ class DocumentRequestParameterParserTest {
         validParameters - "to",
       )
     }
-      .isInstanceOf(IllegalArgumentException::class.java)
+      .isInstanceOf(InvalidDocumentRequestParametersException::class.java)
       .hasMessage("Missing or invalid 'to' parameter")
   }
 
@@ -88,7 +89,7 @@ class DocumentRequestParameterParserTest {
         validParameters + ("to" to "2026-09-30T00:00:00Z"),
       )
     }
-      .isInstanceOf(IllegalArgumentException::class.java)
+      .isInstanceOf(InvalidDocumentRequestParametersException::class.java)
       .hasMessage("'from' must be before 'to'")
   }
 }

@@ -1,0 +1,30 @@
+meta {
+  name: Create document request (contextual - invalid date range)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/document-requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "type": "CONTEXTUAL_REPORT",
+    "parameters": {
+      "deviceId": 12345,
+      "from": "2024-01-02T00:00:00Z",
+      "to": "2024-01-01T11:59:59Z"
+    }
+  }
+}
+
+assert {
+  res.status: eq 400
+}
