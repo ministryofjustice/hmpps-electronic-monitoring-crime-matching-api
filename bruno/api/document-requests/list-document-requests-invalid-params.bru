@@ -1,11 +1,11 @@
 meta {
-  name: Get document requests
+  name: List document requests (invalid params)
   type: http
   seq: 2
 }
 
 get {
-  url: {{baseUrl}}/document-requests
+  url: {{baseUrl}}/document-requests?page=-1&size=10
   body: none
   auth: bearer
 }
@@ -15,5 +15,5 @@ auth:bearer {
 }
 
 assert {
-  res.status: eq 200
+  res.status: eq 400
 }
