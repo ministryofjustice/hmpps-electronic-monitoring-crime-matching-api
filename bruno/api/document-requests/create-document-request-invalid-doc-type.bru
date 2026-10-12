@@ -1,0 +1,26 @@
+meta {
+  name: Create document request (invalid doc type)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/document-requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "type": "UNKNOWN",
+    "parameters": {}
+  }
+}
+
+assert {
+  res.status: eq 400
+}
