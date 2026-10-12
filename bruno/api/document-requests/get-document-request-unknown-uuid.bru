@@ -1,0 +1,19 @@
+meta {
+  name: Get document request (unknown uuid)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/document-requests/e3c1c91c-f73d-4827-b45d-e713fe31c7c0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 404
+}

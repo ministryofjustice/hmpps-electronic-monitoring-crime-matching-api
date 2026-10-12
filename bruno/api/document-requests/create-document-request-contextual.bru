@@ -25,6 +25,11 @@ body:json {
   }
 }
 
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("documentRequestId", body.id);
+}
+
 assert {
   res.status: eq 202
   res.body: isObject
