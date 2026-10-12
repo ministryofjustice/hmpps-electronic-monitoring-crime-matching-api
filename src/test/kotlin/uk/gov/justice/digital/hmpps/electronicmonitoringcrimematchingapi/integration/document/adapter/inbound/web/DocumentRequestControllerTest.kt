@@ -8,17 +8,21 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.persistence.DocumentRequestEntity
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.persistence.DocumentRequestRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.DocumentRequestSummary
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import java.time.Instant
 import java.util.UUID
 
 class DocumentRequestControllerTest : IntegrationTestBase() {
 
   @Autowired
   private lateinit var repository: DocumentRequestRepository
+
+  private val role = "ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW"
 
   @BeforeEach
   fun setUp() {
@@ -91,7 +95,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       val request = webTestClient
         .post()
         .uri("/document-requests")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW")))
+        .headers(setAuthorisation(roles = listOf(role)))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(body)
         .exchange()
@@ -131,7 +135,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       // When the request is sent to the controller, then it should be rejected
       webTestClient.post()
         .uri("/document-requests")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW")))
+        .headers(setAuthorisation(roles = listOf(role)))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(body)
         .exchange()
@@ -160,7 +164,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       webTestClient
         .post()
         .uri("/document-requests")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW")))
+        .headers(setAuthorisation(roles = listOf(role)))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(body)
         .exchange()
@@ -186,7 +190,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       // When the request is sent to the controller, then it should be rejected
       webTestClient.post()
         .uri("/document-requests")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW")))
+        .headers(setAuthorisation(roles = listOf(role)))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(body)
         .exchange()
@@ -197,4 +201,88 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       assertThat(repository.count()).isZero()
     }
   }
+
+
+  @Nested
+  @DisplayName("GET /document-requests/{documentRequestId}")
+  inner class GetDocumentRequest {
+    @Test
+    fun `it should return a 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri("/document-requests/${UUID.randomUUID()}")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri("/document-requests/${UUID.randomUUID()}")
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should retrieve an existing document request`() {
+      // Given an existing document request
+      val id = UUID.randomUUID()
+
+      repository.save(
+        DocumentRequestEntity(
+          id = id,
+          type = DocumentType.CONTEXTUAL_REPORT,
+          status = DocumentRequestStatus.PENDING,
+          parameters = mapOf(
+            "deviceId" to 123456,
+            "from" to "2026-10-01T08:00:00Z",
+            "to" to "2026-10-02T08:00:00Z",
+          ),
+          createdBy = "test",
+          createdAt = Instant.parse("2026-10-08T12:00:00Z"),
+        ),
+      )
+
+      // When the request is retrieved
+      val response = webTestClient.get()
+        .uri("/document-requests/${id}")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<DocumentRequestSummary>()
+        .returnResult()
+        .responseBody!!
+
+      // Then the document request is returned
+      assertThat(response.id).isEqualTo(id.toString())
+      assertThat(response.type).isEqualTo(DocumentType.CONTEXTUAL_REPORT)
+      assertThat(response.status).isEqualTo(DocumentRequestStatus.PENDING)
+      assertThat(response.createdBy).isEqualTo("test")
+      assertThat(response.createdAt).isEqualTo(Instant.parse("2026-10-08T12:00:00Z"))
+    }
+
+    @Test
+    fun `it should return a 404 if the document request does not exist`() {
+      webTestClient.get()
+        .uri("/document-requests/${UUID.randomUUID()}")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `it should return a 400 if the document request ID is not a UUID`() {
+      webTestClient.get()
+        .uri("/document-requests/abc")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+    }
+  }
+
 }

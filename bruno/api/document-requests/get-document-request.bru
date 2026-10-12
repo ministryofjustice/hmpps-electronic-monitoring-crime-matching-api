@@ -1,0 +1,21 @@
+meta {
+  name: Get document request
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/document-requests/{{documentRequestId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq {{documentRequestId}}
+  res.body.status: eq PENDING
+}

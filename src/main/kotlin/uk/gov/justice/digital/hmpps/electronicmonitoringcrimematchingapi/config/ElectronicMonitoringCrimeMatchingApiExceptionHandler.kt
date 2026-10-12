@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestNotFoundException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidDocumentRequestParametersException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -68,6 +69,17 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.info("Entity not found exception: {}", e.message) }
+
+  @ExceptionHandler(DocumentRequestNotFoundException::class)
+  fun handleDocumentRequestNotFoundException(e: DocumentRequestNotFoundException): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(NOT_FOUND)
+    .body(
+      ErrorResponse(
+        status = NOT_FOUND,
+        userMessage = "Not Found",
+        developerMessage = e.message,
+      ),
+    ).also { log.info("Document request not found exception: {}", e.message) }
 
   @ExceptionHandler(InvalidDocumentRequestParametersException::class)
   fun handleInvalidDocumentRequestParametersException(
