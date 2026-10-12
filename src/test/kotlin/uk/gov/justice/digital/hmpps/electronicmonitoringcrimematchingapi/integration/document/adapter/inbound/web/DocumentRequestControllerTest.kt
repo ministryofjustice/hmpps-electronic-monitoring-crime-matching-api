@@ -202,7 +202,6 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
   }
 
-
   @Nested
   @DisplayName("GET /document-requests/{documentRequestId}")
   inner class GetDocumentRequest {
@@ -247,7 +246,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
 
       // When the request is retrieved
       val response = webTestClient.get()
-        .uri("/document-requests/${id}")
+        .uri("/document-requests/$id")
         .headers(setAuthorisation(roles = listOf(role)))
         .exchange()
         .expectStatus()
@@ -284,5 +283,4 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
         .isBadRequest
     }
   }
-
 }
