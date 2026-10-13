@@ -10,14 +10,33 @@ class DocumentRequest private constructor(
   status: DocumentRequestStatus,
   val createdBy: String,
   val createdAt: Instant,
+  artefact: DocumentArtefact? = null,
 ) {
   var status: DocumentRequestStatus = status
+    private set
+
+  var artefact = artefact
     private set
 
   init {
     require(type == parameters.type) {
       "Document type $type does not match parameters type ${parameters.type}"
     }
+  }
+
+  fun startProcessing() {
+    check(status == DocumentRequestStatus.PENDING) {
+      "Only pending document requests can be processed"
+    }
+    status = DocumentRequestStatus.IN_PROGRESS
+  }
+
+  fun complete(artefact: DocumentArtefact) {
+    check(status == DocumentRequestStatus.IN_PROGRESS) {
+      "Only in-progress document requests can be completed"
+    }
+    this.artefact = artefact
+    status = DocumentRequestStatus.COMPLETED
   }
 
   companion object {

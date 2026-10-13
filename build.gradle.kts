@@ -27,6 +27,8 @@ dependencies {
   implementation("org.locationtech.proj4j:proj4j:1.4.3")
   implementation("org.locationtech.proj4j:proj4j-epsg:1.4.3")
   implementation("io.flipt:flipt-client-java:1.3.4")
+  implementation("org.docx4j:docx4j-core:17.3.1")
+  implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:17.3.1")
 
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")

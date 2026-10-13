@@ -2,4 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 enum class DocumentRequestStatus {
   PENDING,
+  IN_PROGRESS,
+  COMPLETED,
+  FAILED,
 }
