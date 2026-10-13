@@ -8,6 +8,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentContentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import java.time.Instant
@@ -36,4 +37,11 @@ class DocumentRequestEntity(
 
   @Column(name = "created_at", nullable = false)
   val createdAt: Instant,
+
+  @Column(name = "document", nullable = true)
+  val document: ByteArray?,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "document_content_type", nullable = true)
+  val documentContentType: DocumentContentType?,
 )

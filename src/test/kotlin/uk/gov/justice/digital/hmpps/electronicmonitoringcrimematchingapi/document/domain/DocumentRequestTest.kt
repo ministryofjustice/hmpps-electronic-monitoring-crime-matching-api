@@ -33,6 +33,7 @@ class DocumentRequestTest {
   @Test
   fun `it should restore a persisted document request`() {
     val id = UUID.randomUUID()
+    val testBytes = byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8)
 
     val request = DocumentRequest.rehydrate(
       id = id,
@@ -41,6 +42,8 @@ class DocumentRequestTest {
       status = DocumentRequestStatus.PENDING,
       createdBy = "user123",
       createdAt = createdAt,
+      document = testBytes,
+      documentContentType = DocumentContentType.DOCX,
     )
 
     assertThat(request.id).isEqualTo(id)
@@ -49,5 +52,7 @@ class DocumentRequestTest {
     assertThat(request.status).isEqualTo(DocumentRequestStatus.PENDING)
     assertThat(request.createdBy).isEqualTo("user123")
     assertThat(request.createdAt).isEqualTo(createdAt)
+    assertThat(request.document).isEqualTo(testBytes)
+    assertThat(request.documentContentType).isEqualTo(DocumentContentType.DOCX)
   }
 }

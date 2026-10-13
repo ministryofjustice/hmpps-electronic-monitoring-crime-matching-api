@@ -10,6 +10,8 @@ class DocumentRequest private constructor(
   status: DocumentRequestStatus,
   val createdBy: String,
   val createdAt: Instant,
+  var document: ByteArray?,
+  var documentContentType: DocumentContentType?,
 ) {
   var status: DocumentRequestStatus = status
     private set
@@ -32,6 +34,8 @@ class DocumentRequest private constructor(
       status = DocumentRequestStatus.PENDING,
       createdBy = createdBy,
       createdAt = createdAt,
+      document = null,
+      documentContentType = null,
     )
 
     fun rehydrate(
@@ -41,6 +45,8 @@ class DocumentRequest private constructor(
       status: DocumentRequestStatus,
       createdBy: String,
       createdAt: Instant,
+      document: ByteArray?,
+      documentContentType: DocumentContentType?,
     ): DocumentRequest = DocumentRequest(
       id = id,
       type = type,
@@ -48,6 +54,8 @@ class DocumentRequest private constructor(
       status = status,
       createdBy = createdBy,
       createdAt = createdAt,
+      document = document,
+      documentContentType = documentContentType,
     )
   }
 }
