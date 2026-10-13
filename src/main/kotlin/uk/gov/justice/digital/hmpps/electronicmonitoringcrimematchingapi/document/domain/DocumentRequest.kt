@@ -7,12 +7,11 @@ class DocumentRequest private constructor(
   val id: UUID,
   val type: DocumentType,
   val parameters: DocumentRequestParameters,
-  status: DocumentRequestStatus,
+  var status: DocumentRequestStatus,
   val createdBy: String,
   val createdAt: Instant,
+  val claimedAt: Instant?,
 ) {
-  var status: DocumentRequestStatus = status
-    private set
 
   init {
     require(type == parameters.type) {
@@ -32,6 +31,7 @@ class DocumentRequest private constructor(
       status = DocumentRequestStatus.PENDING,
       createdBy = createdBy,
       createdAt = createdAt,
+      claimedAt = null,
     )
 
     fun rehydrate(
@@ -41,6 +41,7 @@ class DocumentRequest private constructor(
       status: DocumentRequestStatus,
       createdBy: String,
       createdAt: Instant,
+      claimedAt: Instant?,
     ): DocumentRequest = DocumentRequest(
       id = id,
       type = type,
@@ -48,6 +49,7 @@ class DocumentRequest private constructor(
       status = status,
       createdBy = createdBy,
       createdAt = createdAt,
+      claimedAt = claimedAt,
     )
   }
 }

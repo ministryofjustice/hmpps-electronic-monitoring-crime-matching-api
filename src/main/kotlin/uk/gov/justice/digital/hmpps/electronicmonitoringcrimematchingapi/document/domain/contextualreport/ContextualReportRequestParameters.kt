@@ -1,5 +1,7 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport
 
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestParameters
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import java.time.Instant
 
 data class ContextualReportRequestParameters(

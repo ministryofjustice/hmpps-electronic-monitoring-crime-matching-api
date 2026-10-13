@@ -14,6 +14,7 @@ class CreateDocumentRequest(
   private val store: DocumentRequestStore,
   private val mapper: DocumentRequestMapper,
   private val parser: DocumentRequestParameterParser,
+  private val processDocumentRequest: ProcessDocumentRequest,
   private val clock: Clock,
 ) {
   fun create(

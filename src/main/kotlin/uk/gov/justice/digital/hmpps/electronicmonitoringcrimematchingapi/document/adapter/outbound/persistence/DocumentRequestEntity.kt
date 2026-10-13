@@ -36,4 +36,7 @@ class DocumentRequestEntity(
 
   @Column(name = "created_at", nullable = false)
   val createdAt: Instant,
+
+  @Column(name = "claimed_at", nullable = true)
+  val claimedAt: Instant?,
 )

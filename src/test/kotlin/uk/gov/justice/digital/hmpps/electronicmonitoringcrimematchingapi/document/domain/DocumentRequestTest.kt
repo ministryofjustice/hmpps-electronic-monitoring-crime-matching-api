@@ -2,11 +2,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.time.Instant
 import java.util.UUID
 
 class DocumentRequestTest {
   private val createdAt = Instant.parse("2026-10-08T12:00:00Z")
+  private val claimedAt = Instant.parse("2026-10-08T13:00:00Z")
 
   private val parameters = ContextualReportRequestParameters(
     deviceId = 123456,
@@ -33,6 +35,7 @@ class DocumentRequestTest {
   @Test
   fun `it should restore a persisted document request`() {
     val id = UUID.randomUUID()
+    val testBytes = byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8)
 
     val request = DocumentRequest.rehydrate(
       id = id,
@@ -41,6 +44,7 @@ class DocumentRequestTest {
       status = DocumentRequestStatus.PENDING,
       createdBy = "user123",
       createdAt = createdAt,
+      claimedAt = claimedAt,
     )
 
     assertThat(request.id).isEqualTo(id)
@@ -49,5 +53,6 @@ class DocumentRequestTest {
     assertThat(request.status).isEqualTo(DocumentRequestStatus.PENDING)
     assertThat(request.createdBy).isEqualTo("user123")
     assertThat(request.createdAt).isEqualTo(createdAt)
+    assertThat(request.claimedAt).isEqualTo(claimedAt)
   }
 }

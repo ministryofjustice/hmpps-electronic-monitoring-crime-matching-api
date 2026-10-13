@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
-import java.util.UUID
+import java.time.Instant
+import java.util.*
 
 class InMemoryDocumentRequestStore : DocumentRequestStore {
   private val requests = mutableMapOf<UUID, DocumentRequest>()
@@ -33,4 +35,15 @@ class InMemoryDocumentRequestStore : DocumentRequestStore {
       pageSize = pagination.size,
     )
   }
+
+  override fun claimEligibleDocumentRequests(
+    batchSize: Int,
+    cutoff: Instant,
+    now: Instant,
+  ): Collection<DocumentRequest> = requests.filter {
+    it.value.status == DocumentRequestStatus.PENDING &&
+      it.value.createdAt.isBefore(cutoff)
+  }
+    .values
+    .take(batchSize)
 }
