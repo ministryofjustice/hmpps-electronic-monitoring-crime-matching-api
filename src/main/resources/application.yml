@@ -97,6 +97,9 @@ aws:
   s3:
     bucket-name: police-emails
 
+hmpps.sqs:
+  protectRetryAll: true
+
 datastore:
   database: ${DATASTORE_DATABASE}
   output-bucket-arn: ${ATHENA_OUTPUT_BUCKET}
