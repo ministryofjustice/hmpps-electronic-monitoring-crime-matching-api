@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.parser
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidDocumentRequestParametersException
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidRequestException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
@@ -18,7 +18,7 @@ class DocumentRequestParameterParser {
       )
     }
   } catch (e: IllegalArgumentException) {
-    throw InvalidDocumentRequestParametersException(e.message ?: "Invalid document request parameters", e)
+    throw InvalidRequestException(e.message ?: "Invalid document request parameters", e)
   }
 
   private fun parseContextualReportParameters(parameters: Map<String, Any>): ContextualReportRequestParameters {
