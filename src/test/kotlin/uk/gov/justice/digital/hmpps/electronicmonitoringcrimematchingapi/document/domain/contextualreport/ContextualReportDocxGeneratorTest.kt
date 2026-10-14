@@ -23,7 +23,7 @@ class ContextualReportDocxGeneratorTest {
     )
 
     val generatedDocument = generator.generate(request)
-    val bytes = generatedDocument.toByteArray()
+    val bytes = generatedDocument.content
 
     assertThat(generator.type).isEqualTo(DocumentType.CONTEXTUAL_REPORT)
     assertThat(bytes).isNotEmpty

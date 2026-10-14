@@ -4,12 +4,13 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.wml.ObjectFactory
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.port.inbound.DocumentGenerator
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.generator.DocumentGenerator
 import java.io.ByteArrayOutputStream
 
 class ContextualReportDocxGenerator : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
-  override fun generate(documentRequest: DocumentRequest): ByteArrayOutputStream {
+  override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()
     val factory = ObjectFactory()
 
@@ -25,6 +26,10 @@ class ContextualReportDocxGenerator : DocumentGenerator {
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)
 
-    return byteStream
+    return GeneratedDocument(
+      filename = "placeholder",
+      contentType = document.contentType,
+      content = byteStream.toByteArray(),
+    )
   }
 }

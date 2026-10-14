@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.generator
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.port.inbound.DocumentGenerator
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.generator.DocumentGenerator
 
 class DocumentGeneratorRegistry(
   generators: List<DocumentGenerator>,

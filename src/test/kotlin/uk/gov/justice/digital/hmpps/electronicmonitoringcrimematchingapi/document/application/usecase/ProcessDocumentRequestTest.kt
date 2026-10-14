@@ -17,10 +17,10 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.port.inbound.DocumentGenerator
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.generator.DocumentGenerator
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
-import java.io.ByteArrayOutputStream
 import java.time.Instant
 
 class ProcessDocumentRequestTest {
@@ -34,11 +34,14 @@ class ProcessDocumentRequestTest {
         now = it.getArgument(2),
       )
     }
+    on { save(any()) } doAnswer {
+      store.save(it.getArgument(0))
+    }
   }
 
   private val generator = mock<DocumentGenerator> {
     on { type }.thenReturn(DocumentType.CONTEXTUAL_REPORT)
-    on { generate(any()) }.thenReturn(ByteArrayOutputStream())
+    on { generate(any()) }.thenReturn(mock<GeneratedDocument>())
   }
 
   private val useCase = ProcessDocumentRequest(
@@ -63,11 +66,15 @@ class ProcessDocumentRequestTest {
     val finishedAt = Instant.now()
 
     // Then document generation is triggered
+    val generatedDocumentRequest = argumentCaptor<DocumentRequest>()
     verify(documentRequestStore).claimEligibleDocumentRequests(eq(1), cutoff.capture(), now.capture())
-    verify(generator, times(1)).generate(documentRequest)
+    verify(generator, times(1)).generate(generatedDocumentRequest.capture())
 
     assertThat(now.firstValue).isBetween(startedAt, finishedAt)
     assertThat(cutoff.firstValue).isEqualTo(now.firstValue.minusSeconds(60 * 5))
+    assertThat(generatedDocumentRequest.firstValue.id).isEqualTo(documentRequest.id)
+    assertThat(generatedDocumentRequest.firstValue.claimedAt).isEqualTo(now.firstValue)
+    assertThat(generatedDocumentRequest.firstValue.concurrencyVersion).isEqualTo(1L)
   }
 
   @Test
@@ -95,6 +102,8 @@ class ProcessDocumentRequestTest {
     verify(generator, times(1)).generate(generatedDocumentRequests.capture())
 
     assertThat(generatedDocumentRequests.firstValue.id).isIn(firstDocumentRequest.id, secondDocumentRequest.id)
+    assertThat(generatedDocumentRequests.firstValue.claimedAt).isEqualTo(now.firstValue)
+    assertThat(generatedDocumentRequests.firstValue.concurrencyVersion).isEqualTo(1L)
     assertThat(cutoff.firstValue).isEqualTo(now.firstValue.minusSeconds(60 * 5))
   }
 
@@ -138,7 +147,6 @@ class ProcessDocumentRequestTest {
 
     assertThat(savedDocumentRequest.firstValue.id).isEqualTo(documentRequest.id)
     assertThat(savedDocumentRequest.firstValue.status).isEqualTo(DocumentRequestStatus.COMPLETED)
-    assertThat(documentRequest.status).isEqualTo(DocumentRequestStatus.COMPLETED)
     assertThat(store.findById(documentRequest.id)?.status).isEqualTo(DocumentRequestStatus.COMPLETED)
   }
 
