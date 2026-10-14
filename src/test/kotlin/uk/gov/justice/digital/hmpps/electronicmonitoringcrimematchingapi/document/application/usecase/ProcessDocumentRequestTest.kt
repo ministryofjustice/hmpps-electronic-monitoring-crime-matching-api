@@ -21,10 +21,17 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.generator.DocumentGenerator
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
+import java.time.Clock
 import java.time.Instant
+import java.time.ZoneOffset
 
 class ProcessDocumentRequestTest {
   private val store = InMemoryDocumentRequestStore()
+
+  private val clock = Clock.fixed(
+    Instant.parse("2026-10-08T12:00:00Z"),
+    ZoneOffset.UTC,
+  )
 
   private val documentRequestStore = mock<DocumentRequestStore> {
     on { claimEligibleDocumentRequests(eq(1), any(), any()) } doAnswer {
@@ -47,6 +54,7 @@ class ProcessDocumentRequestTest {
   private val useCase = ProcessDocumentRequest(
     documentRequestStore = documentRequestStore,
     generators = DocumentGeneratorRegistry(listOf(generator)),
+    clock = clock,
   )
 
   @Test
@@ -59,11 +67,11 @@ class ProcessDocumentRequestTest {
     store.save(documentRequest)
     val cutoff = argumentCaptor<Instant>()
     val now = argumentCaptor<Instant>()
-    val startedAt = Instant.now()
+    val startedAt = Instant.now(clock)
 
     // When triggerDocumentGeneration is called
     useCase.triggerDocumentGeneration()
-    val finishedAt = Instant.now()
+    val finishedAt = Instant.now(clock)
 
     // Then document generation is triggered
     val generatedDocumentRequest = argumentCaptor<DocumentRequest>()

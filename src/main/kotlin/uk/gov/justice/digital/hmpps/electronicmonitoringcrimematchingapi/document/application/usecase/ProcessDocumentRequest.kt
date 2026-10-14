@@ -5,17 +5,19 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
+import java.time.Clock
 import java.time.Instant
 
 @Service
 class ProcessDocumentRequest(
   private val documentRequestStore: DocumentRequestStore,
   private val generators: DocumentGeneratorRegistry,
+  private val clock: Clock,
 ) {
   // TODO: run after a new document request and on a schedule (prerequisite retry handling)
   fun triggerDocumentGeneration() {
     // 1. Claim an eligible Contextual Report DocumentRequest to generate
-    val now = Instant.now()
+    val now = Instant.now(clock)
     val cutoff = now.minusSeconds(60 * 5)
     val numReportsToGenerate = 1
     val documentRequests: Collection<DocumentRequest> = documentRequestStore.claimEligibleDocumentRequests(
