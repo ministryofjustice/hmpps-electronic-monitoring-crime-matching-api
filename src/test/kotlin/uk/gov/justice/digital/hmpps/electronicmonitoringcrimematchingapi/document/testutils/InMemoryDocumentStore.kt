@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentArtefact
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.port.outbound.DocumentStore
 import java.util.UUID
 
 class InMemoryDocumentStore : DocumentStore {

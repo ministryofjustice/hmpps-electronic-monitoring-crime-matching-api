@@ -3,15 +3,11 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.wml.ObjectFactory
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.port.inbound.DocumentGenerator
 import java.io.ByteArrayOutputStream
 
-class ContextualReportDocxGenerator(
-  private val documentStore: DocumentRequestStore,
-) : DocumentGenerator {
+class ContextualReportDocxGenerator : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
   override fun generate(documentRequest: DocumentRequest): ByteArrayOutputStream {
     val document = WordprocessingMLPackage.createPackage()
@@ -29,8 +25,6 @@ class ContextualReportDocxGenerator(
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)
 
-    documentRequest.status = DocumentRequestStatus.COMPLETED
-    documentStore.save(documentRequest)
     return byteStream
   }
 }
