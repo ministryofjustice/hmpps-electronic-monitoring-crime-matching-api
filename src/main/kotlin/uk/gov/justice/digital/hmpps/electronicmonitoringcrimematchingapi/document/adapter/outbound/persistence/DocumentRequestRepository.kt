@@ -21,7 +21,8 @@ interface DocumentRequestRepository : JpaRepository<DocumentRequestEntity, UUID>
       for update skip locked
     )
     update document_request dr
-    set claimed_at = :now
+    set claimed_at = :now,
+        concurrency_version = dr.concurrency_version + 1
     from candidates c
     where dr.id = c.id
     returning dr.*

@@ -82,6 +82,29 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `it should increment the optimistic lock version when a row is claimed`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+
+    val eligible = givenDocumentRequestRow(
+      status = DocumentRequestStatus.PENDING,
+      claimedAt = null,
+      createdAt = Instant.parse("2026-01-01T00:00:00Z"),
+    )
+
+    val claimedRows = documentRequestRepository.claimEligibleDocumentRequests(
+      pendingState = DocumentRequestStatus.PENDING.name,
+      batchSize = 10,
+      cutoff = cutoff,
+      now = now,
+    )
+
+    assertThat(claimedRows).hasSize(1)
+    assertThat(claimedRows.first().concurrencyVersion).isEqualTo(1L)
+    assertThat(claimedAtFor(eligible.id)).isEqualTo(now)
+  }
+
+  @Test
   fun `it should return no rows when there are no eligible rows`() {
     val now = Instant.parse("2026-01-01T00:10:00Z")
     val cutoff = now.minusSeconds(60)
