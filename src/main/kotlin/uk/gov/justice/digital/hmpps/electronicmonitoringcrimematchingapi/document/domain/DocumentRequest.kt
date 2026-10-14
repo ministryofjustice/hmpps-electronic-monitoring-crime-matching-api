@@ -11,6 +11,9 @@ class DocumentRequest private constructor(
   val createdBy: String,
   val createdAt: Instant,
   val claimedAt: Instant?,
+  val attempts: Int,
+  val lastError: String?,
+  val concurrencyVersion: Long,
 ) {
 
   init {
@@ -32,6 +35,9 @@ class DocumentRequest private constructor(
       createdBy = createdBy,
       createdAt = createdAt,
       claimedAt = null,
+      attempts = 0,
+      lastError = null,
+      concurrencyVersion = 0,
     )
 
     fun rehydrate(
@@ -42,6 +48,9 @@ class DocumentRequest private constructor(
       createdBy: String,
       createdAt: Instant,
       claimedAt: Instant?,
+      attempts: Int,
+      lastError: String?,
+      concurrencyVersion: Long,
     ): DocumentRequest = DocumentRequest(
       id = id,
       type = type,
@@ -50,6 +59,9 @@ class DocumentRequest private constructor(
       createdBy = createdBy,
       createdAt = createdAt,
       claimedAt = claimedAt,
+      attempts = attempts,
+      lastError = lastError,
+      concurrencyVersion = concurrencyVersion,
     )
   }
 }

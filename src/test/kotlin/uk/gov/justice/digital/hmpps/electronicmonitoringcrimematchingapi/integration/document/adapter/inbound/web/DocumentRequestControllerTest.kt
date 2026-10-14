@@ -386,6 +386,8 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     id: UUID = UUID.randomUUID(),
     createdAt: Instant = Instant.parse("2026-10-08T12:00:00Z"),
     claimedAt: Instant? = Instant.parse("2026-10-08T13:00:00Z"),
+    attempts: Int = 0,
+    lastError: String? = null,
   ): DocumentRequestEntity = DocumentRequestEntity(
     id = id,
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -398,5 +400,8 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     createdBy = "test",
     createdAt = createdAt,
     claimedAt = claimedAt,
+    attempts = attempts,
+    lastError = lastError,
+    concurrencyVersion = 0L,
   )
 }

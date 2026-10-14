@@ -199,6 +199,8 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
     status: DocumentRequestStatus,
     claimedAt: Instant?,
     createdAt: Instant = Instant.parse("2026-01-01T00:00:00Z"),
+    attempts: Int = 0,
+    lastError: String? = null,
   ): DocumentRequestEntity {
     val row = documentRequestRepository.saveAndFlush(
       DocumentRequestEntity(
@@ -213,6 +215,9 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
         createdBy = "test",
         createdAt = createdAt,
         claimedAt = claimedAt,
+        attempts = attempts,
+        lastError = lastError,
+        concurrencyVersion = 0L,
       ),
     )
 
