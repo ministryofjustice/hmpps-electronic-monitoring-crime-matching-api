@@ -3,14 +3,16 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidRequestException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.mapper.DocumentRequestMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.parser.DocumentRequestParameterParser
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenRawContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import java.time.Clock
 import java.time.Instant
@@ -24,10 +26,14 @@ class CreateDocumentRequestTest {
     ZoneOffset.UTC,
   )
 
+  private val objectMapper = JsonMapper.builder()
+    .findAndAddModules()
+    .build()
+
   private val useCase = CreateDocumentRequest(
     store = store,
     mapper = DocumentRequestMapper(),
-    parser = DocumentRequestParameterParser(),
+    parser = DocumentRequestParameterParser(objectMapper),
     clock = clock,
   )
 
@@ -50,11 +56,7 @@ class CreateDocumentRequestTest {
     assertThat(saved.createdAt).isEqualTo(clock.instant())
 
     assertThat(saved.parameters).isEqualTo(
-      ContextualReportRequestParameters(
-        deviceId = 123456,
-        from = Instant.parse("2026-10-01T00:00:00Z"),
-        to = Instant.parse("2026-10-02T00:00:00Z"),
-      ),
+      givenContextualReportRequestParameters(),
     )
   }
 
@@ -62,11 +64,7 @@ class CreateDocumentRequestTest {
   fun `it should not persist a request with invalid parameters`() {
     // Given a command with invalid parameters
     val invalidCommand = givenCreateDocumentRequestCommand(
-      parameters = mapOf(
-        "deviceId" to -1, // Invalid deviceId
-        "from" to "2026-10-01T00:00:00Z",
-        "to" to "2026-10-02T00:00:00Z",
-      ),
+      parameters = givenRawContextualReportRequestParameters() + ("positionSegments" to emptyList<Any>()),
     )
 
     // When a document request is created, then it should throw an exception and not persist the request
@@ -74,7 +72,7 @@ class CreateDocumentRequestTest {
       useCase.create(invalidCommand, "user123")
     }
       .isInstanceOf(InvalidRequestException::class.java)
-      .hasMessage("'deviceId' must be a positive integer")
+      .hasMessage("'positionSegments' must not be empty")
 
     assertThat(store.findAll(pagination = PaginationRequest(page = 0, size = 20)).data).isEmpty()
   }
@@ -94,11 +92,7 @@ class CreateDocumentRequestTest {
   }
 
   private fun givenCreateDocumentRequestCommand(
-    parameters: Map<String, Any> = mapOf(
-      "deviceId" to 123456,
-      "from" to "2026-10-01T00:00:00Z",
-      "to" to "2026-10-02T00:00:00Z",
-    ),
+    parameters: Map<String, Any> = givenRawContextualReportRequestParameters(),
   ): CreateDocumentRequestCommand = CreateDocumentRequestCommand(
     type = DocumentType.CONTEXTUAL_REPORT,
     parameters = parameters,

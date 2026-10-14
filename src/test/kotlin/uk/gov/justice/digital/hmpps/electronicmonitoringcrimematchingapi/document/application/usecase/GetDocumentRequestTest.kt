@@ -5,10 +5,10 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestNotFoundException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.mapper.DocumentRequestMapper
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import java.time.Instant
 import java.util.UUID
@@ -21,11 +21,7 @@ class GetDocumentRequestTest {
   fun `it should retrieve an existing document request`() {
     // Given an existing document request
     val request = DocumentRequest.create(
-      parameters = ContextualReportRequestParameters(
-        deviceId = 123456,
-        from = Instant.parse("2026-10-01T08:00:00Z"),
-        to = Instant.parse("2026-10-02T08:00:00Z"),
-      ),
+      parameters = givenContextualReportRequestParameters(),
       createdBy = "user123",
       createdAt = Instant.parse("2026-10-08T12:00:00Z"),
     )

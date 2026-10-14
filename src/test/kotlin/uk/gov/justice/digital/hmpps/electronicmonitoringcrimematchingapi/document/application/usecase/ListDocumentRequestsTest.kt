@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.mapper.DocumentRequestMapper
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import java.time.Instant
 
@@ -46,11 +46,7 @@ class ListDocumentRequestsTest {
   }
 
   private fun givenDocumentRequest(createdAt: Instant): DocumentRequest = DocumentRequest.create(
-    parameters = ContextualReportRequestParameters(
-      deviceId = 123456,
-      from = Instant.parse("2026-10-01T08:00:00Z"),
-      to = Instant.parse("2026-10-02T08:00:00Z"),
-    ),
+    parameters = givenContextualReportRequestParameters(),
     createdBy = "user123",
     createdAt = createdAt,
   )
