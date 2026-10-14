@@ -20,6 +20,10 @@ class DocumentRequestPersistenceMapper(
     parameters = serializeParameters(request.parameters),
     createdBy = request.createdBy,
     createdAt = request.createdAt,
+    claimedAt = request.claimedAt,
+    attempts = request.attempts,
+    lastError = request.lastError,
+    concurrencyVersion = request.concurrencyVersion,
   )
 
   fun toDomain(entity: DocumentRequestEntity): DocumentRequest = DocumentRequest.rehydrate(
@@ -29,6 +33,10 @@ class DocumentRequestPersistenceMapper(
     status = entity.status,
     createdBy = entity.createdBy,
     createdAt = entity.createdAt,
+    claimedAt = entity.claimedAt,
+    attempts = entity.attempts,
+    lastError = entity.lastError,
+    concurrencyVersion = entity.concurrencyVersion,
   )
 
   private fun serializeParameters(
