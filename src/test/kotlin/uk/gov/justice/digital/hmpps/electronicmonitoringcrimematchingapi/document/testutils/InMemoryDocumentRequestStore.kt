@@ -43,11 +43,7 @@ class InMemoryDocumentRequestStore : DocumentRequestStore {
   ): Collection<DocumentRequest> = requests.values
     .sortedBy { it.createdAt }
     .filter {
-      it.status == DocumentRequestStatus.PENDING &&
-        (
-          (it.claimedAt == null && it.createdAt.isBefore(cutoff)) ||
-            (it.claimedAt != null && it.claimedAt.isBefore(cutoff))
-          )
+      it.status == DocumentRequestStatus.PENDING // Simplified logic
     }
     .take(batchSize)
 }

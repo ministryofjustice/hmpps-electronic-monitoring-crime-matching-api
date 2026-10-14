@@ -100,9 +100,10 @@ class ProcessDocumentRequestTest {
 
   @Test
   fun `it should not trigger document generation when no document requests are eligible`() {
-    // Given one recent PENDING document request in the DB
+    // Given one recent COMPLETED document request in the DB
     val documentRequest = givenDocumentRequest(
       createdAt = Instant.now().minusSeconds(60),
+      status = DocumentRequestStatus.COMPLETED,
     )
 
     store.save(documentRequest)
@@ -162,7 +163,9 @@ class ProcessDocumentRequestTest {
     assertThat(store.findById(documentRequest.id)?.status).isEqualTo(DocumentRequestStatus.PENDING)
   }
 
-  private fun givenDocumentRequest(createdAt: Instant): DocumentRequest = DocumentRequest.create(
+  private fun givenDocumentRequest(createdAt: Instant, status: DocumentRequestStatus = DocumentRequestStatus.PENDING): DocumentRequest = DocumentRequest.rehydrate(
+    id = java.util.UUID.randomUUID(),
+    type = DocumentType.CONTEXTUAL_REPORT,
     parameters = ContextualReportRequestParameters(
       deviceId = 123456,
       from = Instant.parse("2026-10-01T08:00:00Z"),
@@ -170,5 +173,10 @@ class ProcessDocumentRequestTest {
     ),
     createdBy = "user123",
     createdAt = createdAt,
+    status = status,
+    claimedAt = null,
+    attempts = 0,
+    lastError = null,
+    concurrencyVersion = 0L,
   )
 }
