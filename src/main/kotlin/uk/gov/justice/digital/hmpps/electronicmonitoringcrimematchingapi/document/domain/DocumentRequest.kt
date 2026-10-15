@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain
 
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 class DocumentRequest private constructor(
   val id: UUID,
@@ -10,8 +10,11 @@ class DocumentRequest private constructor(
   status: DocumentRequestStatus,
   val createdBy: String,
   val createdAt: Instant,
+  artefact: DocumentArtefact?,
 ) {
   var status: DocumentRequestStatus = status
+    private set
+  var artefact: DocumentArtefact? = artefact
     private set
 
   init {
@@ -32,6 +35,7 @@ class DocumentRequest private constructor(
       status = DocumentRequestStatus.PENDING,
       createdBy = createdBy,
       createdAt = createdAt,
+      artefact = null,
     )
 
     fun rehydrate(
@@ -48,6 +52,16 @@ class DocumentRequest private constructor(
       status = status,
       createdBy = createdBy,
       createdAt = createdAt,
+      artefact = null,
     )
+  }
+
+  fun complete(artefact: DocumentArtefact) {
+    check(status == DocumentRequestStatus.PENDING) {
+      "DocumentRequest must be in PENDING status"
+    }
+
+    this.artefact = artefact
+    status = DocumentRequestStatus.COMPLETED
   }
 }
