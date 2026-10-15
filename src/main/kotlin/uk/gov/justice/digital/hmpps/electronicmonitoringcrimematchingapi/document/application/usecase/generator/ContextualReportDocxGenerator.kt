@@ -26,7 +26,7 @@ class ContextualReportDocxGenerator : DocumentGenerator {
     document.save(byteStream)
 
     return GeneratedDocument(
-      filename = "placeholder",
+      filename = "placeholder.docx",
       contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       content = byteStream.toByteArray(),
     )

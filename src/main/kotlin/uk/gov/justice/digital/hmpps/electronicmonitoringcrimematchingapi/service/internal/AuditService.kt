@@ -8,6 +8,11 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.H
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 
+// Guidance for what to send to HMPPS Audit: https://dsdmoj.atlassian.net/wiki/x/bIC2SgE
+// Example: "Search interactions: when a user performs a search for information."
+// Example: "Data interactions: when a user creates, views updates or deletes information."
+// "In most cases, audit events should be generated from the user interface, as this is where the user action originates.
+// However, if an action can occur outside the UI (for example through an API or background process), you should ensure those interactions are also audited appropriately."
 @Service
 @Component
 class AuditService(

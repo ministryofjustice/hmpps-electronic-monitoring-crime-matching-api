@@ -20,6 +20,8 @@ class InMemoryDocumentStore : DocumentStore {
     )
   }
 
+  override fun get(documentArtefact: DocumentArtefact): GeneratedDocument? = documents[documentArtefact.reference]
+
   fun findAll(): Collection<GeneratedDocument> = documents.values
 
   fun findByReference(reference: String): GeneratedDocument? = documents[reference]
