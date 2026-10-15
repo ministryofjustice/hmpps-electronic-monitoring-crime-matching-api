@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenRawContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import java.time.Instant
 import java.util.UUID
@@ -39,16 +40,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
         .uri("/document-requests")
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(
-          """
-            {
-              "type": "CONTEXTUAL_REPORT",
-              "parameters": {
-                "deviceId": 123456,
-                "from": "2026-10-01T08:00:00Z",
-                "to": "2026-10-02T08:00:00Z"
-              }
-            }
-          """.trimIndent(),
+          givenContextualReportRequestBody(),
         )
         .exchange()
         .expectStatus()
@@ -62,16 +54,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation(roles = listOf()))
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(
-          """
-            {
-              "type": "CONTEXTUAL_REPORT",
-              "parameters": {
-                "deviceId": 123456,
-                "from": "2026-10-01T08:00:00Z",
-                "to": "2026-10-02T08:00:00Z"
-              }
-            }
-          """.trimIndent(),
+          givenContextualReportRequestBody(),
         )
         .exchange()
         .expectStatus()
@@ -81,16 +64,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     @Test
     fun `it should create a contextual report document request`() {
       // Given a valid request
-      val body = """
-      {
-        "type": "CONTEXTUAL_REPORT",
-        "parameters": {
-          "deviceId": 123456,
-          "from": "2026-10-01T08:00:00Z",
-          "to": "2026-10-02T08:00:00Z"
-        }
-      }
-      """.trimIndent()
+      val body = givenContextualReportRequestBody()
 
       // When the request is sent to the controller, then it should be accepted
       val request = webTestClient
@@ -111,14 +85,13 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
 
       assertThat(saved.type).isEqualTo(DocumentType.CONTEXTUAL_REPORT)
       assertThat(saved.status).isEqualTo(DocumentRequestStatus.PENDING)
-      assertThat(saved.parameters).containsEntry("deviceId", 123456)
-      assertThat(saved.parameters).containsEntry(
-        "from",
-        "2026-10-01T08:00:00Z",
-      )
-      assertThat(saved.parameters).containsEntry(
-        "to",
-        "2026-10-02T08:00:00Z",
+      assertThat(saved.parameters).containsKeys(
+        "authorisingManager",
+        "crime",
+        "deviceWearer",
+        "positionSegments",
+        "reportPeriod",
+        "reportRequest",
       )
       assertThat(saved.createdBy).isEqualTo("AUTH_ADM")
     }
@@ -148,18 +121,16 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should reject a contextual report with an invalid date range`() {
-      // Given an invalid request (to before from)
-      val body = """
-      {
-        "type": "CONTEXTUAL_REPORT",
-        "parameters": {
-          "deviceId": 123456,
-          "from": "2026-10-02T08:00:00Z",
-          "to": "2026-10-01T08:00:00Z"
-        }
-      }
-      """.trimIndent()
+    fun `it should reject a contextual report with an invalid report period`() {
+      // Given an invalid request (start before end)
+      val body = givenContextualReportRequestBody(
+        givenRawContextualReportRequestParameters() + mapOf(
+          "reportPeriod" to mapOf(
+            "start" to "2026-10-02T08:00:00Z",
+            "end" to "2026-10-01T08:00:00Z",
+          ),
+        ),
+      )
 
       // When the request is sent to the controller, then it should be rejected
       webTestClient
@@ -178,15 +149,10 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should reject a request with missing parameters`() {
-      // Given an invalid request (missing 'from' and 'to' parameters)
-      val body = """
-      {
-        "type": "CONTEXTUAL_REPORT",
-        "parameters": {
-          "deviceId": 123456
-        }
-      }
-      """.trimIndent()
+      // Given an invalid request (missing position segments)
+      val body = givenContextualReportRequestBody(
+        givenRawContextualReportRequestParameters() + mapOf("positionSegments" to emptyList<Any>()),
+      )
 
       // When the request is sent to the controller, then it should be rejected
       webTestClient.post()
@@ -389,12 +355,15 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     id = id,
     type = DocumentType.CONTEXTUAL_REPORT,
     status = DocumentRequestStatus.PENDING,
-    parameters = mapOf(
-      "deviceId" to 123456,
-      "from" to "2026-10-01T08:00:00Z",
-      "to" to "2026-10-02T08:00:00Z",
-    ),
+    parameters = givenRawContextualReportRequestParameters(),
     createdBy = "test",
     createdAt = createdAt,
+  )
+
+  private fun givenContextualReportRequestBody(
+    parameters: Map<String, Any> = givenRawContextualReportRequestParameters(),
+  ): Map<String, Any> = mapOf(
+    "type" to "CONTEXTUAL_REPORT",
+    "parameters" to parameters,
   )
 }

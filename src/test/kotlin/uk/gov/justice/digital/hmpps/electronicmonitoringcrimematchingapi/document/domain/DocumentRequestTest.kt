@@ -2,17 +2,14 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import java.time.Instant
 import java.util.UUID
 
 class DocumentRequestTest {
   private val createdAt = Instant.parse("2026-10-08T12:00:00Z")
 
-  private val parameters = ContextualReportRequestParameters(
-    deviceId = 123456,
-    from = Instant.parse("2026-10-01T00:00:00Z"),
-    to = Instant.parse("2026-10-02T00:00:00Z"),
-  )
+  private val parameters = givenContextualReportRequestParameters()
 
   @Test
   fun `it should create a pending document request`() {

@@ -3,19 +3,20 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidRequestException
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
-import java.time.Instant
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenRawContextualReportRequestParameters
 
 class DocumentRequestParameterParserTest {
-  private val parser = DocumentRequestParameterParser()
+  private val objectMapper = JsonMapper.builder()
+    .findAndAddModules()
+    .build()
 
-  private val validParameters = mapOf(
-    "deviceId" to 123456,
-    "from" to "2026-10-01T00:00:00Z",
-    "to" to "2026-10-02T00:00:00Z",
-  )
+  private val parser = DocumentRequestParameterParser(objectMapper)
+
+  private val validParameters = givenRawContextualReportRequestParameters()
 
   @Test
   fun `it should parse contextual report parameters`() {
@@ -25,71 +26,45 @@ class DocumentRequestParameterParserTest {
     )
 
     assertThat(result).isEqualTo(
-      ContextualReportRequestParameters(
-        deviceId = 123456,
-        from = Instant.parse("2026-10-01T00:00:00Z"),
-        to = Instant.parse("2026-10-02T00:00:00Z"),
-      ),
+      givenContextualReportRequestParameters(),
     )
   }
 
   @Test
-  fun `it should reject missing device ID`() {
+  fun `should reject missing crime details`() {
+    val parameters = validParameters - "crime"
+
     assertThatThrownBy {
-      parser.parse(
-        DocumentType.CONTEXTUAL_REPORT,
-        validParameters - "deviceId",
-      )
+      parser.parse(DocumentType.CONTEXTUAL_REPORT, parameters)
     }
       .isInstanceOf(InvalidRequestException::class.java)
-      .hasMessage("Missing or invalid 'deviceId' parameter")
+      .hasMessage("Invalid parameters for document type CONTEXTUAL_REPORT")
   }
 
   @Test
-  fun `it should reject invalid device ID type`() {
-    assertThatThrownBy {
-      parser.parse(
-        DocumentType.CONTEXTUAL_REPORT,
-        validParameters + ("deviceId" to "invalid"),
+  fun `should reject invalid report period`() {
+    val parameters = validParameters + (
+      "reportPeriod" to mapOf(
+        "start" to "2026-10-03T08:00:00Z",
+        "end" to "2026-10-02T08:00:00Z",
       )
+      )
+
+    assertThatThrownBy {
+      parser.parse(DocumentType.CONTEXTUAL_REPORT, parameters)
     }
       .isInstanceOf(InvalidRequestException::class.java)
-      .hasMessage("Missing or invalid 'deviceId' parameter")
+      .hasMessage("'reportPeriod.start' must be before 'reportPeriod.end'")
   }
 
   @Test
-  fun `it should reject missing from timestamp`() {
-    assertThatThrownBy {
-      parser.parse(
-        DocumentType.CONTEXTUAL_REPORT,
-        validParameters - "from",
-      )
-    }
-      .isInstanceOf(InvalidRequestException::class.java)
-      .hasMessage("Missing or invalid 'from' parameter")
-  }
+  fun `should reject empty position segments`() {
+    val parameters = validParameters + ("positionSegments" to emptyList<Any>())
 
-  @Test
-  fun `it should reject missing to timestamp`() {
     assertThatThrownBy {
-      parser.parse(
-        DocumentType.CONTEXTUAL_REPORT,
-        validParameters - "to",
-      )
+      parser.parse(DocumentType.CONTEXTUAL_REPORT, parameters)
     }
       .isInstanceOf(InvalidRequestException::class.java)
-      .hasMessage("Missing or invalid 'to' parameter")
-  }
-
-  @Test
-  fun `it should reject invalid date range`() {
-    assertThatThrownBy {
-      parser.parse(
-        DocumentType.CONTEXTUAL_REPORT,
-        validParameters + ("to" to "2026-09-30T00:00:00Z"),
-      )
-    }
-      .isInstanceOf(InvalidRequestException::class.java)
-      .hasMessage("'from' must be before 'to'")
+      .hasMessage("'positionSegments' must not be empty")
   }
 }
