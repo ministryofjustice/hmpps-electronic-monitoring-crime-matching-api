@@ -3,11 +3,17 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.ArtefactFailedToGenerateException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ContextualReportDocxGenerator
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGenerator
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGeneratorRegistry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentStore
 import java.time.Clock
@@ -55,6 +61,38 @@ class ProcessDocumentRequestTest {
     // When the document request is processed
     assertThrows<IllegalStateException> {
       useCase.process(request)
+    }
+
+    // Then the generated document should NOT be persisted
+    assertThat(request.artefact).isNull()
+    assertThat(store.findAll()).isEmpty()
+  }
+
+  @Test
+  fun `it should not generate or persist a contextual report if the content type is invalid`() {
+    // Given a pending document request
+    val mockGenerator = mock(DocumentGenerator::class.java)
+    whenever(mockGenerator.type).thenReturn(DocumentType.CONTEXTUAL_REPORT)
+    whenever(mockGenerator.generate(any())).thenReturn(
+      GeneratedDocument(
+        filename = "contextual-report.docx",
+        contentType = "invalid-content-type",
+        content = byteArrayOf(1, 2, 3),
+      ),
+    )
+    val mockUseCase = ProcessDocumentRequest(
+      generatorRegistry = DocumentGeneratorRegistry(
+        generators = listOf(
+          mockGenerator,
+        ),
+      ),
+      documentStore = store,
+    )
+    val request = givenDocumentRequest()
+
+    // When the document request is processed
+    assertThrows<ArtefactFailedToGenerateException> {
+      mockUseCase.process(request)
     }
 
     // Then the generated document should NOT be persisted

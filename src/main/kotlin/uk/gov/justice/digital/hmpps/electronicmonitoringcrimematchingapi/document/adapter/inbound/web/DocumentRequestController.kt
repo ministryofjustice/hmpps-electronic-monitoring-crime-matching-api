@@ -78,7 +78,6 @@ class DocumentRequestController(
   ): ResponseEntity<ByteArray> {
     val artefact = getDocumentRequestArtefact.get(documentRequestId)
 
-    // TODO: Sanitize/escape filenames and validate content types before exposing artefacts externally.
     return ResponseEntity.ok()
       .contentType(MediaType.parseMediaType(artefact.contentType))
       .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${artefact.filename}\"")
