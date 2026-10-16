@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.ArtefactFailedToGenerateException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestArtefactNotFoundException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestNotFoundException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentArtefact
@@ -13,7 +12,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentStore
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 class GetDocumentRequestArtefactTest {
   private val documentRequestStore = InMemoryDocumentRequestStore()
@@ -99,24 +98,5 @@ class GetDocumentRequestArtefactTest {
     }
       .isInstanceOf(DocumentRequestArtefactNotFoundException::class.java)
       .hasMessage("Document artefact for request with id ${request.id} not found")
-  }
-
-  @Test
-  fun `it should throw ArtefactFailedToGenerateException if the document request is dead`() {
-    // Given a saved document request with a dead status
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-08T12:00:00Z"),
-    )
-    request.failPermanently()
-    documentRequestStore.save(request)
-
-    // When the generated document is retrieved, then an error is raised
-    assertThatThrownBy {
-      useCase.get(request.id)
-    }
-      .isInstanceOf(ArtefactFailedToGenerateException::class.java)
-      .hasMessage("Document artefact for request with id ${request.id} failed to generate")
   }
 }

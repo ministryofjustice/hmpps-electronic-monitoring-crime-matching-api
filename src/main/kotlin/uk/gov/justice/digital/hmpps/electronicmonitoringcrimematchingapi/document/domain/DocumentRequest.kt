@@ -64,8 +64,4 @@ class DocumentRequest private constructor(
     this.artefact = artefact
     status = DocumentRequestStatus.COMPLETED
   }
-
-  fun failPermanently() {
-    status = DocumentRequestStatus.DEAD
-  }
 }

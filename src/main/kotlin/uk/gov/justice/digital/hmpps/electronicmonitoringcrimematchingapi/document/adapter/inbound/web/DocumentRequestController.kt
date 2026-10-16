@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.inbound.web
 
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -80,7 +79,6 @@ class DocumentRequestController(
 
     return ResponseEntity.ok()
       .contentType(MediaType.parseMediaType(artefact.contentType))
-      .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${artefact.filename}\"")
       .body(artefact.content)
   }
 }

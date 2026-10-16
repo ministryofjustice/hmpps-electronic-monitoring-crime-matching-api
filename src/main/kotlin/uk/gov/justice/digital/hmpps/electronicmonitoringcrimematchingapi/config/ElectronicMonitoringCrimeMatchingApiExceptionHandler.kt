@@ -137,7 +137,7 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
     .body(
       ErrorResponse(
         status = INTERNAL_SERVER_ERROR,
-        userMessage = "Document request artefact failed to generate: ${e.message}",
+        userMessage = "Document request artefact failed to generate.",
         developerMessage = e.message,
       ),
     ).also { log.debug("Document request artefact failed to generate: {}", e.message) }
