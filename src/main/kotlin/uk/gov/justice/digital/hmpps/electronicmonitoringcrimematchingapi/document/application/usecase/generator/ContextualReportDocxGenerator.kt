@@ -5,13 +5,18 @@ import org.docx4j.wml.ObjectFactory
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
 import java.io.ByteArrayOutputStream
 
-class ContextualReportDocxGenerator : DocumentGenerator {
+class ContextualReportDocxGenerator(
+  private val documentSensitivityLabeller: DocumentSensitivityLabeller,
+) : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
   override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()
     val factory = ObjectFactory()
+
+    documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 
     val paragraph = factory.createP()
     val run = factory.createR()
