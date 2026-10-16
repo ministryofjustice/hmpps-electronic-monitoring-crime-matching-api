@@ -30,8 +30,6 @@ class DocumentSensitivityLabeller(
       "Name" to label.displayName,
       "SiteId" to siteId,
       "ActionId" to UUID.randomUUID().toString(),
-      "ContentBits" to "3",
-      "Tag" to "50, 0, 1, 1",
     )
 
     values.entries.forEachIndexed { index, (name, value) ->

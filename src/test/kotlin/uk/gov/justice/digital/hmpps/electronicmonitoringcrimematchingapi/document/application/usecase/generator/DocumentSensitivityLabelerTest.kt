@@ -62,14 +62,6 @@ class DocumentSensitivityLabelerTest {
       "${prefix}SetDate",
       "2026-10-08T12:00:00Z",
     )
-    assertThat(properties).containsEntry(
-      "${prefix}ContentBits",
-      "3",
-    )
-    assertThat(properties).containsEntry(
-      "${prefix}Tag",
-      "50, 0, 1, 1",
-    )
 
     val actionId = properties["${prefix}ActionId"]
 
