@@ -11,7 +11,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID
 
-class DocumentSensitivityLabelerTest {
+class DocumentSensitivityLabellerTest {
   private val clock = Clock.fixed(
     Instant.parse("2026-10-08T12:00:00Z"),
     ZoneOffset.UTC,

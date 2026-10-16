@@ -5,6 +5,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import java.io.ByteArrayInputStream
 import java.time.Clock
@@ -51,9 +52,9 @@ class ContextualReportDocxGeneratorTest {
     assertThat(properties)
       .anySatisfy {
         assertThat(it.name).isEqualTo(
-          "MSIP_Label_74082994-c1b7-400b-ad85-6ab70460486c_Name",
+          "MSIP_Label_${SensitivityLabel.OFFICIAL_SENSITIVE.labelId}_Name",
         )
-        assertThat(it.lpwstr).isEqualTo("OFFICIAL - SENSITIVE")
+        assertThat(it.lpwstr).isEqualTo(SensitivityLabel.OFFICIAL_SENSITIVE.displayName)
       }
   }
 }
