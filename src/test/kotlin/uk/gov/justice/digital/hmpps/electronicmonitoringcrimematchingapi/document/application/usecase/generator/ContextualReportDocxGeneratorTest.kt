@@ -54,7 +54,7 @@ class ContextualReportDocxGeneratorTest {
     }
 
     // And the document should contain the expected text
-    assertThat(documentXml).contains("Hello world")
+    assertThat(documentXml).contains("Contextual Movement Report")
 
     val document = WordprocessingMLPackage.load(
       ByteArrayInputStream(generatedDocument.content),
@@ -98,24 +98,71 @@ class ContextualReportDocxGeneratorTest {
     // And the table should have two rows
     assertThat(rows).hasSize(2)
 
-    val dateCell = rows[0].content
+    val titleCell = rows[0].content
       .unwrapped<Tc>()
       .single()
 
-    val titleCell = rows[1].content
+    val contentCell = rows[1].content
       .unwrapped<Tc>()
       .single()
 
-    // And the first row should contain the date
-    assertThat(dateCell.text()).contains("Date: 01/10/2026")
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("Date: 01/10/2026")
 
-    // And the second row should contain the title
-    assertThat(titleCell.text()).contains(
+    // And the second row should contain the content
+    assertThat(contentCell.text()).contains(
       "Contextual Movement Report for Crime Reference Number - 123456789",
     )
 
     // And the first row should have a grey background
-    assertThat(dateCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the contextual report summary`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain a second table
+    val table = document.mainDocumentPart.content
+      .unwrapped<Tbl>()
+      .drop(1)
+      .first()
+
+    val rows = table.content.unwrapped<Tr>()
+
+    // And the table should have two rows
+    assertThat(rows).hasSize(2)
+
+    val titleCell = rows[0].content
+      .unwrapped<Tc>()
+      .single()
+
+    val contentCell = rows[1].content
+      .unwrapped<Tc>()
+      .single()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("Summary")
+
+    // And the second row should contain the content
+    assertThat(contentCell.text()).contains(
+      "Summary of the contextual movement report will be added here.",
+    )
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
   }
 
   private fun Tc.text(): String = content
