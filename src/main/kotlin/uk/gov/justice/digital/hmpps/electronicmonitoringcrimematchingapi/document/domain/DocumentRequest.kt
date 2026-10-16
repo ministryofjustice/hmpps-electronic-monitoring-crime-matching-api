@@ -52,7 +52,7 @@ class DocumentRequest private constructor(
       status = status,
       createdBy = createdBy,
       createdAt = createdAt,
-      artefact = null,
+      artefact = null, // TODO(ACR-1102): Currently always null
     )
   }
 

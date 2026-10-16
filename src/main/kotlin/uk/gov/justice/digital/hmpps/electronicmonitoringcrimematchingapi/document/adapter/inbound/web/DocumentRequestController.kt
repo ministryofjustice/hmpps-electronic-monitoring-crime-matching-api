@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.inbound.web
 
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.CreateDocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.GetDocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.GetDocumentRequestArtefact
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.ListDocumentRequests
 import java.util.UUID
 
@@ -27,6 +29,7 @@ class DocumentRequestController(
   private val createDocumentRequest: CreateDocumentRequest,
   private val getDocumentRequest: GetDocumentRequest,
   private val listDocumentRequests: ListDocumentRequests,
+  private val getDocumentRequestArtefact: GetDocumentRequestArtefact,
 ) {
   @PostMapping
   fun createDocumentRequest(
@@ -46,8 +49,7 @@ class DocumentRequestController(
 
   @GetMapping("/{documentRequestId}")
   fun getDocumentRequest(
-    @PathVariable("documentRequestId")
-    documentRequestId: UUID,
+    @PathVariable documentRequestId: UUID,
   ): ResponseEntity<DocumentRequestSummary> {
     val result = getDocumentRequest.get(documentRequestId)
 
@@ -67,5 +69,16 @@ class DocumentRequestController(
     )
 
     return ResponseEntity.ok(result)
+  }
+
+  @GetMapping("/{documentRequestId}/artefact")
+  fun getDocumentRequestArtefact(
+    @PathVariable documentRequestId: UUID,
+  ): ResponseEntity<ByteArray> {
+    val artefact = getDocumentRequestArtefact.get(documentRequestId)
+
+    return ResponseEntity.ok()
+      .contentType(MediaType.parseMediaType(artefact.contentType))
+      .body(artefact.content)
   }
 }

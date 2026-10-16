@@ -2,4 +2,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 interface DocumentStore {
   fun save(document: GeneratedDocument): DocumentArtefact
+
+  fun get(documentArtefact: DocumentArtefact): GeneratedDocument?
 }
