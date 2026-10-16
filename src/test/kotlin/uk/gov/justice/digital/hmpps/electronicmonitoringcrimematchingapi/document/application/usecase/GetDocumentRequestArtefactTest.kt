@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.ArtefactFailedToGenerateException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestArtefactNotFoundException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestNotFoundException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentArtefact
@@ -98,5 +99,29 @@ class GetDocumentRequestArtefactTest {
     }
       .isInstanceOf(DocumentRequestArtefactNotFoundException::class.java)
       .hasMessage("Document artefact for request with id ${request.id} not found")
+  }
+
+  @Test
+  fun `it should throw ArtefactFailedToGenerateException if the artefact has an invalid content type`() {
+    // Given a saved document request with an artefact that has an invalid content type
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-08T12:00:00Z"),
+    )
+    val artefact = DocumentArtefact(
+      reference = "invalid-content-type-reference",
+      filename = "invalid.docx",
+      contentType = "invalid-content-type", // NOTE: "invalid/content-type" is considered valid!
+    )
+    request.complete(artefact)
+    documentRequestStore.save(request)
+
+    // When the generated document is retrieved, then an error is raised
+    assertThatThrownBy {
+      useCase.get(request.id)
+    }
+      .isInstanceOf(ArtefactFailedToGenerateException::class.java)
+      .hasMessage("Invalid content type: ${artefact.contentType}")
   }
 }
