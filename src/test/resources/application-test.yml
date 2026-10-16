@@ -80,3 +80,7 @@ flipt:
   
 email-ingestion:
   mailbox-address: "shared-mailbox@email.com"
+
+DOCUMENT_MANAGEMENT_API_URL: http://localhost:8092/
+CLIENT_ID: mockClient
+CLIENT_SECRET: clientsecret

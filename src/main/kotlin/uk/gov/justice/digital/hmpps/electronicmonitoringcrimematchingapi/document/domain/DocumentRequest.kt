@@ -45,6 +45,7 @@ class DocumentRequest private constructor(
       status: DocumentRequestStatus,
       createdBy: String,
       createdAt: Instant,
+      artefact: DocumentArtefact? = null,
     ): DocumentRequest = DocumentRequest(
       id = id,
       type = type,
@@ -52,7 +53,7 @@ class DocumentRequest private constructor(
       status = status,
       createdBy = createdBy,
       createdAt = createdAt,
-      artefact = null,
+      artefact = artefact,
     )
   }
 
