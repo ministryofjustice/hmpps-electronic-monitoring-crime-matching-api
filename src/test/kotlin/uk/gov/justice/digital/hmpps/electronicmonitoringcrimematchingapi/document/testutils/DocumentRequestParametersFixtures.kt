@@ -58,7 +58,7 @@ object DocumentRequestParametersFixtures {
   )
 
   fun givenRawContextualReportRequestParameters() = mapOf(
-    "additionalInformation" to "",
+    "additionalInformation" to "More information about the request",
     "authorisingManager" to mapOf(
       "address" to "123 The Street, London, UK, AB12 3CD",
       "name" to "John Smith",
@@ -91,11 +91,11 @@ object DocumentRequestParametersFixtures {
       ),
     ),
     "reportPeriod" to mapOf(
-      "start" to "2026-10-01T00:00:00Z",
-      "end" to "2026-10-02T00:00:00Z",
+      "start" to "2026-10-01T01:02:03Z",
+      "end" to "2026-10-02T04:05:06Z",
     ),
     "reportRequest" to mapOf(
-      "requestedAt" to "2026-10-03T00:00:00Z",
+      "requestedAt" to "2026-10-03T11:12:13Z",
       "requestedBy" to "Police Officer",
       "policeForceArea" to "Metropolitan",
     ),
