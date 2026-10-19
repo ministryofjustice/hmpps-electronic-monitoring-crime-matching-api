@@ -58,6 +58,7 @@ class ProcessDocumentRequestIntegrationTest : IntegrationTestBase() {
 
     assertThat(request.status).isEqualTo(DocumentRequestStatus.PENDING)
     assertThat(request.artefact).isNull()
+    documentManagementApi.verifyUploadRequestCount(1)
   }
 
   @Test
