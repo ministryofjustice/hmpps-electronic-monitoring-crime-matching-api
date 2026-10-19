@@ -1,7 +1,14 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator
 
 import org.docx4j.jaxb.Context
-import org.docx4j.wml.*
+import org.docx4j.wml.CTBorder
+import org.docx4j.wml.STBorder
+import org.docx4j.wml.STShd
+import org.docx4j.wml.STTblLayoutType
+import org.docx4j.wml.STVerticalJc
+import org.docx4j.wml.Tbl
+import org.docx4j.wml.TblWidth
+import org.docx4j.wml.Tc
 import java.math.BigInteger
 
 class ReportTableBuilder {
@@ -119,12 +126,11 @@ class ReportTableBuilder {
     }
   }
 
-  private fun border(): CTBorder =
-    factory.createCTBorder().apply {
-      `val` = STBorder.SINGLE
-      color = "000000"
-      sz = BigInteger.valueOf(borderSize)
-    }
+  private fun border(): CTBorder = factory.createCTBorder().apply {
+    `val` = STBorder.SINGLE
+    color = "000000"
+    sz = BigInteger.valueOf(borderSize)
+  }
 
   private fun width(
     value: Long,

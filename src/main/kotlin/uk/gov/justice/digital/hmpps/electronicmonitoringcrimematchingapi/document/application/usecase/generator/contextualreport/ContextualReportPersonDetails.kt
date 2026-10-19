@@ -4,7 +4,6 @@ import ReportParagraphBuilder
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ReportTableBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.DeviceWearerDetails
-import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
@@ -17,7 +16,7 @@ class ContextualReportPersonDetails {
 
   fun addTo(
     document: WordprocessingMLPackage,
-    deviceWearer: DeviceWearerDetails
+    deviceWearer: DeviceWearerDetails,
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()

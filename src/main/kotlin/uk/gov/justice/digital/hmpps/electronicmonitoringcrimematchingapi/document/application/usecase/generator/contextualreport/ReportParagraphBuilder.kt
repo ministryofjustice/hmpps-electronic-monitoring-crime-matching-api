@@ -1,5 +1,7 @@
 import org.docx4j.jaxb.Context
-import org.docx4j.wml.*
+import org.docx4j.wml.BooleanDefaultTrue
+import org.docx4j.wml.JcEnumeration
+import org.docx4j.wml.P
 
 class ReportParagraphBuilder {
   private val factory = Context.getWmlObjectFactory()
