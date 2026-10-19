@@ -88,10 +88,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain five tables
+    // Then the document should contain six tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(5)
+    assertThat(tables).hasSize(6)
 
     val rows = tables[0].content.unwrapped<Tr>()
 
@@ -127,10 +127,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain five tables
+    // Then the document should contain six tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(5)
+    assertThat(tables).hasSize(6)
 
     val rows = tables[1].content.unwrapped<Tr>()
 
@@ -165,10 +165,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain five tables
+    // Then the document should contain six tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(5)
+    assertThat(tables).hasSize(6)
 
     val rows = tables[2].content.unwrapped<Tr>()
 
@@ -223,10 +223,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain five tables
+    // Then the document should contain six tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(5)
+    assertThat(tables).hasSize(6)
 
     val rows = tables[3].content.unwrapped<Tr>()
 
@@ -269,10 +269,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain five tables
+    // Then the document should contain six tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(5)
+    assertThat(tables).hasSize(6)
 
     val rows = tables[4].content.unwrapped<Tr>()
 
@@ -297,6 +297,52 @@ class ContextualReportDocxGeneratorTest {
     assertThat(dateCells[1].text()).contains("03/10/2026")
     assertThat(timeCells[0].text()).contains("Time")
     assertThat(timeCells[1].text()).contains("11:12:13")
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the report period details`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain six tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(6)
+
+    val rows = tables[5].content.unwrapped<Tr>()
+
+    // And the table should have five rows
+    assertThat(rows).hasSize(4)
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val fromCells = rows[1].content.unwrapped<Tc>()
+    val toCells = rows[2].content.unwrapped<Tc>()
+    val imagesCells = rows[3].content.unwrapped<Tc>()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("Request summary:")
+
+    // And the 2nd to 4th rows should contain the content
+    assertThat(fromCells[0].text()).contains("Datetime CR requested from")
+    assertThat(fromCells[1].text()).contains("01:02 01/10/2026")
+    assertThat(toCells[0].text()).contains("Datetime CR requested to")
+    assertThat(toCells[1].text()).contains("04:05 02/10/2026")
+    assertThat(imagesCells[0].text()).contains("Images")
+    assertThat(imagesCells[1].text()).contains("Between Above Date/Time Range")
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")

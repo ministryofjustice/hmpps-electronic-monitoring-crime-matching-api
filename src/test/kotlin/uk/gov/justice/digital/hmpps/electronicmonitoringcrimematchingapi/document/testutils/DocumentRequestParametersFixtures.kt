@@ -13,8 +13,8 @@ import java.time.LocalDate
 object DocumentRequestParametersFixtures {
   fun givenContextualReportRequestParameters(
     reportPeriod: ReportPeriod = ReportPeriod(
-      start = Instant.parse("2026-10-01T00:00:00Z"),
-      end = Instant.parse("2026-10-02T00:00:00Z"),
+      start = Instant.parse("2026-10-01T01:02:03Z"),
+      end = Instant.parse("2026-10-02T04:05:06Z"),
     ),
   ) = ContextualReportRequestParameters(
     additionalInformation = "",
