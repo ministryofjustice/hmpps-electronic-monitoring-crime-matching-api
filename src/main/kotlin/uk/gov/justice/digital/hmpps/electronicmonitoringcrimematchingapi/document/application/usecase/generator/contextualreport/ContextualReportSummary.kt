@@ -5,8 +5,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 class ContextualReportSummary {
   private val header = "Summary"
   private val content = """
-    This report follows on from an EMAC Proximity Alert for the above crime and provides proportionate and
-    necessary information in support of that investigation.
+    This report follows on from an EMAC Proximity Alert for the above crime and provides proportionate and necessary information in support of that investigation.
   """.trimIndent()
 
   fun addTo(document: WordprocessingMLPackage) {
