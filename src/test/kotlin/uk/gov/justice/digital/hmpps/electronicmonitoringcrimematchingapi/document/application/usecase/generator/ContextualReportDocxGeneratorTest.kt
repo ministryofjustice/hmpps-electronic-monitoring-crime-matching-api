@@ -88,10 +88,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain three tables
+    // Then the document should contain four tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(3)
+    assertThat(tables).hasSize(4)
 
     val rows = tables[0].content.unwrapped<Tr>()
 
@@ -127,10 +127,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain three tables
+    // Then the document should contain four tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(3)
+    assertThat(tables).hasSize(4)
 
     val rows = tables[1].content.unwrapped<Tr>()
 
@@ -165,10 +165,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain three tables
+    // Then the document should contain four tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(3)
+    assertThat(tables).hasSize(4)
 
     val rows = tables[2].content.unwrapped<Tr>()
 
@@ -202,6 +202,52 @@ class ContextualReportDocxGeneratorTest {
     assertThat(emsIdCells[1].text()).contains("DEVWR123456")
     assertThat(offenderManagerCells[0].text()).contains("Offender Manager")
     assertThat(offenderManagerCells[1].text()).contains("Probation Practitioner")
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the crime details`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain four tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(4)
+
+    val rows = tables[3].content.unwrapped<Tr>()
+
+    // And the table should have four rows
+    assertThat(rows).hasSize(4)
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val batchIdCells = rows[1].content.unwrapped<Tc>()
+    val crimeRefCells = rows[2].content.unwrapped<Tc>()
+    val crimeTypeCells = rows[3].content.unwrapped<Tc>()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("In relation to:")
+
+    // And the 2nd to 4th rows should contain the content
+    assertThat(batchIdCells[0].text()).contains("Crime Mapping Batch ID")
+    assertThat(batchIdCells[1].text()).contains("AVS20260101")
+    assertThat(crimeRefCells[0].text()).contains("Crime Reference Number")
+    assertThat(crimeRefCells[1].text()).contains("123456789")
+    assertThat(crimeTypeCells[0].text()).contains("Crime Type")
+    assertThat(crimeTypeCells[1].text()).contains("Robbery")
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
