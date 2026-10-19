@@ -1,3 +1,5 @@
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
+
 import org.docx4j.jaxb.Context
 import org.docx4j.wml.BooleanDefaultTrue
 import org.docx4j.wml.JcEnumeration

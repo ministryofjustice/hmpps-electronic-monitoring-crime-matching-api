@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
-import ReportParagraphBuilder
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ReportTableBuilder
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter

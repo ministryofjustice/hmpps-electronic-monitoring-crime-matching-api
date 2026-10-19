@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
-import ReportParagraphBuilder
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ReportTableBuilder
 
 class ContextualReportSummary {
   private val header = "Summary"

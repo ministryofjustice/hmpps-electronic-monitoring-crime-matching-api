@@ -88,23 +88,16 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain a table
-    val table = document.mainDocumentPart.content
-      .unwrapped<Tbl>()
-      .first()
+    // Then the document should contain a three tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    val rows = table.content.unwrapped<Tr>()
+    assertThat(tables).hasSize(3)
 
-    // And the table should have two rows
-    assertThat(rows).hasSize(2)
+    val rows = tables[0].content.unwrapped<Tr>()
 
-    val titleCell = rows[0].content
-      .unwrapped<Tc>()
-      .single()
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
 
-    val contentCell = rows[1].content
-      .unwrapped<Tc>()
-      .single()
+    val contentCell = rows[1].content.unwrapped<Tc>().single()
 
     // And the first row should contain the title
     assertThat(titleCell.text()).contains("Date: 01/10/2026")
@@ -134,24 +127,15 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain a second table
-    val table = document.mainDocumentPart.content
-      .unwrapped<Tbl>()
-      .drop(1)
-      .first()
+    // Then the document should contain a three tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    val rows = table.content.unwrapped<Tr>()
+    assertThat(tables).hasSize(3)
 
-    // And the table should have two rows
-    assertThat(rows).hasSize(2)
+    val rows = tables[1].content.unwrapped<Tr>()
 
-    val titleCell = rows[0].content
-      .unwrapped<Tc>()
-      .single()
-
-    val contentCell = rows[1].content
-      .unwrapped<Tc>()
-      .single()
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val contentCell = rows[1].content.unwrapped<Tc>().single()
 
     // And the first row should contain the title
     assertThat(titleCell.text()).contains("Summary")
@@ -181,15 +165,14 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain a third table
-    val table = document.mainDocumentPart.content
-      .unwrapped<Tbl>()
-      .drop(2)
-      .first()
+    // Then the document should contain a three tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    val rows = table.content.unwrapped<Tr>()
+    assertThat(tables).hasSize(3)
 
-    // And the table should have two rows
+    val rows = tables[2].content.unwrapped<Tr>()
+
+    // And the table should have seven rows
     assertThat(rows).hasSize(7)
 
     val titleCell = rows[0].content

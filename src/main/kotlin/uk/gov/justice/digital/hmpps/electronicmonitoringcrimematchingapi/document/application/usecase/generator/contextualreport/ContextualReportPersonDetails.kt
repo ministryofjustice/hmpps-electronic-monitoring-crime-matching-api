@@ -1,16 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
-import ReportParagraphBuilder
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ReportTableBuilder
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.DeviceWearerDetails
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 class ContextualReportPersonDetails {
   private val dateFormatter = DateTimeFormatter
     .ofPattern("dd/MM/yyyy")
-    .withZone(ZoneOffset.UTC)
 
   private val header: String = "Person:"
 
@@ -20,7 +16,7 @@ class ContextualReportPersonDetails {
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
-    val table = tableBuilder.create()
+    val table = tableBuilder.create(columns = 2)
 
     tableBuilder.addHeader(
       table = table,
