@@ -7,7 +7,10 @@ class ContextualReportSummary {
     document.mainDocumentPart.addObject(
       ReportTableBuilder().create(
         heading = "Summary",
-        content = "Summary of the contextual movement report will be added here.",
+        content = """
+          This report follows on from an EMAC Proximity Alert for the above crime and provides proportionate and
+          necessary information in support of that investigation.
+         """.trimIndent(),
       ),
     )
   }
