@@ -30,8 +30,6 @@ class DocumentManagementClient(
         .contentType(MediaType.parseMediaType(document.contentType))
         .filename(document.filename)
 
-      // TODO Agree on what metadata to send, for now sending empty as it's required
-      // Possibly the documentType and the original document request ID?
       part("metadata", "{}")
         .contentType(MediaType.APPLICATION_JSON)
     }
