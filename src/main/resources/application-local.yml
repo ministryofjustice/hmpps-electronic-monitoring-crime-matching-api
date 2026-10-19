@@ -19,6 +19,8 @@ services:
   hmpps-auth:
     url: ${HMPPS_AUTH_URL:http://localhost:9090/auth}
     mfa: false
+  document-management:
+    url: ${DOCUMENT_MANAGEMENT_API_URL:http://localhost:8084}
 
 aws:
   region: eu-west-2

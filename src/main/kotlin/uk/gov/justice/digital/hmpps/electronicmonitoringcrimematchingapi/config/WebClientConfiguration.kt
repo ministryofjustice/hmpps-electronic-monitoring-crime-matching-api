@@ -20,6 +20,9 @@ class WebClientConfiguration(
   fun hmppsAuthHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(hmppsAuthBaseUri, healthTimeout)
 
   @Bean
+  fun documentManagementApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(documentManagementBaseUri, healthTimeout)
+
+  @Bean
   fun documentManagementApiWebClient(
     authorizedClientManager: OAuth2AuthorizedClientManager,
     builder: WebClient.Builder,
