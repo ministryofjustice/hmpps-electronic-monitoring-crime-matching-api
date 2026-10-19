@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportFurtherInformation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportHeader
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportPersonDetails
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportReportPeriod
@@ -49,6 +50,10 @@ class ContextualReportDocxGenerator(
     document.mainDocumentPart.addParagraphOfText("")
 
     ContextualReportReportPeriod().addTo(document, parameters.reportPeriod)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportFurtherInformation().addTo(document, parameters.additionalInformation)
 
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)

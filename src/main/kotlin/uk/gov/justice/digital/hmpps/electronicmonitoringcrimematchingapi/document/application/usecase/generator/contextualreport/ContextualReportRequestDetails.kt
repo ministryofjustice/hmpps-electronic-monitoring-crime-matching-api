@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ReportRequestDetails
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -20,7 +21,7 @@ class ContextualReportRequestDetails {
   private val time = "Time"
 
   fun addTo(
-    document: org.docx4j.openpackaging.packages.WordprocessingMLPackage,
+    document: WordprocessingMLPackage,
     request: ReportRequestDetails,
   ) {
     val paragraphBuilder = ReportParagraphBuilder()

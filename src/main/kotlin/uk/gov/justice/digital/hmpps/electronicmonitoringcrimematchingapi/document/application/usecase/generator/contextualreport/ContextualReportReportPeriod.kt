@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ReportPeriod
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -16,7 +17,7 @@ class ContextualReportReportPeriod {
   private val imagesContent = "Between Above Date/Time Range"
 
   fun addTo(
-    document: org.docx4j.openpackaging.packages.WordprocessingMLPackage,
+    document: WordprocessingMLPackage,
     period: ReportPeriod,
   ) {
     val paragraphBuilder = ReportParagraphBuilder()

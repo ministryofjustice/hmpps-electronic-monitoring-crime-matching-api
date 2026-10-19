@@ -17,7 +17,7 @@ object DocumentRequestParametersFixtures {
       end = Instant.parse("2026-10-02T04:05:06Z"),
     ),
   ) = ContextualReportRequestParameters(
-    additionalInformation = "",
+    additionalInformation = "More information about the request",
     authorisingManager = AuthorisingManagerDetails(
       address = "123 The Street, London, UK, AB12 3CD",
       name = "John Smith",
