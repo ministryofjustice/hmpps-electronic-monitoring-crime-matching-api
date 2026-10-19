@@ -158,8 +158,67 @@ class ContextualReportDocxGeneratorTest {
 
     // And the second row should contain the content
     assertThat(contentCell.text()).contains(
-      "Summary of the contextual movement report will be added here.",
+      "This report follows on from an EMAC Proximity Alert for the above crime and provides proportionate and necessary information in support of that investigation.",
     )
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the person details`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain a third table
+    val table = document.mainDocumentPart.content
+      .unwrapped<Tbl>()
+      .drop(2)
+      .first()
+
+    val rows = table.content.unwrapped<Tr>()
+
+    // And the table should have two rows
+    assertThat(rows).hasSize(7)
+
+    val titleCell = rows[0].content
+      .unwrapped<Tc>()
+      .single()
+
+    val nameCells = rows[1].content.unwrapped<Tc>()
+    val dobCells = rows[2].content.unwrapped<Tc>()
+    val pncNumberCells = rows[3].content.unwrapped<Tc>()
+    val addressCells = rows[4].content.unwrapped<Tc>()
+    val emsIdCells = rows[5].content.unwrapped<Tc>()
+    val offenderManagerCells = rows[6].content.unwrapped<Tc>()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("Person:")
+
+    // And the 2nd to 7th rows should contain the content
+    assertThat(nameCells[0].text()).contains("Full Name")
+    assertThat(nameCells[1].text()).contains("Jane Doe")
+    assertThat(dobCells[0].text()).contains("D.O.B.")
+    assertThat(dobCells[1].text()).contains("01/01/1990")
+    assertThat(pncNumberCells[0].text()).contains("PNC Number")
+    assertThat(pncNumberCells[1].text()).contains("PNC123456")
+    assertThat(addressCells[0].text()).contains("Specified Address")
+    assertThat(addressCells[1].text()).contains("456 The Avenue, London, UK, AB12 3CD")
+    assertThat(emsIdCells[0].text()).contains("EMS ID")
+    assertThat(emsIdCells[1].text()).contains("DEVWR123456")
+    assertThat(offenderManagerCells[0].text()).contains("Offender Manager")
+    assertThat(offenderManagerCells[1].text()).contains("Probation Practitioner")
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
