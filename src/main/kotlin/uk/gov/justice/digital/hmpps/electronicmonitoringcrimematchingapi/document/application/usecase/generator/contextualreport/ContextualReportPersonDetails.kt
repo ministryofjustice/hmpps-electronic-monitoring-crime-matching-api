@@ -8,7 +8,13 @@ class ContextualReportPersonDetails {
   private val dateFormatter = DateTimeFormatter
     .ofPattern("dd/MM/yyyy")
 
-  private val header: String = "Person:"
+  private val header = "Person:"
+  private val name = "Full Name"
+  private val dateOfBirth = "D.O.B."
+  private val pncNumber = "PNC Number"
+  private val specifiedAddress = "Specified Address"
+  private val emsId = "EMS ID"
+  private val offenderManager = "Offender Manager"
 
   fun addTo(
     document: WordprocessingMLPackage,
@@ -29,7 +35,7 @@ class ContextualReportPersonDetails {
     tableBuilder.addRow(
       table = table,
       cells = listOf(
-        listOf(paragraphBuilder.create("Full Name")),
+        listOf(paragraphBuilder.create(name)),
         listOf(paragraphBuilder.create(deviceWearer.name)),
       ),
     )
@@ -37,7 +43,7 @@ class ContextualReportPersonDetails {
     tableBuilder.addRow(
       table = table,
       cells = listOf(
-        listOf(paragraphBuilder.create("D.O.B.")),
+        listOf(paragraphBuilder.create(dateOfBirth)),
         listOf(paragraphBuilder.create(deviceWearer.dateOfBirth.format(dateFormatter))),
       ),
     )
@@ -45,7 +51,7 @@ class ContextualReportPersonDetails {
     tableBuilder.addRow(
       table = table,
       cells = listOf(
-        listOf(paragraphBuilder.create("PNC Number")),
+        listOf(paragraphBuilder.create(pncNumber)),
         listOf(paragraphBuilder.create(deviceWearer.pncNumber)),
       ),
     )
@@ -53,7 +59,7 @@ class ContextualReportPersonDetails {
     tableBuilder.addRow(
       table = table,
       cells = listOf(
-        listOf(paragraphBuilder.create("Specified Address")),
+        listOf(paragraphBuilder.create(specifiedAddress)),
         listOf(paragraphBuilder.create(deviceWearer.address)),
       ),
     )
@@ -61,7 +67,7 @@ class ContextualReportPersonDetails {
     tableBuilder.addRow(
       table = table,
       cells = listOf(
-        listOf(paragraphBuilder.create("EMS ID")),
+        listOf(paragraphBuilder.create(emsId)),
         listOf(paragraphBuilder.create(deviceWearer.emsId)),
       ),
     )
@@ -69,7 +75,7 @@ class ContextualReportPersonDetails {
     tableBuilder.addRow(
       table = table,
       cells = listOf(
-        listOf(paragraphBuilder.create("Offender Manager")),
+        listOf(paragraphBuilder.create(offenderManager)),
         listOf(paragraphBuilder.create(deviceWearer.offenderManager)),
       ),
     )
