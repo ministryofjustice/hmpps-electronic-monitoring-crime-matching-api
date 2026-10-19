@@ -10,17 +10,39 @@ class ContextualReportHeader {
     .ofPattern("dd/MM/yyyy")
     .withZone(ZoneOffset.UTC)
 
+  private val headerPrefix = "Date:"
+  private val contextPrefix = "Contextual Movement Report for Crime Reference Number -"
+
   fun addTo(
     document: WordprocessingMLPackage,
     createdAt: Instant,
     crimeReference: String,
   ) {
-    document.mainDocumentPart.addObject(
-      ReportTableBuilder().create(
-        heading = "Date: ${dateFormatter.format(createdAt)}",
-        content = "Contextual Movement Report for Crime Reference Number - $crimeReference",
-        contentCentred = true,
+    val paragraphBuilder = ReportParagraphBuilder()
+    val tableBuilder = ReportTableBuilder()
+    val table = tableBuilder.create()
+
+    tableBuilder.addHeader(
+      table = table,
+      content = listOf(
+        paragraphBuilder.create("$headerPrefix ${dateFormatter.format(createdAt)}", bold = true),
+      ),
+      columns = 1,
+    )
+
+    tableBuilder.addRow(
+      table = table,
+      cells = listOf(
+        listOf(
+          paragraphBuilder.create(
+            "$contextPrefix $crimeReference",
+            bold = true,
+            centred = true,
+          ),
+        ),
       ),
     )
+
+    document.mainDocumentPart.addObject(table)
   }
 }

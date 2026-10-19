@@ -1,32 +1,35 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
 import org.docx4j.jaxb.Context
-import org.docx4j.wml.BooleanDefaultTrue
-import org.docx4j.wml.JcEnumeration
+import org.docx4j.wml.CTBorder
 import org.docx4j.wml.STBorder
 import org.docx4j.wml.STShd
 import org.docx4j.wml.STTblLayoutType
 import org.docx4j.wml.STVerticalJc
 import org.docx4j.wml.Tbl
-import org.docx4j.wml.Tr
+import org.docx4j.wml.TblWidth
+import org.docx4j.wml.Tc
+import java.math.BigInteger
 
 class ReportTableBuilder {
   private val factory = Context.getWmlObjectFactory()
 
-  fun create(
-    heading: String,
-    content: String,
-    contentCentred: Boolean = false,
-  ): Tbl {
-    val table = factory.createTbl().apply {
+  private val tableWidth = 5000 // 100% in fiftieths of a percent
+  private val borderSize = 4L // 0.5pt
+  private val cellPaddingVertical = 40L
+  private val cellPaddingHorizontal = 120L
+
+  fun create(columns: Int = 1): Tbl {
+    require(columns > 0) {
+      "Table must have at least one column"
+    }
+
+    return factory.createTbl().apply {
       tblPr = factory.createTblPr().apply {
-        tblW = factory.createTblWidth().apply {
-          type = "pct"
-          w = 5000.toBigInteger()
-        }
+        tblW = width(tableWidth.toLong(), "pct")
 
         tblLayout = factory.createCTTblLayoutType().apply {
-          type = STTblLayoutType.AUTOFIT
+          type = STTblLayoutType.FIXED
         }
 
         tblBorders = factory.createTblBorders().apply {
@@ -35,87 +38,105 @@ class ReportTableBuilder {
           left = border()
           right = border()
           insideH = border()
+          insideV = border()
         }
       }
 
       tblGrid = factory.createTblGrid().apply {
-        gridCol.add(factory.createTblGridCol())
+        repeat(columns) {
+          gridCol.add(factory.createTblGridCol())
+        }
+      }
+    }
+  }
+
+  fun addHeader(
+    table: Tbl,
+    content: List<Any>,
+    columns: Int,
+  ) {
+    val row = factory.createTr()
+
+    row.content.add(
+      createCell(
+        content = content,
+        shaded = true,
+        columnSpan = columns,
+      ),
+    )
+
+    table.content.add(row)
+  }
+
+  fun addRow(
+    table: Tbl,
+    cells: List<List<Any>>,
+  ) {
+    val row = factory.createTr()
+
+    cells.forEach { content ->
+      row.content.add(
+        createCell(
+          content = content,
+          shaded = false,
+          columnSpan = 1,
+        ),
+      )
+    }
+
+    table.content.add(row)
+  }
+
+  private fun createCell(
+    content: List<Any>,
+    shaded: Boolean,
+    columnSpan: Int,
+  ): Tc = factory.createTc().apply {
+    tcPr = factory.createTcPr().apply {
+      vAlign = factory.createCTVerticalJc().apply {
+        `val` = STVerticalJc.CENTER
+      }
+
+      if (columnSpan > 1) {
+        gridSpan = factory.createTcPrInnerGridSpan().apply {
+          `val` = columnSpan.toBigInteger()
+        }
+      }
+
+      if (shaded) {
+        shd = factory.createCTShd().apply {
+          fill = "E6E6E6"
+          `val` = STShd.CLEAR
+        }
+      }
+
+      tcMar = factory.createTcMar().apply {
+        top = width(cellPaddingVertical, "dxa")
+        bottom = width(cellPaddingVertical, "dxa")
+        left = width(cellPaddingHorizontal, "dxa")
+        right = width(cellPaddingHorizontal, "dxa")
       }
     }
 
-    table.content.add(row(heading, shaded = true, centred = false))
-    table.content.add(row(content, shaded = false, centred = contentCentred))
+    this.content.addAll(content)
 
-    return table
+    // Word requires a paragraph in an otherwise empty cell.
+    if (content.isEmpty()) {
+      this.content.add(factory.createP())
+    }
   }
 
-  private fun row(
-    value: String,
-    shaded: Boolean,
-    centred: Boolean,
-  ): Tr = factory.createTr().apply {
-    content.add(
-      factory.createTc().apply {
-        tcPr = factory.createTcPr().apply {
-          vAlign = factory.createCTVerticalJc().apply {
-            `val` = STVerticalJc.CENTER
-          }
-
-          if (shaded) {
-            shd = factory.createCTShd().apply {
-              fill = "E6E6E6"
-              `val` = STShd.CLEAR
-            }
-          }
-
-          tcMar = factory.createTcMar().apply {
-            top = margin(40)
-            bottom = margin(40)
-            left = margin(120)
-            right = margin(120)
-          }
-        }
-
-        content.add(
-          factory.createP().apply {
-            pPr = factory.createPPr().apply {
-              jc = factory.createJc().apply {
-                `val` = if (centred) JcEnumeration.CENTER else JcEnumeration.LEFT
-              }
-
-              spacing = factory.createPPrBaseSpacing().apply {
-                before = 0.toBigInteger()
-                after = 0.toBigInteger()
-              }
-            }
-
-            content.add(
-              factory.createR().apply {
-                rPr = factory.createRPr().apply {
-                  b = BooleanDefaultTrue()
-                }
-
-                content.add(
-                  factory.createText().apply {
-                    this.value = value
-                  },
-                )
-              },
-            )
-          },
-        )
-      },
-    )
-  }
-
-  private fun border() = factory.createCTBorder().apply {
+  private fun border(): CTBorder = factory.createCTBorder().apply {
     `val` = STBorder.SINGLE
     color = "000000"
-    sz = 8.toBigInteger()
+    sz = BigInteger.valueOf(borderSize)
   }
 
-  private fun margin(value: Long) = factory.createTblWidth().apply {
-    type = "dxa"
-    w = value.toBigInteger()
+  private fun width(
+    value: Long,
+    type: String,
+  ): TblWidth = factory.createTblWidth().apply {
+    this.type = type
+    w = BigInteger.valueOf(value)
   }
 }
