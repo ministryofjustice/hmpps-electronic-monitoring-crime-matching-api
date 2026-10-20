@@ -3,134 +3,140 @@ title: Crime Matching
 ---
 erDiagram
     %% Domain
-    CRIME 1 to 1+ CRIME-VERSION : "has 1 or more versions"
-    CRIME-VERSION 1 to 0+ CRIME-MATCHING-RESULT : "has 0 or more matching results"
-    CRIME-BATCH 1 to 1+ CRIME-VERSION : "has 1 or more versions"
+    crime 1 to 1+ crime_version : "has 1 or more versions"
+    crime_version 1 to 0+ crime_matching_result : "has 0 or more matching results"
+    crime_batch 1 to 1+ crime_version : "has 1 or more versions"
 
     %% Ingestion
-    CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or one CRIME-BATCH : "produces at most 1 crime batch"
-    CRIME-BATCH-INGESTION-ATTEMPT 1 to 1 CRIME-BATCH-EMAIL : "has 1 email"
-    CRIME-BATCH-EMAIL 1 to 0+ CRIME-BATCH-EMAIL-ATTACHMENT : "has 0 or more attachments"
-    CRIME-BATCH-EMAIL-ATTACHMENT 1 to zero or more CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ERROR : "has 0 or more ingestion errors"
-    CRIME-BATCH-EMAIL 1 to 1 CRIME-BATCH-EMAIL-INGESTION-ERROR : "produces at most 1 crime batch ingestion error"
-    CRIME-VERSION 1 to 1+ CRIME-VERSION-UPDATE : "has 1 or more version updates"
+    crime_batch_email_attachment 1 to zero or one crime_batch : "produces at most 1 crime batch"
+    crime_batch_ingestion_attempt 1 to 1 crime_batch_email : "has 1 email"
+    crime_batch_email 1 to 0+ crime_batch_email_attachment : "has 0 or more attachments"
+    crime_batch_email_attachment 1 to zero or more crime_batch_email_attachment_ingestion_error : "has 0 or more ingestion errors"
+    crime_batch_email 1 to 1 crime_batch_ingestion_error : "produces at most 1 crime batch ingestion error"
+    crime_version 1 to 1+ crime_version_update : "has 1 or more version updates"
 
     %% Matching
-    CRIME-BATCH 1 to 0+ CRIME-MATCHING-RUN : "has 0 or more matching runs"
-    CRIME-MATCHING-RUN 1 to 1+ CRIME-MATCHING-RESULT : "produces 1 or more matching results"
-    CRIME-MATCHING-RESULT 1 to 0+ CRIME-MATCHING-RESULT-DEVICE-WEARER : "has 0 or more matched device wearers"
-    CRIME-MATCHING-RESULT-DEVICE-WEARER 1 to 1+ CRIME-MATCHING-RESULT-POSITION : "has 2 or more positions"
+    crime_batch 1 to 0+ crime_matching_run : "has 0 or more matching runs"
+    crime_matching_run 1 to 1+ crime_matching_result : "produces 1 or more matching results"
+    crime_matching_result 1 to 0+ crime_matching_result_device_wearer : "has 0 or more matched device wearers"
+    crime_matching_result_device_wearer 1 to 1+ crime_matching_result_position : "has 2 or more positions"
 
-    CRIME-BATCH {
-        uuid id pk
-        string batch-id
-        datetime created-at
-        uuid crime-batch-email-attachment fk
+    crime {
+        uuid id PK
+        varchar police_force_area UK "composite unique constraint"
+        varchar crime_reference UK "composite unique constraint"
     }
 
-    CRIME-BATCH-INGESTION-ATTEMPT {
-        uuid id pk
-        string bucket
-        string object-name
-        datetime created-at
+    crime_batch {
+        uuid id PK
+        varchar batch_id
+        uuid crime_batch_email_attachment_id FK, UK
+        timestamp created_at
     }
 
-    CRIME-BATCH-EMAIL-INGESTION-ERROR  {
-        uuid id pk
-        uuid crime-batch-email-id fk
-        string errorType
+    crime_batch_ingestion_attempt {
+        uuid id PK
+        varchar bucket
+        varchar object_name
+        timestamp created_at
     }
 
-    CRIME-BATCH-EMAIL {
-        uuid id pk
-        uuid crime-batch-ingestion-attempt-id fk
-        string sender
-        string original-sender
-        string subject
-        datetime sent-at
+    crime_batch_email {
+        uuid id PK
+        uuid crime_batch_ingestion_attempt_id FK, UK
+        varchar sender
+        varchar original_sender
+        varchar subject
+        timestamp sent_at
     }
 
-    CRIME-BATCH-EMAIL-ATTACHMENT {
-        uuid id pk
-        uuid crime-batch-email-id fk
-        string filename
-        int row-count
+    crime_batch_email_attachment {
+        uuid id PK
+        uuid crime_batch_email_id FK, UK
+        varchar file_name
+        integer row_count
     }
 
-    CRIME-BATCH-EMAIL-ATTACHMENT-INGESTION-ERROR {
-        uuid id pk
-        uuid crime-batch-email-attachment-id fk
-        long rowNumber
-        string crimeReference
-        string fieldName
-        string value
-        string errorType
-        string crimeTypeId
+    crime_batch_email_attachment_ingestion_error {
+        uuid id PK
+        uuid crime_batch_email_attachment_id FK
+        bigint row_number
+        varchar crime_reference
+        varchar error_type
+        varchar crime_type_id
+        varchar field_name
+        varchar value
     }
 
-    CRIME {
-        uuid id pk
-        string police-force-area uk "composite unique constraint"
-        string crimeReference uk "composite unique constraint"
+    crime_batch_ingestion_error {
+        uuid id PK
+        varchar error_type
+        uuid crime_batch_ingestion_attempt_id FK, UK
     }
 
-    CRIME-VERSION {
-        uuid id pk
-        uuid crime-id fk
-        uuid crime-batch-id fk
-        string crimeTypeId
-        datetime crimeDateTimeFrom
-        datetime crimeDateTimeTo
-        double latitude
-        double longitude
+    crime_version {
+        uuid id PK
+        uuid crime_id FK
+        uuid crime_batch_id FK
+        varchar crime_type_id
+        timestamptz crime_date_time_from
+        timestamptz crime_date_time_to
         double easting
         double northing
-        string crimeText
-        datetime created-at
-    }
-
-    CRIME-VERSION-UPDATE {
-        uuid id pk
-        uuid crime-version-id fk
-        string fieldName
-    }
-
-    CRIME-MATCHING-RUN {
-        uuid id pk
-        uuid crime-batch-id fk
-        string algorithm-version
-        string trigger-type
-        string status
-        datetime created-at
-        datetime matching-started
-        datetime matching-ended
-    }
-
-    CRIME-MATCHING-RESULT {
-        uuid id pk
-        uuid crime-version-id fk, uk "composite unique constraint"
-        uuid crime-matching-run-id fk, uk "composite unique constraint"
-        datetime created-at
-    }
-
-    CRIME-MATCHING-RESULT-DEVICE-WEARER {
-        uuid id pk
-        uuid crime-matching-result-id fk, uk "composite unique constraint"
-        string name
-        string nomisid
-        long deviceId uk "composite unique constraint"
-    }
-
-    CRIME-MATCHING-RESULT-POSITION {
-        uuid id pk
-        uuid crime-matching-result-device-wearer-id fk
         double latitude
         double longitude
-        datetime capturedDateTime
-        string sequenceLabel
-        int precision
-        long direction
-        long speed
-        double entryBearing "nullable"
-        double exitBearing "nullable"
+        text crime_text
+        timestamp created_at
+    }
+
+    crime_version_update {
+        uuid id PK
+        uuid crime_version_id FK
+        varchar field_name
+    }
+
+    crime_matching_run {
+        uuid id PK
+        uuid crime_batch_id FK
+        varchar algorithm_version
+        varchar trigger_type
+        varchar status
+        timestamp created_at
+        timestamp matching_started
+        timestamp matching_ended
+    }
+
+    crime_matching_result {
+        uuid id PK
+        uuid crime_version_id FK, UK "composite unique constraint"
+        uuid crime_matching_run_id FK, UK "composite unique constraint"
+        timestamp created_at
+    }
+
+    crime_matching_result_device_wearer {
+        uuid id PK
+        uuid crime_matching_result_id FK, UK "composite unique constraint"
+        varchar address
+        timestamp date_of_birth "nullable"
+        bigint device_id UK "composite unique constraint"
+        varchar device_serial_number
+        varchar device_name
+        varchar identifier
+        varchar name
+        varchar nomis_id
+        varchar pnc_ref
+    }
+
+    crime_matching_result_position {
+        uuid id PK
+        uuid crime_matching_result_device_wearer_id FK
+        timestamptz captured_date_time
+        bigint direction
+        double latitude
+        double longitude
+        bigint precision
+        varchar sequence_label
+        bigint speed
+        double entry_bearing "nullable"
+        double exit_bearing "nullable"
     }
