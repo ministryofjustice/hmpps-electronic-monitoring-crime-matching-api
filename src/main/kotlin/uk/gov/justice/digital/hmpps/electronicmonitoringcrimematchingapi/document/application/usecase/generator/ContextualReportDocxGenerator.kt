@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportReportPeriod
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportRequestDetails
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportSummary
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportWitnessStatement
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
@@ -59,6 +60,10 @@ class ContextualReportDocxGenerator(
     document.mainDocumentPart.addParagraphOfText("")
 
     ContextualReportDisclaimer().addTo(document)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportWitnessStatement(documentRequest.createdAt, parameters).addTo(document)
 
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)

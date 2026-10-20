@@ -12,6 +12,7 @@ class ReportParagraphBuilder {
     text: String,
     bold: Boolean = false,
     centred: Boolean = false,
+    spacingAfter: Int = 0,
   ): P {
     // P = Paragraph
     // PPr = Paragraph Properties
@@ -26,7 +27,7 @@ class ReportParagraphBuilder {
 
         spacing = factory.createPPrBaseSpacing().apply {
           before = 0.toBigInteger()
-          after = 0.toBigInteger()
+          after = spacingAfter.toBigInteger()
         }
       }
 

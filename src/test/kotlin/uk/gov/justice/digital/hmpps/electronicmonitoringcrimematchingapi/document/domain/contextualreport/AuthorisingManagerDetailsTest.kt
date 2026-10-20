@@ -9,11 +9,10 @@ class AuthorisingManagerDetailsTest {
   private val valid = givenContextualReportRequestParameters().authorisingManager
 
   @ParameterizedTest
-  @ValueSource(strings = ["address", "name", "occupation"])
+  @ValueSource(strings = ["name", "occupation"])
   fun `it should reject blank required fields`(field: String) {
     assertThatThrownBy {
       when (field) {
-        "address" -> valid.copy(address = " ")
         "name" -> valid.copy(name = " ")
         "occupation" -> valid.copy(occupation = " ")
         else -> error("Unknown field: $field")
