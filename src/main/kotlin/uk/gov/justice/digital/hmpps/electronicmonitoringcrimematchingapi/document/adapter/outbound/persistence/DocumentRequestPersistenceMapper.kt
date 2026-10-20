@@ -5,6 +5,7 @@ import tools.jackson.core.type.TypeReference
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.ObjectNode
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.parser.DocumentRequestParameterParser
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentArtefact
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestParameters
 
@@ -20,6 +21,9 @@ class DocumentRequestPersistenceMapper(
     parameters = serializeParameters(request.parameters),
     createdBy = request.createdBy,
     createdAt = request.createdAt,
+    artefactReference = request.artefact?.reference,
+    artefactFilename = request.artefact?.filename,
+    artefactContentType = request.artefact?.contentType,
   )
 
   fun toDomain(entity: DocumentRequestEntity): DocumentRequest = DocumentRequest.rehydrate(
@@ -29,7 +33,16 @@ class DocumentRequestPersistenceMapper(
     status = entity.status,
     createdBy = entity.createdBy,
     createdAt = entity.createdAt,
+    artefact = toArtefact(entity),
   )
+
+  private fun toArtefact(entity: DocumentRequestEntity): DocumentArtefact? = entity.artefactReference?.let {
+    DocumentArtefact(
+      reference = it,
+      filename = entity.artefactFilename!!,
+      contentType = entity.artefactContentType!!,
+    )
+  }
 
   private fun serializeParameters(
     parameters: DocumentRequestParameters,

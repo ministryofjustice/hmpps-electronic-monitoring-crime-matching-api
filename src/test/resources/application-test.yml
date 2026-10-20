@@ -28,6 +28,8 @@ hmpps:
 services:
   hmpps-auth:
     url: "http://localhost:8090/auth"
+  document-management:
+    url: "http://localhost:8094"
 
 aws:
   region: eu-west-2
@@ -72,6 +74,10 @@ notify:
   police-force-recipient-emails:
     METROPOLITAN:
       - metropolitan@email.com
+
+client:
+  id: mockClient
+  secret: clientsecret
 
 flipt:
   url: http://localhost:8092
