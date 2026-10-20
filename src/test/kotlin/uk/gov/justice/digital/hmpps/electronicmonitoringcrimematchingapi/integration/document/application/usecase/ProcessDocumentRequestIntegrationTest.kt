@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.ProcessDocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ContextualReportDocxGenerator
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGeneratorRegistry
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentSensitivityLabeller
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentStore
@@ -17,7 +18,9 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.DocumentManagementApiExtension.Companion.documentManagementApi
+import java.time.Clock
 import java.time.Instant
+import java.time.ZoneOffset
 import java.util.UUID
 
 class ProcessDocumentRequestIntegrationTest : IntegrationTestBase() {
@@ -26,10 +29,15 @@ class ProcessDocumentRequestIntegrationTest : IntegrationTestBase() {
 
   private lateinit var useCase: ProcessDocumentRequest
 
+  private val clock = Clock.fixed(
+    Instant.parse("2026-10-08T12:00:00Z"),
+    ZoneOffset.UTC,
+  )
+
   @BeforeEach
   fun setUp() {
     useCase = ProcessDocumentRequest(
-      generatorRegistry = DocumentGeneratorRegistry(listOf(ContextualReportDocxGenerator())),
+      generatorRegistry = DocumentGeneratorRegistry(listOf(ContextualReportDocxGenerator(DocumentSensitivityLabeller(clock = clock)))),
       documentStore = documentStore,
     )
   }
@@ -81,7 +89,7 @@ class ProcessDocumentRequestIntegrationTest : IntegrationTestBase() {
     type = DocumentType.CONTEXTUAL_REPORT,
     parameters = givenContextualReportRequestParameters(),
     createdBy = "user123",
-    createdAt = Instant.parse("2026-10-08T12:00:00Z"),
+    createdAt = clock.instant(),
     status = status,
   )
 }
