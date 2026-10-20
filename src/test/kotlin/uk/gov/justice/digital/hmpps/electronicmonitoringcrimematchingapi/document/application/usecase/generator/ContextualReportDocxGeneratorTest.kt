@@ -88,10 +88,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain three tables
+    // Then the document should contain seven tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(3)
+    assertThat(tables).hasSize(7)
 
     val rows = tables[0].content.unwrapped<Tr>()
 
@@ -127,10 +127,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain three tables
+    // Then the document should contain seven tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(3)
+    assertThat(tables).hasSize(7)
 
     val rows = tables[1].content.unwrapped<Tr>()
 
@@ -165,10 +165,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain three tables
+    // Then the document should contain seven tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(3)
+    assertThat(tables).hasSize(7)
 
     val rows = tables[2].content.unwrapped<Tr>()
 
@@ -202,6 +202,186 @@ class ContextualReportDocxGeneratorTest {
     assertThat(emsIdCells[1].text()).contains("DEVWR123456")
     assertThat(offenderManagerCells[0].text()).contains("Offender Manager")
     assertThat(offenderManagerCells[1].text()).contains("Probation Practitioner")
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the crime details`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain seven tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(7)
+
+    val rows = tables[3].content.unwrapped<Tr>()
+
+    // And the table should have four rows
+    assertThat(rows).hasSize(4)
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val batchIdCells = rows[1].content.unwrapped<Tc>()
+    val crimeRefCells = rows[2].content.unwrapped<Tc>()
+    val crimeTypeCells = rows[3].content.unwrapped<Tc>()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("In relation to:")
+
+    // And the 2nd to 4th rows should contain the content
+    assertThat(batchIdCells[0].text()).contains("Crime Mapping Batch ID")
+    assertThat(batchIdCells[1].text()).contains("AVS20260101")
+    assertThat(crimeRefCells[0].text()).contains("Crime Reference Number")
+    assertThat(crimeRefCells[1].text()).contains("123456789")
+    assertThat(crimeTypeCells[0].text()).contains("Crime Type")
+    assertThat(crimeTypeCells[1].text()).contains("Robbery")
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the request details`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain seven tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(7)
+
+    val rows = tables[4].content.unwrapped<Tr>()
+
+    // And the table should have five rows
+    assertThat(rows).hasSize(5)
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val constabularyCells = rows[1].content.unwrapped<Tc>()
+    val fromCells = rows[2].content.unwrapped<Tc>()
+    val dateCells = rows[3].content.unwrapped<Tc>()
+    val timeCells = rows[4].content.unwrapped<Tc>()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("Requested by:")
+
+    // And the 2nd to 5th rows should contain the content
+    assertThat(constabularyCells[0].text()).contains("Constabulary")
+    assertThat(constabularyCells[1].text()).contains("Metropolitan")
+    assertThat(fromCells[0].text()).contains("From")
+    assertThat(fromCells[1].text()).contains("Police Officer")
+    assertThat(dateCells[0].text()).contains("Date")
+    assertThat(dateCells[1].text()).contains("03/10/2026")
+    assertThat(timeCells[0].text()).contains("Time")
+    assertThat(timeCells[1].text()).contains("11:12:13")
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the report period details`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain seven tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(7)
+
+    val rows = tables[5].content.unwrapped<Tr>()
+
+    // And the table should have four rows
+    assertThat(rows).hasSize(4)
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val fromCells = rows[1].content.unwrapped<Tc>()
+    val toCells = rows[2].content.unwrapped<Tc>()
+    val imagesCells = rows[3].content.unwrapped<Tc>()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("Request summary:")
+
+    // And the 2nd to 4th rows should contain the content
+    assertThat(fromCells[0].text()).contains("Datetime CR requested from")
+    assertThat(fromCells[1].text()).contains("01:02 01/10/2026")
+    assertThat(toCells[0].text()).contains("Datetime CR requested to")
+    assertThat(toCells[1].text()).contains("04:05 02/10/2026")
+    assertThat(imagesCells[0].text()).contains("Images")
+    assertThat(imagesCells[1].text()).contains("Between Above Date/Time Range")
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the further information`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain seven tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(7)
+
+    val rows = tables[6].content.unwrapped<Tr>()
+
+    // And the table should have two rows
+    assertThat(rows).hasSize(2)
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val contentCell = rows[1].content.unwrapped<Tc>().single()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).contains("Further information (as supplied by Constabulary/Force):")
+
+    // And the 2nd to 4th rows should contain the content
+    assertThat(contentCell.text()).contains("More information about the request")
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")

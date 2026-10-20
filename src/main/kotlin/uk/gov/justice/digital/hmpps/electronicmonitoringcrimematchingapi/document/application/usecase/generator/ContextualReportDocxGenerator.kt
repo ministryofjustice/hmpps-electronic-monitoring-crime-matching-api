@@ -1,8 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportFurtherInformation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportHeader
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportPersonDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportReportPeriod
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportRequestDetails
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportSummary
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
@@ -34,6 +38,22 @@ class ContextualReportDocxGenerator(
     document.mainDocumentPart.addParagraphOfText("")
 
     ContextualReportPersonDetails().addTo(document, parameters.deviceWearer)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportCrimeDetails().addTo(document, parameters.crime)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportRequestDetails().addTo(document, parameters.reportRequest)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportReportPeriod().addTo(document, parameters.reportPeriod)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportFurtherInformation().addTo(document, parameters.additionalInformation)
 
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)
