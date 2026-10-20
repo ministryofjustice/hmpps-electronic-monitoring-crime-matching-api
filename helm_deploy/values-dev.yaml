@@ -23,6 +23,7 @@ generic-service:
     SPRINGDOC_SWAGGER-UI_ENABLED: "true"
     FLIPT_URL: "https://feature-toggles-dev.hmpps.service.justice.gov.uk"
     NOTIFY_API_ENABLED: "true"
+    DOCUMENT_MANAGEMENT_API_URL: "https://document-api-dev.hmpps.service.justice.gov.uk"
 
   namespace_secrets:
     athena-roles: null
@@ -30,7 +31,6 @@ generic-service:
       ATHENA_GENERAL_IAM_ROLE: "general_role_arn"
 
   allowlist:
-    kpmg-pen-testing: 195.68.59.72/29
     groups:
       - digital_staff_and_mojo
       - moj_cloud_platform

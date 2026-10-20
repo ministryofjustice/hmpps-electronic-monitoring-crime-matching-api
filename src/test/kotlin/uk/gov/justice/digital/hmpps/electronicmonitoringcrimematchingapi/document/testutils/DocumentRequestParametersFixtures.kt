@@ -13,11 +13,11 @@ import java.time.LocalDate
 object DocumentRequestParametersFixtures {
   fun givenContextualReportRequestParameters(
     reportPeriod: ReportPeriod = ReportPeriod(
-      start = Instant.parse("2026-10-01T00:00:00Z"),
-      end = Instant.parse("2026-10-02T00:00:00Z"),
+      start = Instant.parse("2026-10-01T01:02:03Z"),
+      end = Instant.parse("2026-10-02T04:05:06Z"),
     ),
   ) = ContextualReportRequestParameters(
-    additionalInformation = "",
+    additionalInformation = "More information about the request",
     authorisingManager = AuthorisingManagerDetails(
       address = "123 The Street, London, UK, AB12 3CD",
       name = "John Smith",
@@ -51,14 +51,14 @@ object DocumentRequestParametersFixtures {
     ),
     reportPeriod = reportPeriod,
     reportRequest = ReportRequestDetails(
-      requestedAt = Instant.parse("2026-10-03T00:00:00Z"),
+      requestedAt = Instant.parse("2026-10-03T11:12:13Z"),
       requestedBy = "Police Officer",
       policeForceArea = "Metropolitan",
     ),
   )
 
   fun givenRawContextualReportRequestParameters() = mapOf(
-    "additionalInformation" to "",
+    "additionalInformation" to "More information about the request",
     "authorisingManager" to mapOf(
       "address" to "123 The Street, London, UK, AB12 3CD",
       "name" to "John Smith",
@@ -91,11 +91,11 @@ object DocumentRequestParametersFixtures {
       ),
     ),
     "reportPeriod" to mapOf(
-      "start" to "2026-10-01T00:00:00Z",
-      "end" to "2026-10-02T00:00:00Z",
+      "start" to "2026-10-01T01:02:03Z",
+      "end" to "2026-10-02T04:05:06Z",
     ),
     "reportRequest" to mapOf(
-      "requestedAt" to "2026-10-03T00:00:00Z",
+      "requestedAt" to "2026-10-03T11:12:13Z",
       "requestedBy" to "Police Officer",
       "policeForceArea" to "Metropolitan",
     ),

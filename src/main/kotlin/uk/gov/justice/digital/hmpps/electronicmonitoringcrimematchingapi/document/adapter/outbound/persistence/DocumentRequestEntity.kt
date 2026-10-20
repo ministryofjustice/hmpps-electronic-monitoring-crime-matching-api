@@ -36,4 +36,13 @@ class DocumentRequestEntity(
 
   @Column(name = "created_at", nullable = false)
   val createdAt: Instant,
+
+  @Column(name = "artefact_reference")
+  val artefactReference: String? = null,
+
+  @Column(name = "artefact_filename")
+  val artefactFilename: String? = null,
+
+  @Column(name = "artefact_content_type")
+  val artefactContentType: String? = null,
 )

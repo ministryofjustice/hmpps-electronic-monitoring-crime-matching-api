@@ -21,6 +21,12 @@ spring:
         provider:
           hmpps-auth:
             token-uri: ${services.hmpps-auth.url}/oauth/token
+        registration:
+          document-management-api:
+            provider: hmpps-auth
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            authorization-grant-type: client_credentials
   jpa:
     hibernate:
       ddl-auto: validate
@@ -73,6 +79,8 @@ services:
   hmpps-auth:
     url: ${HMPPS_AUTH_URL}
     mfa: ${MFA_REQUIRED}
+  document-management:
+    url: ${DOCUMENT_MANAGEMENT_API_URL}
 
 notify:
   enabled: ${NOTIFY_API_ENABLED}

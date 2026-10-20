@@ -1,27 +1,60 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import org.docx4j.wml.ObjectFactory
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportFurtherInformation
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportHeader
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportPersonDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportReportPeriod
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportRequestDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportSummary
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.io.ByteArrayOutputStream
 
-class ContextualReportDocxGenerator : DocumentGenerator {
+class ContextualReportDocxGenerator(
+  private val documentSensitivityLabeller: DocumentSensitivityLabeller,
+) : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
   override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()
-    val factory = ObjectFactory()
+    val parameters = documentRequest.parameters as ContextualReportRequestParameters
 
-    val paragraph = factory.createP()
-    val run = factory.createR()
-    val text = factory.createText().apply {
-      value = "Hello world"
-    }
+    documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 
-    run.content.add(text)
-    paragraph.content.add(run)
-    document.mainDocumentPart.content.add(paragraph)
+    ContextualReportHeader().addTo(
+      document = document,
+      createdAt = documentRequest.createdAt,
+      crimeReference = parameters.crime.reference,
+    )
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportSummary().addTo(document)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportPersonDetails().addTo(document, parameters.deviceWearer)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportCrimeDetails().addTo(document, parameters.crime)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportRequestDetails().addTo(document, parameters.reportRequest)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportReportPeriod().addTo(document, parameters.reportPeriod)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportFurtherInformation().addTo(document, parameters.additionalInformation)
+
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)
 
