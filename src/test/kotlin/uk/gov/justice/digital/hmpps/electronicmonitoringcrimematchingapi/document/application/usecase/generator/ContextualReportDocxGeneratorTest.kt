@@ -88,10 +88,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain eight tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(8)
 
     val rows = tables[0].content.unwrapped<Tr>()
 
@@ -127,10 +127,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain eight tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(8)
 
     val rows = tables[1].content.unwrapped<Tr>()
 
@@ -165,10 +165,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain eight tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(8)
 
     val rows = tables[2].content.unwrapped<Tr>()
 
@@ -223,10 +223,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain eight tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(8)
 
     val rows = tables[3].content.unwrapped<Tr>()
 
@@ -269,10 +269,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain eight tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(8)
 
     val rows = tables[4].content.unwrapped<Tr>()
 
@@ -318,10 +318,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain eight tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(8)
 
     val rows = tables[5].content.unwrapped<Tr>()
 
@@ -364,10 +364,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain eight tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(8)
 
     val rows = tables[6].content.unwrapped<Tr>()
 
@@ -382,6 +382,52 @@ class ContextualReportDocxGeneratorTest {
 
     // And the 2nd to 4th rows should contain the content
     assertThat(contentCell.text()).contains("More information about the request")
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the disclaimer`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain eight tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(8)
+
+    val rows = tables[7].content.unwrapped<Tr>()
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val contentCell = rows[1].content.unwrapped<Tc>().single()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).isEqualTo("Disclaimer:")
+
+    // And the second row should contain the content
+    assertThat(contentCell.text()).isEqualTo(
+      """
+        The data disclosed in this report does not confirm that the tag wearer perpetrated or witnessed a crime.
+        In addition, it does not rule out other EM tag wearers being in the vicinity of the crime during the window of opportunity.
+        The results of this process are also limited to persons tagged as part of the MoJ’s Acquisitive Crime Project and only where there has been an ability to monitor the equipment during the window of opportunity of the crime.
+        Examples of an inability to monitor a person include:
+        • Where the person has failed to charge the EM tag
+        • Where the tag has been removed from the person but is still able to transmit its location
+        • Where the equipment has failed due to a technical fault. The technology used (radio frequency transmissions; GPS location monitoring and Location Based Services) has been proven to be reliable over many years. The monitoring equipment is extremely robust and reliable and meets the stringent specifications laid down by the Ministry of Justice. The monitoring equipment is also rigorously tested and audited by EMS, an independent body and the Home Office Scientific Branch. 
+      """.trimIndent().trim().replace("\\n".toRegex(), ""),
+    )
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
