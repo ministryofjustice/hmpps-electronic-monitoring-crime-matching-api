@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -348,9 +349,92 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  @DisplayName("GET /document-requests/{documentRequestId}/artefact")
+  inner class GetDocumentRequestArtefactRoute {
+    @Test
+    fun `it should return a 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri("/document-requests/${UUID.randomUUID()}/artefact")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri("/document-requests/${UUID.randomUUID()}/artefact")
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return a 404 when the document request does not have an artefact`() {
+      val documentRequestId = UUID.randomUUID()
+      repository.save(givenDocumentRequestEntity(id = documentRequestId))
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    @Disabled("TODO(ACR-1103): implement DocumentStore.get so real artefact retrieval works")
+    fun `it should return the artefact bytes when the artefact exists`() {
+      val documentRequestId = UUID.randomUUID()
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = "document-artefact-reference",
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "application/pdf",
+        ),
+      )
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectHeader().contentType(MediaType.APPLICATION_PDF)
+        .expectBody<ByteArray>()
+        .isEqualTo("document artefact content".toByteArray())
+    }
+
+    @Test
+    fun `it should return a 500 when the artefact content type is invalid`() {
+      val documentRequestId = UUID.randomUUID()
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = "document-artefact-reference",
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "invalid-content-type",
+        ),
+      )
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+    }
+  }
+
   private fun givenDocumentRequestEntity(
     id: UUID = UUID.randomUUID(),
     createdAt: Instant = Instant.parse("2026-10-08T12:00:00Z"),
+    artefactReference: String? = null,
+    artefactFilename: String? = null,
+    artefactContentType: String? = null,
   ): DocumentRequestEntity = DocumentRequestEntity(
     id = id,
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -358,6 +442,9 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     parameters = givenRawContextualReportRequestParameters(),
     createdBy = "test",
     createdAt = createdAt,
+    artefactReference = artefactReference,
+    artefactFilename = artefactFilename,
+    artefactContentType = artefactContentType,
   )
 
   private fun givenContextualReportRequestBody(

@@ -20,4 +20,6 @@ class DocumentManagementAdapter(
       contentType = response.mimeType,
     )
   }
+
+  override fun get(documentArtefact: DocumentArtefact): GeneratedDocument? = throw NotImplementedError()
 }
