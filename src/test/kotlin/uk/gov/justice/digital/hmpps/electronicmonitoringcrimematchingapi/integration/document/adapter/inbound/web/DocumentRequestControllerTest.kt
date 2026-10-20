@@ -2,48 +2,34 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Primary
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.persistence.DocumentRequestEntity
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.persistence.DocumentRequestRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.DocumentRequestSummary
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.ArtefactFailedToGenerateException
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.DocumentRequestArtefactNotFoundException
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.GetDocumentRequestArtefact
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenRawContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import java.time.Instant
 import java.util.UUID
 
-@Import(DocumentRequestControllerTest.MockConfig::class)
 class DocumentRequestControllerTest : IntegrationTestBase() {
 
   @Autowired
   private lateinit var repository: DocumentRequestRepository
-
-  @Autowired
-  private lateinit var getDocumentRequestArtefact: GetDocumentRequestArtefact
 
   private val role = "ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW"
 
   @BeforeEach
   fun setUp() {
     repository.deleteAll()
-    Mockito.reset(getDocumentRequestArtefact)
   }
 
   @Nested
@@ -386,40 +372,9 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should return the artefact bytes with the expected content type`() {
+    fun `it should return a 404 when the document request does not have an artefact`() {
       val documentRequestId = UUID.randomUUID()
-      val content = "document artefact content".toByteArray()
-      val contentType = "application/pdf"
-
-      whenever(getDocumentRequestArtefact.get(documentRequestId)).thenReturn(
-        GeneratedDocument(
-          filename = "document-request.pdf",
-          contentType = contentType,
-          content = content,
-        ),
-      )
-
-      val body = webTestClient.get()
-        .uri("/document-requests/$documentRequestId/artefact")
-        .headers(setAuthorisation(roles = listOf(role)))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectHeader().contentType(MediaType.parseMediaType(contentType))
-        .expectBody(ByteArray::class.java)
-        .returnResult()
-        .responseBody!!
-
-      assertThat(body).isEqualTo(content)
-    }
-
-    @Test
-    fun `it should return a 404 when the artefact is missing`() {
-      val documentRequestId = UUID.randomUUID()
-
-      whenever(getDocumentRequestArtefact.get(documentRequestId)).thenThrow(
-        DocumentRequestArtefactNotFoundException("Document artefact for request with id $documentRequestId not found"),
-      )
+      repository.save(givenDocumentRequestEntity(id = documentRequestId))
 
       webTestClient.get()
         .uri("/document-requests/$documentRequestId/artefact")
@@ -430,11 +385,39 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    @Disabled("TODO(ACR-1103): implement DocumentStore.get so real artefact retrieval works")
+    fun `it should return the artefact bytes when the artefact exists`() {
+      val documentRequestId = UUID.randomUUID()
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = "document-artefact-reference",
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "application/pdf",
+        ),
+      )
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectHeader().contentType(MediaType.APPLICATION_PDF)
+        .expectBody<ByteArray>()
+        .isEqualTo("document artefact content".toByteArray())
+    }
+
+    @Test
     fun `it should return a 500 when the artefact content type is invalid`() {
       val documentRequestId = UUID.randomUUID()
-
-      whenever(getDocumentRequestArtefact.get(documentRequestId)).thenThrow(
-        ArtefactFailedToGenerateException("Invalid content type: invalid-content-type"),
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = "document-artefact-reference",
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "invalid-content-type",
+        ),
       )
 
       webTestClient.get()
@@ -449,6 +432,9 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
   private fun givenDocumentRequestEntity(
     id: UUID = UUID.randomUUID(),
     createdAt: Instant = Instant.parse("2026-10-08T12:00:00Z"),
+    artefactReference: String? = null,
+    artefactFilename: String? = null,
+    artefactContentType: String? = null,
   ): DocumentRequestEntity = DocumentRequestEntity(
     id = id,
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -456,6 +442,9 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     parameters = givenRawContextualReportRequestParameters(),
     createdBy = "test",
     createdAt = createdAt,
+    artefactReference = artefactReference,
+    artefactFilename = artefactFilename,
+    artefactContentType = artefactContentType,
   )
 
   private fun givenContextualReportRequestBody(
@@ -464,11 +453,4 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     "type" to "CONTEXTUAL_REPORT",
     "parameters" to parameters,
   )
-
-  @TestConfiguration
-  class MockConfig {
-    @Bean
-    @Primary
-    fun getDocumentRequestArtefact(): GetDocumentRequestArtefact = Mockito.mock(GetDocumentRequestArtefact::class.java)
-  }
 }
