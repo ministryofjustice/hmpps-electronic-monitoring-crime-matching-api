@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ReportRequestDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-class ContextualReportRequestDetails {
+class ContextualReportRequestDetails(
+  private val parameters: ContextualReportRequestParameters,
+) {
   private val dateFormatter = DateTimeFormatter
     .ofPattern("dd/MM/yyyy")
     .withZone(ZoneOffset.UTC)
@@ -22,7 +24,6 @@ class ContextualReportRequestDetails {
 
   fun addTo(
     document: WordprocessingMLPackage,
-    request: ReportRequestDetails,
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
@@ -40,7 +41,7 @@ class ContextualReportRequestDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(constabulary)),
-        listOf(paragraphBuilder.create(request.policeForceArea)),
+        listOf(paragraphBuilder.create(parameters.reportRequest.policeForceArea)),
       ),
     )
 
@@ -48,7 +49,7 @@ class ContextualReportRequestDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(from)),
-        listOf(paragraphBuilder.create(request.requestedBy)),
+        listOf(paragraphBuilder.create(parameters.reportRequest.requestedBy)),
       ),
     )
 
@@ -56,7 +57,7 @@ class ContextualReportRequestDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(date)),
-        listOf(paragraphBuilder.create(dateFormatter.format(request.requestedAt))),
+        listOf(paragraphBuilder.create(dateFormatter.format(parameters.reportRequest.requestedAt))),
       ),
     )
 
@@ -64,7 +65,7 @@ class ContextualReportRequestDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(time)),
-        listOf(paragraphBuilder.create(timeFormatter.format(request.requestedAt))),
+        listOf(paragraphBuilder.create(timeFormatter.format(parameters.reportRequest.requestedAt))),
       ),
     )
 

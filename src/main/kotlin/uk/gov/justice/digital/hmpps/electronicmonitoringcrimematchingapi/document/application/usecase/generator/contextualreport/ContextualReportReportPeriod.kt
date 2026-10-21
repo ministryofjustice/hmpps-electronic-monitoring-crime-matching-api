@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ReportPeriod
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-class ContextualReportReportPeriod {
+class ContextualReportReportPeriod(
+  private val parameters: ContextualReportRequestParameters,
+) {
   private val dateFormatter = DateTimeFormatter
     .ofPattern("HH:mm dd/MM/yyyy")
     .withZone(ZoneOffset.UTC)
@@ -18,7 +20,6 @@ class ContextualReportReportPeriod {
 
   fun addTo(
     document: WordprocessingMLPackage,
-    period: ReportPeriod,
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
@@ -36,7 +37,7 @@ class ContextualReportReportPeriod {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(from)),
-        listOf(paragraphBuilder.create(dateFormatter.format(period.start))),
+        listOf(paragraphBuilder.create(dateFormatter.format(parameters.reportPeriod.start))),
       ),
     )
 
@@ -44,7 +45,7 @@ class ContextualReportReportPeriod {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(to)),
-        listOf(paragraphBuilder.create(dateFormatter.format(period.end))),
+        listOf(paragraphBuilder.create(dateFormatter.format(parameters.reportPeriod.end))),
       ),
     )
 

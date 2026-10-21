@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.CrimeDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 
-class ContextualReportCrimeDetails {
+class ContextualReportCrimeDetails(
+  private val parameters: ContextualReportRequestParameters,
+) {
   private val header = "In relation to:"
   private val batchId = "Crime Mapping Batch ID"
   private val crimeRef = "Crime Reference Number"
@@ -11,7 +13,6 @@ class ContextualReportCrimeDetails {
 
   fun addTo(
     document: WordprocessingMLPackage,
-    crime: CrimeDetails,
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
@@ -29,7 +30,7 @@ class ContextualReportCrimeDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(batchId)),
-        listOf(paragraphBuilder.create(crime.batchId)),
+        listOf(paragraphBuilder.create(parameters.crime.batchId)),
       ),
     )
 
@@ -37,7 +38,7 @@ class ContextualReportCrimeDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(crimeRef)),
-        listOf(paragraphBuilder.create(crime.reference)),
+        listOf(paragraphBuilder.create(parameters.crime.reference)),
       ),
     )
 
@@ -45,7 +46,7 @@ class ContextualReportCrimeDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(crimeType)),
-        listOf(paragraphBuilder.create(crime.type)),
+        listOf(paragraphBuilder.create(parameters.crime.type)),
       ),
     )
 
