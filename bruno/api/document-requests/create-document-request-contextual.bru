@@ -18,19 +18,56 @@ body:json {
   {
     "type": "CONTEXTUAL_REPORT",
     "parameters": {
-      "deviceId": 12345,
-      "from": "2024-01-01T00:00:00Z",
-      "to": "2024-01-01T11:59:59Z"
+      "additionalInformation": "More information about the request",
+      "authorisingManager": {
+        "name": "John Smith",
+        "occupation": "AC Hub Manager"
+      },
+      "crime": {
+        "batchId": "AVS20260101",
+        "reference": "123456789",
+        "type": "Robbery"
+      },
+      "deviceWearer": {
+        "address": "456 The Avenue, London, UK, AB12 3CD",
+        "dateOfBirth": "1990-01-01",
+        "emsId": "DEVWR123456",
+        "pncNumber": "PNC123456",
+        "name": "Jane Doe",
+        "offenderManager": "Probation Practitioner"
+      },
+      "positionSegments": [
+        [
+          {
+            "direction": 90,
+            "gpsDate": "2026-10-01T00:00:00Z",
+            "latitude": 51.5074,
+            "longitude": -0.1278,
+            "precision": 5,
+            "speed": 10,
+            "sequenceNumber": 1
+          }
+        ]
+      ],
+      "reportPeriod": {
+        "start": "2026-10-01T01:02:03Z",
+        "end": "2026-10-02T04:05:06Z"
+      },
+      "reportRequest": {
+        "requestedAt": "2026-10-03T11:12:13Z",
+        "requestedBy": "Police Officer",
+        "policeForceArea": "Metropolitan"
+      }
     }
   }
-}
-
-script:post-response {
-  const body = res.getBody();
-  bru.setVar("documentRequestId", body.id);
 }
 
 assert {
   res.status: eq 202
   res.body: isObject
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("documentRequestId", body.id);
 }
