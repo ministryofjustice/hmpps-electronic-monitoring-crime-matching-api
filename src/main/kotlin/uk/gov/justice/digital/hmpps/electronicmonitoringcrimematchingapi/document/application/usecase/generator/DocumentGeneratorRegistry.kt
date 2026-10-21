@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator
 
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 
+@Component
 class DocumentGeneratorRegistry(
   generators: List<DocumentGenerator>,
 ) {

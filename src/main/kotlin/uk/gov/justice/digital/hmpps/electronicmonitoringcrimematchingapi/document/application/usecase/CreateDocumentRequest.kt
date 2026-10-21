@@ -15,6 +15,7 @@ class CreateDocumentRequest(
   private val mapper: DocumentRequestMapper,
   private val parser: DocumentRequestParameterParser,
   private val clock: Clock,
+  private val processDocumentRequest: ProcessDocumentRequest,
 ) {
   fun create(
     request: CreateDocumentRequestCommand,
@@ -30,6 +31,8 @@ class CreateDocumentRequest(
       createdAt = clock.instant(),
       createdBy = user,
     )
+
+    processDocumentRequest.process(documentRequest)
 
     return mapper.toSummary(store.save(documentRequest))
   }

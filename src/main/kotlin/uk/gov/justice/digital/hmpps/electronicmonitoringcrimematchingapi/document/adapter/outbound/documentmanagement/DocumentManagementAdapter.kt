@@ -21,5 +21,11 @@ class DocumentManagementAdapter(
     )
   }
 
-  override fun get(documentArtefact: DocumentArtefact): GeneratedDocument? = throw NotImplementedError()
+  override fun get(documentArtefact: DocumentArtefact): GeneratedDocument? = client.get(UUID.fromString(documentArtefact.reference))?.let {
+    GeneratedDocument(
+      content = it,
+      filename = documentArtefact.filename,
+      contentType = documentArtefact.contentType,
+    )
+  }
 }

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.documentmanagement
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
@@ -11,7 +12,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 
 @Component
 class DocumentManagementClient(
@@ -19,6 +20,7 @@ class DocumentManagementClient(
 ) {
   companion object {
     const val SERVICE_NAME_HEADER = "hmpps-electronic-monitoring-crime-matching-api"
+    private val logger = LoggerFactory.getLogger(this::class.java)
   }
 
   fun upload(
@@ -54,5 +56,35 @@ class DocumentManagementClient(
       )
       .block()
       ?: throw IllegalStateException("Document management API returned an empty response")
+  }
+
+  fun get(documentUuid: UUID): ByteArray? = try {
+    documentManagementApiWebClient
+      .get()
+      .uri("/documents/$documentUuid/file")
+      .header("Service-Name", SERVICE_NAME_HEADER)
+      .retrieve()
+      .bodyToMono<ByteArray>()
+      .retryWhen(
+        Retry.fixedDelay(2, Duration.ofMillis(2000))
+          .filter {
+            it is WebClientResponseException &&
+              (
+                it.statusCode.is5xxServerError ||
+                  it.statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||
+                  it.statusCode.isSameCodeAs(HttpStatus.REQUEST_TIMEOUT)
+                )
+          },
+      )
+      .block()
+    // Treat any Document Management failures as a missing artefact so the controller can return 404.
+  } catch (e: WebClientResponseException) {
+    logger.warn(
+      "Error getting document artefact from Document Management API: $documentUuid, status: ${e.statusCode}, body: ${e.responseBodyAsString}",
+    )
+    null
+  } catch (e: Exception) {
+    logger.warn("Error getting document artefact from Document Management API: $documentUuid, exception: ${e.message}")
+    null
   }
 }
