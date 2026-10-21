@@ -16,7 +16,7 @@ class ContextualReportExhibits(
     MapExhibit(
       number = 4,
       description = "Key for interpreting symbols on crime map",
-      image = ByteArray(0),
+      image = loadExplanatoryMap(),
     ).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
@@ -41,7 +41,7 @@ class ContextualReportExhibits(
       MapExhibit(
         number = mapExhibitNumber,
         description = "Image(s) of the locations for ${parameters.deviceWearer.name}, between $dateRange",
-        image = ByteArray(0),
+        image = loadExplanatoryMap(), // TODO - Can't render a 0 byte array, so using the example image for now
       ).addTo(document)
 
       document.mainDocumentPart.addParagraphOfText("")
@@ -53,4 +53,10 @@ class ContextualReportExhibits(
       ).addTo(document)
     }
   }
+
+  private fun loadExplanatoryMap(): ByteArray = requireNotNull(
+    javaClass.getResourceAsStream("/contextualreport/explanatory-map.jpg"),
+  ) {
+    "Explanatory map image not found"
+  }.use { it.readBytes() }
 }
