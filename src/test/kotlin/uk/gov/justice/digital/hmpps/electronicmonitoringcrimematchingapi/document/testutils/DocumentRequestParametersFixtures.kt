@@ -19,7 +19,6 @@ object DocumentRequestParametersFixtures {
   ) = ContextualReportRequestParameters(
     additionalInformation = "More information about the request",
     authorisingManager = AuthorisingManagerDetails(
-      address = "123 The Street, London, UK, AB12 3CD",
       name = "John Smith",
       occupation = "AC Hub Manager",
     ),
@@ -60,7 +59,6 @@ object DocumentRequestParametersFixtures {
   fun givenRawContextualReportRequestParameters() = mapOf(
     "additionalInformation" to "More information about the request",
     "authorisingManager" to mapOf(
-      "address" to "123 The Street, London, UK, AB12 3CD",
       "name" to "John Smith",
       "occupation" to "AC Hub Manager",
     ),

@@ -71,6 +71,7 @@ class ReportTableBuilder {
   fun addRow(
     table: Tbl,
     cells: List<List<Any>>,
+    columnSpan: Int = 1,
   ) {
     val row = factory.createTr()
 
@@ -79,7 +80,7 @@ class ReportTableBuilder {
         createCell(
           content = content,
           shaded = false,
-          columnSpan = 1,
+          columnSpan = columnSpan,
         ),
       )
     }

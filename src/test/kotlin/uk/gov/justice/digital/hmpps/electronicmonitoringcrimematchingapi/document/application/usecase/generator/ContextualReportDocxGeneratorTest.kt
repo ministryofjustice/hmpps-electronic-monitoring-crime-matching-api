@@ -88,10 +88,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+// Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(9)
 
     val rows = tables[0].content.unwrapped<Tr>()
 
@@ -127,10 +127,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+// Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(9)
 
     val rows = tables[1].content.unwrapped<Tr>()
 
@@ -165,10 +165,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+// Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(9)
 
     val rows = tables[2].content.unwrapped<Tr>()
 
@@ -223,10 +223,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+// Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(9)
 
     val rows = tables[3].content.unwrapped<Tr>()
 
@@ -269,10 +269,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+// Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(9)
 
     val rows = tables[4].content.unwrapped<Tr>()
 
@@ -318,10 +318,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(9)
 
     val rows = tables[5].content.unwrapped<Tr>()
 
@@ -364,10 +364,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain seven tables
+    // Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(7)
+    assertThat(tables).hasSize(9)
 
     val rows = tables[6].content.unwrapped<Tr>()
 
@@ -385,6 +385,130 @@ class ContextualReportDocxGeneratorTest {
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the disclaimer`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain nine tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(9)
+
+    val rows = tables[7].content.unwrapped<Tr>()
+
+    val titleCell = rows[0].content.unwrapped<Tc>().single()
+    val contentCell = rows[1].content.unwrapped<Tc>().single()
+
+    // And the first row should contain the title
+    assertThat(titleCell.text()).isEqualTo("Disclaimer:")
+
+    // And the second row should contain the content
+    assertThat(contentCell.text()).isEqualTo(
+      """
+        The data disclosed in this report does not confirm that the tag wearer perpetrated or witnessed a crime.
+        In addition, it does not rule out other EM tag wearers being in the vicinity of the crime during the window of opportunity.
+        The results of this process are also limited to persons tagged as part of the MoJ’s Acquisitive Crime Project and only where there has been an ability to monitor the equipment during the window of opportunity of the crime.
+        Examples of an inability to monitor a person include:
+        Where the person has failed to charge the EM tag
+        Where the tag has been removed from the person but is still able to transmit its location
+        Where the equipment has failed due to a technical fault. The technology used (radio frequency transmissions; GPS location monitoring and Location Based Services) has been proven to be reliable over many years. The monitoring equipment is extremely robust and reliable and meets the stringent specifications laid down by the Ministry of Justice. The monitoring equipment is also rigorously tested and audited by EMS, an independent body and the Home Office Scientific Branch. 
+      """.trimIndent().trim().replace("\\n".toRegex(), ""),
+    )
+
+    // And the first row should have a grey background
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+  }
+
+  @Test
+  fun `it should generate the witness statement`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain nine tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(9)
+
+    val rows = tables[8].content.unwrapped<Tr>()
+
+    assertThat(rows).hasSize(4)
+
+    // And the header should contain the relevant legislation
+    val header = rows[0].content.unwrapped<Tc>().single()
+    assertThat(header.text()).isEqualTo(
+      "WITNESS STATEMENT" +
+        "(CJ Act 1967, s.9; MC Act 1980, ss.5A (3) (a) and 5B; Criminal Procedure Rules 2005, Rule 27.1)",
+    )
+    assertThat(header.tcPr.shd.fill).isEqualTo("E6E6E6")
+
+    // And the witness details should be populated
+    val witnessDetails = rows[1].content.unwrapped<Tc>()
+
+    assertThat(witnessDetails).hasSize(2)
+    assertThat(witnessDetails[0].text()).isEqualTo("Statement of: John Smith")
+    assertThat(witnessDetails[1].text()).isEqualTo("Occupation: AC Hub Manager")
+
+    // And the declaration should be correct and contain the manager's details
+    val declaration = rows[2].content.unwrapped<Tc>().single()
+
+    assertThat(declaration.text()).isEqualTo(
+      "Age: Over 18" +
+        "This statement consisting of [TODO - PageCount] pages, signed by me, " +
+        "is true to the best of my knowledge and belief. I make it knowing that, if it is given in evidence, " +
+        "I shall be liable to prosecution if I have willfully stated in it, anything that I know to be false or " +
+        "do not believe to be true." +
+        "Signature:" +
+        "Manager's name: John Smith" +
+        "Date: 2026-10-01" +
+        "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)" +
+        "Address: 102 Petty France, Westminster, London, SW1H 9AJ",
+    )
+
+    // And the statement should be correct
+    val statement = rows[3].content.unwrapped<Tc>().single()
+
+    assertThat(statement.text()).isEqualTo(
+      "I am currently employed by the Ministry of Justice (MoJ) as a Manager within the " +
+        "Electronic Monitoring Acquisitive Crime Hub (EMAC Hub)." +
+        "Further to the statement dated [TODO-Get PA Created Date] regarding an allegation of Robbery " +
+        "(Crime Reference No. 123456789). On 2026-10-03 the EMAC Hub received a request in connection with the above " +
+        "investigation for movement data for Jane Doe, 01/01/1990. The request required the following:" +
+        "Subject Jane Doe movements from 01:02 01/10/2026 to 04:05 02/10/2026" +
+        "As a result of this request, I further produce the following screen shot(s) and data table " +
+        "which document the subject’s movements as requested above." +
+        "Exhibit EMAC/04 - Key for interpreting symbols on crime map." +
+        "Exhibit EMAC/05 - Key for interpreting location data table." +
+        "Signature:" +
+        "Manager's name: John Smith" +
+        "Date: 2026-10-01" +
+        "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)" +
+        "Address: 102 Petty France, Westminster, London, SW1H 9AJ",
+    )
   }
 
   private fun Tc.text(): String = content
