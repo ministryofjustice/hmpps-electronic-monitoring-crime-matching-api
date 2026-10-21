@@ -88,7 +88,7 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-// Then the document should contain nine tables
+    // Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(9)
@@ -127,7 +127,7 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-// Then the document should contain nine tables
+    // Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(9)
@@ -165,7 +165,7 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-// Then the document should contain nine tables
+    // Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(9)
@@ -223,7 +223,7 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-// Then the document should contain nine tables
+    // Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(9)
@@ -269,7 +269,7 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-// Then the document should contain nine tables
+    // Then the document should contain nine tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(9)
