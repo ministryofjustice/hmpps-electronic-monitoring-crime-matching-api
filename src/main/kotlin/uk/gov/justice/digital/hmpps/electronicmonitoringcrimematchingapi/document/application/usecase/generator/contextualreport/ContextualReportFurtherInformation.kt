@@ -1,11 +1,14 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 
-class ContextualReportFurtherInformation {
+class ContextualReportFurtherInformation(
+  private val parameters: ContextualReportRequestParameters,
+) {
   private val header = "Further information (as supplied by Constabulary/Force):"
 
-  fun addTo(document: WordprocessingMLPackage, furtherInformation: String) {
+  fun addTo(document: WordprocessingMLPackage) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
     val table = tableBuilder.create()
@@ -22,7 +25,7 @@ class ContextualReportFurtherInformation {
       table = table,
       cells = listOf(
         listOf(
-          paragraphBuilder.create(furtherInformation),
+          paragraphBuilder.create(parameters.additionalInformation),
         ),
       ),
     )

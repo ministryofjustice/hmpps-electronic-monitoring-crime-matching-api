@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.DeviceWearerDetails
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.time.format.DateTimeFormatter
 
-class ContextualReportPersonDetails {
+class ContextualReportPersonDetails(
+  private val parameters: ContextualReportRequestParameters,
+) {
   private val dateFormatter = DateTimeFormatter
     .ofPattern("dd/MM/yyyy")
 
@@ -18,7 +20,6 @@ class ContextualReportPersonDetails {
 
   fun addTo(
     document: WordprocessingMLPackage,
-    deviceWearer: DeviceWearerDetails,
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
@@ -36,7 +37,7 @@ class ContextualReportPersonDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(name)),
-        listOf(paragraphBuilder.create(deviceWearer.name)),
+        listOf(paragraphBuilder.create(parameters.deviceWearer.name)),
       ),
     )
 
@@ -44,7 +45,7 @@ class ContextualReportPersonDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(dateOfBirth)),
-        listOf(paragraphBuilder.create(deviceWearer.dateOfBirth.format(dateFormatter))),
+        listOf(paragraphBuilder.create(parameters.deviceWearer.dateOfBirth.format(dateFormatter))),
       ),
     )
 
@@ -52,7 +53,7 @@ class ContextualReportPersonDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(pncNumber)),
-        listOf(paragraphBuilder.create(deviceWearer.pncNumber)),
+        listOf(paragraphBuilder.create(parameters.deviceWearer.pncNumber)),
       ),
     )
 
@@ -60,7 +61,7 @@ class ContextualReportPersonDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(specifiedAddress)),
-        listOf(paragraphBuilder.create(deviceWearer.address)),
+        listOf(paragraphBuilder.create(parameters.deviceWearer.address)),
       ),
     )
 
@@ -68,7 +69,7 @@ class ContextualReportPersonDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(emsId)),
-        listOf(paragraphBuilder.create(deviceWearer.emsId)),
+        listOf(paragraphBuilder.create(parameters.deviceWearer.emsId)),
       ),
     )
 
@@ -76,7 +77,7 @@ class ContextualReportPersonDetails {
       table = table,
       cells = listOf(
         listOf(paragraphBuilder.create(offenderManager)),
-        listOf(paragraphBuilder.create(deviceWearer.offenderManager)),
+        listOf(paragraphBuilder.create(parameters.deviceWearer.offenderManager)),
       ),
     )
 

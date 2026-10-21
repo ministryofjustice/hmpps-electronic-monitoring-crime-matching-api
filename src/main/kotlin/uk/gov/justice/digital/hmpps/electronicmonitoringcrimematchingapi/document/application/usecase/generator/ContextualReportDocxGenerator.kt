@@ -27,10 +27,8 @@ class ContextualReportDocxGenerator(
 
     documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 
-    ContextualReportHeader().addTo(
+    ContextualReportHeader(documentRequest.createdAt, parameters).addTo(
       document = document,
-      createdAt = documentRequest.createdAt,
-      crimeReference = parameters.crime.reference,
     )
 
     document.mainDocumentPart.addParagraphOfText("")
@@ -39,23 +37,23 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportPersonDetails().addTo(document, parameters.deviceWearer)
+    ContextualReportPersonDetails(parameters).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportCrimeDetails().addTo(document, parameters.crime)
+    ContextualReportCrimeDetails(parameters).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportRequestDetails().addTo(document, parameters.reportRequest)
+    ContextualReportRequestDetails(parameters).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportReportPeriod().addTo(document, parameters.reportPeriod)
+    ContextualReportReportPeriod(parameters).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportFurtherInformation().addTo(document, parameters.additionalInformation)
+    ContextualReportFurtherInformation(parameters).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
