@@ -538,7 +538,7 @@ class ContextualReportDocxGeneratorTest {
 
     assertThat(rows).hasSize(2)
 
-    // And the header should contain the relevant legislation
+    // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
       "Exhibit EMAC/04: Key for interpreting symbols on crime map",
@@ -587,7 +587,7 @@ class ContextualReportDocxGeneratorTest {
 
     assertThat(rows).hasSize(2)
 
-    // And the header should contain the relevant legislation
+    // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
       "Exhibit EMAC/05: Key for interpreting location data table",
@@ -658,6 +658,125 @@ class ContextualReportDocxGeneratorTest {
       "35",
       "35",
       "2",
+    )
+  }
+
+  @Test
+  fun `it should generate a map exhibit for the first segment`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain thirteen tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(13)
+
+    val rows = tables[11].content.unwrapped<Tr>()
+
+    assertThat(rows).hasSize(2)
+
+    // And the header should contain the artefact reference
+    val header = rows[0].content.unwrapped<Tc>().single()
+    assertThat(header.text()).isEqualTo(
+      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+    )
+    assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
+
+    // And the content should contain an image
+    val content = rows[1].content.unwrapped<Tc>().single()
+
+    val drawings = content.content
+      .unwrapped<P>()
+      .flatMap { it.content.unwrapped<R>() }
+      .flatMap { it.content.unwrapped<Drawing>() }
+
+    assertThat(drawings).hasSize(1)
+
+    val inline = drawings.single().anchorOrInline.single() as Inline
+
+    assertThat(inline.docPr.descr).isEqualTo(
+      "Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+    )
+  }
+
+  @Test
+  fun `it should generate a table exhibit for the first segment`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain thirteen tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(13)
+
+    val rows = tables[12].content.unwrapped<Tr>()
+
+    assertThat(rows).hasSize(2)
+
+    // And the header should contain the artefact reference
+    val header = rows[0].content.unwrapped<Tc>().single()
+    assertThat(header.text()).isEqualTo(
+      "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 00:00 and 2026-10-01 00:00",
+    )
+    assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
+
+    // And the content should contain the example table
+    val content = rows[1].content.unwrapped<Tc>().single()
+    val positionTable = content.content.unwrapped<Tbl>().single()
+
+    val positionRows = positionTable.content.unwrapped<Tr>()
+    assertThat(positionRows).hasSize(2)
+
+    // And the column headings should be correct
+    val headingCells = positionRows[0].content.unwrapped<Tc>()
+
+    assertThat(headingCells).hasSize(7)
+    assertThat(headingCells.map { it.text() }).containsExactly(
+      "DATE/TIME",
+      "LATITUDE",
+      "LONGITUDE",
+      "CONFIDENCE CIRCLE",
+      "SPEED",
+      "DIRECTION",
+      "SEQUENCE NO.",
+    )
+
+    assertThat(headingCells.map { it.tcPr.shd.fill })
+      .containsOnly("306DBF")
+
+    // And the table should contain the position in the segment
+    val firstPosition = positionRows[1].content.unwrapped<Tc>()
+
+    assertThat(firstPosition.map { it.text() }).containsExactly(
+      "01/10/2026 00:00",
+      "51.5074",
+      "-0.1278",
+      "5",
+      "10",
+      "90",
+      "1",
     )
   }
 
