@@ -26,6 +26,8 @@ class ContextualReportDocxGenerator(
     val document = WordprocessingMLPackage.createPackage()
     val parameters = documentRequest.parameters as ContextualReportRequestParameters
 
+    DocumentTheme(font = "Calibri").apply(document)
+
     documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 
     ContextualReportHeader(documentRequest.createdAt, parameters).addTo(

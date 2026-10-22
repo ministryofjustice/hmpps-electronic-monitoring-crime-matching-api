@@ -29,8 +29,8 @@ class MapExhibit(
     )
 
     val inline = imagePart.createImageInline(
-      "Explanatory map",
-      "Key for interpreting symbols on crime map",
+      description,
+      description,
       1,
       2,
       false,
