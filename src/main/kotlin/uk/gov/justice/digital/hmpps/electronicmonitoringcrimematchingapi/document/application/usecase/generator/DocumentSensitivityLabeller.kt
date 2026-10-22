@@ -4,12 +4,14 @@ import org.docx4j.docProps.custom.ObjectFactory
 import org.docx4j.docProps.custom.Properties.Property
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.openpackaging.parts.DocPropsCustomPart
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
 import java.time.Clock
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
+@Component
 class DocumentSensitivityLabeller(
   private val clock: Clock,
 ) {

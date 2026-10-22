@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportDisclaimer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportFurtherInformation
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.io.ByteArrayOutputStream
 
+@Component
 class ContextualReportDocxGenerator(
   private val documentSensitivityLabeller: DocumentSensitivityLabeller,
 ) : DocumentGenerator {

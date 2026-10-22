@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase
 
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGeneratorRegistry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentStore
 
+@Component
 class ProcessDocumentRequest(
   private val generatorRegistry: DocumentGeneratorRegistry,
   private val documentStore: DocumentStore,

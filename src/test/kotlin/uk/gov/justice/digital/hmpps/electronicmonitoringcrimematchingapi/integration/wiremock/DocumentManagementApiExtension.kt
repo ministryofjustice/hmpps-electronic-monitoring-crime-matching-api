@@ -22,6 +22,7 @@ class DocumentManagementApiExtension :
   override fun beforeEach(context: ExtensionContext) {
     documentManagementApi.resetAll()
     documentManagementApi.stubUploadDocument()
+    documentManagementApi.stubGetDocumentFile()
   }
 
   override fun afterAll(context: ExtensionContext) {

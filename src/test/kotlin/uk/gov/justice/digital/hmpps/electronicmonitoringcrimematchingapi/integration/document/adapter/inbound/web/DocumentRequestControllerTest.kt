@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -17,6 +16,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenRawContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.DocumentManagementApiExtension.Companion.documentManagementApi
 import java.time.Instant
 import java.util.UUID
 
@@ -85,7 +85,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       val saved = repository.findById(UUID.fromString(request.id)).orElseThrow()
 
       assertThat(saved.type).isEqualTo(DocumentType.CONTEXTUAL_REPORT)
-      assertThat(saved.status).isEqualTo(DocumentRequestStatus.PENDING)
+      assertThat(saved.status).isEqualTo(DocumentRequestStatus.COMPLETED)
       assertThat(saved.parameters).containsKeys(
         "authorisingManager",
         "crime",
@@ -385,13 +385,13 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    @Disabled("TODO(ACR-1103): implement DocumentStore.get so real artefact retrieval works")
     fun `it should return the artefact bytes when the artefact exists`() {
       val documentRequestId = UUID.randomUUID()
+      val documentUuid = UUID.randomUUID()
       repository.save(
         givenDocumentRequestEntity(
           id = documentRequestId,
-          artefactReference = "document-artefact-reference",
+          artefactReference = documentUuid.toString(),
           artefactFilename = "document-request.pdf",
           artefactContentType = "application/pdf",
         ),
@@ -409,6 +409,36 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return large artefact bytes when the artefact exceeds the default WebClient buffer size`() {
+      val documentRequestId = UUID.randomUUID()
+      val documentUuid = UUID.randomUUID()
+      val expectedContent = "A".repeat(300 * 1024)
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = documentUuid.toString(),
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "application/pdf",
+        ),
+      )
+
+      documentManagementApi.stubGetDocumentFile(
+        documentUuid = documentUuid,
+        responseBody = expectedContent,
+      )
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectHeader().contentType(MediaType.APPLICATION_PDF)
+        .expectBody<ByteArray>()
+        .isEqualTo(expectedContent.toByteArray())
+    }
+
+    @Test
     fun `it should return a 500 when the artefact content type is invalid`() {
       val documentRequestId = UUID.randomUUID()
       repository.save(
@@ -418,6 +448,58 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
           artefactFilename = "document-request.pdf",
           artefactContentType = "invalid-content-type",
         ),
+      )
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+    }
+
+    @Test
+    fun `it should return a 404 when the remote document artefact is missing`() {
+      val documentRequestId = UUID.randomUUID()
+      val documentUuid = UUID.randomUUID()
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = documentUuid.toString(),
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "application/pdf",
+        ),
+      )
+
+      documentManagementApi.stubGetDocumentFile(
+        documentUuid = documentUuid,
+        status = 404,
+      )
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
+
+    @Test
+    fun `it should return a 500 when the Document Management API returns a 500`() {
+      val documentRequestId = UUID.randomUUID()
+      val documentUuid = UUID.randomUUID()
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = documentUuid.toString(),
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "application/pdf",
+        ),
+      )
+
+      documentManagementApi.stubGetDocumentFile(
+        documentUuid = documentUuid,
+        status = 500,
       )
 
       webTestClient.get()

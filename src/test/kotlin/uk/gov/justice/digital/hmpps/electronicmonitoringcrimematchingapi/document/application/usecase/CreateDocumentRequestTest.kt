@@ -9,21 +9,39 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidRequestException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.mapper.DocumentRequestMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.parser.DocumentRequestParameterParser
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ContextualReportDocxGenerator
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGeneratorRegistry
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentSensitivityLabeller
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenRawContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentStore
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 
 class CreateDocumentRequestTest {
   private val store = InMemoryDocumentRequestStore()
+  private val documentStore = InMemoryDocumentStore()
 
   private val clock = Clock.fixed(
     Instant.parse("2026-10-08T12:00:00Z"),
     ZoneOffset.UTC,
+  )
+
+  private val processDocumentRequest = ProcessDocumentRequest(
+    DocumentGeneratorRegistry(
+      listOf(
+        ContextualReportDocxGenerator(
+          DocumentSensitivityLabeller(
+            clock,
+          ),
+        ),
+      ),
+    ),
+    documentStore = documentStore,
   )
 
   private val objectMapper = JsonMapper.builder()
@@ -35,6 +53,7 @@ class CreateDocumentRequestTest {
     mapper = DocumentRequestMapper(),
     parser = DocumentRequestParameterParser(objectMapper),
     clock = clock,
+    processDocumentRequest = processDocumentRequest,
   )
 
   @Test
@@ -51,7 +70,7 @@ class CreateDocumentRequestTest {
     assertThat(saved).isNotNull
     assertThat(saved!!.id.toString()).isEqualTo(result.id)
     assertThat(saved.type).isEqualTo(DocumentType.CONTEXTUAL_REPORT)
-    assertThat(saved.status).isEqualTo(DocumentRequestStatus.PENDING)
+    assertThat(saved.status).isEqualTo(DocumentRequestStatus.COMPLETED)
     assertThat(saved.createdBy).isEqualTo("user123")
     assertThat(saved.createdAt).isEqualTo(clock.instant())
 
