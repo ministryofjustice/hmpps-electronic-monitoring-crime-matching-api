@@ -53,7 +53,8 @@ class DocumentManagementClient(
                   it.statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||
                   it.statusCode.isSameCodeAs(HttpStatus.REQUEST_TIMEOUT)
                 )
-          },
+          }
+          .onRetryExhaustedThrow { _, signal -> signal.failure() },
       )
       .block()
       ?: throw IllegalStateException("Document management API returned an empty response")
@@ -75,7 +76,8 @@ class DocumentManagementClient(
                   it.statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||
                   it.statusCode.isSameCodeAs(HttpStatus.REQUEST_TIMEOUT)
                 )
-          },
+          }
+          .onRetryExhaustedThrow { _, signal -> signal.failure() },
       )
       .block()
   } catch (e: WebClientResponseException) {
