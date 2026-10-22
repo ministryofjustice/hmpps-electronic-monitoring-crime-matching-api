@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
+import org.docx4j.jaxb.Context
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
 
@@ -8,6 +9,7 @@ class MapExhibit(
   private val description: String,
   private val image: ByteArray,
 ) {
+  private val factory = Context.getWmlObjectFactory()
   private val tableBuilder = ReportTableBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
 
@@ -40,8 +42,12 @@ class MapExhibit(
       anchorOrInline.add(inline)
     }
 
+    val run = factory.createR().apply {
+      content.add(drawing)
+    }
+
     val paragraph = paragraphBuilder.create("", centred = true)
-    paragraph.content.add(drawing)
+    paragraph.content.add(run)
 
     tableBuilder.addRow(
       table = table,
