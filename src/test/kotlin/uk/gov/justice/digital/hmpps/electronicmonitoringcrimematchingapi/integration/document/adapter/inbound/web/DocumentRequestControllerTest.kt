@@ -509,6 +509,32 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
         .expectStatus()
         .is5xxServerError
     }
+
+    @Test
+    fun `it should return a 429 when the Document Management API returns a 429 after retries are exhausted`() {
+      val documentRequestId = UUID.randomUUID()
+      val documentUuid = UUID.randomUUID()
+      repository.save(
+        givenDocumentRequestEntity(
+          id = documentRequestId,
+          artefactReference = documentUuid.toString(),
+          artefactFilename = "document-request.pdf",
+          artefactContentType = "application/pdf",
+        ),
+      )
+
+      documentManagementApi.stubGetDocumentFile(
+        documentUuid = documentUuid,
+        status = 429,
+      )
+
+      webTestClient.get()
+        .uri("/document-requests/$documentRequestId/artefact")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .exchange()
+        .expectStatus()
+        .isEqualTo(429)
+    }
   }
 
   private fun givenDocumentRequestEntity(

@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.document.application.usecase
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -74,8 +74,11 @@ class ProcessDocumentRequestIntegrationTest : IntegrationTestBase() {
     documentManagementApi.stubUploadDocumentFailure(500)
     val request = givenDocumentRequest()
 
-    assertThatThrownBy { useCase.process(request) }
-      .hasRootCauseInstanceOf(WebClientResponseException.InternalServerError::class.java)
+    val throwable = catchThrowable { useCase.process(request) }
+
+    assertThat(throwable)
+      .isInstanceOf(WebClientResponseException.InternalServerError::class.java)
+    assertThat((throwable as WebClientResponseException.InternalServerError).statusCode.value()).isEqualTo(500)
 
     assertThat(request.status).isEqualTo(DocumentRequestStatus.PENDING)
     assertThat(request.artefact).isNull()
