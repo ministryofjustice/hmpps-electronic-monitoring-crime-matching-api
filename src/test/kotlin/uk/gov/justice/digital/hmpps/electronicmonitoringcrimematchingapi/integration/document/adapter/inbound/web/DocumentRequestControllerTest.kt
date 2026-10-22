@@ -485,7 +485,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should return a 404 when the Document Management API returns a 500`() {
+    fun `it should return a 500 when the Document Management API returns a 500`() {
       val documentRequestId = UUID.randomUUID()
       val documentUuid = UUID.randomUUID()
       repository.save(
@@ -507,7 +507,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation(roles = listOf(role)))
         .exchange()
         .expectStatus()
-        .isNotFound
+        .is5xxServerError
     }
   }
 

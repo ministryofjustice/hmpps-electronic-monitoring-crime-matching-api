@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.server.ResponseStatusException
 import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import java.time.Duration
@@ -77,14 +78,25 @@ class DocumentManagementClient(
           },
       )
       .block()
-    // Treat any Document Management failures as a missing artefact so the controller can return 404.
   } catch (e: WebClientResponseException) {
-    logger.warn(
-      "Error getting document artefact from Document Management API: $documentUuid, status: ${e.statusCode}, body: ${e.responseBodyAsString}",
+    logger.error(
+      "Document Management API gave {} status code for document {}. Response body: {}",
+      e.statusCode.value(),
+      documentUuid,
+      e.responseBodyAsString,
+      e,
     )
-    null
+    throw ResponseStatusException(
+      e.statusCode,
+      "Document Management API gave ${e.statusCode.value()} status code",
+      e,
+    )
   } catch (e: Exception) {
-    logger.warn("Error getting document artefact from Document Management API: $documentUuid, exception: ${e.message}")
-    null
+    logger.error("Error getting document artefact from Document Management API: $documentUuid", e)
+    throw ResponseStatusException(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      "Document Management API gave ${HttpStatus.INTERNAL_SERVER_ERROR.value()} status code",
+      e,
+    )
   }
 }
