@@ -4,6 +4,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportDisclaimer
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportExhibits
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportFurtherInformation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportHeader
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportPersonDetails
@@ -26,6 +27,8 @@ class ContextualReportDocxGenerator(
   override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()
     val parameters = documentRequest.parameters as ContextualReportRequestParameters
+
+    DocumentTheme(font = "Calibri").apply(document)
 
     documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 
@@ -64,6 +67,10 @@ class ContextualReportDocxGenerator(
     document.mainDocumentPart.addParagraphOfText("")
 
     ContextualReportWitnessStatement(documentRequest.createdAt, parameters).addTo(document)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
+    ContextualReportExhibits(parameters).addTo(document)
 
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)

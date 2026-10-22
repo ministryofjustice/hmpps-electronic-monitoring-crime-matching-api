@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.docx4j.jaxb.Context
 import org.docx4j.wml.BooleanDefaultTrue
+import org.docx4j.wml.HpsMeasure
 import org.docx4j.wml.JcEnumeration
 import org.docx4j.wml.P
 
@@ -12,6 +13,8 @@ class ReportParagraphBuilder {
     text: String,
     bold: Boolean = false,
     centred: Boolean = false,
+    fontSize: Int? = null,
+    colour: String? = null,
     spacingAfter: Int = 0,
   ): P {
     // P = Paragraph
@@ -33,9 +36,22 @@ class ReportParagraphBuilder {
 
       content.add(
         factory.createR().apply {
-          if (bold) {
-            rPr = factory.createRPr().apply {
+          rPr = factory.createRPr().apply {
+            if (bold) {
               b = BooleanDefaultTrue()
+            }
+            fontSize?.let {
+              sz = HpsMeasure().apply {
+                `val` = fontSize.toBigInteger()
+              }
+              szCs = HpsMeasure().apply {
+                `val` = fontSize.toBigInteger()
+              }
+            }
+            colour?.let {
+              color = factory.createColor().apply {
+                `val` = it
+              }
             }
           }
 

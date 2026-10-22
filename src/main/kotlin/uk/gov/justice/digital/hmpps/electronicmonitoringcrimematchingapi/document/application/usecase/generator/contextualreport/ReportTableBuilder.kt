@@ -16,8 +16,8 @@ class ReportTableBuilder {
 
   private val tableWidth = 5000 // 100% in fiftieths of a percent
   private val borderSize = 4L // 0.5pt
-  private val cellPaddingVertical = 40L
-  private val cellPaddingHorizontal = 120L
+  private val defaultCellPaddingVertical = 40L
+  private val defaultCellPaddingHorizontal = 120L
 
   fun create(columns: Int = 1): Tbl {
     require(columns > 0) {
@@ -60,8 +60,8 @@ class ReportTableBuilder {
     row.content.add(
       createCell(
         content = content,
-        shaded = true,
         columnSpan = columns,
+        backgroundColour = "D9D9D9",
       ),
     )
 
@@ -72,6 +72,10 @@ class ReportTableBuilder {
     table: Tbl,
     cells: List<List<Any>>,
     columnSpan: Int = 1,
+    backgroundColour: String? = null,
+    verticalAlign: STVerticalJc = STVerticalJc.CENTER,
+    cellPaddingVertical: Long = defaultCellPaddingVertical,
+    cellPaddingHorizontal: Long = defaultCellPaddingHorizontal,
   ) {
     val row = factory.createTr()
 
@@ -79,8 +83,11 @@ class ReportTableBuilder {
       row.content.add(
         createCell(
           content = content,
-          shaded = false,
           columnSpan = columnSpan,
+          backgroundColour = backgroundColour,
+          verticalAlign = verticalAlign,
+          cellPaddingVertical = cellPaddingVertical,
+          cellPaddingHorizontal = cellPaddingHorizontal,
         ),
       )
     }
@@ -90,12 +97,15 @@ class ReportTableBuilder {
 
   private fun createCell(
     content: List<Any>,
-    shaded: Boolean,
     columnSpan: Int,
+    backgroundColour: String? = null,
+    verticalAlign: STVerticalJc = STVerticalJc.CENTER,
+    cellPaddingVertical: Long = defaultCellPaddingVertical,
+    cellPaddingHorizontal: Long = defaultCellPaddingHorizontal,
   ): Tc = factory.createTc().apply {
     tcPr = factory.createTcPr().apply {
       vAlign = factory.createCTVerticalJc().apply {
-        `val` = STVerticalJc.CENTER
+        `val` = verticalAlign
       }
 
       if (columnSpan > 1) {
@@ -104,9 +114,9 @@ class ReportTableBuilder {
         }
       }
 
-      if (shaded) {
+      backgroundColour?.let {
         shd = factory.createCTShd().apply {
-          fill = "E6E6E6"
+          fill = backgroundColour
           `val` = STShd.CLEAR
         }
       }

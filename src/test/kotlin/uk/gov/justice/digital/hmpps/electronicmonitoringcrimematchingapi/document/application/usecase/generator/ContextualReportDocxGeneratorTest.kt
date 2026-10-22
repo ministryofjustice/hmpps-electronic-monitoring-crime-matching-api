@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.assertj.core.api.Assertions.assertThat
 import org.docx4j.XmlUtils
+import org.docx4j.dml.wordprocessingDrawing.Inline
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import org.docx4j.wml.Drawing
 import org.docx4j.wml.P
 import org.docx4j.wml.R
 import org.docx4j.wml.Tbl
@@ -88,10 +90,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[0].content.unwrapped<Tr>()
 
@@ -108,7 +110,7 @@ class ContextualReportDocxGeneratorTest {
     )
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -127,10 +129,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[1].content.unwrapped<Tr>()
 
@@ -146,7 +148,7 @@ class ContextualReportDocxGeneratorTest {
     )
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -165,10 +167,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[2].content.unwrapped<Tr>()
 
@@ -204,7 +206,7 @@ class ContextualReportDocxGeneratorTest {
     assertThat(offenderManagerCells[1].text()).contains("Probation Practitioner")
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -223,10 +225,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[3].content.unwrapped<Tr>()
 
@@ -250,7 +252,7 @@ class ContextualReportDocxGeneratorTest {
     assertThat(crimeTypeCells[1].text()).contains("Robbery")
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -269,10 +271,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[4].content.unwrapped<Tr>()
 
@@ -299,7 +301,7 @@ class ContextualReportDocxGeneratorTest {
     assertThat(timeCells[1].text()).contains("11:12:13")
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -318,10 +320,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[5].content.unwrapped<Tr>()
 
@@ -345,7 +347,7 @@ class ContextualReportDocxGeneratorTest {
     assertThat(imagesCells[1].text()).contains("Between Above Date/Time Range")
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -364,10 +366,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[6].content.unwrapped<Tr>()
 
@@ -384,7 +386,7 @@ class ContextualReportDocxGeneratorTest {
     assertThat(contentCell.text()).contains("More information about the request")
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -403,10 +405,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[7].content.unwrapped<Tr>()
 
@@ -430,7 +432,7 @@ class ContextualReportDocxGeneratorTest {
     )
 
     // And the first row should have a grey background
-    assertThat(titleCell.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
   }
 
   @Test
@@ -449,10 +451,10 @@ class ContextualReportDocxGeneratorTest {
       ByteArrayInputStream(result.content),
     )
 
-    // Then the document should contain nine tables
+    // Then the document should contain thirteen tables
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(9)
+    assertThat(tables).hasSize(13)
 
     val rows = tables[8].content.unwrapped<Tr>()
 
@@ -464,7 +466,7 @@ class ContextualReportDocxGeneratorTest {
       "WITNESS STATEMENT" +
         "(CJ Act 1967, s.9; MC Act 1980, ss.5A (3) (a) and 5B; Criminal Procedure Rules 2005, Rule 27.1)",
     )
-    assertThat(header.tcPr.shd.fill).isEqualTo("E6E6E6")
+    assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
     // And the witness details should be populated
     val witnessDetails = rows[1].content.unwrapped<Tc>()
@@ -508,6 +510,273 @@ class ContextualReportDocxGeneratorTest {
         "Date: 2026-10-01" +
         "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)" +
         "Address: 102 Petty France, Westminster, London, SW1H 9AJ",
+    )
+  }
+
+  @Test
+  fun `it should generate the example map exhibit`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain thirteen tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(13)
+
+    val rows = tables[9].content.unwrapped<Tr>()
+
+    assertThat(rows).hasSize(2)
+
+    // And the header should contain the artefact reference
+    val header = rows[0].content.unwrapped<Tc>().single()
+    assertThat(header.text()).isEqualTo(
+      "Exhibit EMAC/04: Key for interpreting symbols on crime map",
+    )
+    assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
+
+    // And the content should contain the example image
+    val content = rows[1].content.unwrapped<Tc>().single()
+
+    val drawings = content.content
+      .unwrapped<P>()
+      .flatMap { it.content.unwrapped<R>() }
+      .flatMap { it.content.unwrapped<Drawing>() }
+
+    assertThat(drawings).hasSize(1)
+
+    val inline = drawings.single().anchorOrInline.single() as Inline
+
+    assertThat(inline.docPr.descr).isEqualTo(
+      "Key for interpreting symbols on crime map",
+    )
+  }
+
+  @Test
+  fun `it should generate the example table exhibit`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain thirteen tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(13)
+
+    val rows = tables[10].content.unwrapped<Tr>()
+
+    assertThat(rows).hasSize(2)
+
+    // And the header should contain the artefact reference
+    val header = rows[0].content.unwrapped<Tc>().single()
+    assertThat(header.text()).isEqualTo(
+      "Exhibit EMAC/05: Key for interpreting location data table",
+    )
+    assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
+
+    // And the content should contain the example table
+    val content = rows[1].content.unwrapped<Tc>().single()
+    val positionTable = content.content.unwrapped<Tbl>().single()
+
+    val positionRows = positionTable.content.unwrapped<Tr>()
+    assertThat(positionRows).hasSize(4)
+
+    // And the description row should contain the explanatory text
+    val descriptionCells = positionRows[0].content.unwrapped<Tc>()
+
+    assertThat(descriptionCells).hasSize(7)
+    assertThat(descriptionCells.map { it.text() }).containsExactly(
+      "Represents the date and time of recorded location",
+      "Represents the latitude of recorded location",
+      "Represents the longitude of recorded location",
+      "Represents the confidence circle of recorded location",
+      "Represents the speed between consecutive recorded locations 0.1 Km/h (i.e., 21 = 2.1 km/h)",
+      "Represents the direction in degrees between consecutive recorded locations",
+      "Correlates to numbered location points on the corresponding map and the data in the table of that row",
+    )
+
+    assertThat(descriptionCells.map { it.tcPr.shd.fill })
+      .containsOnly("62B3F5")
+
+    // And the column headings should be correct
+    val headingCells = positionRows[1].content.unwrapped<Tc>()
+
+    assertThat(headingCells).hasSize(7)
+    assertThat(headingCells.map { it.text() }).containsExactly(
+      "DATE/TIME",
+      "LATITUDE",
+      "LONGITUDE",
+      "CONFIDENCE CIRCLE",
+      "SPEED",
+      "DIRECTION",
+      "SEQUENCE NO.",
+    )
+
+    assertThat(headingCells.map { it.tcPr.shd.fill })
+      .containsOnly("306DBF")
+
+    // And the table should contain the example positions
+    val firstPosition = positionRows[2].content.unwrapped<Tc>()
+
+    assertThat(firstPosition.map { it.text() }).containsExactly(
+      "01/01/2021 00:00",
+      "50.123456",
+      "-0.123456",
+      "50",
+      "21",
+      "30",
+      "1",
+    )
+
+    val secondPosition = positionRows[3].content.unwrapped<Tc>()
+
+    assertThat(secondPosition.map { it.text() }).containsExactly(
+      "01/01/2021 00:01",
+      "50.234567",
+      "-0.234567",
+      "75",
+      "35",
+      "35",
+      "2",
+    )
+  }
+
+  @Test
+  fun `it should generate a map exhibit for the first segment`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain thirteen tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(13)
+
+    val rows = tables[11].content.unwrapped<Tr>()
+
+    assertThat(rows).hasSize(2)
+
+    // And the header should contain the artefact reference
+    val header = rows[0].content.unwrapped<Tc>().single()
+    assertThat(header.text()).isEqualTo(
+      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+    )
+    assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
+
+    // And the content should contain an image
+    val content = rows[1].content.unwrapped<Tc>().single()
+
+    val drawings = content.content
+      .unwrapped<P>()
+      .flatMap { it.content.unwrapped<R>() }
+      .flatMap { it.content.unwrapped<Drawing>() }
+
+    assertThat(drawings).hasSize(1)
+
+    val inline = drawings.single().anchorOrInline.single() as Inline
+
+    assertThat(inline.docPr.descr).isEqualTo(
+      "Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+    )
+  }
+
+  @Test
+  fun `it should generate a table exhibit for the first segment`() {
+    // Given a document request for a contextual report
+    val request = DocumentRequest.create(
+      parameters = givenContextualReportRequestParameters(),
+      createdBy = "user123",
+      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
+    )
+
+    // When the document is generated
+    val result = generator.generate(request)
+
+    val document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    // Then the document should contain thirteen tables
+    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(13)
+
+    val rows = tables[12].content.unwrapped<Tr>()
+
+    assertThat(rows).hasSize(2)
+
+    // And the header should contain the artefact reference
+    val header = rows[0].content.unwrapped<Tc>().single()
+    assertThat(header.text()).isEqualTo(
+      "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 00:00 and 2026-10-01 00:00",
+    )
+    assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
+
+    // And the content should contain the example table
+    val content = rows[1].content.unwrapped<Tc>().single()
+    val positionTable = content.content.unwrapped<Tbl>().single()
+
+    val positionRows = positionTable.content.unwrapped<Tr>()
+    assertThat(positionRows).hasSize(2)
+
+    // And the column headings should be correct
+    val headingCells = positionRows[0].content.unwrapped<Tc>()
+
+    assertThat(headingCells).hasSize(7)
+    assertThat(headingCells.map { it.text() }).containsExactly(
+      "DATE/TIME",
+      "LATITUDE",
+      "LONGITUDE",
+      "CONFIDENCE CIRCLE",
+      "SPEED",
+      "DIRECTION",
+      "SEQUENCE NO.",
+    )
+
+    assertThat(headingCells.map { it.tcPr.shd.fill })
+      .containsOnly("306DBF")
+
+    // And the table should contain the position in the segment
+    val firstPosition = positionRows[1].content.unwrapped<Tc>()
+
+    assertThat(firstPosition.map { it.text() }).containsExactly(
+      "01/10/2026 00:00",
+      "51.5074",
+      "-0.1278",
+      "5",
+      "10",
+      "90",
+      "1",
     )
   }
 
