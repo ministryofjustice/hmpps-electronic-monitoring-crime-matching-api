@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportDisclaimer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportExhibits
@@ -24,6 +25,9 @@ class ContextualReportDocxGenerator(
   private val documentSensitivityLabeller: DocumentSensitivityLabeller,
 ) : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
+
+  private val config = ContextualReportConfig()
+
   override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()
     val parameters = documentRequest.parameters as ContextualReportRequestParameters
@@ -32,7 +36,7 @@ class ContextualReportDocxGenerator(
 
     documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 
-    ContextualReportHeader(documentRequest.createdAt, parameters).addTo(
+    ContextualReportHeader(documentRequest.createdAt, parameters, config).addTo(
       document = document,
     )
 
@@ -42,7 +46,7 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportPersonDetails(parameters).addTo(document)
+    ContextualReportPersonDetails(parameters, config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
@@ -50,11 +54,11 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportRequestDetails(parameters).addTo(document)
+    ContextualReportRequestDetails(parameters, config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportReportPeriod(parameters).addTo(document)
+    ContextualReportReportPeriod(parameters, config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
@@ -66,7 +70,7 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportWitnessStatement(documentRequest.createdAt, parameters).addTo(document)
+    ContextualReportWitnessStatement(documentRequest.createdAt, parameters, config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
