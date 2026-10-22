@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.DocumentRequestSummary
@@ -15,7 +16,7 @@ class CreateDocumentRequest(
   private val mapper: DocumentRequestMapper,
   private val parser: DocumentRequestParameterParser,
   private val clock: Clock,
-  private val processDocumentRequest: ProcessDocumentRequest,
+  private val processNextDocumentRequest: ProcessNextDocumentRequest,
 ) {
   fun create(
     request: CreateDocumentRequestCommand,
@@ -32,8 +33,18 @@ class CreateDocumentRequest(
       createdBy = user,
     )
 
-    processDocumentRequest.process(documentRequest)
+    val summary = mapper.toSummary(store.save(documentRequest))
 
-    return mapper.toSummary(store.save(documentRequest))
+    try {
+      processNextDocumentRequest.process()
+    } catch (exception: Exception) {
+      log.error("Unable to dispatch document processing for request {}; request remains pending", summary.id, exception)
+    }
+    // TODO(ACR-1101): Add a scheduled job to recover pending requests.
+    return summary
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

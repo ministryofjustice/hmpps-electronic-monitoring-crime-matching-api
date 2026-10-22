@@ -1,19 +1,21 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.processnextdocumentrequest
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGeneratorRegistry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentStore
 
 @Component
 class ProcessDocumentRequest(
   private val generatorRegistry: DocumentGeneratorRegistry,
   private val documentStore: DocumentStore,
+  private val documentRequestStore: DocumentRequestStore,
 ) {
   fun process(documentRequest: DocumentRequest) {
-    check(documentRequest.status == DocumentRequestStatus.PENDING) {
-      "DocumentRequest must be in PENDING status"
+    check(documentRequest.status == DocumentRequestStatus.PENDING || documentRequest.status == DocumentRequestStatus.FAILED) {
+      "DocumentRequest must be in PENDING or FAILED status"
     }
 
     val type = documentRequest.type
@@ -21,5 +23,6 @@ class ProcessDocumentRequest(
 
     val documentArtefact = documentStore.save(generatedDocument)
     documentRequest.complete(documentArtefact)
+    documentRequestStore.save(documentRequest)
   }
 }
