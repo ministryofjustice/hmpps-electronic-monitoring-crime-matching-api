@@ -66,7 +66,7 @@ class ContextualReportWitnessStatement(
   fun addTo(
     document: WordprocessingMLPackage,
   ) {
-    val table = tableBuilder.create(columns = 2)
+    val table = tableBuilder.create(width = config.contentWidth, columns = 2)
 
     tableBuilder.addHeader(
       table = table,

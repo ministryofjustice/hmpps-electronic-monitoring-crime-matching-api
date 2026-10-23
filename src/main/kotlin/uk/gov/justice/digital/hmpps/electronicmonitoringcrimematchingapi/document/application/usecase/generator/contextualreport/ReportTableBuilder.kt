@@ -14,19 +14,21 @@ import java.math.BigInteger
 class ReportTableBuilder {
   private val factory = Context.getWmlObjectFactory()
 
-  private val tableWidth = 5000 // 100% in fiftieths of a percent
   private val borderSize = 4L // 0.5pt
   private val defaultCellPaddingVertical = 40L
   private val defaultCellPaddingHorizontal = 120L
 
-  fun create(columns: Int = 1): Tbl {
+  fun create(columns: Int = 1, width: Long): Tbl {
     require(columns > 0) {
       "Table must have at least one column"
     }
 
     return factory.createTbl().apply {
       tblPr = factory.createTblPr().apply {
-        tblW = width(tableWidth.toLong(), "pct")
+        tblW = factory.createTblWidth().apply {
+          type = "dxa"
+          w = width.toBigInteger()
+        }
 
         tblLayout = factory.createCTTblLayoutType().apply {
           type = STTblLayoutType.FIXED
@@ -43,8 +45,14 @@ class ReportTableBuilder {
       }
 
       tblGrid = factory.createTblGrid().apply {
+        val columnWidth = width / columns
+
         repeat(columns) {
-          gridCol.add(factory.createTblGridCol())
+          gridCol.add(
+            factory.createTblGridCol().apply {
+              w = columnWidth.toBigInteger()
+            },
+          )
         }
       }
     }
@@ -56,12 +64,14 @@ class ReportTableBuilder {
     columns: Int,
   ) {
     val row = factory.createTr()
+    val tableWidth = table.tblPr.tblW.w.toLong()
 
     row.content.add(
       createCell(
         content = content,
         columnSpan = columns,
         backgroundColour = "D9D9D9",
+        width = tableWidth,
       ),
     )
 
@@ -78,6 +88,7 @@ class ReportTableBuilder {
     cellPaddingHorizontal: Long = defaultCellPaddingHorizontal,
   ) {
     val row = factory.createTr()
+    val tableWidth = table.tblPr.tblW.w.toLong()
 
     cells.forEach { content ->
       row.content.add(
@@ -88,6 +99,7 @@ class ReportTableBuilder {
           verticalAlign = verticalAlign,
           cellPaddingVertical = cellPaddingVertical,
           cellPaddingHorizontal = cellPaddingHorizontal,
+          width = tableWidth / cells.size,
         ),
       )
     }
@@ -98,12 +110,18 @@ class ReportTableBuilder {
   private fun createCell(
     content: List<Any>,
     columnSpan: Int,
+    width: Long,
     backgroundColour: String? = null,
     verticalAlign: STVerticalJc = STVerticalJc.CENTER,
     cellPaddingVertical: Long = defaultCellPaddingVertical,
     cellPaddingHorizontal: Long = defaultCellPaddingHorizontal,
   ): Tc = factory.createTc().apply {
     tcPr = factory.createTcPr().apply {
+      tcW = factory.createTblWidth().apply {
+        type = "dxa"
+        w = BigInteger.valueOf(width)
+      }
+
       vAlign = factory.createCTVerticalJc().apply {
         `val` = verticalAlign
       }

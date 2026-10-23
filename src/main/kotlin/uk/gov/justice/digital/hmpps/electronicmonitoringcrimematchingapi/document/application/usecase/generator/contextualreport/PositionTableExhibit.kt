@@ -53,8 +53,10 @@ class PositionTableExhibit(
     ),
   )
 
+  private val nestedTablePadding = 100L
+
   fun addTo(document: WordprocessingMLPackage) {
-    val table = tableBuilder.create()
+    val table = tableBuilder.create(width = config.contentWidth)
 
     tableBuilder.addHeader(
       table = table,
@@ -70,15 +72,18 @@ class PositionTableExhibit(
           paragraphBuilder.create(""),
         ),
       ),
-      cellPaddingVertical = 100L,
-      cellPaddingHorizontal = 100L,
+      cellPaddingVertical = nestedTablePadding,
+      cellPaddingHorizontal = nestedTablePadding,
     )
 
     document.mainDocumentPart.addObject(table)
   }
 
   private fun createPositionTable(): Tbl {
-    val table = tableBuilder.create()
+    val table = tableBuilder.create(
+      width = config.contentWidth - nestedTablePadding * 2,
+      columns = 7,
+    ) // Subtract padding from width
 
     if (includeDescriptions) {
       tableBuilder.addRow(

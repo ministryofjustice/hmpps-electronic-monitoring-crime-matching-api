@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 
 class ContextualReportCrimeDetails(
   private val parameters: ContextualReportRequestParameters,
+  private val config: ContextualReportConfig,
 ) {
   private val header = "In relation to:"
   private val batchId = "Crime Mapping Batch ID"
@@ -16,7 +17,7 @@ class ContextualReportCrimeDetails(
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
-    val table = tableBuilder.create(columns = 2)
+    val table = tableBuilder.create(width = config.contentWidth, columns = 2)
 
     tableBuilder.addHeader(
       table = table,

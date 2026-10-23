@@ -8,6 +8,7 @@ class MapExhibit(
   private val number: Int,
   private val description: String,
   private val image: ByteArray,
+  private val config: ContextualReportConfig,
 ) {
   private val factory = Context.getWmlObjectFactory()
   private val tableBuilder = ReportTableBuilder()
@@ -21,7 +22,7 @@ class MapExhibit(
     }
 
   fun addTo(document: WordprocessingMLPackage) {
-    val table = tableBuilder.create()
+    val table = tableBuilder.create(width = config.contentWidth)
     val imagePart = BinaryPartAbstractImage.createImagePart(document, image)
 
     tableBuilder.addHeader(

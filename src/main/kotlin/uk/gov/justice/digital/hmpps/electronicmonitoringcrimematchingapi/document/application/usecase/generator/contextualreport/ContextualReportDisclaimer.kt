@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 
-class ContextualReportDisclaimer {
+class ContextualReportDisclaimer(
+  private val config: ContextualReportConfig,
+) {
   private val listBuilder = ReportListBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
   private val tableBuilder = ReportTableBuilder()
@@ -10,7 +12,7 @@ class ContextualReportDisclaimer {
   private val header = "Disclaimer:"
 
   fun addTo(document: WordprocessingMLPackage) {
-    val table = tableBuilder.create()
+    val table = tableBuilder.create(width = config.contentWidth)
 
     tableBuilder.addHeader(
       table = table,

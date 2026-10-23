@@ -5,13 +5,14 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 
 class ContextualReportFurtherInformation(
   private val parameters: ContextualReportRequestParameters,
+  private val config: ContextualReportConfig,
 ) {
   private val header = "Further information (as supplied by Constabulary/Force):"
 
   fun addTo(document: WordprocessingMLPackage) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
-    val table = tableBuilder.create()
+    val table = tableBuilder.create(width = config.contentWidth)
 
     tableBuilder.addHeader(
       table = table,
