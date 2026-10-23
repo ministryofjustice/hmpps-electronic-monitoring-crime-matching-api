@@ -16,6 +16,7 @@ class ContextualReportExhibits(
       number = 4,
       description = "Key for interpreting symbols on crime map",
       image = loadExplanatoryMap(),
+      config = config,
     ).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
@@ -43,6 +44,7 @@ class ContextualReportExhibits(
         number = mapExhibitNumber,
         description = "Image(s) of the locations for ${parameters.deviceWearer.name}, between $dateRange",
         image = loadExplanatoryMap(), // TODO - Can't render a 0 byte array, so using the example image for now
+        config = config,
       ).addTo(document)
 
       document.mainDocumentPart.addParagraphOfText("")

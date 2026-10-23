@@ -1,8 +1,9 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
-
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 
-class ContextualReportSummary {
+class ContextualReportSummary(
+  private val config: ContextualReportConfig,
+) {
   private val header = "Summary"
   private val content = """
     This report follows on from an EMAC Proximity Alert for the above crime and provides proportionate and necessary information in support of that investigation.
@@ -11,7 +12,7 @@ class ContextualReportSummary {
   fun addTo(document: WordprocessingMLPackage) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
-    val table = tableBuilder.create()
+    val table = tableBuilder.create(width = config.contentWidth)
 
     tableBuilder.addHeader(
       table = table,

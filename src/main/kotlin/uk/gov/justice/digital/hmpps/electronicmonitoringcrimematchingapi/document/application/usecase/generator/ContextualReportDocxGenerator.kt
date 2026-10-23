@@ -42,7 +42,7 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportSummary().addTo(document)
+    ContextualReportSummary(config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
@@ -50,7 +50,7 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportCrimeDetails(parameters).addTo(document)
+    ContextualReportCrimeDetails(parameters, config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
@@ -62,11 +62,11 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportFurtherInformation(parameters).addTo(document)
+    ContextualReportFurtherInformation(parameters, config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportDisclaimer().addTo(document)
+    ContextualReportDisclaimer(config).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
 

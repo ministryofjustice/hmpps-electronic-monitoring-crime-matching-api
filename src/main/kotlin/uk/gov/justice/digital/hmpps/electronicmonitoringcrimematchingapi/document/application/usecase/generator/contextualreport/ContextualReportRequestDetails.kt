@@ -18,7 +18,7 @@ class ContextualReportRequestDetails(
   ) {
     val paragraphBuilder = ReportParagraphBuilder()
     val tableBuilder = ReportTableBuilder()
-    val table = tableBuilder.create(columns = 2)
+    val table = tableBuilder.create(width = config.contentWidth, columns = 2)
 
     tableBuilder.addHeader(
       table = table,
