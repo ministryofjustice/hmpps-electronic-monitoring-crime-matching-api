@@ -4,18 +4,16 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.wml.STVerticalJc
 import org.docx4j.wml.Tbl
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 class PositionTableExhibit(
   private val number: Int,
   private val description: String,
   private val positions: List<Position>,
   private val includeDescriptions: Boolean = false,
+  private val config: ContextualReportConfig,
 ) {
   private val tableBuilder = ReportTableBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
-  private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneOffset.UTC)
 
   private val header: String
     get() {
@@ -120,7 +118,7 @@ class PositionTableExhibit(
 
     positions.forEach { position ->
       val values = listOf(
-        dateFormatter.format(position.gpsDate),
+        config.dateTimeFormatterAlt2.format(position.gpsDate),
         position.latitude.toString(),
         position.longitude.toString(),
         position.precision.toString(),

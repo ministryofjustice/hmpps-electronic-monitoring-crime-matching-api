@@ -339,7 +339,7 @@ class ContextualReportDocxGeneratorTest {
     assertThat(dateCells[0].text()).contains("Date")
     assertThat(dateCells[1].text()).contains("03/10/2026")
     assertThat(timeCells[0].text()).contains("Time")
-    assertThat(timeCells[1].text()).contains("11:12:13")
+    assertThat(timeCells[1].text()).contains("12:12:13")
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")
@@ -381,9 +381,9 @@ class ContextualReportDocxGeneratorTest {
 
     // And the 2nd to 4th rows should contain the content
     assertThat(fromCells[0].text()).contains("Datetime CR requested from")
-    assertThat(fromCells[1].text()).contains("01:02 01/10/2026")
+    assertThat(fromCells[1].text()).contains("02:02 01/10/2026")
     assertThat(toCells[0].text()).contains("Datetime CR requested to")
-    assertThat(toCells[1].text()).contains("04:05 02/10/2026")
+    assertThat(toCells[1].text()).contains("05:05 02/10/2026")
     assertThat(imagesCells[0].text()).contains("Images")
     assertThat(imagesCells[1].text()).contains("Between Above Date/Time Range")
 
@@ -541,7 +541,7 @@ class ContextualReportDocxGeneratorTest {
         "Further to the statement dated [TODO-Get PA Created Date] regarding an allegation of Robbery " +
         "(Crime Reference No. 123456789). On 2026-10-03 the EMAC Hub received a request in connection with the above " +
         "investigation for movement data for Jane Doe, 01/01/1990. The request required the following:" +
-        "Subject Jane Doe movements from 01:02 01/10/2026 to 04:05 02/10/2026" +
+        "Subject Jane Doe movements from 02:02 01/10/2026 to 05:05 02/10/2026" +
         "As a result of this request, I further produce the following screen shot(s) and data table " +
         "which document the subject’s movements as requested above." +
         "Exhibit EMAC/04 - Key for interpreting symbols on crime map." +
@@ -730,7 +730,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -747,7 +747,7 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+      "Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
     )
   }
 
@@ -779,7 +779,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 00:00 and 2026-10-01 00:00",
+      "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 01:00 and 2026-10-01 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -811,7 +811,7 @@ class ContextualReportDocxGeneratorTest {
     val firstPosition = positionRows[1].content.unwrapped<Tc>()
 
     assertThat(firstPosition.map { it.text() }).containsExactly(
-      "01/10/2026 00:00",
+      "01/10/2026 01:00",
       "51.5074",
       "-0.1278",
       "5",

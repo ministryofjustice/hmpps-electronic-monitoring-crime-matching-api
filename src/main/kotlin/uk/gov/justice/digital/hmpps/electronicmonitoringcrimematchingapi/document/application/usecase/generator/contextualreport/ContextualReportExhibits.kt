@@ -4,14 +4,11 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
 import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 class ContextualReportExhibits(
   private val parameters: ContextualReportRequestParameters,
+  private val config: ContextualReportConfig,
 ) {
-  private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneOffset.UTC)
-
   fun addTo(document: WordprocessingMLPackage) {
     val startingExhibitNumber = 6
 
@@ -28,6 +25,7 @@ class ContextualReportExhibits(
       description = "Key for interpreting location data table",
       positions = explanatoryPositions,
       includeDescriptions = true,
+      config = config,
     ).addTo(document)
 
     document.mainDocumentPart.addParagraphOfText("")
@@ -39,7 +37,7 @@ class ContextualReportExhibits(
       val lastPosition = positions.last()
       val from = firstPosition.gpsDate
       val to = lastPosition.gpsDate
-      val dateRange = "${dateFormatter.format(from)} and ${dateFormatter.format(to)}"
+      val dateRange = "${config.dateTimeFormatterAlt.format(from)} and ${config.dateTimeFormatterAlt.format(to)}"
 
       MapExhibit(
         number = mapExhibitNumber,
@@ -53,6 +51,7 @@ class ContextualReportExhibits(
         number = tableExhibitNumber,
         description = "Table of ${parameters.deviceWearer.name}'s locations, between $dateRange",
         positions = positions,
+        config = config,
       ).addTo(document)
     }
   }
