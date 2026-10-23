@@ -227,3 +227,12 @@ Current flags:
 ### Outboxes
 
 See [docs/outboxes.md](docs/outboxes.md) for details of the outbox design and local testing instructions.
+
+### Add a new user role
+Request a change by the HMPPS Auth & Audit team on their Slack channel: `#hmpps-auth-audit-registers`
+
+Example:
+Client: hmpps-electronic-monitoring-crime-matching-ui-client-1
+Role: ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS_RW
+https://dsdmoj.atlassian.net/browse/HAAR-6288
+
