@@ -25,6 +25,11 @@ class DocumentSensitivityLabeller(
     "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
 
   fun apply(document: WordprocessingMLPackage, label: SensitivityLabel) {
+    applySensitivityMetadata(document, label)
+    applyVisibleMarkings(document, label.displayName)
+  }
+
+  private fun applySensitivityMetadata(document: WordprocessingMLPackage, label: SensitivityLabel) {
     val customProperties = DocPropsCustomPart()
     val properties = ObjectFactory().createProperties()
     val prefix = "MSIP_Label_${label.labelId}_"
@@ -52,11 +57,9 @@ class DocumentSensitivityLabeller(
 
     customProperties.jaxbElement = properties
     document.addTargetPart(customProperties)
-
-    applyToHeaderFooter(document, label.displayName)
   }
 
-  private fun applyToHeaderFooter(document: WordprocessingMLPackage, label: String) {
+  private fun applyVisibleMarkings(document: WordprocessingMLPackage, label: String) {
     val mainPart = document.mainDocumentPart
 
     val sectPr = mainPart.jaxbElement.body.sectPr

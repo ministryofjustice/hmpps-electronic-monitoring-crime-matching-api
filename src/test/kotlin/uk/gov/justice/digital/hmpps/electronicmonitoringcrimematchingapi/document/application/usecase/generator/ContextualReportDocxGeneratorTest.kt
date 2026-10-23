@@ -4,10 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.docx4j.XmlUtils
 import org.docx4j.dml.wordprocessingDrawing.Inline
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import org.docx4j.wml.Drawing
 import org.docx4j.openpackaging.parts.PartName
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart
+import org.docx4j.wml.Drawing
 import org.docx4j.wml.FooterReference
 import org.docx4j.wml.HdrFtrRef
 import org.docx4j.wml.HeaderReference
