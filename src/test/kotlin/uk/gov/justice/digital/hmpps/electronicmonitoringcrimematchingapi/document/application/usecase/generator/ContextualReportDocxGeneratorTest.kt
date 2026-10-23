@@ -639,7 +639,7 @@ class ContextualReportDocxGeneratorTest {
     val firstPosition = positionRows[2].content.unwrapped<Tc>()
 
     assertThat(firstPosition.map { it.text() }).containsExactly(
-      "2021-01-01 00:00",
+      "01/01/2021 00:00",
       "50.123456",
       "-0.123456",
       "50",
@@ -651,7 +651,7 @@ class ContextualReportDocxGeneratorTest {
     val secondPosition = positionRows[3].content.unwrapped<Tc>()
 
     assertThat(secondPosition.map { it.text() }).containsExactly(
-      "2021-01-01 00:01",
+      "01/01/2021 00:01",
       "50.234567",
       "-0.234567",
       "75",
@@ -770,7 +770,7 @@ class ContextualReportDocxGeneratorTest {
     val firstPosition = positionRows[1].content.unwrapped<Tc>()
 
     assertThat(firstPosition.map { it.text() }).containsExactly(
-      "2026-10-01 01:00",
+      "01/10/2026 01:00",
       "51.5074",
       "-0.1278",
       "5",
