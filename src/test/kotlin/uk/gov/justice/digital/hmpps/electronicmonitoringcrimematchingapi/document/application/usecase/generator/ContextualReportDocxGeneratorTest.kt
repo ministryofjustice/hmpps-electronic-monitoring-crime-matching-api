@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import java.io.ByteArrayInputStream
+import java.math.BigInteger
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -135,6 +136,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[0].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[0].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[0].content.unwrapped<Tr>()
 
@@ -174,6 +177,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[1].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[1].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[1].content.unwrapped<Tr>()
 
@@ -212,6 +217,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[2].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[2].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[2].content.unwrapped<Tr>()
 
@@ -270,6 +277,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[3].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[3].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[3].content.unwrapped<Tr>()
 
@@ -316,6 +325,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[4].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[4].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[4].content.unwrapped<Tr>()
 
@@ -365,6 +376,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[5].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[5].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[5].content.unwrapped<Tr>()
 
@@ -411,6 +424,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[6].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[6].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[6].content.unwrapped<Tr>()
 
@@ -450,6 +465,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[7].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[7].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[7].content.unwrapped<Tr>()
 
@@ -496,6 +513,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[8].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[8].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[8].content.unwrapped<Tr>()
 
@@ -574,6 +593,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[9].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[9].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[9].content.unwrapped<Tr>()
 
@@ -623,6 +644,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[10].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[10].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[10].content.unwrapped<Tr>()
 
@@ -722,6 +745,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[11].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[11].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[11].content.unwrapped<Tr>()
 
@@ -771,6 +796,8 @@ class ContextualReportDocxGeneratorTest {
     val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
     assertThat(tables).hasSize(13)
+    assertThat(tables[12].tblPr.tblW.type).isEqualTo("dxa")
+    assertThat(tables[12].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
     val rows = tables[12].content.unwrapped<Tr>()
 
