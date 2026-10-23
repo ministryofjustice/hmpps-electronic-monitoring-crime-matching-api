@@ -5,6 +5,13 @@ import org.docx4j.XmlUtils
 import org.docx4j.dml.wordprocessingDrawing.Inline
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.wml.Drawing
+import org.docx4j.openpackaging.parts.PartName
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart
+import org.docx4j.wml.FooterReference
+import org.docx4j.wml.HdrFtrRef
+import org.docx4j.wml.HeaderReference
+import org.docx4j.wml.JcEnumeration
 import org.docx4j.wml.P
 import org.docx4j.wml.R
 import org.docx4j.wml.Tbl
@@ -72,6 +79,40 @@ class ContextualReportDocxGeneratorTest {
         )
         assertThat(it.lpwstr).isEqualTo(SensitivityLabel.OFFICIAL_SENSITIVE.displayName)
       }
+
+    // And the label sensitivity label should be added to the header and footer
+    val references = document.mainDocumentPart
+      .jaxbElement.body.sectPr.egHdrFtrReferences
+
+    val headerReference = references
+      .filterIsInstance<HeaderReference>()
+      .single { it.type == HdrFtrRef.DEFAULT }
+
+    val footerReference = references
+      .filterIsInstance<FooterReference>()
+      .single { it.type == HdrFtrRef.DEFAULT }
+
+    val headerRelationship = document.mainDocumentPart.relationshipsPart
+      .getRelationshipByID(headerReference.id)
+
+    val headerPart = document.parts.get(
+      PartName("/word/${headerRelationship.target.removePrefix("/")}"),
+    ) as HeaderPart
+
+    val footerRelationship = document.mainDocumentPart.relationshipsPart
+      .getRelationshipByID(footerReference.id)
+
+    val footerPart = document.parts.get(
+      PartName("/word/${footerRelationship.target.removePrefix("/")}"),
+    ) as FooterPart
+
+    assertClassification(
+      headerPart.jaxbElement.content.unwrapped<P>().single(),
+    )
+
+    assertClassification(
+      footerPart.jaxbElement.content.unwrapped<P>().single(),
+    )
   }
 
   @Test
@@ -789,4 +830,16 @@ class ContextualReportDocxGeneratorTest {
     .joinToString("") { it.value }
 
   inline fun <reified T> List<*>.unwrapped(): List<T> = map(XmlUtils::unwrap).filterIsInstance<T>()
+
+  private fun assertClassification(paragraph: P) {
+    val text = paragraph.content
+      .unwrapped<R>()
+      .flatMap { it.content.unwrapped<Text>() }
+      .joinToString("") { it.value }
+
+    assertThat(text).isEqualTo("OFFICIAL - SENSITIVE")
+
+    assertThat(paragraph.pPr.jc.`val`)
+      .isEqualTo(JcEnumeration.CENTER)
+  }
 }
