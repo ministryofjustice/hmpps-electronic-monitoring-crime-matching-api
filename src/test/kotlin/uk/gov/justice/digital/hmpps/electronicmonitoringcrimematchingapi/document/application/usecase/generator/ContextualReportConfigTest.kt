@@ -11,11 +11,11 @@ class ContextualReportConfigTest {
     val config = ContextualReportConfig()
 
     assertThat(
-      config.dateTimeFormatter.format(Instant.parse("2026-01-01T12:00:00Z"))
+      config.dateTimeFormatter.format(Instant.parse("2026-01-01T12:00:00Z")),
     ).isEqualTo("12:00 01/01/2026")
 
     assertThat(
-      config.dateTimeFormatter.format(Instant.parse("2026-07-01T12:00:00Z"))
+      config.dateTimeFormatter.format(Instant.parse("2026-07-01T12:00:00Z")),
     ).isEqualTo("13:00 01/07/2026")
   }
 }

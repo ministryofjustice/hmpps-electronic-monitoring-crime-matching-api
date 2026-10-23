@@ -74,7 +74,7 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportExhibits(parameters).addTo(document)
+    ContextualReportExhibits(parameters, config).addTo(document)
 
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)

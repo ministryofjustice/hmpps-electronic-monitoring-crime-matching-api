@@ -639,7 +639,7 @@ class ContextualReportDocxGeneratorTest {
     val firstPosition = positionRows[2].content.unwrapped<Tc>()
 
     assertThat(firstPosition.map { it.text() }).containsExactly(
-      "01/01/2021 00:00",
+      "2021-01-01 00:00",
       "50.123456",
       "-0.123456",
       "50",
@@ -651,7 +651,7 @@ class ContextualReportDocxGeneratorTest {
     val secondPosition = positionRows[3].content.unwrapped<Tc>()
 
     assertThat(secondPosition.map { it.text() }).containsExactly(
-      "01/01/2021 00:01",
+      "2021-01-01 00:01",
       "50.234567",
       "-0.234567",
       "75",
@@ -689,7 +689,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -706,7 +706,7 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Image(s) of the locations for Jane Doe, between 2026-10-01 00:00 and 2026-10-01 00:00",
+      "Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
     )
   }
 
@@ -738,7 +738,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 00:00 and 2026-10-01 00:00",
+      "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 01:00 and 2026-10-01 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -770,7 +770,7 @@ class ContextualReportDocxGeneratorTest {
     val firstPosition = positionRows[1].content.unwrapped<Tc>()
 
     assertThat(firstPosition.map { it.text() }).containsExactly(
-      "01/10/2026 00:00",
+      "2026-10-01 01:00",
       "51.5074",
       "-0.1278",
       "5",
