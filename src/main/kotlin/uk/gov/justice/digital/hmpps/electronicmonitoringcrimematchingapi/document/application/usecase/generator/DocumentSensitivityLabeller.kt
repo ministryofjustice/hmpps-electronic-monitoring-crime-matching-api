@@ -103,10 +103,6 @@ class DocumentSensitivityLabeller(
 
     content.add(
       factory.createR().apply {
-        rPr = factory.createRPr().apply {
-          b = factory.createBooleanDefaultTrue()
-        }
-
         content.add(
           factory.createText().apply {
             value = label
