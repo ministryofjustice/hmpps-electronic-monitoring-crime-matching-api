@@ -16,6 +16,9 @@ class HubManager(
   @Column(nullable = false)
   val name: String,
 
+  @Column(nullable = false)
+  val occupation: String,
+
   @Column(name = "signature_image", columnDefinition = "bytea")
   var signatureImage: ByteArray? = null,
 
