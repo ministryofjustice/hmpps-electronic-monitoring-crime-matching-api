@@ -12,7 +12,7 @@ import java.util.UUID
 import javax.sql.DataSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class HubManagerOccupationMigrationTest {
+class AddHubManagerOccupationMigrationTest {
 
   private val postgres = PostgreSQLContainer<Nothing>("postgres:17")
 
