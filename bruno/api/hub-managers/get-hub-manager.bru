@@ -1,0 +1,21 @@
+meta {
+  name: Get hub manager
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/hub-managers/{{hubManagerId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq {{hubManagerId}}
+  res.body.status: eq PENDING
+}
