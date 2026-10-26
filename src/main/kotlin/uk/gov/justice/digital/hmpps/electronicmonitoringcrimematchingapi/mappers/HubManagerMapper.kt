@@ -9,6 +9,7 @@ class HubManagerMapper {
   fun toDto(manager: HubManager): HubManagerResponse = HubManagerResponse(
     id = manager.id.toString(),
     name = manager.name,
+    occupation = manager.occupation,
     hasSignature = manager.signatureImage != null,
   )
 }

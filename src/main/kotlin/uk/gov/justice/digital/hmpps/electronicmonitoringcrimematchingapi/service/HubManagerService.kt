@@ -17,6 +17,7 @@ class HubManagerService(
   fun createHubManager(request: CreateHubManagerRequest): HubManager = repository.save(
     HubManager(
       name = request.name,
+      occupation = request.occupation,
     ),
   )
 
