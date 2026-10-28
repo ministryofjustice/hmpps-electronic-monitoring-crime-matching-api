@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportDisclaimer
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportExhibitTitles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportExhibits
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportFurtherInformation
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportHeader
@@ -31,7 +32,7 @@ class ContextualReportDocxGenerator(
   override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()
     val parameters = documentRequest.parameters as ContextualReportRequestParameters
-    val exhibitTitles = createExhibitTitles(parameters, config)
+    val exhibitTitles = ContextualReportExhibitTitles(parameters, config).titles
 
     DocumentTheme(font = "Calibri").apply(document)
 
@@ -87,49 +88,5 @@ class ContextualReportDocxGenerator(
       contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       content = byteStream.toByteArray(),
     )
-  }
-
-  private fun createExhibitTitles(parameters: ContextualReportRequestParameters, config: ContextualReportConfig): List<String> = buildList {
-    add(
-      createExhibitTitle(
-        number = config.startingExhibitNumber,
-        description = "Key for interpreting symbols on crime map",
-      ),
-    )
-
-    add(
-      createExhibitTitle(
-        number = config.startingExhibitNumber + 1,
-        description = "Key for interpreting location data table",
-      ),
-    )
-
-    parameters.positionSegments.forEachIndexed { index, positions ->
-      val mapExhibitNumber = config.startingExhibitNumber + 2 + index * 2
-      val tableExhibitNumber = mapExhibitNumber + 1
-      val from = config.dateTimeFormatterAlt.format(positions.first().gpsDate)
-      val to = config.dateTimeFormatterAlt.format(positions.last().gpsDate)
-      val dateRange = "$from and $to"
-
-      add(
-        createExhibitTitle(
-          number = mapExhibitNumber,
-          description = "Image(s) of the locations for ${parameters.deviceWearer.name}, between $dateRange",
-        ),
-      )
-
-      add(
-        createExhibitTitle(
-          number = tableExhibitNumber,
-          description = "Table of ${parameters.deviceWearer.name}'s locations, between $dateRange",
-        ),
-      )
-    }
-  }
-
-  private fun createExhibitTitle(number: Int, description: String): String {
-    val exhibitId = "EMAC/${number.toString().padStart(2, '0')}"
-
-    return "Exhibit $exhibitId: $description"
   }
 }
