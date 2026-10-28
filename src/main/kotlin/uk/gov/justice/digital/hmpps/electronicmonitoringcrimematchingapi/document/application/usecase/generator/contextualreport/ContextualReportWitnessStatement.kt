@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentPageCountUpdater
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.time.Instant
 
@@ -21,7 +22,7 @@ class ContextualReportWitnessStatement(
 
   private val declarationAge = "Age: Over 18"
 
-  private val declarationText = "This statement consisting of [TODO - PageCount] pages, signed by me, " +
+  private val declarationText = "This statement consisting of ${DocumentPageCountUpdater.PLACEHOLDER} pages, signed by me, " +
     "is true to the best of my knowledge and belief. I make it knowing that, if it is given in evidence, " +
     "I shall be liable to prosecution if I have willfully stated in it, " +
     "anything that I know to be false or do not believe to be true."
