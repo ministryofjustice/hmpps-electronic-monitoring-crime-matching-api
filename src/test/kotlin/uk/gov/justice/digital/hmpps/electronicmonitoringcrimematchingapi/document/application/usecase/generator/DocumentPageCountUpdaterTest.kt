@@ -11,19 +11,17 @@ import org.junit.jupiter.api.Test
 class DocumentPageCountUpdaterTest {
   @Test
   fun `it should replace the page count placeholder`() {
-    // Given
+    // Given a document with a single paragraph containing the page count placeholder
     val document = WordprocessingMLPackage.createPackage()
 
     document.mainDocumentPart.addParagraphOfText(
       "This statement consists of ${DocumentPageCountUpdater.PLACEHOLDER} pages.",
     )
 
-    val updater = DocumentPageCountUpdater()
+    // When the updater is applied
+    DocumentPageCountUpdater().apply(document)
 
-    // When
-    updater.apply(document)
-
-    // Then
+    // Then the placeholder should be replaced with the actual page count
     val text = document.mainDocumentPart.content
       .filterIsInstance<P>()
       .flatMap { it.content }

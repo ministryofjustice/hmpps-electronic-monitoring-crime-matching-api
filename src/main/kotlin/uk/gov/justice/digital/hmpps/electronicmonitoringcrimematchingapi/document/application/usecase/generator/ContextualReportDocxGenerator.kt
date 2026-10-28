@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportCrimeDetails
@@ -25,7 +24,6 @@ import java.io.ByteArrayOutputStream
 class ContextualReportDocxGenerator(
   private val documentSensitivityLabeller: DocumentSensitivityLabeller,
 ) : DocumentGenerator {
-  private val log = LoggerFactory.getLogger(this::class.java)
   override val type = DocumentType.CONTEXTUAL_REPORT
 
   private val config = ContextualReportConfig()
