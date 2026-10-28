@@ -540,7 +540,7 @@ class ContextualReportDocxGeneratorTest {
 
     assertThat(declaration.text()).isEqualTo(
       "Age: Over 18" +
-        "This statement consisting of [TODO - PageCount] pages, signed by me, " +
+        "This statement consisting of 4 pages, signed by me, " +
         "is true to the best of my knowledge and belief. I make it knowing that, if it is given in evidence, " +
         "I shall be liable to prosecution if I have willfully stated in it, anything that I know to be false or " +
         "do not believe to be true." +

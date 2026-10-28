@@ -76,6 +76,8 @@ class ContextualReportDocxGenerator(
 
     ContextualReportExhibits(parameters, config).addTo(document)
 
+    DocumentPageCountUpdater().apply(document)
+
     val byteStream = ByteArrayOutputStream()
     document.save(byteStream)
 
