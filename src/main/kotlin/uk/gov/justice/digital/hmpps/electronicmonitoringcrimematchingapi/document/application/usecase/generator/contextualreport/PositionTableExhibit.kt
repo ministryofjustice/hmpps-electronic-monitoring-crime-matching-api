@@ -6,21 +6,13 @@ import org.docx4j.wml.Tbl
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
 
 class PositionTableExhibit(
-  private val number: Int,
-  private val description: String,
+  private val header: String,
   private val positions: List<Position>,
   private val includeDescriptions: Boolean = false,
   private val config: ContextualReportConfig,
 ) {
   private val tableBuilder = ReportTableBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
-
-  private val header: String
-    get() {
-      val exhibitId = "EMAC/${number.toString().padStart(2, '0')}"
-
-      return "Exhibit $exhibitId: $description"
-    }
 
   private val columns = listOf(
     mapOf(

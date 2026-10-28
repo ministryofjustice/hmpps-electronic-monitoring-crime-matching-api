@@ -5,21 +5,13 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
 
 class MapExhibit(
-  private val number: Int,
-  private val description: String,
+  private val header: String,
   private val image: ByteArray,
   private val config: ContextualReportConfig,
 ) {
   private val factory = Context.getWmlObjectFactory()
   private val tableBuilder = ReportTableBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
-
-  private val header: String
-    get() {
-      val exhibitId = "EMAC/${number.toString().padStart(2, '0')}"
-
-      return "Exhibit $exhibitId: $description"
-    }
 
   fun addTo(document: WordprocessingMLPackage) {
     val table = tableBuilder.create(width = config.contentWidth)
@@ -32,8 +24,8 @@ class MapExhibit(
     )
 
     val inline = imagePart.createImageInline(
-      description,
-      description,
+      header,
+      header,
       1,
       2,
       false,

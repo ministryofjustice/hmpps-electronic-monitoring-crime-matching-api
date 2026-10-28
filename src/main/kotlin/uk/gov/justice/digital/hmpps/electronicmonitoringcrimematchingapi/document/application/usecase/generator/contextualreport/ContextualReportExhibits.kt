@@ -8,13 +8,11 @@ import java.time.Instant
 class ContextualReportExhibits(
   private val parameters: ContextualReportRequestParameters,
   private val config: ContextualReportConfig,
+  private val exhibitTitles: List<String>,
 ) {
   fun addTo(document: WordprocessingMLPackage) {
-    val startingExhibitNumber = 6
-
     MapExhibit(
-      number = 4,
-      description = "Key for interpreting symbols on crime map",
+      header = exhibitTitles[0],
       image = loadExplanatoryMap(),
       config = config,
     ).addTo(document)
@@ -22,8 +20,7 @@ class ContextualReportExhibits(
     document.mainDocumentPart.addParagraphOfText("")
 
     PositionTableExhibit(
-      number = 5,
-      description = "Key for interpreting location data table",
+      header = exhibitTitles[1],
       positions = explanatoryPositions,
       includeDescriptions = true,
       config = config,
@@ -32,17 +29,11 @@ class ContextualReportExhibits(
     document.mainDocumentPart.addParagraphOfText("")
 
     parameters.positionSegments.forEachIndexed { index, positions ->
-      val mapExhibitNumber = startingExhibitNumber + index * 2
-      val tableExhibitNumber = mapExhibitNumber + 1
-      val firstPosition = positions.first()
-      val lastPosition = positions.last()
-      val from = firstPosition.gpsDate
-      val to = lastPosition.gpsDate
-      val dateRange = "${config.dateTimeFormatterAlt.format(from)} and ${config.dateTimeFormatterAlt.format(to)}"
+      val mapExhibitTitleIndex = 2 + index * 2
+      val tableExhibitTitleIndex = mapExhibitTitleIndex + 1
 
       MapExhibit(
-        number = mapExhibitNumber,
-        description = "Image(s) of the locations for ${parameters.deviceWearer.name}, between $dateRange",
+        header = exhibitTitles[mapExhibitTitleIndex],
         image = loadExplanatoryMap(), // TODO - Can't render a 0 byte array, so using the example image for now
         config = config,
       ).addTo(document)
@@ -50,8 +41,7 @@ class ContextualReportExhibits(
       document.mainDocumentPart.addParagraphOfText("")
 
       PositionTableExhibit(
-        number = tableExhibitNumber,
-        description = "Table of ${parameters.deviceWearer.name}'s locations, between $dateRange",
+        header = exhibitTitles[tableExhibitTitleIndex],
         positions = positions,
         config = config,
       ).addTo(document)

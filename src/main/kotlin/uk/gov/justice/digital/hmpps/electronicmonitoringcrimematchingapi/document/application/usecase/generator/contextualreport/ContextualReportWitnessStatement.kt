@@ -9,6 +9,7 @@ class ContextualReportWitnessStatement(
   private val createdAt: Instant,
   private val parameters: ContextualReportRequestParameters,
   private val config: ContextualReportConfig,
+  private val exhibits: List<String>,
 ) {
   private val listBuilder = ReportListBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
@@ -58,11 +59,6 @@ class ContextualReportWitnessStatement(
 
   private val statementExhibitIntro = "As a result of this request, I further produce the following screen shot(s) " +
     "and data table which document the subject’s movements as requested above."
-
-  private val statementExhibitList = listOf(
-    "Exhibit EMAC/04 - Key for interpreting symbols on crime map.",
-    "Exhibit EMAC/05 - Key for interpreting location data table.",
-  )
 
   fun addTo(
     document: WordprocessingMLPackage,
@@ -139,7 +135,7 @@ class ContextualReportWitnessStatement(
     addAll(
       listBuilder.createBulletedList(
         document,
-        statementExhibitList,
+        exhibits,
       ),
     )
 

@@ -7,6 +7,7 @@ class ContextualReportConfig(
   val timezone: ZoneId = ZoneId.of("Europe/London"),
   val pageWidth: Long = 11906L,
   val horizontalMargin: Long = 1440L,
+  val startingExhibitNumber: Int = 4,
 ) {
   val contentWidth = pageWidth - (horizontalMargin * 2)
 
