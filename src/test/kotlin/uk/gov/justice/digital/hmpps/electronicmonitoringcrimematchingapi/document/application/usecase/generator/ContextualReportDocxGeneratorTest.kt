@@ -18,9 +18,12 @@ import org.docx4j.wml.Tbl
 import org.docx4j.wml.Tc
 import org.docx4j.wml.Text
 import org.docx4j.wml.Tr
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import java.io.ByteArrayInputStream
@@ -30,6 +33,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.zip.ZipInputStream
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ContextualReportDocxGeneratorTest {
   private val generator = ContextualReportDocxGenerator(
     DocumentSensitivityLabeller(
@@ -40,18 +44,32 @@ class ContextualReportDocxGeneratorTest {
     ),
   )
 
-  @Test
-  fun `it should generate a contextual report and return as a byte array`() {
-    // Given a document request for a contextual report
+  private lateinit var result: GeneratedDocument
+  private lateinit var document: WordprocessingMLPackage
+  private lateinit var tables: List<Tbl>
+
+  @BeforeAll
+  fun setUp() {
     val request = DocumentRequest.create(
       parameters = givenContextualReportRequestParameters(),
       createdBy = "user123",
       createdAt = Instant.parse("2026-10-01T08:05:00Z"),
     )
 
-    // When the document is generated
-    val generatedDocument = generator.generate(request)
-    val bytes = generatedDocument.content
+    result = generator.generate(request)
+
+    document = WordprocessingMLPackage.load(
+      ByteArrayInputStream(result.content),
+    )
+
+    tables = document.mainDocumentPart.content.unwrapped<Tbl>()
+
+    assertThat(tables).hasSize(13)
+  }
+
+  @Test
+  fun `it should generate a contextual report and return as a byte array`() {
+    val bytes = result.content
 
     // Then the content should not be empty
     assertThat(generator.type).isEqualTo(DocumentType.CONTEXTUAL_REPORT)
@@ -65,10 +83,6 @@ class ContextualReportDocxGeneratorTest {
 
     // And the document should contain the expected text
     assertThat(documentXml).contains("Contextual Movement Report")
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(generatedDocument.content),
-    )
 
     val properties = document.docPropsCustomPart.jaxbElement.property
 
@@ -117,32 +131,25 @@ class ContextualReportDocxGeneratorTest {
   }
 
   @Test
-  fun `it should generate the contextual report header`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
-
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
+  fun `it should generate top-level full width tables`() {
     assertThat(tables).hasSize(13)
-    assertThat(tables[0].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[0].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
 
-    val rows = tables[0].content.unwrapped<Tr>()
+    tables.forEach { table ->
+      assertThat(table.tblPr.tblW.type).isEqualTo("dxa")
+      assertThat(table.tblPr.tblW.w)
+        .isEqualTo(BigInteger.valueOf(9026))
+    }
+  }
+
+  @Test
+  fun `it should generate the contextual report header`() {
+    val headerTable = tables[0]
+    val rows = headerTable.content.unwrapped<Tr>()
+
+    // Then the table should have two rows
+    assertThat(rows).hasSize(2)
 
     val titleCell = rows[0].content.unwrapped<Tc>().single()
-
     val contentCell = rows[1].content.unwrapped<Tc>().single()
 
     // And the first row should contain the title
@@ -159,28 +166,11 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the contextual report summary`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val summaryTable = tables[1]
+    val rows = summaryTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[1].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[1].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[1].content.unwrapped<Tr>()
+    // Then the table should have two rows
+    assertThat(rows).hasSize(2)
 
     val titleCell = rows[0].content.unwrapped<Tc>().single()
     val contentCell = rows[1].content.unwrapped<Tc>().single()
@@ -199,30 +189,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the person details`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val personDetailsTable = tables[2]
+    val rows = personDetailsTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[2].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[2].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[2].content.unwrapped<Tr>()
-
-    // And the table should have seven rows
+    // Then the table should have seven rows
     assertThat(rows).hasSize(7)
 
     val titleCell = rows[0].content
@@ -259,30 +229,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the crime details`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val crimeDetailsTable = tables[3]
+    val rows = crimeDetailsTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[3].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[3].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[3].content.unwrapped<Tr>()
-
-    // And the table should have four rows
+    // Then the table should have four rows
     assertThat(rows).hasSize(4)
 
     val titleCell = rows[0].content.unwrapped<Tc>().single()
@@ -307,30 +257,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the request details`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val requestDetailsTable = tables[4]
+    val rows = requestDetailsTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[4].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[4].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[4].content.unwrapped<Tr>()
-
-    // And the table should have five rows
+    // Then the table should have five rows
     assertThat(rows).hasSize(5)
 
     val titleCell = rows[0].content.unwrapped<Tc>().single()
@@ -358,30 +288,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the report period details`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val reportPeriodDetailsTable = tables[5]
+    val rows = reportPeriodDetailsTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[5].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[5].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[5].content.unwrapped<Tr>()
-
-    // And the table should have four rows
+    // Then the table should have four rows
     assertThat(rows).hasSize(4)
 
     val titleCell = rows[0].content.unwrapped<Tc>().single()
@@ -406,30 +316,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the further information`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val furtherInformationTable = tables[6]
+    val rows = furtherInformationTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[6].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[6].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[6].content.unwrapped<Tr>()
-
-    // And the table should have two rows
+    // Then the table should have two rows
     assertThat(rows).hasSize(2)
 
     val titleCell = rows[0].content.unwrapped<Tc>().single()
@@ -447,28 +337,11 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the disclaimer`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val disclaimerTable = tables[7]
+    val rows = disclaimerTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[7].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[7].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[7].content.unwrapped<Tr>()
+    // Then the table should have two rows
+    assertThat(rows).hasSize(2)
 
     val titleCell = rows[0].content.unwrapped<Tc>().single()
     val contentCell = rows[1].content.unwrapped<Tc>().single()
@@ -495,29 +368,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the witness statement`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val witnessStatementTable = tables[8]
+    val rows = witnessStatementTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[8].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[8].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[8].content.unwrapped<Tr>()
-
+    // Then the table should have four rows
     assertThat(rows).hasSize(4)
 
     // And the header should contain the relevant legislation
@@ -577,29 +431,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the example map exhibit`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val exampleMapExhibitTable = tables[9]
+    val rows = exampleMapExhibitTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[9].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[9].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[9].content.unwrapped<Tr>()
-
+    // Then the table should have two rows
     assertThat(rows).hasSize(2)
 
     // And the header should contain the artefact reference
@@ -628,29 +463,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate the example table exhibit`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val exampleTableExhibitTable = tables[10]
+    val rows = exampleTableExhibitTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[10].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[10].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[10].content.unwrapped<Tr>()
-
+    // Then the table should have two rows
     assertThat(rows).hasSize(2)
 
     // And the header should contain the artefact reference
@@ -729,29 +545,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate a map exhibit for the first segment`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val firstMapExhibitTable = tables[11]
+    val rows = firstMapExhibitTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[11].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[11].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[11].content.unwrapped<Tr>()
-
+    // Then the table should have two rows
     assertThat(rows).hasSize(2)
 
     // And the header should contain the artefact reference
@@ -780,29 +577,10 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate a table exhibit for the first segment`() {
-    // Given a document request for a contextual report
-    val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
-      createdBy = "user123",
-      createdAt = Instant.parse("2026-10-01T08:05:00Z"),
-    )
+    val firstTableExhibitTable = tables[12]
+    val rows = firstTableExhibitTable.content.unwrapped<Tr>()
 
-    // When the document is generated
-    val result = generator.generate(request)
-
-    val document = WordprocessingMLPackage.load(
-      ByteArrayInputStream(result.content),
-    )
-
-    // Then the document should contain thirteen tables
-    val tables = document.mainDocumentPart.content.unwrapped<Tbl>()
-
-    assertThat(tables).hasSize(13)
-    assertThat(tables[12].tblPr.tblW.type).isEqualTo("dxa")
-    assertThat(tables[12].tblPr.tblW.w).isEqualTo(BigInteger.valueOf(9026))
-
-    val rows = tables[12].content.unwrapped<Tr>()
-
+    // Then the table should have two rows
     assertThat(rows).hasSize(2)
 
     // And the header should contain the artefact reference
