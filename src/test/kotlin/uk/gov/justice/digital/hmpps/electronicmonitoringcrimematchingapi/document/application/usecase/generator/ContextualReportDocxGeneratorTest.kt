@@ -563,8 +563,10 @@ class ContextualReportDocxGeneratorTest {
         "Subject Jane Doe movements from 02:02 01/10/2026 to 05:05 02/10/2026" +
         "As a result of this request, I further produce the following screen shot(s) and data table " +
         "which document the subject’s movements as requested above." +
-        "Exhibit EMAC/04 - Key for interpreting symbols on crime map." +
-        "Exhibit EMAC/05 - Key for interpreting location data table." +
+        "Exhibit EMAC/04: Key for interpreting symbols on crime map" +
+        "Exhibit EMAC/05: Key for interpreting location data table" +
+        "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00" +
+        "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 01:00 and 2026-10-01 01:00" +
         "Signature:" +
         "Manager's name: John Smith" +
         "Date: 2026-10-01" +
@@ -620,7 +622,7 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Key for interpreting symbols on crime map",
+      "Exhibit EMAC/04: Key for interpreting symbols on crime map",
     )
   }
 
@@ -772,7 +774,7 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
+      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
     )
   }
 
