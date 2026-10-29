@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import java.time.Instant
 
 class CrimeDetailsTest {
   @ParameterizedTest
@@ -14,6 +15,7 @@ class CrimeDetailsTest {
   fun `it should reject blank required fields`(field: String) {
     val valid = CrimeDetails(
       batchId = "AVS20260101",
+      proximityAlertCreatedAt = Instant.parse("2026-09-01T00:00:00Z"),
       reference = "123456789",
       type = "Robbery",
     )
