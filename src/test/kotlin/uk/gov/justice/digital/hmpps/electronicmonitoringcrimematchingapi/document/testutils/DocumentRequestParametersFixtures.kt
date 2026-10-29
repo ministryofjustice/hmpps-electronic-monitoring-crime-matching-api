@@ -24,6 +24,7 @@ object DocumentRequestParametersFixtures {
     ),
     crime = CrimeDetails(
       batchId = "AVS20260101",
+      proximityAlertCreatedAt = Instant.parse("2026-09-01T00:00:00Z"),
       reference = "123456789",
       type = "Robbery",
     ),
@@ -64,6 +65,7 @@ object DocumentRequestParametersFixtures {
     ),
     "crime" to mapOf(
       "batchId" to "AVS20260101",
+      "proximityAlertCreatedAt" to "2026-09-01T00:00:00Z",
       "reference" to "123456789",
       "type" to "Robbery",
     ),

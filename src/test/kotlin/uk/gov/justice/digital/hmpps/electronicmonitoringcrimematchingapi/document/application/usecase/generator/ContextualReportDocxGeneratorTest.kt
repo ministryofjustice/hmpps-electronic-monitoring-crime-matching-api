@@ -411,7 +411,7 @@ class ContextualReportDocxGeneratorTest {
     assertThat(statement.text()).isEqualTo(
       "I am currently employed by the Ministry of Justice (MoJ) as a Manager within the " +
         "Electronic Monitoring Acquisitive Crime Hub (EMAC Hub)." +
-        "Further to the statement dated [TODO-Get PA Created Date] regarding an allegation of Robbery " +
+        "Further to the statement dated 2026-09-01 regarding an allegation of Robbery " +
         "(Crime Reference No. 123456789). On 2026-10-03 the EMAC Hub received a request in connection with the above " +
         "investigation for movement data for Jane Doe, 01/01/1990. The request required the following:" +
         "Subject Jane Doe movements from 02:02 01/10/2026 to 05:05 02/10/2026" +
