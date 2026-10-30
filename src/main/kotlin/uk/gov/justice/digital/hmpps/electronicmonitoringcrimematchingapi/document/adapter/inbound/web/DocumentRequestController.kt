@@ -1,4 +1,3 @@
-
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.inbound.web
 
 import io.swagger.v3.oas.annotations.Operation
