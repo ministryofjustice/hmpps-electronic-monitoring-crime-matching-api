@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
 import java.util.UUID
 
@@ -30,6 +31,9 @@ class DocumentRequestPersistenceAdapter(
 
   override fun findById(id: UUID): DocumentRequest? = repository.findById(id)
     .orElse(null)
+    ?.let(mapper::toDomain)
+
+  override fun claimNextEligibleDocumentRequest(): DocumentRequest? = repository.findFirstByStatus(DocumentRequestStatus.PENDING)
     ?.let(mapper::toDomain)
 
   override fun save(documentRequest: DocumentRequest): DocumentRequest {

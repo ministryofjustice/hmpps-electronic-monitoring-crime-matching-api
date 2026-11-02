@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
 import java.util.UUID
 
@@ -15,6 +16,7 @@ class InMemoryDocumentRequestStore : DocumentRequestStore {
   }
 
   override fun findById(id: UUID): DocumentRequest? = requests[id]
+  override fun claimNextEligibleDocumentRequest(): DocumentRequest? = requests.values.find { it.status == DocumentRequestStatus.PENDING }
 
   override fun findAll(
     pagination: PaginationRequest,
