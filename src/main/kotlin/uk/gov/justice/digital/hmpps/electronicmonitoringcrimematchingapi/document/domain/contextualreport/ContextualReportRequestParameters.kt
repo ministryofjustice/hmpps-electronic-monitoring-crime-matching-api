@@ -22,5 +22,9 @@ data class ContextualReportRequestParameters(
     require(positionSegments.isNotEmpty()) {
       "'positionSegments' must not be empty"
     }
+
+    require(positionSegments.all { it.isNotEmpty() }) {
+      "'positionSegments' must not contain empty segments"
+    }
   }
 }

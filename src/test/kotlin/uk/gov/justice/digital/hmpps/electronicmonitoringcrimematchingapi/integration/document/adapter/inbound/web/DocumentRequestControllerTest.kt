@@ -149,6 +149,24 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should reject a contextual report with an empty individual position segment`() {
+      val body = givenContextualReportRequestBody(
+        givenRawContextualReportRequestParameters() + mapOf("positionSegments" to listOf(emptyList<Any>())),
+      )
+
+      webTestClient.post()
+        .uri("/document-requests")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(body)
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+
+      assertThat(repository.count()).isZero()
+    }
+
+    @Test
     fun `it should reject a request with missing parameters`() {
       // Given an invalid request (missing position segments)
       val body = givenContextualReportRequestBody(

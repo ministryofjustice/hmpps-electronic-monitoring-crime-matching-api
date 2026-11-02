@@ -27,6 +27,22 @@ class ContextualReportRequestParametersTest {
   }
 
   @Test
+  fun `it should reject empty individual position segments`() {
+    val parameters = DocumentRequestParametersFixtures.givenContextualReportRequestParameters()
+
+    listOf(
+      listOf(emptyList()),
+      parameters.positionSegments + listOf(emptyList()),
+    ).forEach { segments ->
+      Assertions.assertThatThrownBy {
+        parameters.copy(positionSegments = segments)
+      }
+        .isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessage("'positionSegments' must not contain empty segments")
+    }
+  }
+
+  @Test
   fun `it should reject a report period ending after the request date`() {
     val parameters = DocumentRequestParametersFixtures.givenContextualReportRequestParameters()
 
