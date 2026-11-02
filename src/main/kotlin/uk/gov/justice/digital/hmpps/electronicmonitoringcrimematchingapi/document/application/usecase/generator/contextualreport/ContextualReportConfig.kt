@@ -20,17 +20,6 @@ class ContextualReportConfig(
       .withZone(timezone)
 
   val dateTimeFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-      .withZone(timezone)
-
-  val dateTimeFormatterAlt: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-      .withZone(timezone)
-
-  val dateTimeFormatterAlt2: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
       .withZone(timezone)
-
-  val isoDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    .withZone(timezone)
 }

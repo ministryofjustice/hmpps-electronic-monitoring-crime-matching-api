@@ -24,8 +24,8 @@ class ContextualReportExhibitTitles(
     parameters.positionSegments.forEachIndexed { index, positions ->
       val mapExhibitNumber = config.startingExhibitNumber + 2 + index * 2
       val tableExhibitNumber = mapExhibitNumber + 1
-      val from = config.dateTimeFormatterAlt.format(positions.first().gpsDate)
-      val to = config.dateTimeFormatterAlt.format(positions.last().gpsDate)
+      val from = config.dateTimeFormatter.format(positions.first().gpsDate)
+      val to = config.dateTimeFormatter.format(positions.last().gpsDate)
       val dateRange = "$from and $to"
 
       add(
