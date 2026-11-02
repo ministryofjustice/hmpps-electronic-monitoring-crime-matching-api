@@ -115,7 +115,7 @@ class PositionTableExhibit(
 
     positions.forEach { position ->
       val values = listOf(
-        config.dateTimeFormatterAlt2.format(position.gpsDate),
+        config.dateTimeFormatter.format(position.gpsDate),
         position.latitude.toString(),
         position.longitude.toString(),
         position.precision.toString(),

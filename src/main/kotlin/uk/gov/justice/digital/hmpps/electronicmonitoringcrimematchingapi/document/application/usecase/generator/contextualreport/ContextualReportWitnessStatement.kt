@@ -39,9 +39,9 @@ class ContextualReportWitnessStatement(
       val deviceWearer = this.parameters.deviceWearer
 
       return """
-        Further to the statement dated ${config.isoDateFormatter.format(crime.proximityAlertCreatedAt)} regarding an allegation
+        Further to the statement dated ${config.dateFormatter.format(crime.proximityAlertCreatedAt)} regarding an allegation
         of ${crime.type} (Crime Reference No. ${crime.reference}).
-        On ${config.isoDateFormatter.format(request.requestedAt)} the EMAC Hub received a request
+        On ${config.dateFormatter.format(request.requestedAt)} the EMAC Hub received a request
         in connection with the above investigation for movement data for
         ${deviceWearer.name}, ${config.dateFormatter.format(deviceWearer.dateOfBirth)}.
         The request required the following:
@@ -145,7 +145,7 @@ class ContextualReportWitnessStatement(
   private fun signature() = listOf(
     paragraphBuilder.create("Signature:", spacingAfter = 120),
     paragraphBuilder.create("Manager's name: ${parameters.authorisingManager.name}", spacingAfter = 120),
-    paragraphBuilder.create("Date: ${config.isoDateFormatter.format(createdAt)}", spacingAfter = 120),
+    paragraphBuilder.create("Date: ${config.dateFormatter.format(createdAt)}", spacingAfter = 120),
     paragraphBuilder.create(
       "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)",
       spacingAfter = 120,

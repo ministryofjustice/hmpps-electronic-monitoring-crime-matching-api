@@ -304,9 +304,9 @@ class ContextualReportDocxGeneratorTest {
 
     // And the 2nd to 4th rows should contain the content
     assertThat(fromCells[0].text()).contains("Datetime CR requested from")
-    assertThat(fromCells[1].text()).contains("02:02 01/10/2026")
+    assertThat(fromCells[1].text()).contains("01/10/2026 02:02")
     assertThat(toCells[0].text()).contains("Datetime CR requested to")
-    assertThat(toCells[1].text()).contains("05:05 02/10/2026")
+    assertThat(toCells[1].text()).contains("02/10/2026 05:05")
     assertThat(imagesCells[0].text()).contains("Images")
     assertThat(imagesCells[1].text()).contains("Between Above Date/Time Range")
 
@@ -400,7 +400,7 @@ class ContextualReportDocxGeneratorTest {
         "do not believe to be true." +
         "Signature:" +
         "Manager's name: John Smith" +
-        "Date: 2026-10-01" +
+        "Date: 01/10/2026" +
         "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)" +
         "Address: 102 Petty France, Westminster, London, SW1H 9AJ",
     )
@@ -411,19 +411,19 @@ class ContextualReportDocxGeneratorTest {
     assertThat(statement.text()).isEqualTo(
       "I am currently employed by the Ministry of Justice (MoJ) as a Manager within the " +
         "Electronic Monitoring Acquisitive Crime Hub (EMAC Hub)." +
-        "Further to the statement dated 2026-09-01 regarding an allegation of Robbery " +
-        "(Crime Reference No. 123456789). On 2026-10-03 the EMAC Hub received a request in connection with the above " +
+        "Further to the statement dated 01/09/2026 regarding an allegation of Robbery " +
+        "(Crime Reference No. 123456789). On 03/10/2026 the EMAC Hub received a request in connection with the above " +
         "investigation for movement data for Jane Doe, 01/01/1990. The request required the following:" +
-        "Subject Jane Doe movements from 02:02 01/10/2026 to 05:05 02/10/2026" +
+        "Subject Jane Doe movements from 01/10/2026 02:02 to 02/10/2026 05:05" +
         "As a result of this request, I further produce the following screen shot(s) and data table " +
         "which document the subject’s movements as requested above." +
         "Exhibit EMAC/04: Key for interpreting symbols on crime map" +
         "Exhibit EMAC/05: Key for interpreting location data table" +
-        "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00" +
-        "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 01:00 and 2026-10-01 01:00" +
+        "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/07: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00" +
         "Signature:" +
         "Manager's name: John Smith" +
-        "Date: 2026-10-01" +
+        "Date: 01/10/2026" +
         "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)" +
         "Address: 102 Petty France, Westminster, London, SW1H 9AJ",
     )
@@ -554,7 +554,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
+      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -571,7 +571,7 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 2026-10-01 01:00 and 2026-10-01 01:00",
+      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
   }
 
@@ -586,7 +586,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/07: Table of Jane Doe's locations, between 2026-10-01 01:00 and 2026-10-01 01:00",
+      "Exhibit EMAC/07: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
