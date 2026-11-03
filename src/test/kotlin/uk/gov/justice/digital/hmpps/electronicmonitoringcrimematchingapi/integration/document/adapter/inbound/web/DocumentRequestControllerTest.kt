@@ -21,7 +21,6 @@ import java.time.Instant
 import java.util.UUID
 
 class DocumentRequestControllerTest : IntegrationTestBase() {
-
   @Autowired
   private lateinit var repository: DocumentRequestRepository
 
@@ -85,7 +84,11 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
       val saved = repository.findById(UUID.fromString(request.id)).orElseThrow()
 
       assertThat(saved.type).isEqualTo(DocumentType.CONTEXTUAL_REPORT)
-      assertThat(saved.status).isEqualTo(DocumentRequestStatus.COMPLETED)
+      assertThat(saved.status).isEqualTo(DocumentRequestStatus.PENDING)
+      assertThat(saved.artefactReference).isNull()
+      assertThat(saved.artefactFilename).isNull()
+      assertThat(saved.artefactContentType).isNull()
+      documentManagementApi.verifyUploadRequestCount(0)
       assertThat(saved.parameters).containsKeys(
         "authorisingManager",
         "crime",

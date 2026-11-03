@@ -17,8 +17,10 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.containers.PostgreSQLContainer
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.inbound.scheduling.DocumentRequestScheduler
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.CrimeMatchingFixtures
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.TestFixturesConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AwsApiExtension
@@ -71,6 +73,10 @@ abstract class IntegrationTestBase {
 
   @Autowired
   lateinit var crimeMatchingFixtures: CrimeMatchingFixtures
+
+  // To ensure that the scheduler timing does not interfere with integration tests:
+  @MockitoBean
+  private lateinit var documentRequestScheduler: DocumentRequestScheduler
 
   @BeforeEach
   fun setupBase() {

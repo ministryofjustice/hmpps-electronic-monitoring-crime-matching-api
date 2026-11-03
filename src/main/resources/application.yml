@@ -5,6 +5,10 @@ info.app:
 spring:
   application:
     name: hmpps-electronic-monitoring-crime-matching-api
+  task:
+    scheduling:
+      pool:
+        size: 3 # Allows @Scheduled tasks to run concurrently
   http:
     codecs:
       max-in-memory-size: 10MB

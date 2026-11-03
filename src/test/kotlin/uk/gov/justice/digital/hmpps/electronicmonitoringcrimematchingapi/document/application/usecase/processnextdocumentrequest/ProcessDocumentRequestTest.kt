@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase
+package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.processnextdocumentrequest
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentStore
 import java.time.Clock
 import java.time.Instant
@@ -18,6 +19,7 @@ import java.util.*
 
 class ProcessDocumentRequestTest {
   private val store = InMemoryDocumentStore()
+  private val documentRequestStore = InMemoryDocumentRequestStore()
 
   private val clock = Clock.fixed(
     Instant.parse("2026-10-08T12:00:00Z"),
@@ -33,6 +35,7 @@ class ProcessDocumentRequestTest {
       ),
     ),
     documentStore = store,
+    documentRequestStore = documentRequestStore,
   )
 
   @Test

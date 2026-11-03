@@ -12,4 +12,6 @@ interface DocumentRequestStore {
   fun findAll(pagination: PaginationRequest): PaginationResult<DocumentRequest>
 
   fun findById(id: UUID): DocumentRequest?
+
+  fun claimNextEligibleDocumentRequest(): DocumentRequest?
 }
