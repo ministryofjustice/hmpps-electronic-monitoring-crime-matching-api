@@ -98,6 +98,7 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
         "reportRequest",
       )
       assertThat(saved.createdBy).isEqualTo("AUTH_ADM")
+      assertThat(request.status).isEqualTo(DocumentRequestStatus.PENDING)
     }
 
     @Test
@@ -564,6 +565,9 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     artefactReference: String? = null,
     artefactFilename: String? = null,
     artefactContentType: String? = null,
+    claimedAt: Instant? = Instant.parse("2026-10-08T13:00:00Z"),
+    attempts: Int = 0,
+    lastError: String? = null,
   ): DocumentRequestEntity = DocumentRequestEntity(
     id = id,
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -574,6 +578,10 @@ class DocumentRequestControllerTest : IntegrationTestBase() {
     artefactReference = artefactReference,
     artefactFilename = artefactFilename,
     artefactContentType = artefactContentType,
+    claimedAt = claimedAt,
+    attempts = attempts,
+    lastError = lastError,
+    concurrencyVersion = 0L,
   )
 
   private fun givenContextualReportRequestBody(

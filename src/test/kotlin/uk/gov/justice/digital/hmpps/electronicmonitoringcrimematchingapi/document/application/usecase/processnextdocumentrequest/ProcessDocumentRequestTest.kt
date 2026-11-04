@@ -6,6 +6,7 @@ import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ContextualReportDocxGenerator
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGeneratorRegistry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentSensitivityLabeller
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentArtefact
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
@@ -19,12 +20,12 @@ import java.util.*
 
 class ProcessDocumentRequestTest {
   private val store = InMemoryDocumentStore()
-  private val documentRequestStore = InMemoryDocumentRequestStore()
 
   private val clock = Clock.fixed(
     Instant.parse("2026-10-08T12:00:00Z"),
     ZoneOffset.UTC,
   )
+  private val documentRequestStore = InMemoryDocumentRequestStore(clock)
 
   private val useCase = ProcessDocumentRequest(
     generatorRegistry = DocumentGeneratorRegistry(
@@ -70,6 +71,8 @@ class ProcessDocumentRequestTest {
 
   private fun givenDocumentRequest(
     status: DocumentRequestStatus = DocumentRequestStatus.PENDING,
+    claimedAt: Instant? = null,
+    artefact: DocumentArtefact? = null,
   ): DocumentRequest = DocumentRequest.rehydrate(
     id = UUID.randomUUID(),
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -77,5 +80,10 @@ class ProcessDocumentRequestTest {
     createdBy = "user123",
     createdAt = clock.instant(),
     status = status,
+    claimedAt = claimedAt,
+    attempts = 0,
+    lastError = null,
+    concurrencyVersion = 0L,
+    artefact = artefact,
   )
 }

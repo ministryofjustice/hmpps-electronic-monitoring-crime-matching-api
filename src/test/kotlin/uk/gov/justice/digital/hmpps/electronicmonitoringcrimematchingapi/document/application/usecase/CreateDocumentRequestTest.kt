@@ -19,12 +19,11 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 class CreateDocumentRequestTest {
-  private val store = InMemoryDocumentRequestStore()
-
   private val clock = Clock.fixed(
     Instant.parse("2026-10-08T12:00:00Z"),
     ZoneOffset.UTC,
   )
+  private val store = InMemoryDocumentRequestStore(clock)
 
   private val objectMapper = JsonMapper.builder()
     .findAndAddModules()
