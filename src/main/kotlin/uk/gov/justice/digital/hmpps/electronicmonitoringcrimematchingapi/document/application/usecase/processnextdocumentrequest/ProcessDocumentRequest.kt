@@ -14,8 +14,8 @@ class ProcessDocumentRequest(
   private val documentRequestStore: DocumentRequestStore,
 ) {
   fun process(documentRequest: DocumentRequest) {
-    check(documentRequest.status == DocumentRequestStatus.PENDING) {
-      "DocumentRequest must be in PENDING status"
+    check(documentRequest.status == DocumentRequestStatus.PENDING || documentRequest.status == DocumentRequestStatus.FAILED) {
+      "DocumentRequest must be in PENDING or FAILED status"
     }
 
     val type = documentRequest.type

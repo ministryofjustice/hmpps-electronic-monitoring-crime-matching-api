@@ -13,6 +13,12 @@ class ProcessNextDocumentRequest(
     val documentRequest = documentRequestStore.claimNextEligibleDocumentRequest(
       maxAgeOfClaimBeforeExpiryInSeconds = 10L * 60,
     ) ?: return
-    processDocumentRequest.process(documentRequest)
+    try {
+      processDocumentRequest.process(documentRequest)
+    } catch (e: Exception) {
+      documentRequest.fail(e)
+      documentRequestStore.save(documentRequest)
+      throw e // Rethrow so the exception appears in application logs
+    }
   }
 }
