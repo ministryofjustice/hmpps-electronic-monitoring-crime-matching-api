@@ -38,6 +38,11 @@ class DocumentRequestTest {
       status = DocumentRequestStatus.PENDING,
       createdBy = "user123",
       createdAt = createdAt,
+      claimedAt = null,
+      artefact = null,
+      attempts = 0,
+      lastError = null,
+      concurrencyVersion = 0L,
     )
 
     assertThat(request.id).isEqualTo(id)

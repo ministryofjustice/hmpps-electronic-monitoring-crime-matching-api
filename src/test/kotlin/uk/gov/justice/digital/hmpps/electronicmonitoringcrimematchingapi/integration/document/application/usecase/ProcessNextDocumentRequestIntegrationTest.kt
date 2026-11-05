@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.persistence.DocumentRequestRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.GetDocumentRequestArtefact
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.ProcessNextDocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentArtefact
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
@@ -91,6 +92,11 @@ class ProcessNextDocumentRequestIntegrationTest : IntegrationTestBase() {
         parameters = givenContextualReportRequestParameters(),
         createdBy = "user123",
         createdAt = Instant.parse("2026-10-08T12:00:00Z"),
+        claimedAt = null,
+        artefact = null,
+        attempts = 0,
+        lastError = null,
+        concurrencyVersion = 0L,
       ),
     )
 
@@ -139,6 +145,8 @@ class ProcessNextDocumentRequestIntegrationTest : IntegrationTestBase() {
 
   private fun givenDocumentRequest(
     status: DocumentRequestStatus = DocumentRequestStatus.PENDING,
+    claimedAt: Instant? = null,
+    artefact: DocumentArtefact? = null,
   ): DocumentRequest = DocumentRequest.rehydrate(
     id = UUID.randomUUID(),
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -146,5 +154,10 @@ class ProcessNextDocumentRequestIntegrationTest : IntegrationTestBase() {
     createdBy = "user123",
     createdAt = clock.instant(),
     status = status,
+    claimedAt = claimedAt,
+    attempts = 0,
+    lastError = null,
+    concurrencyVersion = 0L,
+    artefact = artefact,
   )
 }

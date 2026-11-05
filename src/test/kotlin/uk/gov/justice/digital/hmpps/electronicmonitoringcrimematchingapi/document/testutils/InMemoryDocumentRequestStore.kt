@@ -1,22 +1,40 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils
 
+import org.springframework.dao.OptimisticLockingFailureException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationResult
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentArtefact
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
+import java.time.Clock
+import java.time.Instant
 import java.util.UUID
 
-class InMemoryDocumentRequestStore : DocumentRequestStore {
+// These methods MUST mirror the logic in the real store methods otherwise the tests could be misleading
+class InMemoryDocumentRequestStore(private val clock: Clock) : DocumentRequestStore {
   private val requests = mutableMapOf<UUID, DocumentRequest>()
 
   override fun save(documentRequest: DocumentRequest): DocumentRequest {
-    requests[documentRequest.id] = documentRequest
-    return documentRequest
+    val existing = requests[documentRequest.id]
+
+    val persisted = if (existing == null) {
+      documentRequest.copy()
+    } else {
+      if (documentRequest.concurrencyVersion != existing.concurrencyVersion) {
+        throw OptimisticLockingFailureException(
+          "Document request ${documentRequest.id} has version ${documentRequest.concurrencyVersion} but store has ${existing.concurrencyVersion}",
+        )
+      }
+
+      documentRequest.copy(concurrencyVersion = existing.concurrencyVersion + 1)
+    }
+
+    requests[persisted.id] = persisted
+    return persisted.copy()
   }
 
-  override fun findById(id: UUID): DocumentRequest? = requests[id]
-  override fun claimNextEligibleDocumentRequest(): DocumentRequest? = requests.values.find { it.status == DocumentRequestStatus.PENDING }
+  override fun findById(id: UUID): DocumentRequest? = requests[id]?.copy()
 
   override fun findAll(
     pagination: PaginationRequest,
@@ -35,4 +53,45 @@ class InMemoryDocumentRequestStore : DocumentRequestStore {
       pageSize = pagination.size,
     )
   }
+
+  override fun claimNextEligibleDocumentRequest(
+    maxAgeOfClaimBeforeExpiryInSeconds: Long,
+  ): DocumentRequest? {
+    val now = Instant.now(clock)
+    val cutoff = now.minusSeconds(maxAgeOfClaimBeforeExpiryInSeconds)
+    val request = requests.values
+      .sortedBy { it.createdAt }.firstOrNull {
+        it.status == DocumentRequestStatus.PENDING && (it.claimedAt == null || it.claimedAt < cutoff)
+      }
+
+    return request?.let { eligible ->
+      val claimed = eligible.copy(
+        claimedAt = now,
+        concurrencyVersion = eligible.concurrencyVersion + 1,
+      )
+      requests[claimed.id] = claimed
+      return claimed.copy()
+    }
+  }
+
+  private fun DocumentRequest.copy(
+    status: DocumentRequestStatus = this.status,
+    claimedAt: Instant? = this.claimedAt,
+    attempts: Int = this.attempts,
+    lastError: String? = this.lastError,
+    concurrencyVersion: Long = this.concurrencyVersion,
+    artefact: DocumentArtefact? = this.artefact,
+  ): DocumentRequest = DocumentRequest.rehydrate(
+    id = id,
+    type = type,
+    parameters = parameters,
+    status = status,
+    createdBy = createdBy,
+    createdAt = createdAt,
+    claimedAt = claimedAt,
+    attempts = attempts,
+    lastError = lastError,
+    concurrencyVersion = concurrencyVersion,
+    artefact = artefact,
+  )
 }
