@@ -16,7 +16,6 @@ interface DocumentRequestRepository : JpaRepository<DocumentRequestEntity, UUID>
       from document_request
       where (status = :pendingState or status = :failedState)
         and (claimed_at is null or claimed_at < :cutoff)
-        and (concurrency_version <= :maxConcurrencyVersion)
       order by created_at
       limit 1
       for update skip locked
@@ -35,6 +34,5 @@ interface DocumentRequestRepository : JpaRepository<DocumentRequestEntity, UUID>
     @Param("failedState") failedState: String,
     @Param("cutoff") cutoff: Instant,
     @Param("now") now: Instant,
-    @Param("maxConcurrencyVersion") maxConcurrencyVersion: Long,
   ): Collection<DocumentRequestEntity>
 }

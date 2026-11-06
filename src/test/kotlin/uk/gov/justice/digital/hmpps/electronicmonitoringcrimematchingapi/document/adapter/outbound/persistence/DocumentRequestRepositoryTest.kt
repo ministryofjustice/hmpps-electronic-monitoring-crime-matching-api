@@ -50,7 +50,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
     assertThat(claimedRows.size).isEqualTo(1)
     assertThat(claimedRows.first().id).isEqualTo(eligibleUnclaimed.id)
@@ -73,7 +72,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
 
     assertThat(claimedRows.map { it.id }).containsExactly(eligibleFailed.id)
@@ -97,7 +95,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
     assertThat(claimedRows.size).isEqualTo(1)
     assertThat(claimedRows.first().id).isEqualTo(eligibleStaleClaim.id)
@@ -122,7 +119,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
     assertThat(claimedRows).isEmpty()
     assertThat(claimedAtFor(ineligibleRecentClaim.id)).isEqualTo(cutoff.plusMillis(1))
@@ -144,7 +140,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
     assertThat(claimedRows).isEmpty()
     assertThat(claimedAtFor(ineligibleCompleted.id)).isNull()
@@ -164,7 +159,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
 
     assertThat(claimedRows).isEmpty()
@@ -187,32 +181,11 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
 
     assertThat(claimedRows).hasSize(1)
     assertThat(claimedRows.first().concurrencyVersion).isEqualTo(1L)
     assertThat(claimedAtFor(eligible.id)).isEqualTo(now)
-  }
-
-  @Test
-  fun `it should skip a row whose concurrency version is too high`() {
-    val now = Instant.parse("2026-01-01T00:10:00Z")
-    givenDocumentRequestRow(
-      status = DocumentRequestStatus.PENDING,
-      claimedAt = null,
-      concurrencyVersion = 7L,
-    )
-
-    val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
-      pendingState = DocumentRequestStatus.PENDING.name,
-      failedState = DocumentRequestStatus.FAILED.name,
-      cutoff = now.minusSeconds(60),
-      now = now,
-      maxConcurrencyVersion = 6L,
-    )
-
-    assertThat(claimedRows).isEmpty()
   }
 
   @Test
@@ -236,7 +209,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
-      maxConcurrencyVersion = 6L,
     )
 
     assertThat(claimedRows.map { it.id }).containsExactly(eligibleOne.id)
@@ -270,7 +242,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
               failedState = DocumentRequestStatus.FAILED.name,
               cutoff = cutoff,
               now = firstClaimNow,
-              maxConcurrencyVersion = 6L,
             ),
           )
           firstClaimComplete.countDown()
@@ -287,7 +258,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
               failedState = DocumentRequestStatus.FAILED.name,
               cutoff = cutoff,
               now = secondClaimNow,
-              maxConcurrencyVersion = 6L,
             ),
           )
         }
@@ -311,7 +281,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
     createdAt: Instant = Instant.parse("2026-01-01T00:00:00Z"),
     attempts: Int = 0,
     lastError: String? = null,
-    concurrencyVersion: Long = 0L,
   ): DocumentRequestEntity {
     val row = documentRequestRepository.saveAndFlush(
       DocumentRequestEntity(
@@ -336,14 +305,6 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
       jdbcTemplate.update(
         "update document_request set claimed_at = ? where id = ?",
         Timestamp.from(claimedAt),
-        row.id,
-      )
-    }
-
-    if (concurrencyVersion != 0L) {
-      jdbcTemplate.update(
-        "update document_request set concurrency_version = ? where id = ?",
-        concurrencyVersion,
         row.id,
       )
     }

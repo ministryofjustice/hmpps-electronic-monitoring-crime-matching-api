@@ -15,6 +15,5 @@ interface DocumentRequestStore {
 
   fun claimNextEligibleDocumentRequest(
     maxAgeOfClaimBeforeExpiryInSeconds: Long,
-    maxConcurrencyVersion: Long,
   ): DocumentRequest?
 }
