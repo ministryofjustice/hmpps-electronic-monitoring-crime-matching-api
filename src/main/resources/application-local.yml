@@ -21,6 +21,8 @@ services:
     mfa: false
   document-management:
     url: ${DOCUMENT_MANAGEMENT_API_URL:http://localhost:8084}
+  algorithm:
+    url: ${ALGORITHM_API_URL:http://localhost:8085}
 
 aws:
   region: eu-west-2

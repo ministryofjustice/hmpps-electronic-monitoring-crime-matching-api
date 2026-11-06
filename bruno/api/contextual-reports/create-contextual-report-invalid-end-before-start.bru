@@ -1,0 +1,30 @@
+meta {
+  name: Create contextual report (end before start)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/crime-matching-results/550e8400-e29b-41d4-a716-446655440000/matched-wearers/12345/contextual-reports
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "startTime": "2026-11-06T12:00:00Z",
+    "endTime": "2026-11-06T11:00:00Z",
+    "policeForceArea": "Metropolitan Police",
+    "officerName": "Test Officer",
+    "requestedAt": "2026-11-06T13:00:00Z",
+    "additionalInformation": "Invalid time range example"
+  }
+}
+
+assert {
+  res.status: eq 400
+}

@@ -24,6 +24,7 @@ generic-service:
     FLIPT_URL: "https://feature-toggles-dev.hmpps.service.justice.gov.uk"
     NOTIFY_API_ENABLED: "true"
     DOCUMENT_MANAGEMENT_API_URL: "https://document-api-dev.hmpps.service.justice.gov.uk"
+    ALGORITHM_API_URL: "https://electronic-monitoring-crime-matching-algorithm-dev.hmpps.service.justice.gov.uk"
 
   namespace_secrets:
     athena-roles: null
