@@ -1,0 +1,34 @@
+meta {
+  name: Create contextual report
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/crime-matching-results/550e8400-e29b-41d4-a716-446655440000/matched-wearers/:deviceActivationId/contextual-reports
+  body: json
+  auth: bearer
+}
+
+params:path {
+  deviceActivationId: 7070800428608488
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "startTime": "2025-08-17T12:00:00Z",
+    "endTime": "2025-08-18T00:00:00Z",
+    "policeForceArea": "Metropolitan",
+    "officerName": "Test Officer",
+    "requestedAt": "2026-11-06T11:00:00Z",
+    "additionalInformation": "Contextual report request example"
+  }
+}
+
+assert {
+  res.status: eq 202
+}
