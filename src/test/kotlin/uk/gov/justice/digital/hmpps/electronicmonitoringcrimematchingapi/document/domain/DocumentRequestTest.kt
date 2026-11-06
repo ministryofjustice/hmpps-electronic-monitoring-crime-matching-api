@@ -64,7 +64,7 @@ class DocumentRequestTest {
   fun `it should record a failed attempt and remain retryable`() {
     val request = givenDocumentRequest()
 
-    request.fail(IllegalStateException("generation failed"))
+    request.fail(IllegalStateException("generation failed"), maxAttempts = 3)
 
     assertThat(request.status).isEqualTo(FAILED)
     assertThat(request.attempts).isEqualTo(1)
@@ -74,12 +74,13 @@ class DocumentRequestTest {
 
   @Test
   fun `it should mark the request dead after the maximum number of attempts`() {
-    val request = givenDocumentRequest(attempts = DocumentRequest.MAX_ATTEMPTS - 1)
+    val maxAttempts = 5
+    val request = givenDocumentRequest(attempts = maxAttempts - 1)
 
-    request.fail(IllegalStateException("generation failed"))
+    request.fail(IllegalStateException("generation failed"), maxAttempts)
 
     assertThat(request.status).isEqualTo(DEAD)
-    assertThat(request.attempts).isEqualTo(DocumentRequest.MAX_ATTEMPTS)
+    assertThat(request.attempts).isEqualTo(maxAttempts)
     assertThat(request.lastError).isEqualTo("generation failed")
   }
 
@@ -103,9 +104,9 @@ class DocumentRequestTest {
   fun `it should not fail a completed request`() {
     val request = givenDocumentRequest(status = COMPLETED)
 
-    assertThatThrownBy { request.fail(IllegalStateException("generation failed")) }
+    assertThatThrownBy { request.fail(IllegalStateException("generation failed"), maxAttempts = 3) }
       .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("DocumentRequest must not be in COMPLETED status")
+      .hasMessage("DocumentRequest must be in PENDING or FAILED status")
   }
 
   private fun givenDocumentRequest(

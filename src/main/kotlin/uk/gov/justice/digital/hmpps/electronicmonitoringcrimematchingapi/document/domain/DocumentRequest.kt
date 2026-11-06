@@ -32,7 +32,6 @@ class DocumentRequest private constructor(
   }
 
   companion object {
-    const val MAX_ATTEMPTS = 3
     fun create(
       parameters: DocumentRequestParameters,
       createdBy: String,
@@ -88,13 +87,13 @@ class DocumentRequest private constructor(
     status = DocumentRequestStatus.COMPLETED
   }
 
-  fun fail(exception: Exception) {
-    check(status != DocumentRequestStatus.COMPLETED) {
-      "DocumentRequest must not be in COMPLETED status"
+  fun fail(exception: Exception, maxAttempts: Int) {
+    check(status == DocumentRequestStatus.PENDING || status == DocumentRequestStatus.FAILED) {
+      "DocumentRequest must be in PENDING or FAILED status"
     }
 
     lastError = exception.message
     attempts++
-    status = if (attempts < MAX_ATTEMPTS) DocumentRequestStatus.FAILED else DocumentRequestStatus.DEAD
+    status = if (attempts < maxAttempts) DocumentRequestStatus.FAILED else DocumentRequestStatus.DEAD
   }
 }

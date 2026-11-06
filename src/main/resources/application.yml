@@ -120,3 +120,6 @@ datastore:
 
 email-ingestion:
   mailbox-address: ${MAILBOX_ADDRESS}
+
+document-request:
+  max-attempts: ${DOCUMENT_REQUEST_MAX_ATTEMPTS:3}
