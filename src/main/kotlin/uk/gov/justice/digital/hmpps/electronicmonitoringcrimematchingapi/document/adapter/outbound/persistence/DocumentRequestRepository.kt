@@ -14,7 +14,7 @@ interface DocumentRequestRepository : JpaRepository<DocumentRequestEntity, UUID>
     with candidates as (
       select id
       from document_request
-      where (status = :pendingState)
+      where (status = :pendingState or status = :failedState)
         and (claimed_at is null or claimed_at < :cutoff)
       order by created_at
       limit 1
@@ -31,6 +31,7 @@ interface DocumentRequestRepository : JpaRepository<DocumentRequestEntity, UUID>
   )
   fun claimNextEligibleDocumentRequest(
     @Param("pendingState") pendingState: String,
+    @Param("failedState") failedState: String,
     @Param("cutoff") cutoff: Instant,
     @Param("now") now: Instant,
   ): Collection<DocumentRequestEntity>

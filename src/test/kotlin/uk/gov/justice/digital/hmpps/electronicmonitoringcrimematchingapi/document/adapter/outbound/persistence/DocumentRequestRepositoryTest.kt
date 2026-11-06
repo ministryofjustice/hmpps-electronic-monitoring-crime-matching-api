@@ -47,6 +47,7 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
       pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
     )
@@ -55,6 +56,27 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
     assertThat(claimedRows.first().status).isEqualTo(DocumentRequestStatus.PENDING)
 
     assertThat(claimedAtFor(eligibleUnclaimed.id)).isEqualTo(now)
+  }
+
+  @Test
+  fun `it should claim an unclaimed failed row`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+    val eligibleFailed = givenDocumentRequestRow(
+      status = DocumentRequestStatus.FAILED,
+      claimedAt = null,
+    )
+
+    val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
+      pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
+      cutoff = cutoff,
+      now = now,
+    )
+
+    assertThat(claimedRows.map { it.id }).containsExactly(eligibleFailed.id)
+    assertThat(claimedRows.first().status).isEqualTo(DocumentRequestStatus.FAILED)
+    assertThat(claimedAtFor(eligibleFailed.id)).isEqualTo(now)
   }
 
   @Test
@@ -70,6 +92,7 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
       pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
     )
@@ -93,6 +116,7 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
       pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
     )
@@ -113,11 +137,32 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
       pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
     )
     assertThat(claimedRows).isEmpty()
     assertThat(claimedAtFor(ineligibleCompleted.id)).isNull()
+  }
+
+  @Test
+  fun `it should not claim a dead row`() {
+    val now = Instant.parse("2026-01-01T00:10:00Z")
+    val cutoff = now.minusSeconds(60)
+    val ineligibleDead = givenDocumentRequestRow(
+      status = DocumentRequestStatus.DEAD,
+      claimedAt = null,
+    )
+
+    val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
+      pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
+      cutoff = cutoff,
+      now = now,
+    )
+
+    assertThat(claimedRows).isEmpty()
+    assertThat(claimedAtFor(ineligibleDead.id)).isNull()
   }
 
   @Test
@@ -133,6 +178,7 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
       pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
     )
@@ -160,6 +206,7 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
 
     val claimedRows = documentRequestRepository.claimNextEligibleDocumentRequest(
       pendingState = DocumentRequestStatus.PENDING.name,
+      failedState = DocumentRequestStatus.FAILED.name,
       cutoff = cutoff,
       now = now,
     )
@@ -192,6 +239,7 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
           firstClaimedRows.set(
             documentRequestRepository.claimNextEligibleDocumentRequest(
               pendingState = DocumentRequestStatus.PENDING.name,
+              failedState = DocumentRequestStatus.FAILED.name,
               cutoff = cutoff,
               now = firstClaimNow,
             ),
@@ -207,6 +255,7 @@ class DocumentRequestRepositoryTest : IntegrationTestBase() {
           secondClaimedRows.set(
             documentRequestRepository.claimNextEligibleDocumentRequest(
               pendingState = DocumentRequestStatus.PENDING.name,
+              failedState = DocumentRequestStatus.FAILED.name,
               cutoff = cutoff,
               now = secondClaimNow,
             ),

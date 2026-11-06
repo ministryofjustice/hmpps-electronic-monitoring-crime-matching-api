@@ -43,7 +43,7 @@ class DocumentRequestPersistenceAdapter(
   ): DocumentRequest? {
     val now = Instant.now(clock)
     val cutoff = now.minusSeconds(maxAgeOfClaimBeforeExpiryInSeconds)
-    return repository.claimNextEligibleDocumentRequest(DocumentRequestStatus.PENDING.name, cutoff, now).firstOrNull()
+    return repository.claimNextEligibleDocumentRequest(DocumentRequestStatus.PENDING.name, DocumentRequestStatus.FAILED.name, cutoff, now).firstOrNull()
       ?.let(mapper::toDomain)
   }
 

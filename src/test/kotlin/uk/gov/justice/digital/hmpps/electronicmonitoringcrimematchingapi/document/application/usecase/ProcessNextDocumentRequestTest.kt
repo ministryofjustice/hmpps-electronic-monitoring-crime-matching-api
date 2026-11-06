@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ContextualReportDocxGenerator
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGenerator
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGeneratorRegistry
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentSensitivityLabeller
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.processnextdocumentrequest.ProcessDocumentRequest
@@ -11,6 +13,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentStore
@@ -52,6 +55,54 @@ class ProcessNextDocumentRequestTest {
     assertThat(persisted.artefact).isEqualTo(updated.artefact)
     assertThat(persisted.artefact!!.filename).isEqualTo(saved!!.filename)
     assertThat(persisted.artefact!!.contentType).isEqualTo(saved.contentType)
+    assertThat(persisted.attempts).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should save a failed request and rethrow the processing exception`() {
+    val exception = IllegalStateException("generation failed")
+    val failingGenerator = object : DocumentGenerator {
+      override val type = DocumentType.CONTEXTUAL_REPORT
+
+      override fun generate(documentRequest: DocumentRequest): GeneratedDocument = throw exception
+    }
+    val failingProcessDocumentRequest = ProcessDocumentRequest(
+      generatorRegistry = DocumentGeneratorRegistry(listOf(failingGenerator)),
+      documentStore = documentStore,
+      documentRequestStore = documentRequestStore,
+    )
+    val failingUseCase = ProcessNextDocumentRequest(documentRequestStore, failingProcessDocumentRequest)
+    val request = givenDocumentRequest()
+    documentRequestStore.save(request)
+
+    val thrown = assertThrows<IllegalStateException> {
+      failingUseCase.process()
+    }
+
+    assertThat(thrown).isSameAs(exception)
+    val persisted = requireNotNull(documentRequestStore.findById(request.id))
+    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.FAILED)
+    assertThat(persisted.attempts).isEqualTo(1)
+    assertThat(persisted.lastError).isEqualTo("generation failed")
+    assertThat(persisted.artefact).isNull()
+  }
+
+  @Test
+  fun `it should retry a failed request and complete it successfully`() {
+    val request = givenDocumentRequest(
+      status = DocumentRequestStatus.FAILED,
+      attempts = 1,
+      lastError = "previous generation failure",
+    )
+    documentRequestStore.save(request)
+
+    useCase.process()
+
+    val persisted = requireNotNull(documentRequestStore.findById(request.id))
+    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.COMPLETED)
+    assertThat(persisted.attempts).isEqualTo(2)
+    assertThat(persisted.artefact).isNotNull
+    assertThat(documentStore.findAll()).hasSize(1)
   }
 
   @Test
@@ -155,6 +206,8 @@ class ProcessNextDocumentRequestTest {
     status: DocumentRequestStatus = DocumentRequestStatus.PENDING,
     claimedAt: Instant? = null,
     artefact: DocumentArtefact? = null,
+    attempts: Int = 0,
+    lastError: String? = null,
   ): DocumentRequest = DocumentRequest.rehydrate(
     id = UUID.randomUUID(),
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -163,8 +216,8 @@ class ProcessNextDocumentRequestTest {
     createdAt = clock.instant(),
     status = status,
     claimedAt = claimedAt,
-    attempts = 0,
-    lastError = null,
+    attempts = attempts,
+    lastError = lastError,
     concurrencyVersion = 0L,
     artefact = artefact,
   )

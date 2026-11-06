@@ -61,7 +61,8 @@ class InMemoryDocumentRequestStore(private val clock: Clock) : DocumentRequestSt
     val cutoff = now.minusSeconds(maxAgeOfClaimBeforeExpiryInSeconds)
     val request = requests.values
       .sortedBy { it.createdAt }.firstOrNull {
-        it.status == DocumentRequestStatus.PENDING && (it.claimedAt == null || it.claimedAt < cutoff)
+        (it.status == DocumentRequestStatus.PENDING || it.status == DocumentRequestStatus.FAILED) &&
+          (it.claimedAt == null || it.claimedAt < cutoff)
       }
 
     return request?.let { eligible ->

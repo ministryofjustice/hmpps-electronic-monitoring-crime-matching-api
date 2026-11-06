@@ -12,13 +12,17 @@ class DocumentRequest private constructor(
   val createdAt: Instant,
   artefact: DocumentArtefact?,
   val claimedAt: Instant?,
-  val attempts: Int,
-  val lastError: String?,
+  attempts: Int,
+  lastError: String?,
   val concurrencyVersion: Long,
 ) {
   var status: DocumentRequestStatus = status
     private set
   var artefact: DocumentArtefact? = artefact
+    private set
+  var lastError: String? = lastError
+    private set
+  var attempts: Int = attempts
     private set
 
   init {
@@ -28,6 +32,7 @@ class DocumentRequest private constructor(
   }
 
   companion object {
+    const val MAX_ATTEMPTS = 3
     fun create(
       parameters: DocumentRequestParameters,
       createdBy: String,
@@ -74,11 +79,22 @@ class DocumentRequest private constructor(
   }
 
   fun complete(artefact: DocumentArtefact) {
-    check(status == DocumentRequestStatus.PENDING) {
-      "DocumentRequest must be in PENDING status"
+    check(status == DocumentRequestStatus.PENDING || status == DocumentRequestStatus.FAILED) {
+      "DocumentRequest must be in PENDING or FAILED status"
     }
 
     this.artefact = artefact
+    attempts++
     status = DocumentRequestStatus.COMPLETED
+  }
+
+  fun fail(exception: Exception) {
+    check(status != DocumentRequestStatus.COMPLETED) {
+      "DocumentRequest must not be in COMPLETED status"
+    }
+
+    lastError = exception.message
+    attempts++
+    status = if (attempts < MAX_ATTEMPTS) DocumentRequestStatus.FAILED else DocumentRequestStatus.DEAD
   }
 }
