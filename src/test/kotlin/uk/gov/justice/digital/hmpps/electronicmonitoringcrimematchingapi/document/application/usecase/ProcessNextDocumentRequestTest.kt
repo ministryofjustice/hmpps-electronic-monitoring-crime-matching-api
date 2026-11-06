@@ -33,7 +33,7 @@ class ProcessNextDocumentRequestTest {
     documentRequestStore = documentRequestStore,
   )
 
-  private val useCase = ProcessNextDocumentRequest(documentRequestStore, processDocumentRequest, maxAttempts = 3)
+  private val useCase = ProcessNextDocumentRequest(documentRequestStore, processDocumentRequest)
 
   @Test
   fun `it should generate and persist a contextual report`() {
@@ -71,11 +71,7 @@ class ProcessNextDocumentRequestTest {
       documentStore = documentStore,
       documentRequestStore = documentRequestStore,
     )
-    val failingUseCase = ProcessNextDocumentRequest(
-      documentRequestStore,
-      failingProcessDocumentRequest,
-      maxAttempts = 3,
-    )
+    val failingUseCase = ProcessNextDocumentRequest(documentRequestStore, failingProcessDocumentRequest)
     val request = givenDocumentRequest()
     documentRequestStore.save(request)
 
