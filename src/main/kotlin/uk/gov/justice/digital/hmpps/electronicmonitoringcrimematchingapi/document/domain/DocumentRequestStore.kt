@@ -13,5 +13,7 @@ interface DocumentRequestStore {
 
   fun findById(id: UUID): DocumentRequest?
 
-  fun claimNextEligibleDocumentRequest(): DocumentRequest?
+  fun claimNextEligibleDocumentRequest(
+    maxAgeOfClaimBeforeExpiryInSeconds: Long,
+  ): DocumentRequest?
 }

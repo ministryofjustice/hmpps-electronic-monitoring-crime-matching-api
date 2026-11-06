@@ -10,7 +10,9 @@ class ProcessNextDocumentRequest(
   private val processDocumentRequest: ProcessDocumentRequest,
 ) {
   fun process() {
-    val documentRequest = documentRequestStore.claimNextEligibleDocumentRequest() ?: return
+    val documentRequest = documentRequestStore.claimNextEligibleDocumentRequest(
+      maxAgeOfClaimBeforeExpiryInSeconds = 10L * 60,
+    ) ?: return
     processDocumentRequest.process(documentRequest)
   }
 }

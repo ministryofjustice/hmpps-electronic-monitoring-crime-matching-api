@@ -10,11 +10,17 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
+import java.time.Clock
 import java.time.Instant
+import java.time.ZoneOffset
 import java.util.UUID
 
 class GetDocumentRequestTest {
-  private val store = InMemoryDocumentRequestStore()
+  private val clock = Clock.fixed(
+    Instant.parse("2026-10-08T12:00:00Z"),
+    ZoneOffset.UTC,
+  )
+  private val store = InMemoryDocumentRequestStore(clock)
   private val useCase = GetDocumentRequest(store, DocumentRequestMapper())
 
   @Test
