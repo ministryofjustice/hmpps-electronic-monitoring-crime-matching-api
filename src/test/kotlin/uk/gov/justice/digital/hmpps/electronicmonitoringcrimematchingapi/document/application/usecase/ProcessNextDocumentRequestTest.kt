@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.PaginationRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.ContextualReportDocxGenerator
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentGenerator
@@ -154,6 +156,31 @@ class ProcessNextDocumentRequestTest {
     assertThat(documentStore.findAll()).hasSize(3)
   }
 
+  @ParameterizedTest
+  @CsvSource("PENDING, 7", "PENDING, 8", "FAILED, 7", "FAILED, 8")
+  fun `it should leave a request untouched when its concurrency version is at or above twice the maximum attempts`(
+    status: DocumentRequestStatus,
+    concurrencyVersion: Long,
+  ) {
+    val claimedAt = clock.instant().minusSeconds(10 * 60 + 1)
+    val request = givenDocumentRequest(
+      status = status,
+      claimedAt = claimedAt,
+      concurrencyVersion = concurrencyVersion,
+    )
+    documentRequestStore.save(request)
+
+    useCase.process()
+
+    val persisted = requireNotNull(documentRequestStore.findById(request.id))
+    assertThat(persisted.status).isEqualTo(status)
+    assertThat(persisted.claimedAt).isEqualTo(claimedAt)
+    assertThat(persisted.concurrencyVersion).isEqualTo(concurrencyVersion)
+    assertThat(persisted.attempts).isZero()
+    assertThat(persisted.artefact).isNull()
+    assertThat(documentStore.findAll()).isEmpty()
+  }
+
   @Test
   fun `it should skip a request claimed within the lease`() {
     // Given a pending request claimed five minutes ago
@@ -212,6 +239,7 @@ class ProcessNextDocumentRequestTest {
     artefact: DocumentArtefact? = null,
     attempts: Int = 0,
     lastError: String? = null,
+    concurrencyVersion: Long = 0L,
   ): DocumentRequest = DocumentRequest.rehydrate(
     id = UUID.randomUUID(),
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -222,7 +250,7 @@ class ProcessNextDocumentRequestTest {
     claimedAt = claimedAt,
     attempts = attempts,
     lastError = lastError,
-    concurrencyVersion = 0L,
+    concurrencyVersion = concurrencyVersion,
     artefact = artefact,
   )
 }

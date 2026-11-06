@@ -40,10 +40,11 @@ class DocumentRequestPersistenceAdapter(
   @Transactional
   override fun claimNextEligibleDocumentRequest(
     maxAgeOfClaimBeforeExpiryInSeconds: Long,
+    maxConcurrencyVersion: Long,
   ): DocumentRequest? {
     val now = Instant.now(clock)
     val cutoff = now.minusSeconds(maxAgeOfClaimBeforeExpiryInSeconds)
-    return repository.claimNextEligibleDocumentRequest(DocumentRequestStatus.PENDING.name, DocumentRequestStatus.FAILED.name, cutoff, now).firstOrNull()
+    return repository.claimNextEligibleDocumentRequest(DocumentRequestStatus.PENDING.name, DocumentRequestStatus.FAILED.name, cutoff, now, maxConcurrencyVersion).firstOrNull()
       ?.let(mapper::toDomain)
   }
 

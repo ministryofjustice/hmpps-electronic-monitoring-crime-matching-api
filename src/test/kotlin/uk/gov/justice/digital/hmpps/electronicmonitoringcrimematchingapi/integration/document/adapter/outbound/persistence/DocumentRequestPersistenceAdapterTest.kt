@@ -82,11 +82,13 @@ class DocumentRequestPersistenceAdapterTest : IntegrationTestBase() {
     // And that a worker A claims the request
     val workerARequest = store.claimNextEligibleDocumentRequest(
       maxAgeOfClaimBeforeExpiryInSeconds = -1, // Fake the lease being expired
+      maxConcurrencyVersion = 6L,
     )!!
 
     // And that a worker B claims the request since the lease A claimed has expired
     store.claimNextEligibleDocumentRequest(
       maxAgeOfClaimBeforeExpiryInSeconds = -1, // Fake the lease being expired
+      maxConcurrencyVersion = 6L,
     )
 
     // When worker A tries to save the updated request

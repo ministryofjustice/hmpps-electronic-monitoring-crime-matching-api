@@ -15,6 +15,7 @@ class ProcessNextDocumentRequest(
   fun process() {
     val documentRequest = documentRequestStore.claimNextEligibleDocumentRequest(
       maxAgeOfClaimBeforeExpiryInSeconds = 10L * 60,
+      maxConcurrencyVersion = 2L * maxAttempts, // If a worker has claimed the request more than twice the max attempts without being able to record the result, it is likely that the request is unprocessable and requires manual intervention.
     ) ?: return
     try {
       processDocumentRequest.process(documentRequest)
