@@ -30,6 +30,8 @@ services:
     url: "http://localhost:8090/auth"
   document-management:
     url: "http://localhost:8094"
+  algorithm:
+    url: "http://localhost:8085"
 
 aws:
   region: eu-west-2

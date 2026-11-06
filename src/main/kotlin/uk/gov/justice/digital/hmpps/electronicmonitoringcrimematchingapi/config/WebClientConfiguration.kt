@@ -15,6 +15,7 @@ class WebClientConfiguration(
   @param:Value("\${api.health-timeout:2s}") val healthTimeout: Duration,
   @param:Value("\${api.timeout:20s}") val timeout: Duration,
   @param:Value("\${services.document-management.url}") val documentManagementBaseUri: String,
+  @param:Value("\${services.algorithm.url}") val algorithmBaseUri: String,
 ) {
   @Bean
   fun hmppsAuthHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(hmppsAuthBaseUri, healthTimeout)
@@ -30,6 +31,17 @@ class WebClientConfiguration(
     authorizedClientManager,
     registrationId = "document-management-api",
     url = documentManagementBaseUri,
+    timeout,
+  )
+
+  @Bean
+  fun algorithmApiWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder.authorisedWebClient(
+    authorizedClientManager,
+    registrationId = "algorithm-api",
+    url = algorithmBaseUri,
     timeout,
   )
 }

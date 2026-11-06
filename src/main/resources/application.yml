@@ -32,6 +32,11 @@ spring:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
             authorization-grant-type: client_credentials
+          algorithm-api:
+            provider: hmpps-auth
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            authorization-grant-type: client_credentials
   jpa:
     hibernate:
       ddl-auto: validate
@@ -86,6 +91,8 @@ services:
     mfa: ${MFA_REQUIRED}
   document-management:
     url: ${DOCUMENT_MANAGEMENT_API_URL}
+  algorithm:
+    url: ${ALGORITHM_API_URL}
 
 notify:
   enabled: ${NOTIFY_API_ENABLED}
