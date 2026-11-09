@@ -8,7 +8,7 @@ import java.time.ZoneOffset
 @Component
 class ZeroPrecisionCrimeMatchMapper {
   fun toDto(projection: ZeroPrecisionCrimeMatchProjection): ZeroPrecisionCrimeMatchResponse = ZeroPrecisionCrimeMatchResponse(
-    policeForceArea = projection.policeForceArea,
+    policeForceArea = projection.policeForceArea.label,
     batchId = projection.batchId,
     crimeReference = projection.crimeReference,
     deviceSerialNumber = projection.deviceSerialNumber,
