@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathTemplate": "/documents/EMAC_REPORT/{documentId}"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "documentUuid": "{{request.path.documentId}}",
+      "documentFilename": "placeholder",
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    "transformers": ["response-template"]
+  }
+}

@@ -22,7 +22,7 @@ case "$MODE" in
 esac
 
 mkdir -p "$ACTIVE_MAPPING_DIR"
-rm -f "$ACTIVE_MAPPING_DIR"/*.json
+rm -f "$ACTIVE_MAPPING_DIR"/notify-send-email*.json
 
 if [[ "$MODE" == "500-then-201" ]]; then
   cp "$SOURCE_MAPPING_DIR/notify-send-email-500-then-201-first.json" "$ACTIVE_MAPPING_DIR/notify-send-email-500-then-201-first.json"
@@ -32,7 +32,6 @@ else
 fi
 
 docker compose up -d wiremock >/dev/null
-curl -X POST http://localhost:8093/__admin/mappings/reset >/dev/null
 
 for _ in {1..30}; do
   if curl -fsS http://localhost:8093/__admin/mappings >/dev/null 2>&1; then
@@ -46,7 +45,7 @@ if ! curl -fsS http://localhost:8093/__admin/mappings >/dev/null 2>&1; then
   exit 1
 fi
 
+curl -fsS -X POST http://localhost:8093/__admin/mappings/reset >/dev/null
+curl -fsS -X POST http://localhost:8093/__admin/scenarios/reset >/dev/null
+
 echo "wiremock mode set to $MODE"
-
-
-

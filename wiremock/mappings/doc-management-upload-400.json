@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathTemplate": "/documents/EMAC_REPORT/{documentId}"
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "message": "Document upload failed"
+    }
+  }
+}

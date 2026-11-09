@@ -1,0 +1,18 @@
+{
+  "scenarioName": "doc-management-upload-500-then-201",
+  "requiredScenarioState": "Started",
+  "newScenarioState": "succeeded-after-initial-failure",
+  "request": {
+    "method": "POST",
+    "urlPathTemplate": "/documents/EMAC_REPORT/{documentId}"
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "message": "Document upload failed"
+    }
+  }
+}

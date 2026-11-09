@@ -155,8 +155,8 @@ bash scripts/localstack-ingest-sample-emails.sh
 
 ### Using the Notify stub locally
 
-The `wiremock` service in `docker-compose.yml` mounts `wiremock/active-mappings/notify-send-email.json`.
-The default active file is the `201` response mapping.
+The `wiremock` service in `docker-compose.yml` mounts `wiremock/active-mappings/`.
+The default active Notify file is the `201` response mapping.
 
 This will only be used if `notify.enabled: true` in `application-local.yml` or via env.
 
@@ -181,6 +181,26 @@ curl -X POST http://localhost:8093/__admin/mappings/reset
 ```
 
 To return to the default `201` response, copy `wiremock/mappings/notify-send-email-201.json` back into `wiremock/active-mappings/notify-send-email.json` and reset `wiremock`.
+
+### Using the document management stub locally
+
+The default active document management mapping returns `201` for
+`POST /documents/EMAC_REPORT/{documentId}`, with the requested document UUID in the response.
+Set `DOCUMENT_MANAGEMENT_API_URL=http://localhost:8093` when running the API locally
+to use this stub instead of the default document management service on port `8084`.
+
+Switch the active document upload response mode with:
+
+```bash
+./scripts/wiremock-doc-management-mode.sh 201
+./scripts/wiremock-doc-management-mode.sh 400
+./scripts/wiremock-doc-management-mode.sh 500
+./scripts/wiremock-doc-management-mode.sh 500-then-201
+```
+
+Both helper scripts preserve the other API's active mappings. Each reloads all mappings
+and resets scenarios, so `500-then-201` returns `500` on the first upload/email request
+and `201` on subsequent requests until either helper is run again.
 
 ### Using Postman to locally test API requests
 The crime ingestion flow in this service is event-driven. There is no REST endpoint to directly trigger ingestion.
