@@ -120,7 +120,9 @@ class ProcessNextDocumentRequestIntegrationTest : IntegrationTestBase() {
     }
 
     val persisted = requireNotNull(documentRequestStore.findById(request.id))
-    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.PENDING)
+    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.FAILED)
+    assertThat(persisted.attempts).isEqualTo(1)
+    assertThat(persisted.lastError).isNotBlank()
     assertThat(persisted.artefact).isNull()
     documentManagementApi.verifyUploadRequestCount(1)
   }
@@ -138,15 +140,62 @@ class ProcessNextDocumentRequestIntegrationTest : IntegrationTestBase() {
     assertThat((throwable as WebClientResponseException.InternalServerError).statusCode.value()).isEqualTo(500)
 
     val persisted = requireNotNull(documentRequestStore.findById(request.id))
-    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.PENDING)
+    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.FAILED)
+    assertThat(persisted.attempts).isEqualTo(1)
+    assertThat(persisted.lastError).isNotBlank()
     assertThat(persisted.artefact).isNull()
     documentManagementApi.verifyUploadRequestCount(3)
+  }
+
+  @Test
+  fun `it should claim and complete a previously failed request`() {
+    val request = givenDocumentRequest(
+      status = DocumentRequestStatus.FAILED,
+      attempts = 1,
+      lastError = "previous upload failure",
+    )
+    documentRequestStore.save(request)
+    documentManagementApi.stubUploadDocument()
+
+    useCase.process()
+
+    val persisted = requireNotNull(documentRequestStore.findById(request.id))
+    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.COMPLETED)
+    assertThat(persisted.attempts).isEqualTo(2)
+    assertThat(persisted.artefact).isNotNull
+    documentManagementApi.verifyUploadRequestCount(1)
+  }
+
+  @Test
+  fun `it should mark a request dead after its final failed attempt and not claim it again`() {
+    documentManagementApi.stubUploadDocumentFailure(400)
+    val request = givenDocumentRequest(
+      status = DocumentRequestStatus.FAILED,
+      attempts = 2,
+      lastError = "previous upload failure",
+    )
+    documentRequestStore.save(request)
+
+    assertThrows<WebClientResponseException.BadRequest> {
+      useCase.process()
+    }
+
+    val persisted = requireNotNull(documentRequestStore.findById(request.id))
+    assertThat(persisted.status).isEqualTo(DocumentRequestStatus.DEAD)
+    assertThat(persisted.attempts).isEqualTo(3)
+    assertThat(persisted.lastError).isNotBlank()
+
+    useCase.process()
+
+    documentManagementApi.verifyUploadRequestCount(1)
   }
 
   private fun givenDocumentRequest(
     status: DocumentRequestStatus = DocumentRequestStatus.PENDING,
     claimedAt: Instant? = null,
     artefact: DocumentArtefact? = null,
+    attempts: Int = 0,
+    lastError: String? = null,
   ): DocumentRequest = DocumentRequest.rehydrate(
     id = UUID.randomUUID(),
     type = DocumentType.CONTEXTUAL_REPORT,
@@ -155,8 +204,8 @@ class ProcessNextDocumentRequestIntegrationTest : IntegrationTestBase() {
     createdAt = clock.instant(),
     status = status,
     claimedAt = claimedAt,
-    attempts = 0,
-    lastError = null,
+    attempts = attempts,
+    lastError = lastError,
     concurrencyVersion = 0L,
     artefact = artefact,
   )
