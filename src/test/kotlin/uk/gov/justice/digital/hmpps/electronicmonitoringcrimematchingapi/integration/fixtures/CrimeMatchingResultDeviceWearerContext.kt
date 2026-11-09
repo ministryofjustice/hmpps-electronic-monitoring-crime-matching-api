@@ -12,6 +12,7 @@ class CrimeMatchingResultDeviceWearerContext(
     sequenceLabel: String = "A1",
     entryBearing: Double? = null,
     exitBearing: Double? = null,
+    precision: Long = 10,
   ) {
     crimeMatchingResultDeviceWearer.positions.add(
       CrimeMatchingResultPosition(
@@ -22,7 +23,7 @@ class CrimeMatchingResultDeviceWearerContext(
         exitBearing = exitBearing,
         latitude = 10.0,
         longitude = 10.0,
-        precision = 10,
+        precision = precision,
         sequenceLabel = sequenceLabel,
         speed = 10,
       ),

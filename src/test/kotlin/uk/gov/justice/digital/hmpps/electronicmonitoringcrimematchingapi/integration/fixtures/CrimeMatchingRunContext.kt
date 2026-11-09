@@ -3,11 +3,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResultDeviceWearer
 import java.time.LocalDateTime
+import java.util.UUID
 
 class CrimeMatchingRunContext(
   private val result: CrimeMatchingResult,
 ) {
   fun withMatchedDeviceWearer(
+    id: UUID = UUID.randomUUID(),
     address: String = "address",
     deviceId: Long,
     deviceSerialNumber: String = "123456789",
@@ -20,6 +22,7 @@ class CrimeMatchingRunContext(
     block: CrimeMatchingResultDeviceWearerContext.() -> Unit = {},
   ) {
     val deviceWearer = CrimeMatchingResultDeviceWearer(
+      id = id,
       crimeMatchingResult = result,
       address = address,
       dateOfBirth = dateOfBirth,
