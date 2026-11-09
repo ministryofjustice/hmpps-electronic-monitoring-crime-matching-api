@@ -25,7 +25,7 @@ import java.util.UUID
   description = "Create and retrieve contextual reports",
 )
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW')")
-@RequestMapping("/crime-matching-results/{crimeMatchingResultId}/matched-wearers/{deviceActivationId}/contextual-reports")
+@RequestMapping("/crime-matching-results/{crimeMatchingResultId}/matched-wearers/{deviceId}/contextual-reports")
 class ContextualReportController(
   private val createContextualReport: CreateContextualReport,
 ) {
@@ -45,12 +45,12 @@ class ContextualReportController(
   )
   fun createContextualReportRequest(
     @PathVariable crimeMatchingResultId: UUID,
-    @PathVariable deviceActivationId: Long,
+    @PathVariable deviceId: Long,
     @Valid @RequestBody request: CreateContextualReportRequest,
     @Parameter(hidden = true)
     authentication: Authentication,
   ): ResponseEntity<String> {
-    val id = createContextualReport.create(crimeMatchingResultId.toString(), deviceActivationId, request, authentication.name)
+    val id = createContextualReport.create(crimeMatchingResultId.toString(), deviceId, request, authentication.name)
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(id)
   }
 }

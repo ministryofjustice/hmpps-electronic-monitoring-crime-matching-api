@@ -14,10 +14,10 @@ class CreateContextualReport(
   private val createDocumentRequest: CreateDocumentRequest,
   private val hubManagerService: HubManagerService,
 ) {
-  fun create(crimeMatchingResultId: String, deviceActivationId: Long, request: CreateContextualReportRequest, user: String): String {
+  fun create(crimeMatchingResultId: String, deviceId: Long, request: CreateContextualReportRequest, user: String): String {
     // Get position segments data
     val positionSegments = positionSegmentsProvider.getPositionSegments(
-      deviceActivationId = deviceActivationId.toString(),
+      deviceId = deviceId.toString(),
       startTime = request.startTime.toString(),
       endTime = request.endTime.toString(),
     )

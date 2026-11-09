@@ -3,5 +3,5 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
 
 interface PositionSegmentsProvider {
-  fun getPositionSegments(deviceActivationId: String, startTime: String, endTime: String): List<List<Position>>
+  fun getPositionSegments(deviceId: String, startTime: String, endTime: String): List<List<Position>>
 }
