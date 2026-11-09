@@ -1,10 +1,14 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeMatchingResultProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.ZeroPrecisionCrimeMatchProjection
+import java.time.Instant
 import java.util.UUID
 
 @Repository
@@ -69,4 +73,49 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
   fun findLatestCrimeMatchesByBatchIds(
     batchIds: Array<UUID>,
   ): List<CrimeMatchingResultProjection>
+
+  @Query(
+    value = """
+      SELECT
+    c.police_force_area,
+    cb.batch_id,
+    c.crime_reference,
+    cmrdw.device_serial_number,
+    cmr.created_at AS matched_at,
+    COUNT(*) FILTER (
+        WHERE cmrp.precision = 0
+    ) AS zero_precision_position_count
+FROM crime c
+JOIN crime_version cv
+    ON cv.crime_id = c.id
+JOIN crime_matching_result cmr
+    ON cmr.crime_version_id = cv.id
+JOIN crime_matching_result_device_wearer cmrdw
+    ON cmrdw.crime_matching_result_id = cmr.id
+JOIN crime_matching_result_position cmrp
+    ON cmrp.crime_matching_result_device_wearer_id = cmrdw.id
+JOIN crime_batch cb
+    ON cb.id = cv.crime_batch_id
+WHERE
+    (CAST(:from AS timestamp) IS NULL OR cmr.created_at >= :from)
+    AND (CAST(:to AS timestamp) IS NULL OR cmr.created_at < :to)
+GROUP BY
+    c.police_force_area,
+    cb.batch_id,
+    c.crime_reference,
+    cmrdw.id,
+    cmrdw.device_serial_number,
+    cmr.created_at
+HAVING COUNT(*) FILTER (
+    WHERE cmrp.precision = 0
+) > 0
+ORDER BY cmr.created_at DESC, c.crime_reference, cmrdw.id DESC
+    """,
+    nativeQuery = true,
+  )
+  fun findZeroPrecisionCrimeMatches(
+    from: Instant?,
+    to: Instant?,
+    pageable: Pageable,
+  ): Page<ZeroPrecisionCrimeMatchProjection>
 }

@@ -36,6 +36,7 @@ class CrimeContext(
     val result = CrimeMatchingResult(
       crimeVersion = version,
       crimeMatchingRun = run,
+      createdAt = LocalDateTime.of(2025, 1, 1, 1, 0),
     )
 
     run.results.add(result)

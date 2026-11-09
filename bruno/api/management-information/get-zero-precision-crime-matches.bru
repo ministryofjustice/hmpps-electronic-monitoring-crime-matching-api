@@ -1,0 +1,25 @@
+meta {
+  name: Get zero precision crime matches
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/management-information/zero-precision-crime-matches?from=2026-11-01T00:00:00.000Z&to=2026-11-08T23:59:59.000Z&page=4
+  body: none
+  auth: bearer
+}
+
+params:query {
+  from: 2026-11-01T00:00:00.000Z
+  to: 2026-11-08T23:59:59.000Z
+  page: 4
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+}
