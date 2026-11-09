@@ -145,6 +145,7 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         assertThat(run.results[0].deviceWearers[0].nomisId).isEqualTo("A5128CZ")
         assertThat(run.results[0].deviceWearers[0].pncRef).isEqualTo("pncRef")
         assertThat(run.results[0].deviceWearers[0].deviceId).isEqualTo(604008982)
+        assertThat(run.results[0].deviceWearers[0].deviceActivationId).isEqualTo(908908)
         assertThat(run.results[0].deviceWearers[0].deviceSerialNumber).isEqualTo("123456789")
         assertThat(run.results[0].deviceWearers[0].deviceName).isEqualTo("deviceName")
         assertThat(run.results[0].deviceWearers[0].positions).hasSize(4)
@@ -190,6 +191,7 @@ class CrimeMatchingRunControllerTest : IntegrationTestBase() {
         // Name and device id are required
         assertThat(run.results[0].deviceWearers[0].name).isEqualTo("Richard Gibbons")
         assertThat(run.results[0].deviceWearers[0].deviceId).isEqualTo(604008982)
+        assertThat(run.results[0].deviceWearers[0].deviceActivationId).isEqualTo(908908)
 
         // All other device wearer fields are optional
         assertThat(run.results[0].deviceWearers[0].address).isEqualTo("")

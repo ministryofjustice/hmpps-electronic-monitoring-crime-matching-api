@@ -13,6 +13,9 @@ data class CrimeMatchingResultDeviceWearerRequest(
   @field:NotNull(message = "deviceId is required")
   val deviceId: Long,
 
+  @field:NotNull(message = "deviceActivationId is required")
+  val deviceActivationId: Long,
+
   val deviceSerialNumber: String,
 
   val deviceName: String,

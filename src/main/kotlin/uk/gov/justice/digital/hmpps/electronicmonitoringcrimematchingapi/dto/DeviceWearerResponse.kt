@@ -5,6 +5,7 @@ data class DeviceWearerResponse(
   val dateOfBirth: String,
   val name: String,
   val deviceId: Long,
+  val deviceActivationId: Long?,
   val deviceSerialNumber: String,
   val identifier: String,
   val nomisId: String,

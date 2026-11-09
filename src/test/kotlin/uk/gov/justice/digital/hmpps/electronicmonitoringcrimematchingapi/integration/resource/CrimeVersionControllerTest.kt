@@ -699,11 +699,11 @@ class CrimeVersionControllerTest : IntegrationTestBase() {
       crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
         withCrime("crime1", id = versionId) {
           withMatchingRun {
-            withMatchedDeviceWearer(deviceId = 1) {
+            withMatchedDeviceWearer(deviceId = 1, deviceActivationId = 1) {
               withPosition(sequenceLabel = "A2", capturedDateTime = Instant.parse("2025-01-01T02:00:00Z"))
               withPosition()
             }
-            withMatchedDeviceWearer(deviceId = 2) {
+            withMatchedDeviceWearer(deviceId = 2, deviceActivationId = 2) {
               withPosition(sequenceLabel = "A2", capturedDateTime = Instant.parse("2025-01-01T02:00:00Z"))
               withPosition()
             }

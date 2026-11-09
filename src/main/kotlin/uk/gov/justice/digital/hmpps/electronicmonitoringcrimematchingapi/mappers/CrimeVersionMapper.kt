@@ -52,6 +52,7 @@ class CrimeVersionMapper(
       address = deviceWearer.address,
       dateOfBirth = deviceWearer.dateOfBirth?.toString() ?: "",
       deviceId = deviceWearer.deviceId,
+      deviceActivationId = deviceWearer.deviceActivationId,
       deviceSerialNumber = deviceWearer.deviceSerialNumber,
       identifier = deviceWearer.identifier,
       name = deviceWearer.name,

@@ -1,0 +1,2 @@
+ALTER TABLE crime_matching_result_device_wearer
+ADD COLUMN device_activation_id BIGINT;
