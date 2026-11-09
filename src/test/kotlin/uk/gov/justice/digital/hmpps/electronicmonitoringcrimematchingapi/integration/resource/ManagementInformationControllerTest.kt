@@ -154,31 +154,31 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
         """
         {
           "data": [
-          {
-            "policeForceArea": "METROPOLITAN",
-            "batchId": "Batch1",
-            "crimeReference": "crime1",
-            "deviceSerialNumber": "000000002",
-            "matchedAt": "2025-01-01T01:00:00Z",
-            "zeroPrecisionPositionCount": 1
-          },
-          {
-            "policeForceArea": "METROPOLITAN",
-            "batchId": "Batch1",
-            "crimeReference": "crime1",
-            "deviceSerialNumber": "000000001",
-            "matchedAt": "2025-01-01T01:00:00Z",
-            "zeroPrecisionPositionCount": 2
-          },
-          {
-            "policeForceArea": "METROPOLITAN",
-            "batchId": "Batch1",
-            "crimeReference": "crime2",
-            "deviceSerialNumber": "000000003",
-            "matchedAt": "2025-01-01T01:00:00Z",
-            "zeroPrecisionPositionCount": 1
-          }
-  ],
+            {
+              "policeForceArea": "Metropolitan",
+              "batchId": "Batch1",
+              "crimeReference": "crime1",
+              "deviceSerialNumber": "000000002",
+              "matchedAt": "2025-01-01T01:00:00Z",
+              "zeroPrecisionPositionCount": 1
+            },
+            {
+              "policeForceArea": "Metropolitan",
+              "batchId": "Batch1",
+              "crimeReference": "crime1",
+              "deviceSerialNumber": "000000001",
+              "matchedAt": "2025-01-01T01:00:00Z",
+              "zeroPrecisionPositionCount": 2
+            },
+            {
+              "policeForceArea": "Metropolitan",
+              "batchId": "Batch1",
+              "crimeReference": "crime2",
+              "deviceSerialNumber": "000000003",
+              "matchedAt": "2025-01-01T01:00:00Z",
+              "zeroPrecisionPositionCount": 1
+            }
+          ],
           "pageCount": 1,
           "pageNumber": 0,
           "pageSize": 10
