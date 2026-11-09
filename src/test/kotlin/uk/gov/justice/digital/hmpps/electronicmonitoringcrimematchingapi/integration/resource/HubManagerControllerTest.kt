@@ -13,7 +13,7 @@ import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.HubManager
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.createHubManager
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.HubManagerRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.charset.StandardCharsets
@@ -74,9 +74,9 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return hub managers when they exist`() {
-      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
-      createHubManager(id = "5b13bcd6-3e87-40d8-918a-cbf3b1620516", name = "test manager 2", occupation = "occupation 2", hasSignature = true)
-      createHubManager(id = "a91734a6-f6d6-48ca-8bb5-4e56b3d50c1d", name = "test manager 3", occupation = "occupation 3", hasSignature = false)
+      repo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
+      repo.createHubManager(id = "5b13bcd6-3e87-40d8-918a-cbf3b1620516", name = "test manager 2", occupation = "occupation 2", hasSignature = true)
+      repo.createHubManager(id = "a91734a6-f6d6-48ca-8bb5-4e56b3d50c1d", name = "test manager 3", occupation = "occupation 3", hasSignature = false)
 
       val body = webTestClient.get()
         .uri(path)
@@ -97,9 +97,9 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should only return hub managers with signatures`() {
-      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
-      createHubManager(id = "5b13bcd6-3e87-40d8-918a-cbf3b1620516", name = "test manager 2", occupation = "occupation 2", hasSignature = true)
-      createHubManager(id = "a91734a6-f6d6-48ca-8bb5-4e56b3d50c1d", name = "test manager 3", occupation = "occupation 3", hasSignature = false)
+      repo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
+      repo.createHubManager(id = "5b13bcd6-3e87-40d8-918a-cbf3b1620516", name = "test manager 2", occupation = "occupation 2", hasSignature = true)
+      repo.createHubManager(id = "a91734a6-f6d6-48ca-8bb5-4e56b3d50c1d", name = "test manager 3", occupation = "occupation 3", hasSignature = false)
 
       val body = webTestClient.get()
         .uri("$path?hasSignature=true")
@@ -211,7 +211,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a hub manager if it exists`() {
-      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
+      repo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
 
       val body = webTestClient.get()
         .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4")
@@ -265,7 +265,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should delete a hub manager if it exists`() {
-      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
+      repo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
 
       webTestClient.delete()
         .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4")
@@ -325,7 +325,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a 404 if the hub manager does not have a signature`() {
-      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
+      repo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
 
       val response = webTestClient.get()
         .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
@@ -348,7 +348,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return a signature if the hub manager has a signature`() {
-      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
+      repo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
 
       val body = webTestClient.get()
         .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
@@ -425,7 +425,7 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should update the hub manager's signature`() {
-      createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
+      repo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = false)
 
       webTestClient.put()
         .uri("$path/48b83e4b-ea09-4ba7-8440-a7e5ed534cb4/signature")
@@ -438,22 +438,5 @@ class HubManagerControllerTest : IntegrationTestBase() {
 
       assertThat(repo.findBySignatureImageIsNotNull()).hasSize(1)
     }
-  }
-
-  private fun createHubManager(id: String, name: String, occupation: String, hasSignature: Boolean): HubManager {
-    val manager = HubManager(
-      id = UUID.fromString(id),
-      name = name,
-      occupation = occupation,
-    )
-
-    if (hasSignature) {
-      manager.signatureImage = "fake-signature-image".toByteArray()
-      manager.signatureImageContentType = "image/png"
-    }
-
-    return repo.save(
-      manager,
-    )
   }
 }

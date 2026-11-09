@@ -23,6 +23,8 @@ import org.testcontainers.containers.PostgreSQLContainer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.inbound.scheduling.DocumentRequestScheduler
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.CrimeMatchingFixtures
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.TestFixturesConfig
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AlgorithmApiExtension
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AlgorithmApiExtension.Companion.algorithmApi
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AwsApiExtension
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AwsApiExtension.Companion.awsMockServer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.DocumentManagementApiExtension
@@ -33,7 +35,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integra
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
-@ExtendWith(HmppsAuthApiExtension::class, AwsApiExtension::class, NotifyApiExtension::class, DocumentManagementApiExtension::class)
+@ExtendWith(HmppsAuthApiExtension::class, AwsApiExtension::class, NotifyApiExtension::class, DocumentManagementApiExtension::class, AlgorithmApiExtension::class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
@@ -105,6 +107,7 @@ abstract class IntegrationTestBase {
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
     documentManagementApi.stubHealthPing(status)
+    algorithmApi.stubHealthPing(status)
   }
 
   protected fun stubQueryExecution(

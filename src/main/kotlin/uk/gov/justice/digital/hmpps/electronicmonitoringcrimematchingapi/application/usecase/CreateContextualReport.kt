@@ -6,11 +6,13 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.CreateDocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.positionsegments.PositionSegmentsProvider
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.HubManagerService
 
 @Service
 class CreateContextualReport(
   private val positionSegmentsProvider: PositionSegmentsProvider,
   private val createDocumentRequest: CreateDocumentRequest,
+  private val hubManagerService: HubManagerService,
 ) {
   fun create(crimeMatchingResultId: String, deviceActivationId: Long, request: CreateContextualReportRequest, user: String): String {
     // Get position segments data
@@ -20,13 +22,15 @@ class CreateContextualReport(
       endTime = request.endTime.toString(),
     )
 
+    // Get Hub manager
+    val hubManager = hubManagerService.getHubManager(request.hubManagerId)
+
     // Construct document request
     val reportParameters = mapOf(
       "additionalInformation" to request.additionalInformation,
-      // Get from hub manager table
       "authorisingManager" to mapOf(
-        "name" to "Example Manager",
-        "occupation" to "AC Hub Manager",
+        "name" to hubManager.name,
+        "occupation" to hubManager.occupation,
       ),
       // Get from crime version linked to matching result
       "crime" to mapOf(
