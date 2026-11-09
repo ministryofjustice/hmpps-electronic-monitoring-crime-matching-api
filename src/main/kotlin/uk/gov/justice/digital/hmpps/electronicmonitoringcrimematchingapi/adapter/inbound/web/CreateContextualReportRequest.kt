@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.Duration
 import java.time.Instant
+import java.util.UUID
 
 data class CreateContextualReportRequest(
   @field:NotNull(message = "startTime is required")
@@ -19,6 +20,9 @@ data class CreateContextualReportRequest(
 
   @field:NotBlank(message = "officerName is required")
   val officerName: String,
+
+  @field:NotNull(message = "hubManagerId is required")
+  val hubManagerId: UUID,
 
   @field:NotNull(message = "requestedAt is required")
   val requestedAt: Instant,
