@@ -103,7 +103,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return one row per matched device wearer containing zero-precision positions`() {
-      // Given a batch with matching results, but no zero-precision positions
+      // Given a batch with matching results, and some zero-precision positions
       crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
         withCrime("crime1") {
           withMatchingRun {
@@ -149,7 +149,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      // Then the response should be an empty list
+      // Then the response should contain a count of zero-precision positions for each matched device wearer
       JSONAssert.assertEquals(
         """
         {
