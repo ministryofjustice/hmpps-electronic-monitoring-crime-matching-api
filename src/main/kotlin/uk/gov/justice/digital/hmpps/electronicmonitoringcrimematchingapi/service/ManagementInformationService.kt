@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.servic
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingResultRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.ZeroPrecisionCrimeMatchProjection
@@ -14,14 +15,20 @@ class ManagementInformationService(
   fun getZeroPrecisionCrimeMatches(
     from: Instant?,
     to: Instant?,
-    page: Int,
+    page: Int?,
     pageSize: Int,
-  ): Page<ZeroPrecisionCrimeMatchProjection> = repo.findZeroPrecisionCrimeMatches(
-    from,
-    to,
-    PageRequest.of(
-      page,
-      pageSize,
-    ),
-  )
+  ): Page<ZeroPrecisionCrimeMatchProjection> {
+    val pageable = page?.let {
+      PageRequest.of(
+        page,
+        pageSize,
+      )
+    } ?: Pageable.unpaged()
+
+    return repo.findZeroPrecisionCrimeMatches(
+      from,
+      to,
+      pageable,
+    )
+  }
 }

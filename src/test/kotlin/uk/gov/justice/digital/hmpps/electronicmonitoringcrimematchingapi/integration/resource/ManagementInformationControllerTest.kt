@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -12,10 +15,13 @@ import java.util.UUID
 
 @ActiveProfiles("integration")
 class ManagementInformationControllerTest : IntegrationTestBase() {
+  private val objectMapper: ObjectMapper = jacksonObjectMapper()
+
   @Nested
   @DisplayName("GET /management-information/zero-precision-crime-matches")
   inner class GetZeroPrecisionCrimeMatches {
-    val path = "/management-information/zero-precision-crime-matches"
+    private val path = "/management-information/zero-precision-crime-matches"
+    private val pagedPath = "$path?page=0"
 
     @Test
     fun `it should return 401 if the request is not authenticated`() {
@@ -39,7 +45,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return an empty list when no matches exist`() {
       val body = webTestClient.get()
-        .uri(path)
+        .uri(pagedPath)
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -77,7 +83,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request zero-precision matches
       val body = webTestClient.get()
-        .uri(path)
+        .uri(pagedPath)
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -140,7 +146,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request zero-precision matches
       val body = webTestClient.get()
-        .uri(path)
+        .uri(pagedPath)
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -187,6 +193,90 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
         body.toString(StandardCharsets.UTF_8),
         JSONCompareMode.STRICT,
       )
+    }
+
+    @Test
+    fun `it should return every zero-precision crime match if page is omitted`() {
+      // Given 11 matched device wearers with zero-precision positions
+      givenCrimeMatches(11)
+
+      // When we request zero-precision matches
+      val body = webTestClient.get()
+        .uri(path)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      val response = objectMapper.readTree(body)
+
+      // Then all 11 matches should be returned
+      assertThat(response["data"].size()).isEqualTo(11)
+    }
+
+    @Test
+    fun `it should return the first 10 zero-precision crime matches if page is included`() {
+      // Given 11 matched device wearers with zero-precision positions
+      givenCrimeMatches(11)
+
+      // When we request zero-precision matches
+      val body = webTestClient.get()
+        .uri(pagedPath)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      val response = objectMapper.readTree(body)
+
+      // Then the first 10 matches should be returned
+      assertThat(response["data"].size()).isEqualTo(10)
+    }
+
+    @Test
+    fun `it should return the second page of zero-precision crime matches`() {
+      // Given 11 matched device wearers with zero-precision positions
+      givenCrimeMatches(11)
+
+      // When we request zero-precision matches
+      val body = webTestClient.get()
+        .uri("$path?page=1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      val response = objectMapper.readTree(body)
+
+      // Then the second page of matches should be returned
+      assertThat(response["data"].size()).isEqualTo(1)
+    }
+  }
+
+  private fun givenCrimeMatches(count: Int) {
+    crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+      withCrime("crime1") {
+        withMatchingRun {
+          (1..count).forEach { deviceId ->
+            withMatchedDeviceWearer(
+              id = UUID.fromString("00000000-0000-0000-0000-${deviceId.toString().padStart(12, '0')}"),
+              deviceId = deviceId.toLong(),
+              deviceSerialNumber = deviceId.toString().padStart(9, '0'),
+            ) {
+              withPosition(precision = 0)
+            }
+          }
+        }
+      }
     }
   }
 }
