@@ -31,7 +31,7 @@ class ManagementInformationController(
     @RequestParam(value = "to", required = false)
     to: Instant? = null,
     @RequestParam(value = "page", required = false)
-    page: Int = 0,
+    page: Int? = null,
   ): ResponseEntity<PagedResponse<ZeroPrecisionCrimeMatchResponse>> {
     val results = managementInformationService.getZeroPrecisionCrimeMatches(
       from = from,
