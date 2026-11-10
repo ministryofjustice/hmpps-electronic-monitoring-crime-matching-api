@@ -29,7 +29,7 @@ class ContextualReportControllerTest : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("POST /crime-matching-results/{crimeMatchingResultId}/matched-wearers/{deviceActivationId}/contextual-reports")
+  @DisplayName("POST /crime-matching-results/{crimeMatchingResultId}/matched-wearers/{deviceId}/contextual-reports")
   inner class CreateContextualReport {
     @Test
     fun `it should return a 401 if the request is not authenticated`() {
@@ -66,7 +66,7 @@ class ContextualReportControllerTest : IntegrationTestBase() {
       val body = givenCreateContextualReportRequestBody()
       hubManagerRepo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
       algorithmApi.stubPositionSegments(
-        deviceActivationId = "1",
+        deviceId = "1",
         startTime = "2026-08-17T12:00:00Z",
         endTime = "2026-08-18T00:00:00Z",
       )
