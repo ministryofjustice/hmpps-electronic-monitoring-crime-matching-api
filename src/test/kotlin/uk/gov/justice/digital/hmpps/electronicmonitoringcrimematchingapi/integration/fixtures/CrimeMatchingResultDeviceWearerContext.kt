@@ -9,6 +9,8 @@ class CrimeMatchingResultDeviceWearerContext(
 ) {
   fun withPosition(
     capturedDateTime: Instant = Instant.parse("2025-01-01T00:00:00Z"),
+    caseloadDatetimeAdded: Instant? = Instant.parse("2025-01-01T00:00:01Z"),
+    positionDatetimeAdded: Instant? = Instant.parse("2025-01-01T00:00:02Z"),
     sequenceLabel: String = "A1",
     entryBearing: Double? = null,
     exitBearing: Double? = null,
@@ -25,6 +27,8 @@ class CrimeMatchingResultDeviceWearerContext(
         longitude = 10.0,
         precision = precision,
         sequenceLabel = sequenceLabel,
+        caseloadDatetimeAdded = caseloadDatetimeAdded,
+        positionDatetimeAdded = positionDatetimeAdded,
         speed = 10,
       ),
     )

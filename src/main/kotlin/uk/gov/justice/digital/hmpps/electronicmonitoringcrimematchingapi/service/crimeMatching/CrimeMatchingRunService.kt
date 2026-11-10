@@ -105,6 +105,8 @@ class CrimeMatchingRunService(
   private fun createPosition(wearer: CrimeMatchingResultDeviceWearer, positionDto: CrimeMatchingResultPositionRequest): CrimeMatchingResultPosition = CrimeMatchingResultPosition(
     crimeMatchingResultDeviceWearer = wearer,
     capturedDateTime = positionDto.capturedDateTime,
+    caseloadDatetimeAdded = positionDto.caseloadDatetimeAdded,
+    positionDatetimeAdded = positionDto.positionDatetimeAdded,
     direction = positionDto.direction,
     entryBearing = positionDto.entryBearing,
     exitBearing = positionDto.exitBearing,

@@ -182,6 +182,8 @@ class CrimeMatchingRunServiceTest {
                 positions = listOf(
                   CrimeMatchingResultPositionRequest(
                     capturedDateTime = Instant.parse("2026-01-16T08:12:00Z"),
+                    caseloadDatetimeAdded = Instant.parse("2026-01-16T08:12:01Z"),
+                    positionDatetimeAdded = Instant.parse("2026-01-16T08:12:02Z"),
                     direction = 10,
                     entryBearing = 244.80,
                     exitBearing = 243.10,
@@ -193,6 +195,8 @@ class CrimeMatchingRunServiceTest {
                   ),
                   CrimeMatchingResultPositionRequest(
                     capturedDateTime = Instant.parse("2026-01-16T08:13:00Z"),
+                    caseloadDatetimeAdded = Instant.parse("2026-01-16T08:13:01Z"),
+                    positionDatetimeAdded = Instant.parse("2026-01-16T08:13:02Z"),
                     direction = 10,
                     entryBearing = 243.10,
                     exitBearing = 242.05,
@@ -212,6 +216,8 @@ class CrimeMatchingRunServiceTest {
                     precision = 30,
                     sequenceLabel = "A3",
                     speed = 10,
+                    caseloadDatetimeAdded = Instant.parse("2026-01-16T08:14:01Z"),
+                    positionDatetimeAdded = Instant.parse("2026-01-16T08:14:02Z"),
                   ),
                   CrimeMatchingResultPositionRequest(
                     capturedDateTime = Instant.parse("2026-01-16T08:15:00Z"),
@@ -223,6 +229,8 @@ class CrimeMatchingRunServiceTest {
                     precision = 30,
                     sequenceLabel = "A4",
                     speed = 10,
+                    caseloadDatetimeAdded = Instant.parse("2026-01-16T08:15:01Z"),
+                    positionDatetimeAdded = Instant.parse("2026-01-16T08:15:02Z"),
                   ),
                 ),
               ),
