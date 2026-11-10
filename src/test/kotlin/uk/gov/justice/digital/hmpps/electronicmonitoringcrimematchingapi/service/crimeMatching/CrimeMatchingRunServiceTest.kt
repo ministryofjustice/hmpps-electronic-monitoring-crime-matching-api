@@ -263,6 +263,8 @@ class CrimeMatchingRunServiceTest {
 
       val firstPos = savedWearer.positions.first()
       assertThat(firstPos.capturedDateTime).isEqualTo(Instant.parse("2026-01-16T08:12:00Z"))
+      assertThat(firstPos.caseloadDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:12:01Z"))
+      assertThat(firstPos.positionDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:12:02Z"))
       assertThat(firstPos.direction).isEqualTo(10)
       assertThat(firstPos.entryBearing).isEqualTo(244.80)
       assertThat(firstPos.exitBearing).isEqualTo(243.10)
@@ -274,16 +276,22 @@ class CrimeMatchingRunServiceTest {
 
       val secondPos = savedWearer.positions[1]
       assertThat(secondPos.sequenceLabel).isEqualTo("A2")
+      assertThat(secondPos.caseloadDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:13:01Z"))
+      assertThat(secondPos.positionDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:13:02Z"))
       assertThat(secondPos.entryBearing).isEqualTo(243.10)
       assertThat(secondPos.exitBearing).isEqualTo(242.05)
 
       val thirdPos = savedWearer.positions[2]
       assertThat(thirdPos.sequenceLabel).isEqualTo("A3")
+      assertThat(thirdPos.caseloadDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:14:01Z"))
+      assertThat(thirdPos.positionDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:14:02Z"))
       assertThat(thirdPos.entryBearing).isEqualTo(242.05)
       assertThat(thirdPos.exitBearing).isEqualTo(240.00)
 
       val fourthPos = savedWearer.positions[3]
       assertThat(fourthPos.sequenceLabel).isEqualTo("A4")
+      assertThat(fourthPos.caseloadDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:15:01Z"))
+      assertThat(fourthPos.positionDatetimeAdded).isEqualTo(Instant.parse("2026-01-16T08:15:02Z"))
       assertThat(fourthPos.entryBearing).isNull()
       assertThat(fourthPos.exitBearing).isNull()
     }
