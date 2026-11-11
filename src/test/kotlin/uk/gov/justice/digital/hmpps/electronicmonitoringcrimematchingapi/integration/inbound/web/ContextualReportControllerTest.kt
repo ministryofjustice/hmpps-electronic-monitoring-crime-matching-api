@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.inbound.web
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -8,24 +9,31 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.outbound.persistence.CrimeMatchingResultDocumentRequestRepository
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.application.dto.CreateContextualReportResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.createHubManager
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AlgorithmApiExtension
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AlgorithmApiExtension.Companion.algorithmApi
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.HubManagerRepository
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
 @ExtendWith(AlgorithmApiExtension::class)
 class ContextualReportControllerTest : IntegrationTestBase() {
 
-  private val role = "ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW"
-
   @Autowired
   lateinit var hubManagerRepo: HubManagerRepository
+
+  @Autowired
+  lateinit var crimeMatchingResultDocumentRequestRepository: CrimeMatchingResultDocumentRequestRepository
+
+  private val role = "ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW"
 
   @BeforeEach
   fun setup() {
     hubManagerRepo.deleteAll()
+    crimeMatchingResultDocumentRequestRepository.deleteAll()
   }
 
   @Nested
@@ -80,7 +88,7 @@ class ContextualReportControllerTest : IntegrationTestBase() {
       val body = givenCreateContextualReportRequestBody()
 
       // When the request is sent to the controller, then it should be accepted
-      webTestClient
+      val request = webTestClient
         .post()
         .uri("/crime-matching-results/$id/matched-wearers/1/contextual-reports")
         .headers(setAuthorisation(roles = listOf(role)))
@@ -89,9 +97,38 @@ class ContextualReportControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isAccepted
-        .expectBody<String>()
+        .expectBody<CreateContextualReportResponse>()
         .returnResult()
         .responseBody!!
+
+      // And the contextual report request should be persisted
+      crimeMatchingResultDocumentRequestRepository.findById(UUID.fromString(request.documentRequestId)).orElseThrow()
+    }
+
+    @Test
+    fun `it should return a 404 if the crime matching result and device combination does not exist`() {
+      val id = UUID.randomUUID()
+      val body = givenCreateContextualReportRequestBody()
+
+      val response = webTestClient.post()
+        .uri("/crime-matching-results/$id/matched-wearers/1/contextual-reports")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(body)
+        .exchange()
+        .expectStatus()
+        .isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(response).isEqualTo(
+        ErrorResponse(
+          status = 404,
+          userMessage = "Not Found",
+          developerMessage = "No matched wearer with device id 1 for crime matching result $id",
+        ),
+      )
     }
   }
 

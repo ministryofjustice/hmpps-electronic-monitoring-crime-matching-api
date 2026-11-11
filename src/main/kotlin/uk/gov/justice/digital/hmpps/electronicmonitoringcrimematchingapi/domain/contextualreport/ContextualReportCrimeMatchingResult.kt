@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain
 
 import java.time.Instant
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class ContextualReportCrimeMatchingResult(
   val batchId: String,
@@ -13,4 +14,5 @@ data class ContextualReportCrimeMatchingResult(
   val identifier: String,
   val name: String,
   val pncRef: String,
+  val deviceWearerId: UUID,
 )

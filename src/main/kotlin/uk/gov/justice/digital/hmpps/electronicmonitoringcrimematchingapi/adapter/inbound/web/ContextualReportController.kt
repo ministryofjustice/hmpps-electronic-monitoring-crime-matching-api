@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.inbound.web.CreateContextualReportRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.application.dto.CreateContextualReportResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.application.usecase.CreateContextualReport
 import java.util.UUID
 
@@ -43,14 +43,25 @@ class ContextualReportController(
     description = "Invalid contextual report request",
     content = [Content()],
   )
+  @ApiResponse(
+    responseCode = "404",
+    description = "Crime matching result and device combination not found",
+    content = [Content()],
+  )
   fun createContextualReportRequest(
     @PathVariable crimeMatchingResultId: UUID,
     @PathVariable deviceId: Long,
     @Valid @RequestBody request: CreateContextualReportRequest,
     @Parameter(hidden = true)
     authentication: Authentication,
-  ): ResponseEntity<String> {
-    val id = createContextualReport.create(crimeMatchingResultId, deviceId, request, authentication.name)
-    return ResponseEntity.status(HttpStatus.ACCEPTED).body(id)
+  ): ResponseEntity<CreateContextualReportResponse> {
+    val documentRequestId = createContextualReport.create(crimeMatchingResultId, deviceId, request, authentication.name)
+    return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+      CreateContextualReportResponse(
+        documentRequestId = documentRequestId,
+        crimeMatchingResultId = crimeMatchingResultId.toString(),
+        deviceId = deviceId.toString(),
+      ),
+    )
   }
 }

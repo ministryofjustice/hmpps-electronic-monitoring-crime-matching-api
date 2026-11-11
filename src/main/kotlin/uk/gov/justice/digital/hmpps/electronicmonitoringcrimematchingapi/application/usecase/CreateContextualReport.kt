@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.applic
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.inbound.web.CreateContextualReportRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.CreateDocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.contextualreport.CrimeMatchingResultDocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.contextualreport.CrimeMatchingResultDocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.contextualreport.CrimeMatchingResultStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.positionsegments.PositionSegmentsProvider
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.HubManagerService
@@ -17,11 +20,13 @@ class CreateContextualReport(
   private val createDocumentRequest: CreateDocumentRequest,
   private val hubManagerService: HubManagerService,
   private val crimeMatchingResultStore: CrimeMatchingResultStore,
+  private val resultDocumentRequestStore: CrimeMatchingResultDocumentRequestStore,
 ) {
+  @Transactional
   fun create(crimeMatchingResultId: UUID, deviceId: Long, request: CreateContextualReportRequest, user: String): String {
     // Get Crime matching result data
     val crimeMatchingResult = crimeMatchingResultStore.find(crimeMatchingResultId, deviceId)
-      ?: throw EntityNotFoundException("No matched wearer with device ID $deviceId for crime matching result $crimeMatchingResultId")
+      ?: throw EntityNotFoundException("No matched wearer with device id $deviceId for crime matching result $crimeMatchingResultId")
 
     // Get Hub manager
     val hubManager = hubManagerService.getHubManager(request.hubManagerId)
@@ -74,6 +79,13 @@ class CreateContextualReport(
     val documentRequest = createDocumentRequest.create(
       request = reportRequest,
       user = user,
+    )
+
+    resultDocumentRequestStore.save(
+      CrimeMatchingResultDocumentRequest(
+        documentRequestId = UUID.fromString(documentRequest.id),
+        crimeMatchingResultDeviceWearerId = crimeMatchingResult.deviceWearerId,
+      ),
     )
 
     return documentRequest.id
