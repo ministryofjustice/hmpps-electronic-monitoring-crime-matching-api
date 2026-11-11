@@ -4,15 +4,19 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.inbound.web.CreateContextualReportRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.CreateDocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.contextualreport.CrimeMatchingResultDocumentRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.contextualreport.CrimeMatchingResultDocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.positionsegments.PositionSegmentsProvider
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.HubManagerService
+import java.util.UUID
 
 @Service
 class CreateContextualReport(
   private val positionSegmentsProvider: PositionSegmentsProvider,
   private val createDocumentRequest: CreateDocumentRequest,
   private val hubManagerService: HubManagerService,
+  private val resultDocumentRequestStore: CrimeMatchingResultDocumentRequestStore,
 ) {
   fun create(crimeMatchingResultId: String, deviceId: Long, request: CreateContextualReportRequest, user: String): String {
     // Get position segments data
@@ -68,6 +72,14 @@ class CreateContextualReport(
     val documentRequest = createDocumentRequest.create(
       request = reportRequest,
       user = user,
+    )
+
+    resultDocumentRequestStore.save(
+      CrimeMatchingResultDocumentRequest(
+        documentRequestId = UUID.fromString(documentRequest.id),
+        crimeMatchingResultId = UUID.fromString(crimeMatchingResultId),
+        crimeMatchingResultDeviceWearerId = UUID.randomUUID(),
+      ),
     )
 
     return documentRequest.id
