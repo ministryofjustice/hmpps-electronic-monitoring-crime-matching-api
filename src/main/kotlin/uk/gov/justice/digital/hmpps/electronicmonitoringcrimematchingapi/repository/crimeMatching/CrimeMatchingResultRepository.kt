@@ -132,7 +132,8 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
       dw.date_of_birth AS dateOfBirth,
       dw.identifier AS identifier,
       dw.name AS name,
-      dw.pnc_ref AS pncRef
+      dw.pnc_ref AS pncRef,
+      dw.id AS deviceWearerId
     FROM crime_matching_result cmr
     JOIN crime_version cv ON cv.id = cmr.crime_version_id
     JOIN crime c ON c.id = cv.crime_id

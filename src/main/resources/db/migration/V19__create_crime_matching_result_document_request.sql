@@ -1,17 +1,17 @@
-ALTER TABLE crime_matching_result_device_wearer
-    ADD CONSTRAINT uc_crime_matching_result_device_wearer_result_id_id UNIQUE (crime_matching_result_id, id);
-
 CREATE TABLE crime_matching_result_document_request
 (
-    document_request_id                      UUID NOT NULL PRIMARY KEY
-        REFERENCES document_request (id) ON DELETE CASCADE,
-    crime_matching_result_id                 UUID NOT NULL
-        REFERENCES crime_matching_result (id) ON DELETE CASCADE,
-    crime_matching_result_device_wearer_id   UUID NOT NULL,
-    CONSTRAINT fk_crime_matching_result_document_request_wearer
-        FOREIGN KEY (crime_matching_result_id, crime_matching_result_device_wearer_id)
-        REFERENCES crime_matching_result_device_wearer (crime_matching_result_id, id) ON DELETE CASCADE
+    document_request_id UUID NOT NULL,
+    crime_matching_result_device_wearer_id UUID NOT NULL,
+    CONSTRAINT pk_crime_matching_result_document_request PRIMARY KEY (document_request_id)
 );
 
-CREATE INDEX idx_crime_matching_result_document_request_wearer
-    ON crime_matching_result_document_request (crime_matching_result_device_wearer_id);
+ALTER TABLE crime_matching_result_document_request
+    ADD CONSTRAINT FK_CRIME_MATCHING_RESULT_DOCUMENT_REQUEST_DOCUMENT_REQUEST
+        FOREIGN KEY (document_request_id) REFERENCES document_request (id)
+            ON DELETE CASCADE;
+
+ALTER TABLE crime_matching_result_document_request
+    ADD CONSTRAINT FK_RESULT_DOCUMENT_REQUEST_WEARER
+        FOREIGN KEY (crime_matching_result_device_wearer_id)
+            REFERENCES crime_matching_result_device_wearer (id)
+            ON DELETE CASCADE;

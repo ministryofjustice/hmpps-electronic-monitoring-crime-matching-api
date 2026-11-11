@@ -12,7 +12,6 @@ class CrimeMatchingResultDocumentRequestPersistenceAdapter(
     repository.save(
       CrimeMatchingResultDocumentRequestEntity(
         documentRequestId = link.documentRequestId,
-        crimeMatchingResultId = link.crimeMatchingResultId,
         crimeMatchingResultDeviceWearerId = link.crimeMatchingResultDeviceWearerId,
       ),
     )

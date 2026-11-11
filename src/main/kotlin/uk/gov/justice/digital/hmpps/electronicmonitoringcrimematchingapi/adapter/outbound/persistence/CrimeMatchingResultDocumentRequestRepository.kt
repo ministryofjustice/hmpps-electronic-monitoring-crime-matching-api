@@ -3,6 +3,4 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapte
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
-interface CrimeMatchingResultDocumentRequestRepository : JpaRepository<CrimeMatchingResultDocumentRequestEntity, UUID> {
-  fun findAllByCrimeMatchingResultDeviceWearerId(crimeMatchingResultDeviceWearerId: UUID): List<CrimeMatchingResultDocumentRequestEntity>
-}
+interface CrimeMatchingResultDocumentRequestRepository : JpaRepository<CrimeMatchingResultDocumentRequestEntity, UUID>

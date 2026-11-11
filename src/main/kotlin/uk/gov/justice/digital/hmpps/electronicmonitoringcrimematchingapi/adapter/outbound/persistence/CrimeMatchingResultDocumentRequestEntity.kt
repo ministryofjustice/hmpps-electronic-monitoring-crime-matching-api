@@ -13,9 +13,6 @@ class CrimeMatchingResultDocumentRequestEntity(
   @Column(name = "document_request_id")
   val documentRequestId: UUID,
 
-  @Column(name = "crime_matching_result_id", nullable = false)
-  val crimeMatchingResultId: UUID,
-
   @Column(name = "crime_matching_result_device_wearer_id", nullable = false)
   val crimeMatchingResultDeviceWearerId: UUID,
 )

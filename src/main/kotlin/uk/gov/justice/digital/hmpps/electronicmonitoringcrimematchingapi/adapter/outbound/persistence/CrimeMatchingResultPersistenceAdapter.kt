@@ -25,6 +25,7 @@ class CrimeMatchingResultPersistenceAdapter(
       identifier = it.identifier,
       name = it.name,
       pncRef = it.pncRef,
+      deviceWearerId = it.deviceWearerId,
     )
   }
 }
