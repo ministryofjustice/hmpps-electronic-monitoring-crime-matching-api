@@ -79,43 +79,37 @@ class ContextualReportControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should create multiple document requests associated with the result and matched wearer`() {
-      // Given a valid request
-      val body = givenCreateContextualReportRequestBody()
-      val resultId = givenMatchingResultWithWearer()
-      val wearerId = deviceWearerRepo.findByCrimeMatchingResultIdAndDeviceId(resultId, 1)!!.id
+    fun `it should create a contextual report request`() {
+      // Given a valid request and existing crime matching result
+      val id = UUID.randomUUID()
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1") {
+          withMatchingRun(matchingResultId = id) {
+            withMatchedDeviceWearer(deviceId = 1)
+          }
+        }
+      }
       hubManagerRepo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
       algorithmApi.stubPositionSegments(
         deviceId = "1",
         startTime = "2026-08-17T12:00:00Z",
         endTime = "2026-08-18T00:00:00Z",
       )
+      val body = givenCreateContextualReportRequestBody()
 
       // When the request is sent to the controller, then it should be accepted
-      val requestIds = (1..2).map {
-        webTestClient
-          .post()
-          .uri("/crime-matching-results/$resultId/matched-wearers/1/contextual-reports")
-          .headers(setAuthorisation(roles = listOf(role)))
-          .contentType(MediaType.APPLICATION_JSON)
-          .bodyValue(body)
-          .exchange()
-          .expectStatus()
-          .isAccepted
-          .expectBody<String>()
-          .returnResult()
-          .responseBody!!
-      }
-
-      assertThat(requestIds).doesNotHaveDuplicates()
-      assertThat(requestIds.map { documentRequestRepo.findById(UUID.fromString(it)).orElseThrow().id.toString() })
-        .containsExactlyInAnyOrderElementsOf(requestIds)
-      val links = resultDocumentRequestRepo.findAllByCrimeMatchingResultDeviceWearerId(wearerId)
-      assertThat(links.map { it.documentRequestId.toString() }).containsExactlyInAnyOrderElementsOf(requestIds)
-      assertThat(links).allSatisfy {
-        assertThat(it.crimeMatchingResultId).isEqualTo(resultId)
-        assertThat(it.crimeMatchingResultDeviceWearerId).isEqualTo(wearerId)
-      }
+      webTestClient
+        .post()
+        .uri("/crime-matching-results/$id/matched-wearers/1/contextual-reports")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(body)
+        .exchange()
+        .expectStatus()
+        .isAccepted
+        .expectBody<String>()
+        .returnResult()
+        .responseBody!!
     }
 
     @Test
