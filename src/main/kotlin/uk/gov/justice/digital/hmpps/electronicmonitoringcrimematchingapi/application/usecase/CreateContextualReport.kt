@@ -1,29 +1,37 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.application.usecase
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.inbound.web.CreateContextualReportRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.CreateDocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.contextualreport.CrimeMatchingResultStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.positionsegments.PositionSegmentsProvider
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.service.HubManagerService
+import java.util.UUID
 
 @Service
 class CreateContextualReport(
   private val positionSegmentsProvider: PositionSegmentsProvider,
   private val createDocumentRequest: CreateDocumentRequest,
   private val hubManagerService: HubManagerService,
+  private val crimeMatchingResultStore: CrimeMatchingResultStore,
 ) {
-  fun create(crimeMatchingResultId: String, deviceId: Long, request: CreateContextualReportRequest, user: String): String {
+  fun create(crimeMatchingResultId: UUID, deviceId: Long, request: CreateContextualReportRequest, user: String): String {
+    // Get Crime matching result data
+    val crimeMatchingResult = crimeMatchingResultStore.find(crimeMatchingResultId, deviceId)
+      ?: throw EntityNotFoundException("No matched wearer with device ID $deviceId for crime matching result $crimeMatchingResultId")
+
+    // Get Hub manager
+    val hubManager = hubManagerService.getHubManager(request.hubManagerId)
+
     // Get position segments data
     val positionSegments = positionSegmentsProvider.getPositionSegments(
       deviceId = deviceId.toString(),
       startTime = request.startTime.toString(),
       endTime = request.endTime.toString(),
     )
-
-    // Get Hub manager
-    val hubManager = hubManagerService.getHubManager(request.hubManagerId)
 
     // Construct document request
     val reportParameters = mapOf(
@@ -32,20 +40,18 @@ class CreateContextualReport(
         "name" to hubManager.name,
         "occupation" to hubManager.occupation,
       ),
-      // Get from crime version linked to matching result
       "crime" to mapOf(
-        "batchId" to "EXAMPLE-BATCH",
-        "proximityAlertCreatedAt" to "2025-08-16T00:00:00Z",
-        "reference" to "EXAMPLE-REFERENCE",
-        "type" to "Example crime type",
+        "batchId" to crimeMatchingResult.batchId,
+        "proximityAlertCreatedAt" to crimeMatchingResult.matchingResultCreatedAt.toString(),
+        "reference" to crimeMatchingResult.crimeReference,
+        "type" to crimeMatchingResult.crimeType,
       ),
-      // Get from device wearer details
       "deviceWearer" to mapOf(
-        "address" to "Example address",
-        "dateOfBirth" to "1990-01-01",
-        "emsId" to "EXAMPLE-EMS-ID",
-        "pncNumber" to "EXAMPLE-PNC",
-        "name" to "Example wearer",
+        "address" to crimeMatchingResult.address,
+        "dateOfBirth" to crimeMatchingResult.dateOfBirth.toString(),
+        "emsId" to crimeMatchingResult.identifier,
+        "pncNumber" to crimeMatchingResult.pncRef,
+        "name" to crimeMatchingResult.name,
         "offenderManager" to "Example manager",
       ),
       "positionSegments" to positionSegments,
