@@ -50,7 +50,7 @@ class ContextualReportController(
     @Parameter(hidden = true)
     authentication: Authentication,
   ): ResponseEntity<String> {
-    val id = createContextualReport.create(crimeMatchingResultId.toString(), deviceId, request, authentication.name)
+    val id = createContextualReport.create(crimeMatchingResultId, deviceId, request, authentication.name)
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(id)
   }
 }

@@ -62,17 +62,24 @@ class ContextualReportControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should create a contextual report request`() {
-      // Given a valid request
-      val body = givenCreateContextualReportRequestBody()
+      // Given a valid request and existing crime matching result
+      val id = UUID.randomUUID()
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1") {
+          withMatchingRun(matchingResultId = id) {
+            withMatchedDeviceWearer(deviceId = 1)
+          }
+        }
+      }
       hubManagerRepo.createHubManager(id = "48b83e4b-ea09-4ba7-8440-a7e5ed534cb4", name = "test manager 1", occupation = "occupation 1", hasSignature = true)
       algorithmApi.stubPositionSegments(
         deviceId = "1",
         startTime = "2026-08-17T12:00:00Z",
         endTime = "2026-08-18T00:00:00Z",
       )
+      val body = givenCreateContextualReportRequestBody()
 
       // When the request is sent to the controller, then it should be accepted
-      val id = UUID.randomUUID()
       webTestClient
         .post()
         .uri("/crime-matching-results/$id/matched-wearers/1/contextual-reports")
