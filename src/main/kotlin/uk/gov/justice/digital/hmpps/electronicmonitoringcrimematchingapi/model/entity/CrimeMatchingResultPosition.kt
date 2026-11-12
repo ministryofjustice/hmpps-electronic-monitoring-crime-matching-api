@@ -20,6 +20,12 @@ class CrimeMatchingResultPosition(
   @Column(nullable = false)
   val capturedDateTime: Instant,
 
+  @Column(name = "caseload_datetime_added", nullable = true)
+  val caseloadDatetimeAdded: Instant?,
+
+  @Column(name = "position_datetime_added", nullable = true)
+  val positionDatetimeAdded: Instant?,
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "crime_matching_result_device_wearer_id", nullable = false)
   val crimeMatchingResultDeviceWearer: CrimeMatchingResultDeviceWearer,
