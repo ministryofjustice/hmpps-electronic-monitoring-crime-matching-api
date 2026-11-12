@@ -23,17 +23,17 @@ class CreateContextualReport(
   private val resultDocumentRequestStore: CrimeMatchingResultDocumentRequestStore,
 ) {
   @Transactional
-  fun create(crimeMatchingResultId: UUID, deviceId: Long, request: CreateContextualReportRequest, user: String): String {
+  fun create(deviceWearerId: UUID, request: CreateContextualReportRequest, user: String): String {
     // Get Crime matching result data
-    val crimeMatchingResult = crimeMatchingResultStore.find(crimeMatchingResultId, deviceId)
-      ?: throw EntityNotFoundException("No matched wearer with device id $deviceId for crime matching result $crimeMatchingResultId")
+    val crimeMatchingResult = crimeMatchingResultStore.find(deviceWearerId)
+      ?: throw EntityNotFoundException("No matched wearer with id $deviceWearerId")
 
     // Get Hub manager
     val hubManager = hubManagerService.getHubManager(request.hubManagerId)
 
     // Get position segments data
     val positionSegments = positionSegmentsProvider.getPositionSegments(
-      deviceId = deviceId.toString(),
+      deviceId = crimeMatchingResult.deviceId.toString(),
       startTime = request.startTime.toString(),
       endTime = request.endTime.toString(),
     )
@@ -57,7 +57,7 @@ class CreateContextualReport(
         "emsId" to crimeMatchingResult.identifier,
         "pncNumber" to crimeMatchingResult.pncRef,
         "name" to crimeMatchingResult.name,
-        "offenderManager" to "Example manager",
+        "offenderManager" to "Example manager", // TODO remove as part of ACR-1106
       ),
       "positionSegments" to positionSegments,
       "reportPeriod" to mapOf(
@@ -84,7 +84,7 @@ class CreateContextualReport(
     resultDocumentRequestStore.save(
       CrimeMatchingResultDocumentRequest(
         documentRequestId = UUID.fromString(documentRequest.id),
-        crimeMatchingResultDeviceWearerId = crimeMatchingResult.deviceWearerId,
+        crimeMatchingResultDeviceWearerId = deviceWearerId,
       ),
     )
 

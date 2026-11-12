@@ -12,7 +12,7 @@ import java.util.UUID
 class CrimeMatchingResultPersistenceAdapter(
   private val repository: CrimeMatchingResultRepository,
 ) : CrimeMatchingResultStore {
-  override fun find(crimeMatchingResultId: UUID, deviceId: Long): ContextualReportCrimeMatchingResult? = repository.findContextualReportCrimeMatchingResult(crimeMatchingResultId, deviceId)?.let {
+  override fun find(deviceWearerId: UUID): ContextualReportCrimeMatchingResult? = repository.findContextualReportCrimeMatchingResult(deviceWearerId)?.let {
     ContextualReportCrimeMatchingResult(
       batchId = it.batchId,
       crimeReference = it.crimeReference,
@@ -25,7 +25,7 @@ class CrimeMatchingResultPersistenceAdapter(
       identifier = it.identifier,
       name = it.name,
       pncRef = it.pncRef,
-      deviceWearerId = it.deviceWearerId,
+      deviceId = it.deviceId,
     )
   }
 }

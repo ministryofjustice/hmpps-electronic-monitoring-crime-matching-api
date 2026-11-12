@@ -48,6 +48,13 @@ class AlgorithmMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
+  fun stubPositionSegmentsServiceUnavailable() {
+    stubFor(
+      get(urlPathEqualTo("/devices/1/contextual-report-position-segments"))
+        .willReturn(aResponse().withStatus(503)),
+    )
+  }
+
   fun stubHealthPing(status: Int) {
     stubFor(
       get("/health/ping").willReturn(
