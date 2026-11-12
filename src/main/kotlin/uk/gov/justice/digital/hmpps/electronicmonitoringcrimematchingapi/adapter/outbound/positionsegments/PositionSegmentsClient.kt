@@ -12,10 +12,10 @@ import java.time.Duration
 class PositionSegmentsClient(
   private val algorithmApiWebClient: WebClient,
 ) {
-  fun get(deviceActivationId: String, startTime: String, endTime: String): PositionSegmentsResponse = algorithmApiWebClient
+  fun get(deviceId: String, startTime: String, endTime: String): PositionSegmentsResponse = algorithmApiWebClient
     .get()
     .uri {
-      it.path("/device-activations/$deviceActivationId/contextual-report-position-segments")
+      it.path("/devices/$deviceId/contextual-report-position-segments")
         .queryParam("start_time", startTime)
         .queryParam("end_time", endTime)
         .build()

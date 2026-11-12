@@ -12,12 +12,12 @@ class AlgorithmMockServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   fun stubPositionSegments(
-    deviceActivationId: String,
+    deviceId: String,
     startTime: String,
     endTime: String,
   ) {
     stubFor(
-      get(urlPathEqualTo("/device-activations/$deviceActivationId/contextual-report-position-segments"))
+      get(urlPathEqualTo("/devices/$deviceId/contextual-report-position-segments"))
         .withQueryParam("start_time", equalTo(startTime))
         .withQueryParam("end_time", equalTo(endTime))
         .willReturn(
@@ -45,6 +45,13 @@ class AlgorithmMockServer : WireMockServer(WIREMOCK_PORT) {
               """.trimIndent(),
             ),
         ),
+    )
+  }
+
+  fun stubPositionSegmentsServiceUnavailable() {
+    stubFor(
+      get(urlPathEqualTo("/devices/1/contextual-report-position-segments"))
+        .willReturn(aResponse().withStatus(503)),
     )
   }
 

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.inbound.web.CreateContextualReportRequest
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.application.dto.CreateContextualReportResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.application.usecase.CreateContextualReport
 import java.util.UUID
 
@@ -25,7 +25,7 @@ import java.util.UUID
   description = "Create and retrieve contextual reports",
 )
 @PreAuthorize("hasAnyAuthority('ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW')")
-@RequestMapping("/crime-matching-results/{crimeMatchingResultId}/matched-wearers/{deviceActivationId}/contextual-reports")
+@RequestMapping("/matched-wearers/{deviceWearerId}/contextual-reports")
 class ContextualReportController(
   private val createContextualReport: CreateContextualReport,
 ) {
@@ -43,14 +43,23 @@ class ContextualReportController(
     description = "Invalid contextual report request",
     content = [Content()],
   )
+  @ApiResponse(
+    responseCode = "404",
+    description = "Crime matching result and device combination not found",
+    content = [Content()],
+  )
   fun createContextualReportRequest(
-    @PathVariable crimeMatchingResultId: UUID,
-    @PathVariable deviceActivationId: Long,
+    @PathVariable deviceWearerId: UUID,
     @Valid @RequestBody request: CreateContextualReportRequest,
     @Parameter(hidden = true)
     authentication: Authentication,
-  ): ResponseEntity<String> {
-    val id = createContextualReport.create(crimeMatchingResultId.toString(), deviceActivationId, request, authentication.name)
-    return ResponseEntity.status(HttpStatus.ACCEPTED).body(id)
+  ): ResponseEntity<CreateContextualReportResponse> {
+    val documentRequestId = createContextualReport.create(deviceWearerId, request, authentication.name)
+    return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+      CreateContextualReportResponse(
+        documentRequestId = documentRequestId,
+        deviceWearerId = deviceWearerId.toString(),
+      ),
+    )
   }
 }

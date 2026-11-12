@@ -4,8 +4,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.ContextualReportCrimeMatchingResultProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeMatchingResultProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.ZeroPrecisionCrimeMatchProjection
 import java.time.Instant
@@ -118,4 +120,31 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
     to: Instant?,
     pageable: Pageable,
   ): Page<ZeroPrecisionCrimeMatchProjection>
+
+  @Query(
+    value = """
+    SELECT
+      cb.batch_id AS batchId,
+      c.crime_reference AS crimeReference,
+      cv.crime_type_id AS crimeTypeId,
+      cmr.created_at AS matchingResultCreatedAt,
+      dw.address AS address,
+      dw.date_of_birth AS dateOfBirth,
+      dw.identifier AS identifier,
+      dw.name AS name,
+      dw.pnc_ref AS pncRef,
+      dw.device_id AS deviceId
+    FROM crime_matching_result cmr
+    JOIN crime_version cv ON cv.id = cmr.crime_version_id
+    JOIN crime c ON c.id = cv.crime_id
+    JOIN crime_batch cb ON cb.id = cv.crime_batch_id
+    JOIN crime_matching_result_device_wearer dw
+      ON dw.crime_matching_result_id = cmr.id
+    WHERE dw.id = :deviceWearerId
+  """,
+    nativeQuery = true,
+  )
+  fun findContextualReportCrimeMatchingResult(
+    @Param("deviceWearerId") deviceWearerId: UUID,
+  ): ContextualReportCrimeMatchingResultProjection?
 }
