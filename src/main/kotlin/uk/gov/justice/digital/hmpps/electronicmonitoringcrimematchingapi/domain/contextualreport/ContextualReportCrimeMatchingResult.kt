@@ -7,6 +7,8 @@ data class ContextualReportCrimeMatchingResult(
   val batchId: String,
   val crimeReference: String,
   val crimeType: String,
+  val crimeDateTimeFrom: Instant,
+  val crimeDateTimeTo: Instant,
   val matchingResultCreatedAt: Instant,
   val address: String,
   val dateOfBirth: LocalDateTime?,

@@ -6,6 +6,8 @@ interface ContextualReportCrimeMatchingResultProjection {
   val batchId: String
   val crimeReference: String
   val crimeTypeId: String
+  val crimeDateTimeFrom: LocalDateTime
+  val crimeDateTimeTo: LocalDateTime
   val matchingResultCreatedAt: LocalDateTime
   val address: String
   val dateOfBirth: LocalDateTime?
