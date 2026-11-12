@@ -8,9 +8,11 @@ data class CrimeMatchingResultPositionRequest(
   @field:NotNull(message = "capturedDateTime is required")
   val capturedDateTime: Instant,
 
-  val caseloadDatetimeAdded: Instant?,
+  @field:NotNull(message = "caseloadDatetimeAdded is required")
+  val caseloadDatetimeAdded: Instant,
 
-  val positionDatetimeAdded: Instant?,
+  @field:NotNull(message = "positionDatetimeAdded is required")
+  val positionDatetimeAdded: Instant,
 
   @field:NotNull(message = "direction is required")
   val direction: Long,
