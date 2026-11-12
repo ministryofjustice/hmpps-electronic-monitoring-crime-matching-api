@@ -2,6 +2,5 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.applic
 
 data class CreateContextualReportResponse(
   val documentRequestId: String,
-  val crimeMatchingResultId: String,
-  val deviceId: String,
+  val deviceWearerId: String,
 )

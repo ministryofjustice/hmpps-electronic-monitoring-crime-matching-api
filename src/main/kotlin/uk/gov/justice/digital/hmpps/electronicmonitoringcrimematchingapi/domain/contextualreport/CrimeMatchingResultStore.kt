@@ -4,7 +4,6 @@ import java.util.UUID
 
 interface CrimeMatchingResultStore {
   fun find(
-    crimeMatchingResultId: UUID,
-    deviceId: Long,
+    deviceWearerId: UUID,
   ): ContextualReportCrimeMatchingResult?
 }

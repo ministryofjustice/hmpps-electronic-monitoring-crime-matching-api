@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeVersionFieldName
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.crimeMatching.CrimeMatchingRunRepository
 import java.time.LocalDateTime
-import java.util.UUID
 
 class CrimeContext(
   private val batch: CrimeBatch,
@@ -23,7 +22,6 @@ class CrimeContext(
     status: CrimeMatchingStatus = CrimeMatchingStatus.SUCCESS,
     matchingStarted: LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0),
     matchingEnded: LocalDateTime = LocalDateTime.of(2025, 1, 1, 1, 0),
-    matchingResultId: UUID = UUID.randomUUID(),
     block: (CrimeMatchingRunContext.() -> Unit)? = null,
   ) {
     val run = CrimeMatchingRun(
@@ -36,7 +34,6 @@ class CrimeContext(
     )
 
     val result = CrimeMatchingResult(
-      id = matchingResultId,
       crimeVersion = version,
       crimeMatchingRun = run,
       createdAt = LocalDateTime.of(2025, 1, 1, 1, 0),

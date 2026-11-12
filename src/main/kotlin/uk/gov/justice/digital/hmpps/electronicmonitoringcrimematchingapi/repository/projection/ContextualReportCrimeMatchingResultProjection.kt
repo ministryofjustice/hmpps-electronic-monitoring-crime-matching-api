@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection
 
 import java.time.LocalDateTime
-import java.util.UUID
 
 interface ContextualReportCrimeMatchingResultProjection {
   val batchId: String
@@ -13,5 +12,5 @@ interface ContextualReportCrimeMatchingResultProjection {
   val identifier: String
   val name: String
   val pncRef: String
-  val deviceWearerId: UUID
+  val deviceId: Long
 }

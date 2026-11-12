@@ -133,20 +133,18 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
       dw.identifier AS identifier,
       dw.name AS name,
       dw.pnc_ref AS pncRef,
-      dw.id AS deviceWearerId
+      dw.device_id AS deviceId
     FROM crime_matching_result cmr
     JOIN crime_version cv ON cv.id = cmr.crime_version_id
     JOIN crime c ON c.id = cv.crime_id
     JOIN crime_batch cb ON cb.id = cv.crime_batch_id
     JOIN crime_matching_result_device_wearer dw
       ON dw.crime_matching_result_id = cmr.id
-    WHERE cmr.id = :crimeMatchingResultId
-      AND dw.device_id = :deviceId
+    WHERE dw.id = :deviceWearerId
   """,
     nativeQuery = true,
   )
   fun findContextualReportCrimeMatchingResult(
-    @Param("crimeMatchingResultId") crimeMatchingResultId: UUID,
-    @Param("deviceId") deviceId: Long,
+    @Param("deviceWearerId") deviceWearerId: UUID,
   ): ContextualReportCrimeMatchingResultProjection?
 }
