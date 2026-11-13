@@ -32,6 +32,8 @@ services:
     url: "http://localhost:8094"
   algorithm:
     url: "http://localhost:8085"
+  map-image-service:
+    url: "http://localhost:3001"
 
 aws:
   region: eu-west-2

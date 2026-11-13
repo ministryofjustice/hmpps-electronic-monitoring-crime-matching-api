@@ -31,11 +31,13 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integra
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.DocumentManagementApiExtension.Companion.documentManagementApi
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.MapImageServiceExtension
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.MapImageServiceExtension.Companion.mapImageServiceApi
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.NotifyApiExtension
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.caching.CacheEntryRepository
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
-@ExtendWith(HmppsAuthApiExtension::class, AwsApiExtension::class, NotifyApiExtension::class, DocumentManagementApiExtension::class, AlgorithmApiExtension::class)
+@ExtendWith(HmppsAuthApiExtension::class, AwsApiExtension::class, NotifyApiExtension::class, DocumentManagementApiExtension::class, AlgorithmApiExtension::class, MapImageServiceExtension::class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
@@ -107,6 +109,7 @@ abstract class IntegrationTestBase {
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
     documentManagementApi.stubHealthPing(status)
+    mapImageServiceApi.stubHealthPing(status)
     algorithmApi.stubHealthPing(status)
   }
 
