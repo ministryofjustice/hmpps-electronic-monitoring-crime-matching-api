@@ -13,7 +13,6 @@ class ContextualReportPersonDetails(
   private val pncNumber = "PNC Number"
   private val specifiedAddress = "Specified Address"
   private val emsId = "EMS ID"
-  private val offenderManager = "Offender Manager"
 
   fun addTo(
     document: WordprocessingMLPackage,
@@ -67,14 +66,6 @@ class ContextualReportPersonDetails(
       cells = listOf(
         listOf(paragraphBuilder.create(emsId)),
         listOf(paragraphBuilder.create(parameters.deviceWearer.emsId)),
-      ),
-    )
-
-    tableBuilder.addRow(
-      table = table,
-      cells = listOf(
-        listOf(paragraphBuilder.create(offenderManager)),
-        listOf(paragraphBuilder.create(parameters.deviceWearer.offenderManager)),
       ),
     )
 

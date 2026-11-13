@@ -57,7 +57,6 @@ class CreateContextualReport(
         "emsId" to crimeMatchingResult.identifier,
         "pncNumber" to crimeMatchingResult.pncRef,
         "name" to crimeMatchingResult.name,
-        "offenderManager" to "Example manager", // TODO remove as part of ACR-1106
       ),
       "positionSegments" to positionSegments,
       "reportPeriod" to mapOf(

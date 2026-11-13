@@ -34,7 +34,6 @@ object DocumentRequestParametersFixtures {
       emsId = "DEVWR123456",
       pncNumber = "PNC123456",
       name = "Jane Doe",
-      offenderManager = "Probation Practitioner",
     ),
     positionSegments = listOf(
       listOf(
@@ -75,7 +74,6 @@ object DocumentRequestParametersFixtures {
       "emsId" to "DEVWR123456",
       "pncNumber" to "PNC123456",
       "name" to "Jane Doe",
-      "offenderManager" to "Probation Practitioner",
     ),
     "positionSegments" to listOf(
       listOf(
