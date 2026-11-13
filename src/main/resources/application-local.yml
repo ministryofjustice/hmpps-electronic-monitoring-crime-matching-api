@@ -23,8 +23,6 @@ services:
     url: ${DOCUMENT_MANAGEMENT_API_URL:http://localhost:8084}
   algorithm:
     url: ${ALGORITHM_API_URL:http://localhost:8085}
-  map-image-service:
-    url: ${MAP_IMAGE_SERVICE_API_URL:http://localhost:3001}
 
 aws:
   region: eu-west-2

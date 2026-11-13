@@ -22,7 +22,6 @@ generic-service:
     NOTIFY_API_ENABLED: "false"
     DOCUMENT_MANAGEMENT_API_URL: "https://document-api.hmpps.service.justice.gov.uk"
     ALGORITHM_API_URL: "https://electronic-monitoring-crime-matching-algorithm.hmpps.service.justice.gov.uk"
-    MAP_IMAGE_SERVICE_API_URL: "https://hmpps-em-map-image-service.hmpps.service.justice.gov.uk"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
