@@ -9,14 +9,13 @@ class DeviceWearerDetailsTest {
   private val valid = givenContextualReportRequestParameters().deviceWearer
 
   @ParameterizedTest
-  @ValueSource(strings = ["address", "emsId", "name", "offenderManager"])
+  @ValueSource(strings = ["address", "emsId", "name"])
   fun `it should reject blank required fields`(field: String) {
     assertThatThrownBy {
       when (field) {
         "address" -> valid.copy(address = " ")
         "emsId" -> valid.copy(emsId = " ")
         "name" -> valid.copy(name = " ")
-        "offenderManager" -> valid.copy(offenderManager = " ")
         else -> error("Unknown field: $field")
       }
     }

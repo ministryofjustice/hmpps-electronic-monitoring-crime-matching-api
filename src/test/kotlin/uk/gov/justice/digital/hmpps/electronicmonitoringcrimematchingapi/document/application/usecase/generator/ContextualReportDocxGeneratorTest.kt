@@ -192,8 +192,8 @@ class ContextualReportDocxGeneratorTest {
     val personDetailsTable = tables[2]
     val rows = personDetailsTable.content.unwrapped<Tr>()
 
-    // Then the table should have seven rows
-    assertThat(rows).hasSize(7)
+    // Then the table should have six rows
+    assertThat(rows).hasSize(6)
 
     val titleCell = rows[0].content
       .unwrapped<Tc>()
@@ -204,12 +204,11 @@ class ContextualReportDocxGeneratorTest {
     val pncNumberCells = rows[3].content.unwrapped<Tc>()
     val addressCells = rows[4].content.unwrapped<Tc>()
     val emsIdCells = rows[5].content.unwrapped<Tc>()
-    val offenderManagerCells = rows[6].content.unwrapped<Tc>()
 
     // And the first row should contain the title
     assertThat(titleCell.text()).contains("Person:")
 
-    // And the 2nd to 7th rows should contain the content
+    // And the 2nd to 6th rows should contain the content
     assertThat(nameCells[0].text()).contains("Full Name")
     assertThat(nameCells[1].text()).contains("Jane Doe")
     assertThat(dobCells[0].text()).contains("D.O.B.")
@@ -220,8 +219,6 @@ class ContextualReportDocxGeneratorTest {
     assertThat(addressCells[1].text()).contains("456 The Avenue, London, UK, AB12 3CD")
     assertThat(emsIdCells[0].text()).contains("EMS ID")
     assertThat(emsIdCells[1].text()).contains("DEVWR123456")
-    assertThat(offenderManagerCells[0].text()).contains("Offender Manager")
-    assertThat(offenderManagerCells[1].text()).contains("Probation Practitioner")
 
     // And the first row should have a grey background
     assertThat(titleCell.tcPr.shd.fill).isEqualTo("D9D9D9")

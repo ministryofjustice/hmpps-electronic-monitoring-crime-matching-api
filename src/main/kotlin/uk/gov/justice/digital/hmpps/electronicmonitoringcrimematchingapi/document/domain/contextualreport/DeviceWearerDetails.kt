@@ -8,7 +8,6 @@ data class DeviceWearerDetails(
   val emsId: String,
   val pncNumber: String,
   val name: String,
-  val offenderManager: String,
 ) {
   init {
     require(address.isNotBlank()) {
@@ -21,10 +20,6 @@ data class DeviceWearerDetails(
 
     require(name.isNotBlank()) {
       "'name' cannot be blank"
-    }
-
-    require(offenderManager.isNotBlank()) {
-      "'offenderManager' cannot be blank"
     }
   }
 }
