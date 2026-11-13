@@ -37,11 +37,6 @@ spring:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
             authorization-grant-type: client_credentials
-          map-image-service-api:
-            provider: hmpps-auth
-            client-id: ${CLIENT_ID}
-            client-secret: ${CLIENT_SECRET}
-            authorization-grant-type: client_credentials
   jpa:
     hibernate:
       ddl-auto: validate
@@ -98,8 +93,6 @@ services:
     url: ${DOCUMENT_MANAGEMENT_API_URL}
   algorithm:
     url: ${ALGORITHM_API_URL}
-  map-image-service:
-    url: ${MAP_IMAGE_SERVICE_API_URL}
 
 notify:
   enabled: ${NOTIFY_API_ENABLED}

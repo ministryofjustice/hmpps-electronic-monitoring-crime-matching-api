@@ -16,16 +16,12 @@ class WebClientConfiguration(
   @param:Value("\${api.timeout:20s}") val timeout: Duration,
   @param:Value("\${services.document-management.url}") val documentManagementBaseUri: String,
   @param:Value("\${services.algorithm.url}") val algorithmBaseUri: String,
-  @param:Value("\${services.map-image-service.url}") val imageMapServiceApiBaseUri: String,
 ) {
   @Bean
   fun hmppsAuthHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(hmppsAuthBaseUri, healthTimeout)
 
   @Bean
   fun documentManagementApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(documentManagementBaseUri, healthTimeout)
-
-  @Bean
-  fun mapImageServiceApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(imageMapServiceApiBaseUri, healthTimeout)
 
   @Bean
   fun documentManagementApiWebClient(
@@ -46,17 +42,6 @@ class WebClientConfiguration(
     authorizedClientManager,
     registrationId = "algorithm-api",
     url = algorithmBaseUri,
-    timeout,
-  )
-
-  @Bean
-  fun mapImageServiceApiWebClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
-    builder: WebClient.Builder,
-  ): WebClient = builder.authorisedWebClient(
-    authorizedClientManager,
-    registrationId = "map-image-service-api",
-    url = imageMapServiceApiBaseUri,
     timeout,
   )
 }
