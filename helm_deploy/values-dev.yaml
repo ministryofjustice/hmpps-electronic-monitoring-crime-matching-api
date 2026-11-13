@@ -25,6 +25,7 @@ generic-service:
     NOTIFY_API_ENABLED: "true"
     DOCUMENT_MANAGEMENT_API_URL: "https://document-api-dev.hmpps.service.justice.gov.uk"
     ALGORITHM_API_URL: "https://electronic-monitoring-crime-matching-algorithm-dev.hmpps.service.justice.gov.uk"
+    MAP_IMAGE_SERVICE_API_URL: "https://hmpps-em-map-image-service-dev.hmpps.service.justice.gov.uk"
 
   namespace_secrets:
     athena-roles: null
