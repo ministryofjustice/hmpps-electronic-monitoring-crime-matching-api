@@ -21,6 +21,7 @@ class MapImageServiceExtension :
 
   override fun beforeEach(context: ExtensionContext) {
     mapImageServiceApi.resetAll()
+    mapImageServiceApi.stubMapImage()
   }
 
   override fun afterAll(context: ExtensionContext) {
