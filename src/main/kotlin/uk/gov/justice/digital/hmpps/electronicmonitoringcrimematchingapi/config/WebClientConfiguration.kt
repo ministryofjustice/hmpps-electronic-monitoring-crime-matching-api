@@ -24,8 +24,9 @@ class WebClientConfiguration(
   @Bean
   fun documentManagementApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(documentManagementBaseUri, healthTimeout)
 
-  @Bean
-  fun mapImageServiceApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(imageMapServiceApiBaseUri, healthTimeout)
+  // TODO(ACR-1106): Re-enable when map-image-service is deployed to preprod and prod - ACR-1169
+//  @Bean
+//  fun mapImageServiceApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(imageMapServiceApiBaseUri, healthTimeout)
 
   @Bean
   fun documentManagementApiWebClient(
