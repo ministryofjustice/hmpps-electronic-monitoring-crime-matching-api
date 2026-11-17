@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRenderer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRequest
 
+private const val POSITION_COLOR = "#f2a93b" // Dark yellow
+
 @Component
 class MapImageServiceAdapter(
   private val client: MapImageServiceClient,
@@ -22,6 +24,9 @@ class MapImageServiceAdapter(
                 longitude = position.longitude,
               )
             },
+            style = MapImageServiceRequest.TrackStyle(
+              stroke = MapImageServiceRequest.TrackStroke(color = "#000000"),
+            ),
           ),
         )
       }
@@ -36,6 +41,14 @@ class MapImageServiceAdapter(
               precision = position.precision.toDouble(),
             )
           },
+          style = MapImageServiceRequest.CircleStyle(
+            fill = null,
+            stroke = MapImageServiceRequest.CircleStroke(
+              color = POSITION_COLOR,
+              lineDash = listOf(8, 3),
+              width = 2,
+            ),
+          ),
         ),
       )
 
@@ -48,6 +61,10 @@ class MapImageServiceAdapter(
               longitude = position.longitude,
             )
           },
+          style = MapImageServiceRequest.LocationStyle(
+            fill = POSITION_COLOR,
+            stroke = MapImageServiceRequest.LocationStroke(color = "#00000000"),
+          ),
         ),
       )
 

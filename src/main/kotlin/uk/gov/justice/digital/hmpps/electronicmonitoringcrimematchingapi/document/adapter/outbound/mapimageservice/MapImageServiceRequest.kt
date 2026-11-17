@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
-// The Map Image Service rejects nulls for optional fields, so nulls must never be serialised
+// Optional fields must not be null, except circle fill, where null means outline only.
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class MapImageServiceRequest(
   val viewport: Viewport,
@@ -22,9 +22,20 @@ data class MapImageServiceRequest(
   data class TrackLayer(
     override val id: String,
     val points: List<TrackPoint>,
+    val style: TrackStyle? = null,
   ) : Layer {
     override val type = "tracks"
   }
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  data class TrackStyle(
+    val stroke: TrackStroke,
+  )
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  data class TrackStroke(
+    val color: String,
+  )
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   data class TrackPoint(
@@ -36,9 +47,24 @@ data class MapImageServiceRequest(
   data class CirclesLayer(
     override val id: String,
     val points: List<CirclePoint>,
+    val style: CircleStyle,
   ) : Layer {
     override val type = "circles"
   }
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  data class CircleStyle(
+    @get:JsonInclude(JsonInclude.Include.ALWAYS)
+    val fill: String?,
+    val stroke: CircleStroke,
+  )
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  data class CircleStroke(
+    val color: String,
+    val lineDash: List<Int>,
+    val width: Int,
+  )
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   data class CirclePoint(
@@ -51,9 +77,21 @@ data class MapImageServiceRequest(
   data class LocationsLayer(
     override val id: String,
     val points: List<Coordinate>,
+    val style: LocationStyle? = null,
   ) : Layer {
     override val type = "locations"
   }
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  data class LocationStyle(
+    val fill: String,
+    val stroke: LocationStroke,
+  )
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  data class LocationStroke(
+    val color: String,
+  )
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   data class Coordinate(
