@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStatus
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.FakeMapImageRenderer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentStore
 import java.time.Clock
@@ -32,6 +33,7 @@ class ProcessDocumentRequestTest {
       generators = listOf(
         ContextualReportDocxGenerator(
           DocumentSensitivityLabeller(clock = clock),
+          FakeMapImageRenderer(),
         ),
       ),
     ),

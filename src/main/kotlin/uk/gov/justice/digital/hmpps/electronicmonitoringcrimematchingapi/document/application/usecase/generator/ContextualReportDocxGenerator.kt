@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRenderer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.io.ByteArrayOutputStream
@@ -24,6 +25,7 @@ import java.io.ByteArrayOutputStream
 @Component
 class ContextualReportDocxGenerator(
   private val documentSensitivityLabeller: DocumentSensitivityLabeller,
+  private val mapImageRenderer: MapImageRenderer,
 ) : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
 
@@ -76,7 +78,7 @@ class ContextualReportDocxGenerator(
 
     document.mainDocumentPart.addParagraphOfText("")
 
-    ContextualReportExhibits(parameters, config, exhibitTitles).addTo(document)
+    ContextualReportExhibits(parameters, config, exhibitTitles, mapImageRenderer).addTo(document)
 
     DocumentPageCountUpdater().apply(document)
 

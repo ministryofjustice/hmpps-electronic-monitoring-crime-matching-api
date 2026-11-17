@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.FakeMapImageRenderer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentRequestStore
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.InMemoryDocumentStore
 import java.time.Clock
@@ -26,7 +27,7 @@ class ProcessNextDocumentRequestTest {
   private val clock = Clock.fixed(Instant.parse("2026-10-08T12:00:00Z"), ZoneOffset.UTC)
   private val documentRequestStore = InMemoryDocumentRequestStore(clock)
   private val documentStore = InMemoryDocumentStore()
-  private val generator = ContextualReportDocxGenerator(DocumentSensitivityLabeller(clock))
+  private val generator = ContextualReportDocxGenerator(DocumentSensitivityLabeller(clock), FakeMapImageRenderer())
   private val processDocumentRequest = ProcessDocumentRequest(
     generatorRegistry = DocumentGeneratorRegistry(listOf(generator)),
     documentStore = documentStore,

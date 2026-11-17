@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.FakeMapImageRenderer
 import java.io.ByteArrayInputStream
 import java.math.BigInteger
 import java.time.Clock
@@ -42,6 +43,7 @@ class ContextualReportDocxGeneratorTest {
         ZoneOffset.UTC,
       ),
     ),
+    FakeMapImageRenderer(),
   )
 
   private lateinit var result: GeneratedDocument
