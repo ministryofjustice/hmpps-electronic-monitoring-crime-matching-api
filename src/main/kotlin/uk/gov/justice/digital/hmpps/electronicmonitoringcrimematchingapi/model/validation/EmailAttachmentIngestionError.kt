@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.
 
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 
 data class EmailAttachmentIngestionError(
   val rowNumber: Long,
@@ -10,4 +11,5 @@ data class EmailAttachmentIngestionError(
   val errorType: CrimeBatchEmailAttachmentIngestionErrorType,
   val field: String? = null,
   val value: String? = null,
+  val policeForceArea: PoliceForce? = null,
 )
