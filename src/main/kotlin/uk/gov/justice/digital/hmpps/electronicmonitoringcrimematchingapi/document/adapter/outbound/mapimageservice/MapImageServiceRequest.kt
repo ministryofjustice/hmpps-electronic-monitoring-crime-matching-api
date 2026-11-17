@@ -7,7 +7,13 @@ import com.fasterxml.jackson.annotation.JsonInclude
 data class MapImageServiceRequest(
   val viewport: Viewport,
   val layers: List<Layer>,
+  val controls: Controls? = null,
 ) {
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  data class Controls(
+    val compass: Boolean,
+  )
+
   @JsonInclude(JsonInclude.Include.NON_NULL)
   data class Viewport(
     val mode: String = "fit",

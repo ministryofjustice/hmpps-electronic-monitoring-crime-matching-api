@@ -89,6 +89,7 @@ class MapImageServiceAdapter(
       MapImageServiceRequest(
         viewport = MapImageServiceRequest.Viewport(),
         layers = layers,
+        controls = MapImageServiceRequest.Controls(compass = true),
       ),
     )
   }
