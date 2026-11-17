@@ -1,8 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain
 
-// TODO(ACR-1106): Add map layers (e.g. tracks, positions, confidence circles) once required
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
+
 data class MapImageRequest(
-  val centreLatitude: Double,
-  val centreLongitude: Double,
-  val zoom: Int,
+  val positions: List<Position>,
 )

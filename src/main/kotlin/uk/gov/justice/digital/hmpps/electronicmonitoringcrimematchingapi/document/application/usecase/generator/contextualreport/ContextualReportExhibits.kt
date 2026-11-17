@@ -13,11 +13,6 @@ class ContextualReportExhibits(
   private val exhibitTitles: List<String>,
   private val mapImageRenderer: MapImageRenderer,
 ) {
-  companion object {
-    // TODO(ACR-1106): Use a 'fit' viewport once map layers are added
-    private const val SEGMENT_MAP_ZOOM = 16
-  }
-
   fun addTo(document: WordprocessingMLPackage) {
     MapExhibit(
       header = exhibitTitles[0],
@@ -56,12 +51,7 @@ class ContextualReportExhibits(
     }
   }
 
-  // Centres the map on the middle of the segment's bounding box
-  private fun List<Position>.toMapImageRequest() = MapImageRequest(
-    centreLatitude = (minOf { it.latitude } + maxOf { it.latitude }) / 2,
-    centreLongitude = (minOf { it.longitude } + maxOf { it.longitude }) / 2,
-    zoom = SEGMENT_MAP_ZOOM,
-  )
+  private fun List<Position>.toMapImageRequest() = MapImageRequest(positions = this)
 
   private fun loadExplanatoryMap(): ByteArray = requireNotNull(
     javaClass.getResourceAsStream("/contextualreport/explanatory-map.jpg"),
