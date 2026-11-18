@@ -14,7 +14,7 @@ class MapImageServiceAdapter(
     val positions = request.positions
 
     val layers = buildList {
-      if (positions.size > 1) {
+      if (request.includeTrack && positions.size > 1) {
         add(
           MapImageServiceRequest.TrackLayer(
             id = "position-track",
@@ -68,21 +68,23 @@ class MapImageServiceAdapter(
         ),
       )
 
-      add(
-        MapImageServiceRequest.TextLayer(
-          id = "position-sequence-numbers",
-          points = positions.map { position ->
-            MapImageServiceRequest.TextPoint(
-              latitude = position.latitude,
-              longitude = position.longitude,
-              label = position.sequenceNumber.toString(),
-            )
-          },
-          style = MapImageServiceRequest.TextStyle(
-            offset = MapImageServiceRequest.TextOffset(y = 18),
+      if (request.includeSequenceNumbers) {
+        add(
+          MapImageServiceRequest.TextLayer(
+            id = "position-sequence-numbers",
+            points = positions.map { position ->
+              MapImageServiceRequest.TextPoint(
+                latitude = position.latitude,
+                longitude = position.longitude,
+                label = position.sequenceNumber.toString(),
+              )
+            },
+            style = MapImageServiceRequest.TextStyle(
+              offset = MapImageServiceRequest.TextOffset(y = 18),
+            ),
           ),
-        ),
-      )
+        )
+      }
     }
 
     return client.render(

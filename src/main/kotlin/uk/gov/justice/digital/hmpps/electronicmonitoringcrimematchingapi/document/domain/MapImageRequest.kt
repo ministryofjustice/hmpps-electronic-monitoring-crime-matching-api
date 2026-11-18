@@ -4,4 +4,6 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 
 data class MapImageRequest(
   val positions: List<Position>,
+  val includeTrack: Boolean = true,
+  val includeSequenceNumbers: Boolean = true,
 )
