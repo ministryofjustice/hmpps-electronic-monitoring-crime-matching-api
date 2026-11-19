@@ -80,6 +80,7 @@ class CrimeBatchEmailIngestionService(
     crimeReference = error.crimeReference,
     crimeTypeId = error.crimeTypeId,
     errorType = error.errorType,
+    policeForceArea = error.policeForceArea,
     fieldName = error.field,
     value = error.value,
     crimeBatchEmailAttachment = crimeBatchEmailAttachment,

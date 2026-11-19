@@ -180,6 +180,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
           field = "crimeType",
           value = "invalid crime type",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -199,6 +200,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
           field = "batchId",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -220,6 +222,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_FORMAT,
           field = "batchId",
           value = "MPS20250101",
+          policeForceArea = PoliceForce.BEDFORDSHIRE,
         ),
       ),
     )
@@ -253,6 +256,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_BATCH_ID_DATE,
           field = "batchId",
           value = "MPS20253001",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -273,6 +277,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
           field = "crimeReference",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -297,6 +302,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
           field = "crimeReference",
           value = "valid_but_duplicate",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 2,
@@ -305,6 +311,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
           field = "crimeReference",
           value = "valid_but_duplicate",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -329,6 +336,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
           field = "crimeReference",
           value = "valid_but_duplicate",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 2,
@@ -337,6 +345,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
           field = "crimeReference",
           value = "valid_but_duplicate",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -360,6 +369,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_BATCH_ID,
           field = "batchId",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 1,
@@ -368,6 +378,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
           field = "crimeReference",
           value = "valid_but_duplicate",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 2,
@@ -376,6 +387,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.DUPLICATE_CRIME_REFERENCE,
           field = "crimeReference",
           value = "valid_but_duplicate",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -399,6 +411,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
           field = "crimeReference",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 2,
@@ -406,6 +419,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = CrimeType.TOMV,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
           field = "crimeReference",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -430,6 +444,7 @@ class CrimeBatchCsvServiceTest {
           crimeTypeId = null,
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_COLUMN_COUNT,
           field = null,
+          policeForceArea = PoliceForce.UNKNOWN,
         ),
       ),
     )
@@ -451,6 +466,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_FROM_DATE_FORMAT,
           field = "dateFrom",
           value = "",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -472,6 +488,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TO_DATE_FORMAT,
           field = "dateTo",
           value = "",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -496,6 +513,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_TO_AFTER_FROM,
           field = "dateTo",
           value = "20250125083000",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -520,6 +538,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
           field = "dateTo",
           value = "1416h 0m",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -544,6 +563,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.CRIME_DATE_TIME_EXCEEDS_WINDOW,
           field = "dateTo",
           value = "12h 59m",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -570,6 +590,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_POLICE_FORCE,
           field = "policeForce",
           value = "invalid police force",
+          policeForceArea = PoliceForce.UNKNOWN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 1,
@@ -578,6 +599,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
           field = "crimeType",
           value = "invalid crime type",
+          policeForceArea = PoliceForce.UNKNOWN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 1,
@@ -586,6 +608,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_FROM_DATE_FORMAT,
           field = "dateFrom",
           value = "",
+          policeForceArea = PoliceForce.UNKNOWN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 1,
@@ -594,6 +617,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TO_DATE_FORMAT,
           field = "dateTo",
           value = "",
+          policeForceArea = PoliceForce.UNKNOWN,
         ),
       ),
     )
@@ -619,6 +643,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_CRIME_TYPE,
           field = "crimeType",
           value = "invalid",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
         EmailAttachmentIngestionError(
           rowNumber = 3,
@@ -627,6 +652,7 @@ class CrimeBatchCsvServiceTest {
           errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_FROM_DATE_FORMAT,
           field = "dateFrom",
           value = "invalid",
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )
@@ -646,6 +672,7 @@ class CrimeBatchCsvServiceTest {
         crimeTypeId = CrimeType.TOMV,
         errorType = CrimeBatchEmailAttachmentIngestionErrorType.MULTIPLE_LOCATION_DATA_TYPES,
         field = "easting",
+        policeForceArea = PoliceForce.METROPOLITAN,
       ),
     )
     assertThat(parseResult.recordCount).isEqualTo(1)
@@ -674,6 +701,7 @@ class CrimeBatchCsvServiceTest {
           errorType = errorType,
           field = field,
           value = value,
+          policeForceArea = PoliceForce.METROPOLITAN,
         ),
       ),
     )

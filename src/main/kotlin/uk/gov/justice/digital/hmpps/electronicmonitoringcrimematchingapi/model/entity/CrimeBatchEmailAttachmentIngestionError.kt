@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.util.UUID
 
 @Entity
@@ -31,6 +32,10 @@ class CrimeBatchEmailAttachmentIngestionError(
 
   @Enumerated(EnumType.STRING)
   val crimeTypeId: CrimeType?,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "police_force_area", nullable = false)
+  val policeForceArea: PoliceForce,
 
   @ManyToOne
   @JoinColumn(name = "crime_batch_email_attachment_id", nullable = false)

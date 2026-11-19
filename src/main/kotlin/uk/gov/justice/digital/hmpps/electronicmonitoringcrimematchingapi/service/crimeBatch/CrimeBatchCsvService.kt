@@ -90,6 +90,7 @@ class CrimeBatchCsvService {
           it,
           validation.field,
           validation.input,
+          policeForce.value ?: PoliceForce.UNKNOWN,
         )
       }
     }
