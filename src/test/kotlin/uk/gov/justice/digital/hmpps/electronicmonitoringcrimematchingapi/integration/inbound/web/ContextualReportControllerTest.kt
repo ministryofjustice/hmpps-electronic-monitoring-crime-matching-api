@@ -75,8 +75,8 @@ class ContextualReportControllerTest : IntegrationTestBase() {
     fun `it should create a contextual report request`() {
       // Given a valid request and existing matched device wearer
       val deviceWearerId = UUID.randomUUID()
-      val start = "2026-08-17T12:00:00Z"
-      val end = "2026-08-18T00:00:00Z"
+      val start = "2025-01-01T00:00:00Z"
+      val end = "2025-01-01T11:00:00Z"
       crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
         withCrime("crime1") {
           withMatchingRun {
@@ -157,7 +157,7 @@ class ContextualReportControllerTest : IntegrationTestBase() {
     fun `it returns a 400 when the report period exceeds 12 hours`() {
       val deviceWearerId = UUID.randomUUID()
       givenMatchedWearer(deviceWearerId)
-      val body = givenCreateContextualReportRequestBody(endTime = "2026-08-19T00:00:01Z")
+      val body = givenCreateContextualReportRequestBody(endTime = "2025-01-02T00:00:01Z")
 
       val response = webTestClient.post()
         .uri("/matched-wearers/$deviceWearerId/contextual-reports")
@@ -171,6 +171,26 @@ class ContextualReportControllerTest : IntegrationTestBase() {
 
       assertThat(response.userMessage)
         .contains("The report time window must not exceed 12 hours")
+    }
+
+    @Test
+    fun `it returns a 400 when the report period does not overlap with the crime window`() {
+      val deviceWearerId = UUID.randomUUID()
+      givenMatchedWearer(deviceWearerId)
+      val body = givenCreateContextualReportRequestBody(startTime = "2026-01-01T00:00:00Z", endTime = "2026-01-01T11:00:00Z")
+
+      val response = webTestClient.post()
+        .uri("/matched-wearers/$deviceWearerId/contextual-reports")
+        .headers(setAuthorisation(roles = listOf(role)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(body)
+        .exchange()
+        .expectStatus().isBadRequest
+        .expectBody<ErrorResponse>()
+        .returnResult().responseBody!!
+
+      assertThat(response.developerMessage)
+        .contains("The report time window must overlap with the crime time window")
     }
 
     @Test
@@ -219,9 +239,10 @@ class ContextualReportControllerTest : IntegrationTestBase() {
   }
 
   private fun givenCreateContextualReportRequestBody(
-    endTime: String = "2026-08-18T00:00:00Z",
+    startTime: String = "2025-01-01T00:00:00Z",
+    endTime: String = "2025-01-01T11:00:00Z",
   ) = mapOf(
-    "startTime" to "2026-08-17T12:00:00Z",
+    "startTime" to startTime,
     "endTime" to endTime,
     "policeForceArea" to "Metropolitan",
     "officerName" to "Police Officer",
