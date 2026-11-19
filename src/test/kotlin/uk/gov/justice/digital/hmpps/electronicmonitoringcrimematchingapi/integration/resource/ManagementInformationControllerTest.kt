@@ -6,11 +6,17 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
 import java.util.UUID
 
 @ActiveProfiles("integration")
@@ -259,6 +265,286 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // Then the second page of matches should be returned
       assertThat(response["data"].size()).isEqualTo(1)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /management-information/failed-crime-submissions")
+  inner class GetFailedCrimeSubmissions {
+    private val path = "/management-information/failed-crime-submissions"
+
+    @Test
+    fun `it should return 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri(path)
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri("$path?policeForce=UNKNOWN")
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it should return 400 if the police force is missing`() {
+      webTestClient.get()
+        .uri(path)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+      strings = [
+        "?policeForce=INVALID",
+        "?policeForce=UNKNOWN&from=invalid",
+        "?policeForce=UNKNOWN&to=invalid",
+      ],
+    )
+    fun `it should return 400 if the request filters are invalid`(query: String) {
+      webTestClient.get()
+        .uri("$path$query")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+    }
+
+    @Test
+    fun `it should return all error types with zero counts when an attachment has no errors`() {
+      // Given an ingestion attempt with no errors exists
+      crimeMatchingFixtures.givenIngestionAttempt {
+        withAttachment()
+      }
+
+      // When we request failed crime submissions
+      val body = webTestClient.get()
+        .uri("$path?policeForce=UNKNOWN")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain a 0 total count and all error types with zero counts
+      assertFailedCrimeSubmissionsResponse(body, total = 0)
+    }
+
+    @Test
+    fun `it should count a row with multiple errors only once`() {
+      // Given one row with multiple errors and another row with one error
+      crimeMatchingFixtures.givenIngestionAttempt {
+        withAttachment(rowCount = 2) {
+          withAttachmentIngestionError(errorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE)
+          withAttachmentIngestionError(errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_TEXT)
+          withAttachmentIngestionError(errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_NUMBER)
+          withAttachmentIngestionError(rowNumber = 2, errorType = CrimeBatchEmailAttachmentIngestionErrorType.INVALID_NUMBER)
+        }
+      }
+
+      // When we request failed crime submissions
+      val body = webTestClient.get()
+        .uri("$path?policeForce=UNKNOWN")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the errors should be aggregated without counting a row more than once
+      assertFailedCrimeSubmissionsResponse(
+        body,
+        total = 2,
+        counts = mapOf(CrimeBatchEmailAttachmentIngestionErrorType.INVALID_NUMBER to 2),
+      )
+    }
+
+    @Test
+    fun `it should count errors independently across attachments`() {
+      // Given three attachments with errors on row one in separate ingestion attempts
+      repeat(3) {
+        crimeMatchingFixtures.givenIngestionAttempt {
+          withAttachment {
+            withAttachmentIngestionError()
+          }
+        }
+      }
+
+      // When we request failed crime submissions
+      val body = webTestClient.get()
+        .uri("$path?policeForce=UNKNOWN")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain a 3 total count and the missing crime reference error with a count of 3
+      assertFailedCrimeSubmissionsResponse(
+        body,
+        total = 3,
+        counts = mapOf(CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE to 3),
+      )
+    }
+
+    @Test
+    fun `it should return counts for every error type when each occurs on a different row`() {
+      // Given a separate failed row for every supported error type
+      crimeMatchingFixtures.givenIngestionAttempt {
+        withAttachment(rowCount = CrimeBatchEmailAttachmentIngestionErrorType.entries.size) {
+          CrimeBatchEmailAttachmentIngestionErrorType.entries.forEachIndexed { index, type ->
+            withAttachmentIngestionError(rowNumber = index.toLong() + 1, errorType = type)
+          }
+        }
+      }
+
+      // When we request failed crime submissions
+      val body = webTestClient.get()
+        .uri("$path?policeForce=UNKNOWN")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain a count of 1 for all errors and a total count matching the possible error types.
+      assertFailedCrimeSubmissionsResponse(
+        body,
+        total = CrimeBatchEmailAttachmentIngestionErrorType.entries.size,
+        counts = CrimeBatchEmailAttachmentIngestionErrorType.entries.associateWith { 1 },
+      )
+    }
+
+    @Test
+    fun `it should only count errors belonging to the requested police force`() {
+      // Given failed rows for different police forces
+      crimeMatchingFixtures.givenIngestionAttempt {
+        withAttachment {
+          withAttachmentIngestionError(policeForceArea = PoliceForce.METROPOLITAN)
+        }
+      }
+      crimeMatchingFixtures.givenIngestionAttempt {
+        withAttachment {
+          withAttachmentIngestionError(policeForceArea = PoliceForce.ESSEX)
+        }
+      }
+
+      // When we request failed crime submissions
+      val body = webTestClient.get()
+        .uri("$path?policeForce=METROPOLITAN")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain a 1 total count with 1 crime reference error count for the selected police force
+      assertFailedCrimeSubmissionsResponse(
+        body,
+        total = 1,
+        counts = mapOf(CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE to 1),
+      )
+    }
+
+    @Test
+    fun `it should return zero counts when only another police force has errors`() {
+      // Given a failed row
+      crimeMatchingFixtures.givenIngestionAttempt {
+        withAttachment {
+          withAttachmentIngestionError(policeForceArea = PoliceForce.ESSEX)
+        }
+      }
+
+      // When we request failed crime submissions for another police force
+      val body = webTestClient.get()
+        .uri("$path?policeForce=METROPOLITAN")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain a 0 total count and all error types with zero counts
+      assertFailedCrimeSubmissionsResponse(body, total = 0)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+      "&from=2025-01-01T00:00:00Z, 3",
+      "&to=2025-01-03T00:00:00Z, 3",
+      "&from=2025-01-01T00:00:00Z&to=2025-01-03T00:00:00Z, 2",
+      "&from=2025-01-04T00:00:00Z, 0",
+    )
+    fun `it should filter by ingestion creation date including from and excluding to`(query: String, expectedCount: Int) {
+      // Given attempts before, at, between and at the end of the requested date range
+      listOf("2024-12-31T00:00:00", "2025-01-01T00:00:00", "2025-01-02T00:00:00", "2025-01-03T00:00:00").forEach { createdAt ->
+        crimeMatchingFixtures.givenIngestionAttempt(createdAt = LocalDateTime.parse(createdAt)) {
+          withAttachment {
+            withAttachmentIngestionError()
+          }
+        }
+      }
+
+      // When we request failed crime submissions
+      val body = webTestClient.get()
+        .uri("$path?policeForce=UNKNOWN$query")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain the expected count of failed rows
+      assertFailedCrimeSubmissionsResponse(
+        body,
+        total = expectedCount,
+        counts = mapOf(CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE to expectedCount),
+      )
+    }
+
+    private fun assertFailedCrimeSubmissionsResponse(
+      body: ByteArray,
+      total: Int,
+      counts: Map<CrimeBatchEmailAttachmentIngestionErrorType, Int> = emptyMap(),
+    ) {
+      val expected = mapOf(
+        "total" to total,
+        "failures" to CrimeBatchEmailAttachmentIngestionErrorType.entries.map { type ->
+          mapOf(
+            "reasonForFailure" to type.message,
+            "failureCount" to (counts[type] ?: 0),
+          )
+        },
+      )
+
+      JSONAssert.assertEquals(
+        objectMapper.writeValueAsString(expected),
+        body.toString(StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
     }
   }
 

@@ -1,0 +1,25 @@
+meta {
+  name: Get failed crime submissions
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/management-information/failed-crime-submissions?from=2026-11-01T00:00:00.000Z&to=2026-11-08T23:59:59.000Z&policeForce=METROPOLITAN
+  body: none
+  auth: bearer
+}
+
+params:query {
+  policeForce: METROPOLITAN
+  from: 2026-11-01T00:00:00.000Z
+  to: 2026-11-08T23:59:59.000Z
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+}

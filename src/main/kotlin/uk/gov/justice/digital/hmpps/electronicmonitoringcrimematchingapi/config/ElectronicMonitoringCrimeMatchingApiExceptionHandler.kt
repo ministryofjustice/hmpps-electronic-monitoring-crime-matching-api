@@ -14,6 +14,7 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.util.ObjectUtils
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
@@ -203,6 +204,19 @@ class ElectronicMonitoringCrimeMatchingApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.error("Endpoint called with the wrong method exception", e) }
+
+  @ExceptionHandler(MissingServletRequestParameterException::class)
+  fun handleMissingServletRequestParameterException(
+    e: MissingServletRequestParameterException,
+  ): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_REQUEST)
+    .body(
+      ErrorResponse(
+        status = BAD_REQUEST,
+        userMessage = "The '${e.parameterName}' query parameter is required.",
+        developerMessage = e.message,
+      ),
+    ).also { log.info("Missing request parameter: {}", e.message) }
 
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
