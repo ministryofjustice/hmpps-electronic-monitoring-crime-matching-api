@@ -1,0 +1,122 @@
+meta {
+  name: Create document request (contextual) - 50 positions
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/document-requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "type": "CONTEXTUAL_REPORT",
+    "parameters": {
+      "additionalInformation": "Contextual report with five position segments (approx. 1.5km start to finish)",
+      "authorisingManager": {
+        "name": "John Smith",
+        "occupation": "AC Hub Manager"
+      },
+      "crime": {
+        "batchId": "AVS20260101",
+        "proximityAlertCreatedAt": "2026-10-01T00:00:00Z",
+        "reference": "123456789",
+        "type": "Robbery"
+      },
+      "deviceWearer": {
+        "address": "456 The Avenue, London, UK, AB12 3CD",
+        "dateOfBirth": "1990-01-01",
+        "emsId": "DEVWR123456",
+        "pncNumber": "PNC123456",
+        "name": "Jane Doe"
+      },
+      "positionSegments": [
+        [
+          { "direction": 55, "gpsDate": "2026-10-01T00:00:00Z", "latitude": 51.50740, "longitude": -0.12780, "precision": 5, "speed": 35, "sequenceNumber": 1 },
+          { "direction": 56, "gpsDate": "2026-10-01T00:00:30Z", "latitude": 51.50755, "longitude": -0.12743, "precision": 5, "speed": 36, "sequenceNumber": 2 },
+          { "direction": 57, "gpsDate": "2026-10-01T00:01:00Z", "latitude": 51.50771, "longitude": -0.12707, "precision": 5, "speed": 37, "sequenceNumber": 3 },
+          { "direction": 58, "gpsDate": "2026-10-01T00:01:30Z", "latitude": 51.50786, "longitude": -0.12670, "precision": 5, "speed": 38, "sequenceNumber": 4 },
+          { "direction": 54, "gpsDate": "2026-10-01T00:02:00Z", "latitude": 51.50801, "longitude": -0.12633, "precision": 5, "speed": 34, "sequenceNumber": 5 },
+          { "direction": 55, "gpsDate": "2026-10-01T00:02:30Z", "latitude": 51.50817, "longitude": -0.12596, "precision": 5, "speed": 35, "sequenceNumber": 6 },
+          { "direction": 56, "gpsDate": "2026-10-01T00:03:00Z", "latitude": 51.50832, "longitude": -0.12560, "precision": 5, "speed": 36, "sequenceNumber": 7 },
+          { "direction": 57, "gpsDate": "2026-10-01T00:03:30Z", "latitude": 51.50847, "longitude": -0.12523, "precision": 5, "speed": 37, "sequenceNumber": 8 },
+          { "direction": 58, "gpsDate": "2026-10-01T00:04:00Z", "latitude": 51.50862, "longitude": -0.12486, "precision": 5, "speed": 38, "sequenceNumber": 9 },
+          { "direction": 54, "gpsDate": "2026-10-01T00:04:30Z", "latitude": 51.50878, "longitude": -0.12449, "precision": 5, "speed": 34, "sequenceNumber": 10 }
+        ],
+        [
+          { "direction": 55, "gpsDate": "2026-10-01T01:00:00Z", "latitude": 51.50893, "longitude": -0.12413, "precision": 5, "speed": 35, "sequenceNumber": 11 },
+          { "direction": 56, "gpsDate": "2026-10-01T01:00:30Z", "latitude": 51.50908, "longitude": -0.12376, "precision": 5, "speed": 36, "sequenceNumber": 12 },
+          { "direction": 57, "gpsDate": "2026-10-01T01:01:00Z", "latitude": 51.50924, "longitude": -0.12339, "precision": 5, "speed": 37, "sequenceNumber": 13 },
+          { "direction": 58, "gpsDate": "2026-10-01T01:01:30Z", "latitude": 51.50939, "longitude": -0.12302, "precision": 5, "speed": 38, "sequenceNumber": 14 },
+          { "direction": 54, "gpsDate": "2026-10-01T01:02:00Z", "latitude": 51.50954, "longitude": -0.12266, "precision": 5, "speed": 34, "sequenceNumber": 15 },
+          { "direction": 55, "gpsDate": "2026-10-01T01:02:30Z", "latitude": 51.50970, "longitude": -0.12229, "precision": 5, "speed": 35, "sequenceNumber": 16 },
+          { "direction": 56, "gpsDate": "2026-10-01T01:03:00Z", "latitude": 51.50985, "longitude": -0.12192, "precision": 5, "speed": 36, "sequenceNumber": 17 },
+          { "direction": 57, "gpsDate": "2026-10-01T01:03:30Z", "latitude": 51.51000, "longitude": -0.12156, "precision": 5, "speed": 37, "sequenceNumber": 18 },
+          { "direction": 58, "gpsDate": "2026-10-01T01:04:00Z", "latitude": 51.51016, "longitude": -0.12119, "precision": 5, "speed": 38, "sequenceNumber": 19 },
+          { "direction": 54, "gpsDate": "2026-10-01T01:04:30Z", "latitude": 51.51031, "longitude": -0.12082, "precision": 5, "speed": 34, "sequenceNumber": 20 }
+        ],
+        [
+          { "direction": 55, "gpsDate": "2026-10-01T02:00:00Z", "latitude": 51.51046, "longitude": -0.12045, "precision": 5, "speed": 35, "sequenceNumber": 21 },
+          { "direction": 56, "gpsDate": "2026-10-01T02:00:30Z", "latitude": 51.51061, "longitude": -0.12009, "precision": 5, "speed": 36, "sequenceNumber": 22 },
+          { "direction": 57, "gpsDate": "2026-10-01T02:01:00Z", "latitude": 51.51077, "longitude": -0.11972, "precision": 5, "speed": 37, "sequenceNumber": 23 },
+          { "direction": 58, "gpsDate": "2026-10-01T02:01:30Z", "latitude": 51.51092, "longitude": -0.11935, "precision": 5, "speed": 38, "sequenceNumber": 24 },
+          { "direction": 54, "gpsDate": "2026-10-01T02:02:00Z", "latitude": 51.51107, "longitude": -0.11898, "precision": 5, "speed": 34, "sequenceNumber": 25 },
+          { "direction": 55, "gpsDate": "2026-10-01T02:02:30Z", "latitude": 51.51123, "longitude": -0.11862, "precision": 5, "speed": 35, "sequenceNumber": 26 },
+          { "direction": 56, "gpsDate": "2026-10-01T02:03:00Z", "latitude": 51.51138, "longitude": -0.11825, "precision": 5, "speed": 36, "sequenceNumber": 27 },
+          { "direction": 57, "gpsDate": "2026-10-01T02:03:30Z", "latitude": 51.51153, "longitude": -0.11788, "precision": 5, "speed": 37, "sequenceNumber": 28 },
+          { "direction": 58, "gpsDate": "2026-10-01T02:04:00Z", "latitude": 51.51169, "longitude": -0.11751, "precision": 5, "speed": 38, "sequenceNumber": 29 },
+          { "direction": 54, "gpsDate": "2026-10-01T02:04:30Z", "latitude": 51.51184, "longitude": -0.11715, "precision": 5, "speed": 34, "sequenceNumber": 30 }
+        ],
+        [
+          { "direction": 55, "gpsDate": "2026-10-01T03:00:00Z", "latitude": 51.51199, "longitude": -0.11678, "precision": 5, "speed": 35, "sequenceNumber": 31 },
+          { "direction": 56, "gpsDate": "2026-10-01T03:00:30Z", "latitude": 51.51214, "longitude": -0.11641, "precision": 5, "speed": 36, "sequenceNumber": 32 },
+          { "direction": 57, "gpsDate": "2026-10-01T03:01:00Z", "latitude": 51.51230, "longitude": -0.11604, "precision": 5, "speed": 37, "sequenceNumber": 33 },
+          { "direction": 58, "gpsDate": "2026-10-01T03:01:30Z", "latitude": 51.51245, "longitude": -0.11568, "precision": 5, "speed": 38, "sequenceNumber": 34 },
+          { "direction": 54, "gpsDate": "2026-10-01T03:02:00Z", "latitude": 51.51260, "longitude": -0.11531, "precision": 5, "speed": 34, "sequenceNumber": 35 },
+          { "direction": 55, "gpsDate": "2026-10-01T03:02:30Z", "latitude": 51.51276, "longitude": -0.11494, "precision": 5, "speed": 35, "sequenceNumber": 36 },
+          { "direction": 56, "gpsDate": "2026-10-01T03:03:00Z", "latitude": 51.51291, "longitude": -0.11458, "precision": 5, "speed": 36, "sequenceNumber": 37 },
+          { "direction": 57, "gpsDate": "2026-10-01T03:03:30Z", "latitude": 51.51306, "longitude": -0.11421, "precision": 5, "speed": 37, "sequenceNumber": 38 },
+          { "direction": 58, "gpsDate": "2026-10-01T03:04:00Z", "latitude": 51.51322, "longitude": -0.11384, "precision": 5, "speed": 38, "sequenceNumber": 39 },
+          { "direction": 54, "gpsDate": "2026-10-01T03:04:30Z", "latitude": 51.51337, "longitude": -0.11347, "precision": 5, "speed": 34, "sequenceNumber": 40 }
+        ],
+        [
+          { "direction": 55, "gpsDate": "2026-10-01T04:00:00Z", "latitude": 51.51352, "longitude": -0.11311, "precision": 5, "speed": 35, "sequenceNumber": 41 },
+          { "direction": 56, "gpsDate": "2026-10-01T04:00:30Z", "latitude": 51.51368, "longitude": -0.11274, "precision": 5, "speed": 36, "sequenceNumber": 42 },
+          { "direction": 57, "gpsDate": "2026-10-01T04:01:00Z", "latitude": 51.51383, "longitude": -0.11237, "precision": 5, "speed": 37, "sequenceNumber": 43 },
+          { "direction": 58, "gpsDate": "2026-10-01T04:01:30Z", "latitude": 51.51398, "longitude": -0.11200, "precision": 5, "speed": 38, "sequenceNumber": 44 },
+          { "direction": 54, "gpsDate": "2026-10-01T04:02:00Z", "latitude": 51.51413, "longitude": -0.11164, "precision": 5, "speed": 34, "sequenceNumber": 45 },
+          { "direction": 55, "gpsDate": "2026-10-01T04:02:30Z", "latitude": 51.51429, "longitude": -0.11127, "precision": 5, "speed": 35, "sequenceNumber": 46 },
+          { "direction": 56, "gpsDate": "2026-10-01T04:03:00Z", "latitude": 51.51444, "longitude": -0.11090, "precision": 5, "speed": 36, "sequenceNumber": 47 },
+          { "direction": 57, "gpsDate": "2026-10-01T04:03:30Z", "latitude": 51.51459, "longitude": -0.11053, "precision": 5, "speed": 37, "sequenceNumber": 48 },
+          { "direction": 58, "gpsDate": "2026-10-01T04:04:00Z", "latitude": 51.51475, "longitude": -0.11017, "precision": 5, "speed": 38, "sequenceNumber": 49 },
+          { "direction": 54, "gpsDate": "2026-10-01T04:04:30Z", "latitude": 51.51490, "longitude": -0.10980, "precision": 5, "speed": 34, "sequenceNumber": 50 }
+        ]
+      ],
+      "reportPeriod": {
+        "start": "2026-10-01T00:00:00Z",
+        "end": "2026-10-01T04:04:30Z"
+      },
+      "reportRequest": {
+        "requestedAt": "2026-10-03T11:12:13Z",
+        "requestedBy": "Police Officer",
+        "policeForceArea": "Metropolitan"
+      }
+    }
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body: isObject
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("documentRequestId", body.id);
+}
