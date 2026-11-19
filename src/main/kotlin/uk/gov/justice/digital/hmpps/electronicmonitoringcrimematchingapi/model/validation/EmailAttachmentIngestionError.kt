@@ -11,5 +11,5 @@ data class EmailAttachmentIngestionError(
   val errorType: CrimeBatchEmailAttachmentIngestionErrorType,
   val field: String? = null,
   val value: String? = null,
-  val policeForceArea: PoliceForce? = null,
+  val policeForceArea: PoliceForce = PoliceForce.UNKNOWN,
 )

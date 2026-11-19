@@ -34,8 +34,8 @@ class CrimeBatchEmailAttachmentIngestionError(
   val crimeTypeId: CrimeType?,
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "police_force_area")
-  val policeForceArea: PoliceForce? = null,
+  @Column(name = "police_force_area", nullable = false)
+  val policeForceArea: PoliceForce,
 
   @ManyToOne
   @JoinColumn(name = "crime_batch_email_attachment_id", nullable = false)

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 
 class CrimeBatchEmailAttachmentContext(
   private val crimeBatchEmailAttachment: CrimeBatchEmailAttachment,
@@ -21,6 +22,7 @@ class CrimeBatchEmailAttachmentContext(
         errorType = errorType,
         crimeTypeId = null,
         crimeBatchEmailAttachment = crimeBatchEmailAttachment,
+        policeForceArea = PoliceForce.UNKNOWN,
       ),
     )
   }
