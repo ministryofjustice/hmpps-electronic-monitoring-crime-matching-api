@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
+import org.docx4j.jaxb.Context
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import org.docx4j.wml.STBrType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRenderer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
@@ -13,6 +15,8 @@ class ContextualReportExhibits(
   private val exhibitTitles: List<String>,
   private val mapImageRenderer: MapImageRenderer,
 ) {
+  private val factory = Context.getWmlObjectFactory()
+
   fun addTo(document: WordprocessingMLPackage) {
     MapExhibit(
       header = exhibitTitles[0],
@@ -29,7 +33,7 @@ class ContextualReportExhibits(
       config = config,
     ).addTo(document)
 
-    document.mainDocumentPart.addParagraphOfText("")
+    addPageBreak(document)
 
     MapExhibit(
       header = exhibitTitles[2],
@@ -49,13 +53,15 @@ class ContextualReportExhibits(
       val mapExhibitTitleIndex = 3 + index * 2
       val tableExhibitTitleIndex = mapExhibitTitleIndex + 1
 
+      addPageBreak(document)
+
       MapExhibit(
         header = exhibitTitles[mapExhibitTitleIndex],
         image = mapImageRenderer.render(MapImageRequest(positions = positions)),
         config = config,
       ).addTo(document)
 
-      document.mainDocumentPart.addParagraphOfText("")
+      addPageBreak(document)
 
       PositionTableExhibit(
         header = exhibitTitles[tableExhibitTitleIndex],
@@ -63,6 +69,18 @@ class ContextualReportExhibits(
         config = config,
       ).addTo(document)
     }
+  }
+
+  private fun addPageBreak(document: WordprocessingMLPackage) {
+    document.mainDocumentPart.addObject(
+      factory.createP().apply {
+        content.add(
+          factory.createR().apply {
+            content.add(factory.createBr().apply { type = STBrType.PAGE })
+          },
+        )
+      },
+    )
   }
 
   private fun loadExplanatoryMap(): ByteArray = requireNotNull(
