@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.gnssGaps
 import java.time.Instant
 
 class ContextualReportExhibits(
@@ -66,6 +67,11 @@ class ContextualReportExhibits(
       PositionTableExhibit(
         header = exhibitTitles[tableExhibitTitleIndex],
         positions = positions,
+        gaps = gnssGaps(
+          positions = positions,
+          previousTime = parameters.positionSegments.getOrNull(index - 1)?.last()?.gpsDate ?: parameters.reportPeriod.start,
+          nextTime = parameters.positionSegments.getOrNull(index + 1)?.first()?.gpsDate ?: parameters.reportPeriod.end,
+        ),
         config = config,
       ).addTo(document)
     }

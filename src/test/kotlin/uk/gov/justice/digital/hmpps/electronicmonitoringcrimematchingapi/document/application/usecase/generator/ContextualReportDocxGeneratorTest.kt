@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.assertj.core.api.Assertions.assertThat
 import org.docx4j.XmlUtils
 import org.docx4j.dml.wordprocessingDrawing.Inline
+import org.docx4j.model.pagination.Paginate
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.openpackaging.parts.PartName
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart
@@ -21,10 +22,14 @@ import org.docx4j.wml.Tr
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportExhibitTitles
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportExhibits
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.GeneratedDocument
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.SensitivityLabel
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ReportPeriod
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.FakeMapImageRenderer
 import java.io.ByteArrayInputStream
@@ -393,7 +398,7 @@ class ContextualReportDocxGeneratorTest {
 
     assertThat(declaration.text()).isEqualTo(
       "Age: Over 18" +
-        "This statement consisting of 7 pages, signed by me, " +
+        "This statement consisting of ${Paginate.compute(document, null).pageCount} pages, signed by me, " +
         "is true to the best of my knowledge and belief. I make it knowing that, if it is given in evidence, " +
         "I shall be liable to prosecution if I have willfully stated in it, anything that I know to be false or " +
         "do not believe to be true." +
@@ -595,7 +600,7 @@ class ContextualReportDocxGeneratorTest {
     val positionTable = content.content.unwrapped<Tbl>().single()
 
     val positionRows = positionTable.content.unwrapped<Tr>()
-    assertThat(positionRows).hasSize(2)
+    assertThat(positionRows).hasSize(3)
 
     // And the column headings should be correct
     val headingCells = positionRows[0].content.unwrapped<Tc>()
@@ -625,6 +630,60 @@ class ContextualReportDocxGeneratorTest {
       "10",
       "90",
       "1",
+    )
+    assertThat(positionRows.last().content.unwrapped<Tc>().single().text())
+      .isEqualTo("No GNSS data between 01/10/2026 01:00 and 02/10/2026 05:05")
+  }
+
+  @Test
+  fun `it should have gap notices that span every column and appear in order in the affected segment tables`() {
+    val period = ReportPeriod(Instant.parse("2026-09-30T22:58:00Z"), Instant.parse("2026-09-30T23:10:00Z"))
+    val fixture = givenContextualReportRequestParameters(reportPeriod = period)
+    val position = fixture.positionSegments.single().single()
+    val first = position.copy(gpsDate = period.start.plusSeconds(120))
+    val second = first.copy(gpsDate = first.gpsDate.plusSeconds(60), sequenceNumber = 2)
+    val third = second.copy(gpsDate = second.gpsDate.plusSeconds(60).plusMillis(1), sequenceNumber = 3)
+    val fourth = first.copy(gpsDate = period.end.minusSeconds(300), sequenceNumber = 4)
+    val parameters = fixture.copy(positionSegments = listOf(listOf(first, second, third), listOf(fourth)))
+    val config = ContextualReportConfig()
+    val exhibits = WordprocessingMLPackage.createPackage()
+    val renderer = FakeMapImageRenderer()
+    ContextualReportExhibits(parameters, config, ContextualReportExhibitTitles(parameters, config).titles, renderer)
+      .addTo(exhibits)
+
+    assertThat(renderer.requests.filter { it.includeTrack }.map { it.positions })
+      .containsExactlyElementsOf(parameters.positionSegments)
+
+    fun dataRows(table: Tbl): List<String> {
+      val contentCell = table.content.unwrapped<Tr>().last().content.unwrapped<Tc>().single()
+      val positionTable = contentCell.content.unwrapped<Tbl>().single()
+      return positionTable.content.unwrapped<Tr>().drop(1).map { row ->
+        val cells = row.content.unwrapped<Tc>()
+        if (cells.size == 1) {
+          val gapCell = cells.single()
+          assertThat(gapCell.tcPr.gridSpan.`val`).isEqualTo(7.toBigInteger())
+          assertThat(gapCell.content.unwrapped<P>().single().pPr.jc.`val`).isEqualTo(JcEnumeration.CENTER)
+        } else {
+          assertThat(cells).hasSize(7)
+        }
+        cells.last().text() // Either the gap notice or the recorded sequence number.
+      }
+    }
+
+    val exhibitTables = exhibits.mainDocumentPart.content.unwrapped<Tbl>()
+    val betweenSegments = "No GNSS data between 01/10/2026 00:02 and 01/10/2026 00:05"
+    assertThat(dataRows(exhibitTables[4])).containsExactly(
+      "No GNSS data between 30/09/2026 23:58 and 01/10/2026 00:00",
+      "1",
+      "2",
+      "No GNSS data between 01/10/2026 00:01 and 01/10/2026 00:02",
+      "3",
+      betweenSegments,
+    )
+    assertThat(dataRows(exhibitTables[6])).containsExactly(
+      betweenSegments,
+      "4",
+      "No GNSS data between 01/10/2026 00:05 and 01/10/2026 00:10",
     )
   }
 
