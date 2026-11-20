@@ -636,7 +636,8 @@ class ContextualReportDocxGeneratorTest {
   }
 
   @Test
-  fun `it should have gap notices that span every column and appear in order in the affected segment tables`() {
+  fun `it should have Missing GNSS gap notices that span every column and appear in order in the affected segment tables`() {
+    // Given two position segments with gaps in every possible location; at the beginning of the report window, between positions, between segments and at the end of the report window
     val period = ReportPeriod(Instant.parse("2026-09-30T22:58:00Z"), Instant.parse("2026-09-30T23:10:00Z"))
     val fixture = givenContextualReportRequestParameters(reportPeriod = period)
     val position = fixture.positionSegments.single().single()
@@ -648,13 +649,16 @@ class ContextualReportDocxGeneratorTest {
     val config = ContextualReportConfig()
     val exhibits = WordprocessingMLPackage.createPackage()
     val renderer = FakeMapImageRenderer()
+
+    // When the exhibits are generated
     ContextualReportExhibits(parameters, config, ContextualReportExhibitTitles(parameters, config).titles, renderer)
       .addTo(exhibits)
 
+    // Then a map image should be requested for every segment and each one should include tracks
     assertThat(renderer.requests.filter { it.includeTrack }.map { it.positions })
       .containsExactlyElementsOf(parameters.positionSegments)
 
-    fun dataRows(table: Tbl): List<String> {
+    fun unwrapTableRows(table: Tbl): List<String> {
       val contentCell = table.content.unwrapped<Tr>().last().content.unwrapped<Tc>().single()
       val positionTable = contentCell.content.unwrapped<Tbl>().single()
       return positionTable.content.unwrapped<Tr>().drop(1).map { row ->
@@ -670,9 +674,10 @@ class ContextualReportDocxGeneratorTest {
       }
     }
 
+    // And the table contains the expected "Missing GNSS" gap notices
     val exhibitTables = exhibits.mainDocumentPart.content.unwrapped<Tbl>()
     val betweenSegments = "No GNSS data between 01/10/2026 00:02 and 01/10/2026 00:05"
-    assertThat(dataRows(exhibitTables[4])).containsExactly(
+    assertThat(unwrapTableRows(exhibitTables[4])).containsExactly(
       "No GNSS data between 30/09/2026 23:58 and 01/10/2026 00:00",
       "1",
       "2",
@@ -680,7 +685,7 @@ class ContextualReportDocxGeneratorTest {
       "3",
       betweenSegments,
     )
-    assertThat(dataRows(exhibitTables[6])).containsExactly(
+    assertThat(unwrapTableRows(exhibitTables[6])).containsExactly(
       betweenSegments,
       "4",
       "No GNSS data between 01/10/2026 00:05 and 01/10/2026 00:10",
