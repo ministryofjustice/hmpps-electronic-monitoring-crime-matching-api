@@ -8,6 +8,7 @@ private val MAX_POSITION_INTERVAL = Duration.ofMinutes(1)
 data class GnssGap(val start: Instant, val end: Instant)
 
 /** Gaps keyed by the index of the following position, or by size for a trailing gap. */
+/** For example, if positions[3] is 10:00 and positions[4] is 10:02, then the gap will be keyed by 4. */
 fun gnssGaps(
   positions: List<Position>,
   previousTime: Instant? = null,

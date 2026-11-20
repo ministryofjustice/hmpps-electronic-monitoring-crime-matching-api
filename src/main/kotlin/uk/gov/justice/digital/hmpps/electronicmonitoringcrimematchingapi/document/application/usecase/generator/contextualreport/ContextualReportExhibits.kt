@@ -69,13 +69,16 @@ class ContextualReportExhibits(
         positions = positions,
         gaps = gnssGaps(
           positions = positions,
-          previousTime = parameters.positionSegments.getOrNull(index - 1)?.last()?.gpsDate ?: parameters.reportPeriod.start,
-          nextTime = parameters.positionSegments.getOrNull(index + 1)?.first()?.gpsDate ?: parameters.reportPeriod.end,
+          previousTime = getTimeOfLastPositionInPreviousSegment(index) ?: parameters.reportPeriod.start,
+          nextTime = getTimeOfFirstPositionInNextSegment(index) ?: parameters.reportPeriod.end,
         ),
         config = config,
       ).addTo(document)
     }
   }
+
+  private fun getTimeOfLastPositionInPreviousSegment(indexOfCurrentSegment: Int): Instant? = parameters.positionSegments.getOrNull(indexOfCurrentSegment - 1)?.last()?.gpsDate
+  private fun getTimeOfFirstPositionInNextSegment(indexOfCurrentSegment: Int): Instant? = parameters.positionSegments.getOrNull(indexOfCurrentSegment + 1)?.first()?.gpsDate
 
   private fun addPageBreak(document: WordprocessingMLPackage) {
     document.mainDocumentPart.addObject(
