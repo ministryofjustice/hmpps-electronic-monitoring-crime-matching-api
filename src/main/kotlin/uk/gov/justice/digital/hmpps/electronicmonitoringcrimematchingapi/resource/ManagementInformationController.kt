@@ -66,13 +66,20 @@ class ManagementInformationController(
     from: Instant? = null,
     @RequestParam(value = "to", required = false)
     to: Instant? = null,
-  ): ResponseEntity<FailedCrimeSubmissionResponse> {
+  ): ResponseEntity<PagedResponse<FailedCrimeSubmissionResponse>> {
     val results = managementInformationService.getFailedCrimeSubmissions(
       policeForce = policeForce,
       from = from,
       to = to,
     )
 
-    return ResponseEntity.ok(failedCrimeSubmissionMapper.toDto(results))
+    return ResponseEntity.ok().body(
+      PagedResponse(
+        listOf(failedCrimeSubmissionMapper.toDto(results)),
+        pageCount = 1,
+        pageNumber = 0,
+        pageSize = results.size,
+      ),
+    )
   }
 }

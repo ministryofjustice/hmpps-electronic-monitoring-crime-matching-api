@@ -540,8 +540,15 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
         },
       )
 
+      val expectedResponse = mapOf(
+        "data" to listOf(expected),
+        "pageCount" to 1,
+        "pageNumber" to 0,
+        "pageSize" to counts.values.count { it > 0 },
+      )
+
       JSONAssert.assertEquals(
-        objectMapper.writeValueAsString(expected),
+        objectMapper.writeValueAsString(expectedResponse),
         body.toString(StandardCharsets.UTF_8),
         JSONCompareMode.STRICT,
       )
