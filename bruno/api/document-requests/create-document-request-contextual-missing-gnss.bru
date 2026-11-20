@@ -1,0 +1,90 @@
+meta {
+  name: Create document request (contextual - missing GNSS)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/document-requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "type": "CONTEXTUAL_REPORT",
+    "parameters": {
+      "additionalInformation": "Example report for checking missing GNSS positions.",
+      "authorisingManager": {
+        "name": "John Smith",
+        "occupation": "AC Hub Manager"
+      },
+      "crime": {
+        "batchId": "AVS20260115",
+        "proximityAlertCreatedAt": "2026-01-15T11:00:00Z",
+        "reference": "123456789",
+        "type": "Robbery"
+      },
+      "deviceWearer": {
+        "address": "456 The Avenue, London, UK, AB12 3CD",
+        "dateOfBirth": "1990-01-01",
+        "emsId": "DEVWR123456",
+        "pncNumber": "PNC123456",
+        "name": "Jane Doe"
+      },
+      "positionSegments": [
+        [
+          { "sequenceNumber": 1, "gpsDate": "2026-01-15T10:03:00Z", "latitude": 51.50740, "longitude": -0.12780, "precision": 5, "speed": 34, "direction": 90 },
+          { "sequenceNumber": 2, "gpsDate": "2026-01-15T10:04:00Z", "latitude": 51.50740, "longitude": -0.12700, "precision": 5, "speed": 34, "direction": 90 }
+        ],
+        [
+          { "sequenceNumber": 3, "gpsDate": "2026-01-15T10:05:00Z", "latitude": 51.50740, "longitude": -0.12620, "precision": 5, "speed": 34, "direction": 90 },
+          { "sequenceNumber": 4, "gpsDate": "2026-01-15T10:06:00Z", "latitude": 51.50790, "longitude": -0.12620, "precision": 5, "speed": 34, "direction": 0 },
+          { "sequenceNumber": 5, "gpsDate": "2026-01-15T10:07:00Z", "latitude": 51.50840, "longitude": -0.12620, "precision": 5, "speed": 34, "direction": 0 }
+        ],
+        [
+          { "sequenceNumber": 6, "gpsDate": "2026-01-15T10:08:00Z", "latitude": 51.50890, "longitude": -0.12620, "precision": 5, "speed": 34, "direction": 0 },
+          { "sequenceNumber": 7, "gpsDate": "2026-01-15T10:11:00Z", "latitude": 51.50890, "longitude": -0.12380, "precision": 5, "speed": 34, "direction": 90 },
+          { "sequenceNumber": 8, "gpsDate": "2026-01-15T10:12:00Z", "latitude": 51.50940, "longitude": -0.12380, "precision": 5, "speed": 34, "direction": 0 },
+          { "sequenceNumber": 9, "gpsDate": "2026-01-15T10:16:00Z", "latitude": 51.50940, "longitude": -0.12060, "precision": 5, "speed": 34, "direction": 90 }
+        ],
+        [
+          { "sequenceNumber": 10, "gpsDate": "2026-01-15T10:20:00Z", "latitude": 51.51140, "longitude": -0.12060, "precision": 5, "speed": 34, "direction": 0 },
+          { "sequenceNumber": 11, "gpsDate": "2026-01-15T10:21:00Z", "latitude": 51.51190, "longitude": -0.12060, "precision": 5, "speed": 34, "direction": 0 }
+        ]
+      ],
+      "reportPeriod": {
+        "start": "2026-01-15T10:00:00Z",
+        "end": "2026-01-15T10:25:00Z"
+      },
+      "reportRequest": {
+        "requestedAt": "2026-01-16T09:00:00Z",
+        "requestedBy": "Police Officer",
+        "policeForceArea": "Metropolitan"
+      }
+    }
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body.id: isString
+}
+
+script:post-response {
+  bru.setVar("documentRequestId", res.getBody().id);
+}
+
+docs {
+  Inspect the generated document for 15/01/2026 (London time). Expect six full-width gap rows with centred text, but only two dashed lines:
+
+  - Segment 1: the first data row says "No GNSS data between 15/01/2026 10:00 and 15/01/2026 10:03". No dashed line.
+  - Segment 2: positions 3, 4 and 5 are exactly one minute apart. The track is solid and the table has no gap rows.
+  - Segment 3: positions 6 to 7 (10:08 to 10:11) and 8 to 9 (10:12 to 10:16) each have a dashed line and a gap row between the positions. The line from 7 to 8 is solid.
+  - Between segments 3 and 4: the 10:16 to 10:20 notice is the last row of table 3 and the first data row of table 4. No line connects positions 9 and 10.
+  - Segment 4: the last row says "No GNSS data between 15/01/2026 10:21 and 15/01/2026 10:25". No dashed line.
+}
