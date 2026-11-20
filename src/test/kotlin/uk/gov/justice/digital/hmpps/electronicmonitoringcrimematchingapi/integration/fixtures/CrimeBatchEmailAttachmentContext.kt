@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integr
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachment
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeBatchEmailAttachmentIngestionError
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 
 class CrimeBatchEmailAttachmentContext(
@@ -14,6 +15,7 @@ class CrimeBatchEmailAttachmentContext(
     errorType: CrimeBatchEmailAttachmentIngestionErrorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
     rowNumber: Long = 1,
     policeForceArea: PoliceForce = PoliceForce.UNKNOWN,
+    crimeType: CrimeType? = null,
   ) {
     crimeBatchEmailAttachment.crimeBatchEmailAttachmentIngestionErrors.add(
       CrimeBatchEmailAttachmentIngestionError(
@@ -22,7 +24,7 @@ class CrimeBatchEmailAttachmentContext(
         fieldName = fieldName,
         value = null,
         errorType = errorType,
-        crimeTypeId = null,
+        crimeTypeId = crimeType,
         crimeBatchEmailAttachment = crimeBatchEmailAttachment,
         policeForceArea = policeForceArea,
       ),

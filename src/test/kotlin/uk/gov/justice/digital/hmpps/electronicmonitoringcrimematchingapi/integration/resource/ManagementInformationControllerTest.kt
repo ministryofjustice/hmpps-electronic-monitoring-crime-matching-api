@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.resource
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
@@ -14,6 +15,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeBatchEmailAttachmentIngestionErrorType
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -552,6 +554,158 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
         body.toString(StandardCharsets.UTF_8),
         JSONCompareMode.STRICT,
       )
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /management-information/crimes-submission-summary")
+  inner class GetCrimeSubmissionSummary {
+    private val path = "/management-information/crimes-submission-summary"
+
+    @Test
+    fun `it should return 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri(path)
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri(path)
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
+    fun `it returns every crime type and Missing when no submissions exist`() {
+      val response = getSummary()
+
+      val expectedTypes = CrimeType.entries.map { it.value } + "Missing"
+
+      assertThat(response["data"].map { it["crimeType"].asText() })
+        .isEqualTo(expectedTypes)
+
+      response["data"].forEachIndexed { index, it ->
+        assertCounts(it, expectedTypes[index], 0, 0, 0, 0.0)
+      }
+
+      assertThat(response["pageCount"].asInt()).isEqualTo(1)
+      assertThat(response["pageNumber"].asInt()).isEqualTo(0)
+      assertThat(response["pageSize"].asInt()).isEqualTo(expectedTypes.size)
+    }
+
+    @Test
+    fun `it returns zero counts when the selected period has no submissions`() {
+      // Given an ingestion attempt with a batch created before the requested period
+      crimeMatchingFixtures.givenBatch(ingestionCreatedAt = LocalDateTime.parse("2025-01-01T00:00:00")) {
+        withCrime("crime1") {
+        }
+      }
+
+      // And another ingestion attempt with a batch created after the requested period
+      crimeMatchingFixtures.givenBatch(ingestionCreatedAt = LocalDateTime.parse("2025-03-01T00:00:00")) {
+        withCrime("crime1") {}
+      }
+
+      // When we request a summary for a period with no submissions
+      val response = getSummary(
+        from = "2025-02-01T00:00:00Z",
+        to = "2025-02-28T00:00:00Z",
+      )
+
+      val expectedTypes = CrimeType.entries.map { it.value } + "Missing"
+
+      // Then the response should contain zero counts for all crime types
+      response["data"].forEachIndexed { index, nodes ->
+        assertCounts(nodes, expectedTypes[index], 0, 0, 0, 0.0)
+      }
+    }
+
+    @Test
+    fun `it counts ingested crime within the selected period`() {
+      // Given an ingestion attempt with a batch with ingested crimes
+      crimeMatchingFixtures.givenBatch(ingestionCreatedAt = LocalDateTime.parse("2025-01-02T00:00:00")) {
+        withCrime("crime1", crimeType = CrimeType.AB) {}
+        withCrime("crime1", crimeType = CrimeType.BIAD) {}
+        withCrime("crime1", crimeType = CrimeType.BOTD) {}
+        withCrime("crime1", crimeType = CrimeType.RB) {}
+        withCrime("crime1", crimeType = CrimeType.RB) {}
+        withCrime("crime1", crimeType = CrimeType.TFMV) {}
+        withCrime("crime1", crimeType = CrimeType.TFP) {}
+        withCrime("crime1", crimeType = CrimeType.TOMV) {}
+      }
+
+      // And an ingestion attempt with a batch with some ingested crimes
+      crimeMatchingFixtures.givenBatch(ingestionCreatedAt = LocalDateTime.parse("2025-01-02T00:00:00")) {
+        withCrime("crime1", crimeType = CrimeType.BIAD) {}
+      }
+
+      // And an ingestion attempt with some failed crimes
+      crimeMatchingFixtures.givenIngestionAttempt {
+        withAttachment {
+          withAttachmentIngestionError()
+          withAttachmentIngestionError(crimeType = CrimeType.AB)
+        }
+      }
+
+      // When we request a summary
+      val response = getSummary(
+        from = "2025-01-01T00:00:00Z",
+        to = "2025-01-31T00:00:00Z",
+      )
+
+      // Then the response should contain zero counts for all crime types
+      assertCounts(response["data"][0], "Aggravated Burglary", 2, 1, 1, 50.0)
+      assertCounts(response["data"][1], "Burglary in a dwelling", 2, 2, 0, 0.0)
+      assertCounts(response["data"][2], "Burglary in a building other than a dwelling", 1, 1, 0, 0.0)
+      assertCounts(response["data"][3], "Robbery", 2, 2, 0, 0.0)
+      assertCounts(response["data"][4], "Theft from vehicle", 1, 1, 0, 0.0)
+      assertCounts(response["data"][5], "Theft from the person of another", 1, 1, 0, 0.0)
+      assertCounts(response["data"][6], "Theft of a vehicle", 1, 1, 0, 0.0)
+      assertCounts(response["data"][7], "Missing", 1, 0, 1, 100.0)
+    }
+
+    private fun getSummary(
+      from: String? = null,
+      to: String? = null,
+      policeForceArea: String? = null,
+    ): JsonNode {
+      val body = webTestClient.get()
+        .uri { builder ->
+          builder.path(path)
+          from?.let { builder.queryParam("from", it) }
+          to?.let { builder.queryParam("to", it) }
+          policeForceArea?.let { builder.queryParam("policeForceArea", it) }
+          builder.build()
+        }
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      return objectMapper.readTree(body)
+    }
+
+    private fun assertCounts(
+      row: JsonNode,
+      crimeType: String,
+      submitted: Long,
+      ingested: Long,
+      failed: Long,
+      percentage: Double,
+    ) {
+      assertThat(row["crimeType"].asText()).isEqualTo(crimeType)
+      assertThat(row["submitted"].asLong()).isEqualTo(submitted)
+      assertThat(row["ingested"].asLong()).isEqualTo(ingested)
+      assertThat(row["failed"].asLong()).isEqualTo(failed)
+      assertThat(row["notIngestedPercentage"].asDouble()).isEqualTo(percentage)
     }
   }
 
