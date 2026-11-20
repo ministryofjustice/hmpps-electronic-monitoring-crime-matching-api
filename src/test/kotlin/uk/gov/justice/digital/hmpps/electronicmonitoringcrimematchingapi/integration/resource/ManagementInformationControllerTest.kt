@@ -285,7 +285,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a 403 if the client does not have a valid role`() {
       webTestClient.get()
-        .uri("$path?policeForce=UNKNOWN")
+        .uri("$path?policeForceArea=UNKNOWN")
         .headers(setAuthorisation(roles = listOf()))
         .exchange()
         .expectStatus()
@@ -305,9 +305,9 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
     @ParameterizedTest
     @ValueSource(
       strings = [
-        "?policeForce=INVALID",
-        "?policeForce=UNKNOWN&from=invalid",
-        "?policeForce=UNKNOWN&to=invalid",
+        "?policeForceArea=INVALID",
+        "?policeForceArea=UNKNOWN&from=invalid",
+        "?policeForceArea=UNKNOWN&to=invalid",
       ],
     )
     fun `it should return 400 if the request filters are invalid`(query: String) {
@@ -328,7 +328,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request failed crime submissions
       val body = webTestClient.get()
-        .uri("$path?policeForce=UNKNOWN")
+        .uri("$path?policeForceArea=UNKNOWN")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -355,7 +355,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request failed crime submissions
       val body = webTestClient.get()
-        .uri("$path?policeForce=UNKNOWN")
+        .uri("$path?policeForceArea=UNKNOWN")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -385,7 +385,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request failed crime submissions
       val body = webTestClient.get()
-        .uri("$path?policeForce=UNKNOWN")
+        .uri("$path?policeForceArea=UNKNOWN")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -415,7 +415,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request failed crime submissions
       val body = webTestClient.get()
-        .uri("$path?policeForce=UNKNOWN")
+        .uri("$path?policeForceArea=UNKNOWN")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -448,7 +448,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request failed crime submissions
       val body = webTestClient.get()
-        .uri("$path?policeForce=METROPOLITAN")
+        .uri("$path?policeForceArea=METROPOLITAN")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -476,7 +476,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request failed crime submissions for another police force
       val body = webTestClient.get()
-        .uri("$path?policeForce=METROPOLITAN")
+        .uri("$path?policeForceArea=METROPOLITAN")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()
@@ -508,7 +508,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
 
       // When we request failed crime submissions
       val body = webTestClient.get()
-        .uri("$path?policeForce=UNKNOWN$query")
+        .uri("$path?policeForceArea=UNKNOWN$query")
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
         .exchange()
         .expectStatus()

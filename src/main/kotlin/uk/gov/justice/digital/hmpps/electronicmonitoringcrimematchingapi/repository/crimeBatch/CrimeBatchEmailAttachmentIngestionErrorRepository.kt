@@ -43,7 +43,7 @@ interface CrimeBatchEmailAttachmentIngestionErrorRepository : JpaRepository<Crim
     nativeQuery = true,
   )
   fun findFailedCrimeSubmissions(
-    @Param("policeForceArea") policeForce: String,
+    @Param("policeForceArea") policeForceArea: String,
     @Param("from") from: Instant?,
     @Param("to") to: Instant?,
   ): List<FailedCrimeSubmissionProjection>

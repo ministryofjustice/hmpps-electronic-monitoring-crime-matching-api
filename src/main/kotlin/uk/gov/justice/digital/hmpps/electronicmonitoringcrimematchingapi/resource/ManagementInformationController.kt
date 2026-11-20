@@ -60,15 +60,15 @@ class ManagementInformationController(
   )
   @GetMapping("/failed-crime-submissions")
   fun getFailedCrimeSubmissions(
-    @RequestParam(value = "policeForce")
-    policeForce: PoliceForce,
+    @RequestParam(value = "policeForceArea")
+    policeForceArea: PoliceForce,
     @RequestParam(value = "from", required = false)
     from: Instant? = null,
     @RequestParam(value = "to", required = false)
     to: Instant? = null,
   ): ResponseEntity<PagedResponse<FailedCrimeSubmissionResponse>> {
     val results = managementInformationService.getFailedCrimeSubmissions(
-      policeForce = policeForce,
+      policeForceArea = policeForceArea,
       from = from,
       to = to,
     )
