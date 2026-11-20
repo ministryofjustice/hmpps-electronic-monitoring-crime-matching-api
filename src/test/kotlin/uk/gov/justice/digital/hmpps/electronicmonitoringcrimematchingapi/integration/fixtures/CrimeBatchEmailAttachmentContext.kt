@@ -12,17 +12,19 @@ class CrimeBatchEmailAttachmentContext(
     crimeReference: String? = null,
     fieldName: String? = "crimeReference",
     errorType: CrimeBatchEmailAttachmentIngestionErrorType = CrimeBatchEmailAttachmentIngestionErrorType.MISSING_CRIME_REFERENCE,
+    rowNumber: Long = 1,
+    policeForceArea: PoliceForce = PoliceForce.UNKNOWN,
   ) {
     crimeBatchEmailAttachment.crimeBatchEmailAttachmentIngestionErrors.add(
       CrimeBatchEmailAttachmentIngestionError(
-        rowNumber = 1,
+        rowNumber = rowNumber,
         crimeReference = crimeReference,
         fieldName = fieldName,
         value = null,
         errorType = errorType,
         crimeTypeId = null,
         crimeBatchEmailAttachment = crimeBatchEmailAttachment,
-        policeForceArea = PoliceForce.UNKNOWN,
+        policeForceArea = policeForceArea,
       ),
     )
   }
