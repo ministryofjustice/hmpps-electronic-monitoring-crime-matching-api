@@ -659,7 +659,7 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
         to = "2025-01-31T00:00:00Z",
       )
 
-      // Then the response should contain zero counts for all crime types
+      // Then the response should contain counts for all crime types
       assertCounts(response["data"][0], "Aggravated Burglary", 2, 1, 1, 50.0)
       assertCounts(response["data"][1], "Burglary in a dwelling", 2, 2, 0, 0.0)
       assertCounts(response["data"][2], "Burglary in a building other than a dwelling", 1, 1, 0, 0.0)
