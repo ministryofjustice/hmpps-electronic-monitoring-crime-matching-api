@@ -66,7 +66,7 @@ class ContextualReportDocxGeneratorTest {
 
     tables = document.mainDocumentPart.content.unwrapped<Tbl>()
 
-    assertThat(tables).hasSize(13)
+    assertThat(tables).hasSize(14)
   }
 
   @Test
@@ -134,7 +134,7 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate top-level full width tables`() {
-    assertThat(tables).hasSize(13)
+    assertThat(tables).hasSize(14)
 
     tables.forEach { table ->
       assertThat(table.tblPr.tblW.type).isEqualTo("dxa")
@@ -418,8 +418,9 @@ class ContextualReportDocxGeneratorTest {
         "which document the subject’s movements as requested above." +
         "Exhibit EMAC/04: Key for interpreting symbols on crime map" +
         "Exhibit EMAC/05: Key for interpreting location data table" +
-        "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
-        "Exhibit EMAC/07: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/06: Image(s) of all locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/08: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00" +
         "Signature:" +
         "Manager's name: John Smith" +
         "Date: 01/10/2026" +
@@ -544,7 +545,7 @@ class ContextualReportDocxGeneratorTest {
 
   @Test
   fun `it should generate a map exhibit for the first segment`() {
-    val firstMapExhibitTable = tables[11]
+    val firstMapExhibitTable = tables[12]
     val rows = firstMapExhibitTable.content.unwrapped<Tr>()
 
     // Then the table should have two rows
@@ -553,7 +554,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
+      "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -570,13 +571,13 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Exhibit EMAC/06: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
+      "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
   }
 
   @Test
   fun `it should generate a table exhibit for the first segment`() {
-    val firstTableExhibitTable = tables[12]
+    val firstTableExhibitTable = tables[13]
     val rows = firstTableExhibitTable.content.unwrapped<Tr>()
 
     // Then the table should have two rows
@@ -585,7 +586,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/07: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00",
+      "Exhibit EMAC/08: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 

@@ -31,13 +31,27 @@ class ContextualReportExhibits(
 
     document.mainDocumentPart.addParagraphOfText("")
 
+    MapExhibit(
+      header = exhibitTitles[2],
+      image = mapImageRenderer.render(
+        MapImageRequest(
+          positions = parameters.positionSegments.flatten(),
+          includeTrack = false,
+          includeSequenceNumbers = false,
+        ),
+      ),
+      config = config,
+    ).addTo(document)
+
+    document.mainDocumentPart.addParagraphOfText("")
+
     parameters.positionSegments.forEachIndexed { index, positions ->
-      val mapExhibitTitleIndex = 2 + index * 2
+      val mapExhibitTitleIndex = 3 + index * 2
       val tableExhibitTitleIndex = mapExhibitTitleIndex + 1
 
       MapExhibit(
         header = exhibitTitles[mapExhibitTitleIndex],
-        image = mapImageRenderer.render(positions.toMapImageRequest()),
+        image = mapImageRenderer.render(MapImageRequest(positions = positions)),
         config = config,
       ).addTo(document)
 
@@ -50,8 +64,6 @@ class ContextualReportExhibits(
       ).addTo(document)
     }
   }
-
-  private fun List<Position>.toMapImageRequest() = MapImageRequest(positions = this)
 
   private fun loadExplanatoryMap(): ByteArray = requireNotNull(
     javaClass.getResourceAsStream("/contextualreport/explanatory-map.jpg"),

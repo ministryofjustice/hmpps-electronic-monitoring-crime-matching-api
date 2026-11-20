@@ -21,8 +21,19 @@ class ContextualReportExhibitTitles(
       ),
     )
 
+    val allPositions = parameters.positionSegments.flatten()
+    val from = config.dateTimeFormatter.format(allPositions.minOf { it.gpsDate })
+    val to = config.dateTimeFormatter.format(allPositions.maxOf { it.gpsDate })
+
+    add(
+      createExhibitTitle(
+        number = config.startingExhibitNumber + 2,
+        description = "Image(s) of all locations for ${parameters.deviceWearer.name}, between $from and $to",
+      ),
+    )
+
     parameters.positionSegments.forEachIndexed { index, positions ->
-      val mapExhibitNumber = config.startingExhibitNumber + 2 + index * 2
+      val mapExhibitNumber = config.startingExhibitNumber + 3 + index * 2
       val tableExhibitNumber = mapExhibitNumber + 1
       val from = config.dateTimeFormatter.format(positions.first().gpsDate)
       val to = config.dateTimeFormatter.format(positions.last().gpsDate)
