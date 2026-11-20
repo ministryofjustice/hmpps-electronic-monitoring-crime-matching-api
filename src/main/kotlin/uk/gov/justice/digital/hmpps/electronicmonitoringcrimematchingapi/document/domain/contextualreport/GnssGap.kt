@@ -3,28 +3,31 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import java.time.Duration
 import java.time.Instant
 
-private val MAX_POSITION_INTERVAL = Duration.ofMinutes(1)
+private val NUM_MINS_THAT_INDICATES_A_DATA_GAP = Duration.ofMinutes(1)
 
 data class GnssGap(val start: Instant, val end: Instant)
 
-/** Gaps keyed by the index of the following position, or by size for a trailing gap. */
-/** For example, if positions[3] is 10:00 and positions[4] is 10:02, then the gap will be keyed by 4. */
+/** The key is the index of the position after the gap or the size of the list for a trailing gap. */
+/** The value is the gap itself, with start and end times. */
 fun gnssGaps(
   positions: List<Position>,
   previousTime: Instant? = null,
   nextTime: Instant? = null,
 ): Map<Int, GnssGap> = buildMap {
-  fun recordGap(index: Int, start: Instant, end: Instant) {
-    if (Duration.between(start, end) > MAX_POSITION_INTERVAL) {
+  fun recordGapIfAboveThreshold(index: Int, start: Instant, end: Instant) {
+    if (Duration.between(start, end) > NUM_MINS_THAT_INDICATES_A_DATA_GAP) {
       put(index, GnssGap(start, end))
     }
   }
 
+  fun getTimeOfPreviousPosition(index: Int): Instant? = positions.getOrNull(index - 1)?.gpsDate
+
   positions.forEachIndexed { index, position ->
-    val start = positions.getOrNull(index - 1)?.gpsDate ?: previousTime
-    if (start != null) recordGap(index, start, position.gpsDate)
+    val start = getTimeOfPreviousPosition(index) ?: previousTime
+    if (start != null) recordGapIfAboveThreshold(index, start, position.gpsDate)
   }
   if (nextTime != null && positions.isNotEmpty()) {
-    recordGap(positions.size, positions.last().gpsDate, nextTime)
+    // Gap between the end of this segment and the start of the next
+    recordGapIfAboveThreshold(positions.size, positions.last().gpsDate, nextTime)
   }
 }
