@@ -37,8 +37,8 @@ class ManagementInformationService(
   }
 
   fun getFailedCrimeSubmissions(
-    policeForceArea: PoliceForce,
+    policeForceArea: PoliceForce?,
     from: Instant?,
     to: Instant?,
-  ): List<FailedCrimeSubmissionProjection> = crimeBatchEmailAttachmentIngestionErrorRepository.findFailedCrimeSubmissions(policeForceArea.name, from, to)
+  ): List<FailedCrimeSubmissionProjection> = crimeBatchEmailAttachmentIngestionErrorRepository.findFailedCrimeSubmissions(policeForceArea?.name, from, to)
 }

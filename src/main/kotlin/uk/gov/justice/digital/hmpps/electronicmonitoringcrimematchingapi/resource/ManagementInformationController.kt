@@ -60,8 +60,8 @@ class ManagementInformationController(
   )
   @GetMapping("/failed-crime-submissions")
   fun getFailedCrimeSubmissions(
-    @RequestParam(value = "policeForceArea")
-    policeForceArea: PoliceForce,
+    @RequestParam(value = "policeForceArea", required = false)
+    policeForceArea: PoliceForce? = null,
     @RequestParam(value = "from", required = false)
     from: Instant? = null,
     @RequestParam(value = "to", required = false)
