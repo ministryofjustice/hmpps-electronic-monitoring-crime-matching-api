@@ -34,7 +34,7 @@ interface CrimeBatchEmailAttachmentIngestionErrorRepository : JpaRepository<Crim
       JOIN crime_batch_ingestion_attempt attempt
         ON attempt.id = email.crime_batch_ingestion_attempt_id
       WHERE e.error_rank = 1
-        AND e.police_force_area = :policeForceArea
+        AND (CAST(:policeForceArea AS VARCHAR) IS NULL OR e.police_force_area = :policeForceArea)
         AND (CAST(:from AS TIMESTAMP) IS NULL OR attempt.created_at >= :from)
         AND (CAST(:to AS TIMESTAMP) IS NULL OR attempt.created_at < :to)
       GROUP BY e.error_type
@@ -43,7 +43,7 @@ interface CrimeBatchEmailAttachmentIngestionErrorRepository : JpaRepository<Crim
     nativeQuery = true,
   )
   fun findFailedCrimeSubmissions(
-    @Param("policeForceArea") policeForceArea: String,
+    @Param("policeForceArea") policeForceArea: String?,
     @Param("from") from: Instant?,
     @Param("to") to: Instant?,
   ): List<FailedCrimeSubmissionProjection>

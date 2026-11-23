@@ -294,16 +294,6 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
         .isForbidden
     }
 
-    @Test
-    fun `it should return 400 if the police force is missing`() {
-      webTestClient.get()
-        .uri(path)
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-    }
-
     @ParameterizedTest
     @ValueSource(
       strings = [
