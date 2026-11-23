@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeSubmissionSummaryResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.FailedCrimeSubmissionResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.PagedResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.ZeroPrecisionCrimeMatchResponse
@@ -76,6 +77,35 @@ class ManagementInformationController(
     return ResponseEntity.ok().body(
       PagedResponse(
         listOf(failedCrimeSubmissionMapper.toDto(results)),
+        pageCount = 1,
+        pageNumber = 0,
+        pageSize = results.size,
+      ),
+    )
+  }
+
+  @Operation(
+    tags = ["Management Information"],
+    summary = "Get crimes submission summary",
+  )
+  @GetMapping("/crimes-submission-summary")
+  fun getCrimeSubmissionSummary(
+    @RequestParam(value = "from", required = false)
+    from: Instant? = null,
+    @RequestParam(value = "to", required = false)
+    to: Instant? = null,
+    @RequestParam(value = "policeForceArea", required = false)
+    policeForceArea: String? = null,
+  ): ResponseEntity<PagedResponse<CrimeSubmissionSummaryResponse>> {
+    val results = managementInformationService.getCrimeSubmissionSummary(
+      from = from,
+      to = to,
+      policeForceArea = policeForceArea,
+    )
+
+    return ResponseEntity.status(200).body(
+      PagedResponse(
+        results,
         pageCount = 1,
         pageNumber = 0,
         pageSize = results.size,

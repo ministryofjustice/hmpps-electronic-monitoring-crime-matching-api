@@ -10,7 +10,9 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.e
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchEmailAttachmentErrorProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeBatchIngestionAttemptSummaryProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeSubmissionSummaryProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.IngestionAttemptCrimesByTypeProjection
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
@@ -261,4 +263,88 @@ interface CrimeBatchIngestionAttemptRepository : JpaRepository<CrimeBatchIngesti
   fun findIngestionAttemptCrimesByType(
     @Param("crimeBatchIngestionAttemptId") crimeBatchIngestionAttemptId: UUID,
   ): List<IngestionAttemptCrimesByTypeProjection>
+
+  @Query(
+    """
+    WITH ingestion_attempts AS (
+      SELECT
+          cbia.id AS ingestion_attempt_id,
+          cb.id AS crime_batch_id,
+          cbea.id AS attachment_id,
+          c.police_force_area
+      FROM crime_batch_ingestion_attempt cbia
+      LEFT JOIN crime_batch_email cbe
+          ON cbia.id = cbe.crime_batch_ingestion_attempt_id
+      LEFT JOIN crime_batch_email_attachment cbea
+          ON cbe.id = cbea.crime_batch_email_id
+      LEFT JOIN crime_batch cb
+          ON cbea.id = cb.crime_batch_email_attachment_id
+      LEFT JOIN crime_version cv on cb.id = cv.crime_batch_id
+      LEFT JOIN crime c on cv.crime_id = c.id
+      WHERE
+      (CAST(:from AS timestamp) IS NULL OR cbia.created_at >= CAST(:from AS timestamp))
+          AND (CAST(:to AS timestamp) IS NULL OR cbia.created_at < CAST(:to AS timestamp))
+      GROUP BY cbia.id, cb.id, cbea.id, c.police_force_area
+  ),
+  
+  filtered_ingestion_attempts AS (
+      SELECT *
+      FROM ingestion_attempts
+      WHERE
+          :policeForceArea IS NULL
+          OR police_force_area = :policeForceArea
+  ),
+  
+  attachment_ingestion_errors AS (
+      SELECT
+          e.crime_type_id AS crime_type,
+          COUNT(DISTINCT (
+              ia.ingestion_attempt_id,
+              e.crime_batch_email_attachment_id,
+              e.row_number
+          )) AS failed
+      FROM filtered_ingestion_attempts ia
+      JOIN crime_batch_email_attachment_ingestion_error e
+          ON ia.attachment_id = e.crime_batch_email_attachment_id
+      GROUP BY e.crime_type_id
+  ),
+  
+  crime_versions AS (
+      SELECT
+          cv.crime_type_id AS crime_type,
+          COUNT(*) AS ingested
+      FROM filtered_ingestion_attempts ia
+      JOIN crime_version cv
+          ON ia.crime_batch_id = cv.crime_batch_id
+      GROUP BY cv.crime_type_id
+  )
+  
+  SELECT
+      COALESCE(a.crime_type, v.crime_type) AS crime_type,
+      COALESCE(a.failed, 0) + COALESCE(v.ingested, 0) AS submitted,
+      COALESCE(v.ingested, 0) AS ingested,
+      COALESCE(a.failed, 0) AS failed,
+      COALESCE(
+          ROUND(
+              100.0 * COALESCE(a.failed, 0)
+              / NULLIF(
+                  COALESCE(a.failed, 0) + COALESCE(v.ingested, 0),
+                  0
+              ),
+              2
+          ),
+          0
+      ) AS not_ingested_percentage
+  FROM attachment_ingestion_errors a
+  FULL JOIN crime_versions v
+      ON a.crime_type = v.crime_type
+  ORDER BY crime_type;
+  """,
+    nativeQuery = true,
+  )
+  fun findCrimeSubmissionSummary(
+    from: Instant?,
+    to: Instant?,
+    policeForceArea: String?,
+  ): List<CrimeSubmissionSummaryProjection>
 }
