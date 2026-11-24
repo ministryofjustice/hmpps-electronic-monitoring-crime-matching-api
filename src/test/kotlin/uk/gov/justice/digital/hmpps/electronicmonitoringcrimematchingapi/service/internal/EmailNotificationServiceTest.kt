@@ -265,11 +265,11 @@ class EmailNotificationServiceTest {
       "batchId" to batchId,
       "policeForce" to PoliceForce.METROPOLITAN.name,
       "errorSummary" to """
-        Row 1: Field must be a valid ENUM value (crimeTypeId)
-        Row 2: Field must be a valid ENUM value (crimeTypeId)
-        Row 3: Field must be a valid ENUM value (crimeTypeId)
-        Row 4: Field must be a valid ENUM value (crimeTypeId)
-        Row 5: Field must be a valid ENUM value (crimeTypeId)
+        Row 1: Field must be a valid Crime Type value (crimeTypeId)
+        Row 2: Field must be a valid Crime Type value (crimeTypeId)
+        Row 3: Field must be a valid Crime Type value (crimeTypeId)
+        Row 4: Field must be a valid Crime Type value (crimeTypeId)
+        Row 5: Field must be a valid Crime Type value (crimeTypeId)
         ...and 2 more errors
       """.trimIndent(),
       "totalCount" to 10,
@@ -348,11 +348,11 @@ class EmailNotificationServiceTest {
       "batchId" to batchId,
       "policeForce" to PoliceForce.METROPOLITAN.name,
       "errorSummary" to """
-        Row 1: Field must be a valid ENUM value (crimeTypeId)
-        Row 2: Field must be a valid ENUM value (crimeTypeId)
-        Row 3: Field must be a valid ENUM value (crimeTypeId)
-        Row 4: Field must be a valid ENUM value (crimeTypeId)
-        Row 5: Field must be a valid ENUM value (crimeTypeId)
+        Row 1: Field must be a valid Crime Type value (crimeTypeId)
+        Row 2: Field must be a valid Crime Type value (crimeTypeId)
+        Row 3: Field must be a valid Crime Type value (crimeTypeId)
+        Row 4: Field must be a valid Crime Type value (crimeTypeId)
+        Row 5: Field must be a valid Crime Type value (crimeTypeId)
         ...and 2 more errors
       """.trimIndent(),
       "totalCount" to 10,
