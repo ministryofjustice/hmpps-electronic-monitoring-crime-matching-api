@@ -14,21 +14,8 @@ class MapImageServiceAdapter(
     val positions = request.positions
 
     val layers = buildList {
-      if (request.includeTrack && positions.size > 1) {
-        add(
-          MapImageServiceRequest.TrackLayer(
-            id = "position-track",
-            points = positions.map { position ->
-              MapImageServiceRequest.TrackPoint(
-                latitude = position.latitude,
-                longitude = position.longitude,
-              )
-            },
-            style = MapImageServiceRequest.TrackStyle(
-              stroke = MapImageServiceRequest.TrackStroke(color = "#000000"),
-            ),
-          ),
-        )
+      if (request.includeTrack) {
+        addAll(positionTrackLayers(positions))
       }
 
       add(

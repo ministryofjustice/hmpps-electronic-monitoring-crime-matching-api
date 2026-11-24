@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.wml.STVerticalJc
 import org.docx4j.wml.Tbl
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.GnssGap
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
 
 class PositionTableExhibit(
@@ -10,6 +11,7 @@ class PositionTableExhibit(
   private val positions: List<Position>,
   private val includeDescriptions: Boolean = false,
   private val config: ContextualReportConfig,
+  private val gaps: Map<Int, GnssGap> = emptyMap(),
 ) {
   private val tableBuilder = ReportTableBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
@@ -74,7 +76,7 @@ class PositionTableExhibit(
   private fun createPositionTable(): Tbl {
     val table = tableBuilder.create(
       width = config.contentWidth - nestedTablePadding * 2,
-      columns = 7,
+      columns = columns.size,
     ) // Subtract padding from width
 
     if (includeDescriptions) {
@@ -113,7 +115,8 @@ class PositionTableExhibit(
       verticalAlign = STVerticalJc.TOP,
     )
 
-    positions.forEach { position ->
+    positions.forEachIndexed { index, position ->
+      gaps[index]?.let { addGapRow(table, it) }
       val values = listOf(
         config.dateTimeFormatter.format(position.gpsDate),
         position.latitude.toString(),
@@ -136,7 +139,18 @@ class PositionTableExhibit(
         },
       )
     }
+    gaps[positions.size]?.let { addGapRow(table, it) }
 
     return table
+  }
+
+  private fun addGapRow(table: Tbl, gap: GnssGap) {
+    val from = config.dateTimeFormatter.format(gap.start)
+    val to = config.dateTimeFormatter.format(gap.end)
+    tableBuilder.addRow(
+      table = table,
+      cells = listOf(listOf(paragraphBuilder.create("No GNSS data between $from and $to", centred = true, fontSize = 16))),
+      columnSpan = columns.size,
+    )
   }
 }

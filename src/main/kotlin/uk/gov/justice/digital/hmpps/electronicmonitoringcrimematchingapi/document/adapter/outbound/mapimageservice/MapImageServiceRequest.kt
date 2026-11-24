@@ -41,6 +41,7 @@ data class MapImageServiceRequest(
   @JsonInclude(JsonInclude.Include.NON_NULL)
   data class TrackStroke(
     val color: String,
+    val lineDash: List<Int>? = null,
   )
 
   @JsonInclude(JsonInclude.Include.NON_NULL)

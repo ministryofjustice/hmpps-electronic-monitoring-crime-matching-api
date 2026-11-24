@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.documen
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.gnssGaps
 import java.time.Instant
 
 class ContextualReportExhibits(
@@ -66,10 +67,18 @@ class ContextualReportExhibits(
       PositionTableExhibit(
         header = exhibitTitles[tableExhibitTitleIndex],
         positions = positions,
+        gaps = gnssGaps(
+          positions = positions,
+          previousTime = getTimeOfLastPositionInPreviousSegment(index) ?: parameters.reportPeriod.start,
+          nextTime = getTimeOfFirstPositionInNextSegment(index) ?: parameters.reportPeriod.end,
+        ),
         config = config,
       ).addTo(document)
     }
   }
+
+  private fun getTimeOfLastPositionInPreviousSegment(indexOfCurrentSegment: Int): Instant? = parameters.positionSegments.getOrNull(indexOfCurrentSegment - 1)?.last()?.gpsDate
+  private fun getTimeOfFirstPositionInNextSegment(indexOfCurrentSegment: Int): Instant? = parameters.positionSegments.getOrNull(indexOfCurrentSegment + 1)?.first()?.gpsDate
 
   private fun addPageBreak(document: WordprocessingMLPackage) {
     document.mainDocumentPart.addObject(
