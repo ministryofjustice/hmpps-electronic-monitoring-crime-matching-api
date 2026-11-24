@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.inbound.web.CreateContextualReportRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.dto.CreateDocumentRequestCommand
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.exception.InvalidRequestException
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.CreateDocumentRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.domain.contextualreport.CrimeMatchingResultDocumentRequest
@@ -27,6 +28,10 @@ class CreateContextualReport(
     // Get Crime matching result data
     val crimeMatchingResult = crimeMatchingResultStore.find(deviceWearerId)
       ?: throw EntityNotFoundException("No matched wearer with id $deviceWearerId")
+
+    if (!(request.startTime < crimeMatchingResult.crimeDateTimeTo && request.endTime > crimeMatchingResult.crimeDateTimeFrom)) {
+      throw InvalidRequestException("The report time window must overlap with the crime time window")
+    }
 
     // Get Hub manager
     val hubManager = hubManagerService.getHubManager(request.hubManagerId)

@@ -127,6 +127,8 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
       cb.batch_id AS batchId,
       c.crime_reference AS crimeReference,
       cv.crime_type_id AS crimeTypeId,
+      cv.crime_date_time_from AS crimeDateTimeFrom,
+      cv.crime_date_time_to AS crimeDateTimeTo,
       cmr.created_at AS matchingResultCreatedAt,
       dw.address AS address,
       dw.date_of_birth AS dateOfBirth,

@@ -17,6 +17,12 @@ class CrimeMatchingResultPersistenceAdapter(
       batchId = it.batchId,
       crimeReference = it.crimeReference,
       crimeType = CrimeType.from(it.crimeTypeId).value,
+      crimeDateTimeFrom = it.crimeDateTimeFrom
+        .atOffset(ZoneOffset.UTC)
+        .toInstant(),
+      crimeDateTimeTo = it.crimeDateTimeTo
+        .atOffset(ZoneOffset.UTC)
+        .toInstant(),
       matchingResultCreatedAt = it.matchingResultCreatedAt
         .atOffset(ZoneOffset.UTC)
         .toInstant(),
