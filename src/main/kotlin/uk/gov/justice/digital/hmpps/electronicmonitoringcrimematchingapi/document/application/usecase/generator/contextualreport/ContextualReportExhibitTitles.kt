@@ -28,7 +28,7 @@ class ContextualReportExhibitTitles(
     add(
       createExhibitTitle(
         number = config.startingExhibitNumber + 2,
-        description = "Image(s) of all locations for ${parameters.deviceWearer.name}, between $from and $to",
+        description = "Image of all locations for ${parameters.deviceWearer.name}, between $from and $to",
       ),
     )
 
@@ -42,7 +42,7 @@ class ContextualReportExhibitTitles(
       add(
         createExhibitTitle(
           number = mapExhibitNumber,
-          description = "Image(s) of the locations for ${parameters.deviceWearer.name}, between $dateRange",
+          description = "Image of the locations for ${parameters.deviceWearer.name}, between $dateRange",
         ),
       )
 

@@ -446,8 +446,8 @@ class ContextualReportDocxGeneratorTest {
         "which document the subject’s movements as requested above." +
         "Exhibit EMAC/04: Key for interpreting symbols on crime map" +
         "Exhibit EMAC/05: Key for interpreting location data table" +
-        "Exhibit EMAC/06: Image(s) of all locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
-        "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/06: Image of all locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/07: Image of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
         "Exhibit EMAC/08: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00" +
         "Signature:" +
         "Manager's name: John Smith" +
@@ -582,7 +582,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
+      "Exhibit EMAC/07: Image of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -599,7 +599,7 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
+      "Exhibit EMAC/07: Image of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
   }
 
