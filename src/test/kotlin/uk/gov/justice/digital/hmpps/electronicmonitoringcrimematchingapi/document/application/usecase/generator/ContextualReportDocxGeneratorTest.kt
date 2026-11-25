@@ -470,6 +470,8 @@ class ContextualReportDocxGeneratorTest {
     assertThat(header.text()).isEqualTo(
       "Exhibit EMAC/04: Key for interpreting symbols on crime map",
     )
+    // No text run in the map exhibit title should have bold formatting enabled.
+    assertThat(header.content.unwrapped<P>().single().content.unwrapped<R>()).noneMatch { it.rPr?.b?.isVal == true }
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
     // And the content should contain the example image
@@ -502,6 +504,8 @@ class ContextualReportDocxGeneratorTest {
     assertThat(header.text()).isEqualTo(
       "Exhibit EMAC/05: Key for interpreting location data table",
     )
+    // No text run in the table exhibit title should have bold formatting enabled.
+    assertThat(header.content.unwrapped<P>().single().content.unwrapped<R>()).noneMatch { it.rPr?.b?.isVal == true }
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
     // And the content should contain the example table
