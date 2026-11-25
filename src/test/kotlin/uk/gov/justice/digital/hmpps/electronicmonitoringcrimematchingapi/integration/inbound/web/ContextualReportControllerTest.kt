@@ -14,6 +14,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.adapter.outbound.persistence.CrimeMatchingResultDocumentRequestRepository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.application.dto.CreateContextualReportResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.DocumentRequestStore
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.fixtures.createHubManager
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.integration.wiremock.AlgorithmApiExtension
@@ -30,6 +32,9 @@ class ContextualReportControllerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var crimeMatchingResultDocumentRequestRepository: CrimeMatchingResultDocumentRequestRepository
+
+  @Autowired
+  lateinit var documentRequestStore: DocumentRequestStore
 
   private val role = "ROLE_EM_CRIME_MATCHING__DOCUMENT_REQUESTS__RW"
 
@@ -117,6 +122,9 @@ class ContextualReportControllerTest : IntegrationTestBase() {
       // And the contextual report request should be persisted
       val request = crimeMatchingResultDocumentRequestRepository.findById(UUID.fromString(response.documentRequestId)).orElseThrow()
       assertThat(request.crimeMatchingResultDeviceWearerId).isEqualTo(deviceWearerId)
+      val documentRequest = requireNotNull(documentRequestStore.findById(UUID.fromString(response.documentRequestId)))
+      val parameters = documentRequest.parameters as ContextualReportRequestParameters
+      assertThat(parameters.authorisingManager.signatureImage).isEqualTo("fake-signature-image".toByteArray())
 
       // And the algorithm API should be called with the correct parameters
       algorithmApi.verify(

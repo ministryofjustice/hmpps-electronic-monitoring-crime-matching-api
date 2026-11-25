@@ -44,6 +44,7 @@ class CreateContextualReport(
       "authorisingManager" to mapOf(
         "name" to hubManager.name,
         "occupation" to hubManager.occupation,
+        "signatureImage" to hubManager.signatureImage,
       ),
       "crime" to mapOf(
         "batchId" to crimeMatchingResult.batchId,

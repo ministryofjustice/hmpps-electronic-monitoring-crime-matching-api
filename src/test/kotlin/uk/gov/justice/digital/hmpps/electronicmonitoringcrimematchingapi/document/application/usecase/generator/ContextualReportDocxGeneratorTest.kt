@@ -58,8 +58,13 @@ class ContextualReportDocxGeneratorTest {
 
   @BeforeAll
   fun setUp() {
+    val signatureImage = javaClass.getResourceAsStream("/contextualreport/explanatory-map.jpg")!!.use { it.readBytes() }
     val request = DocumentRequest.create(
-      parameters = givenContextualReportRequestParameters(),
+      parameters = givenContextualReportRequestParameters().let { parameters ->
+        parameters.copy(
+          authorisingManager = parameters.authorisingManager.copy(signatureImage = signatureImage),
+        )
+      },
       createdBy = "user123",
       createdAt = Instant.parse("2026-10-01T08:05:00Z"),
     )
@@ -427,6 +432,11 @@ class ContextualReportDocxGeneratorTest {
     // And the declaration should be correct and contain the manager's details
     val declaration = rows[2].content.unwrapped<Tc>().single()
 
+    val declarationDrawings = declaration.content.unwrapped<P>()
+      .flatMap { it.content.unwrapped<R>() }
+      .flatMap { it.content.unwrapped<Drawing>() }
+    assertThat(declarationDrawings).hasSize(1)
+
     assertThat(declaration.text()).isEqualTo(
       "Age: Over 18" +
         "This statement consisting of ${Paginate.compute(document, null).pageCount} pages, signed by me, " +
@@ -442,6 +452,11 @@ class ContextualReportDocxGeneratorTest {
 
     // And the statement should be correct
     val statement = rows[3].content.unwrapped<Tc>().single()
+
+    val statementDrawings = statement.content.unwrapped<P>()
+      .flatMap { it.content.unwrapped<R>() }
+      .flatMap { it.content.unwrapped<Drawing>() }
+    assertThat(statementDrawings).hasSize(1)
 
     assertThat(statement.text()).isEqualTo(
       "I am currently employed by the Ministry of Justice (MoJ) as a Manager within the " +

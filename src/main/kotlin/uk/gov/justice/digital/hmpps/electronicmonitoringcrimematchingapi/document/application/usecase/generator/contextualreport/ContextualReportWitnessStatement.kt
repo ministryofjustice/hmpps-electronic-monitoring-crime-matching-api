@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport
 
+import org.docx4j.jaxb.Context
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.DocumentPageCountUpdater
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.ContextualReportRequestParameters
 import java.time.Instant
@@ -11,6 +13,7 @@ class ContextualReportWitnessStatement(
   private val config: ContextualReportConfig,
   private val exhibits: List<String>,
 ) {
+  private val factory = Context.getWmlObjectFactory()
   private val listBuilder = ReportListBuilder()
   private val paragraphBuilder = ReportParagraphBuilder()
   private val tableBuilder = ReportTableBuilder()
@@ -96,7 +99,7 @@ class ContextualReportWitnessStatement(
     tableBuilder.addRow(
       table = table,
       cells = listOf(
-        declaration(),
+        declaration(document),
       ),
       columnSpan = 2,
     )
@@ -112,10 +115,10 @@ class ContextualReportWitnessStatement(
     document.mainDocumentPart.addObject(table)
   }
 
-  private fun declaration(): List<Any> = listOf(
+  private fun declaration(document: WordprocessingMLPackage): List<Any> = listOf(
     paragraphBuilder.create(declarationAge, spacingAfter = 120),
     paragraphBuilder.create(declarationText, spacingAfter = 120),
-  ) + signature()
+  ) + signature(document)
 
   private fun statement(
     document: WordprocessingMLPackage,
@@ -139,19 +142,44 @@ class ContextualReportWitnessStatement(
       ),
     )
 
-    addAll(signature())
+    addAll(signature(document))
   }
 
-  private fun signature() = listOf(
-    paragraphBuilder.create("Signature:", spacingAfter = 120),
-    paragraphBuilder.create("Manager's name: ${parameters.authorisingManager.name}", spacingAfter = 120),
-    paragraphBuilder.create("Date: ${config.dateFormatter.format(createdAt)}", spacingAfter = 120),
-    paragraphBuilder.create(
-      "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)",
-      spacingAfter = 120,
-    ),
-    paragraphBuilder.create(
-      "Address: 102 Petty France, Westminster, London, SW1H 9AJ",
-    ),
-  )
+  private fun signature(document: WordprocessingMLPackage): List<Any> = buildList {
+    add(paragraphBuilder.create("Signature:", spacingAfter = 120))
+
+    parameters.authorisingManager.signatureImage?.let { image ->
+      val imagePart = BinaryPartAbstractImage.createImagePart(document, image)
+      val inline = imagePart.createImageInline(
+        "witness-signature",
+        "Witness signature",
+        1,
+        2,
+        false,
+      )
+      val drawing = factory.createDrawing().apply {
+        anchorOrInline.add(inline)
+      }
+
+      add(
+        paragraphBuilder.create("").apply {
+          content.add(
+            factory.createR().apply {
+              content.add(drawing)
+            },
+          )
+        },
+      )
+    }
+
+    add(paragraphBuilder.create("Manager's name: ${parameters.authorisingManager.name}", spacingAfter = 120))
+    add(paragraphBuilder.create("Date: ${config.dateFormatter.format(createdAt)}", spacingAfter = 120))
+    add(
+      paragraphBuilder.create(
+        "Email: mojacquisitivecrimehub@justice.gov.uk (preferred communication method)",
+        spacingAfter = 120,
+      ),
+    )
+    add(paragraphBuilder.create("Address: 102 Petty France, Westminster, London, SW1H 9AJ"))
+  }
 }
