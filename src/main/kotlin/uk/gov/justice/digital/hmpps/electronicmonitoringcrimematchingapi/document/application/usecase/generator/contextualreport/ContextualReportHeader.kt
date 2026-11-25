@@ -9,7 +9,7 @@ class ContextualReportHeader(
   private val parameters: ContextualReportRequestParameters,
   private val config: ContextualReportConfig,
 ) {
-  private val header = "Date: ${config.dateFormatter.format(createdAt)}"
+  private val date = config.dateFormatter.format(createdAt)
   private val content = "Contextual Movement Report for Crime Reference Number - ${parameters.crime.reference}"
 
   fun addTo(
@@ -22,7 +22,9 @@ class ContextualReportHeader(
     tableBuilder.addHeader(
       table = table,
       content = listOf(
-        paragraphBuilder.create(header, bold = true),
+        paragraphBuilder.create("Date:", bold = true).apply {
+          content.addAll(paragraphBuilder.create(" $date").content)
+        },
       ),
       columns = 1,
     )

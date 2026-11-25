@@ -185,6 +185,14 @@ class ContextualReportDocxGeneratorTest {
     // And the first row should contain the title
     assertThat(titleCell.text()).contains("Date: 01/10/2026")
 
+    val dateRuns = titleCell.content.unwrapped<P>().single().content.unwrapped<R>()
+    // The "Date:" label should be bold.
+    assertThat(dateRuns[0].rPr?.b?.isVal).isTrue()
+    // The displayed date should not be bold.
+    assertThat(dateRuns[1].rPr?.b?.isVal == true).isFalse()
+    // Preserve the leading space at the beginning of the date run in Word.
+    assertThat(dateRuns[1].content.unwrapped<Text>().single().space).isEqualTo("preserve")
+
     // And the second row should contain the content
     assertThat(contentCell.text()).contains(
       "Contextual Movement Report for Crime Reference Number - 123456789",
