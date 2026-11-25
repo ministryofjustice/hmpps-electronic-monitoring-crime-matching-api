@@ -88,7 +88,7 @@ class PositionTableExhibit(
               column["description"] ?: "",
               bold = true,
               centred = true,
-              fontSize = 16, // 8pt
+              fontSize = 22,
               colour = "FFFFFF",
             ),
           )
@@ -106,7 +106,7 @@ class PositionTableExhibit(
             column["heading"] ?: "",
             bold = true,
             centred = true,
-            fontSize = 16, // 8pt
+            fontSize = 22,
             colour = "FFFFFF",
           ),
         )
@@ -133,7 +133,7 @@ class PositionTableExhibit(
           listOf(
             paragraphBuilder.create(
               value,
-              fontSize = 16, // 8pt
+              fontSize = 22,
             ),
           )
         },
@@ -149,7 +149,7 @@ class PositionTableExhibit(
     val to = config.dateTimeWithSecondsFormatter.format(gap.end)
     tableBuilder.addRow(
       table = table,
-      cells = listOf(listOf(paragraphBuilder.create("No GNSS data between $from and $to", centred = true, fontSize = 16))),
+      cells = listOf(listOf(paragraphBuilder.create("No GNSS data between $from and $to", centred = true, fontSize = 22))),
       columnSpan = columns.size,
     )
   }
