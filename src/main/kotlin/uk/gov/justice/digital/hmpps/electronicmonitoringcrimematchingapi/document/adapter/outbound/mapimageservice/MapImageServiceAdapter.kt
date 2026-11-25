@@ -76,7 +76,7 @@ class MapImageServiceAdapter(
 
     return client.render(
       MapImageServiceRequest(
-        viewport = MapImageServiceRequest.Viewport(),
+        viewport = MapImageServiceRequest.Viewport(padding = request.viewportPaddingPx),
         layers = layers,
         controls = MapImageServiceRequest.Controls(compass = true),
       ),

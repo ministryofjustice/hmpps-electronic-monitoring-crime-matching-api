@@ -657,6 +657,7 @@ class ContextualReportDocxGeneratorTest {
     // Then a map image should be requested for every segment and each one should include tracks
     assertThat(renderer.requests.filter { it.includeTrack }.map { it.positions })
       .containsExactlyElementsOf(parameters.positionSegments)
+    assertThat(renderer.requests.map { it.viewportPaddingPx }).containsExactly(80, 80, 80)
 
     fun unwrapTableRows(table: Tbl): List<String> {
       val contentCell = table.content.unwrapped<Tr>().last().content.unwrapped<Tc>().single()

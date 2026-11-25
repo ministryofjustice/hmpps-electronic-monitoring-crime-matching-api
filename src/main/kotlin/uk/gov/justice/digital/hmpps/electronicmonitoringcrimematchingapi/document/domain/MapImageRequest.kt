@@ -6,4 +6,5 @@ data class MapImageRequest(
   val positions: List<Position>,
   val includeTrack: Boolean = true,
   val includeSequenceNumbers: Boolean = true,
+  val viewportPaddingPx: Int? = null,
 )

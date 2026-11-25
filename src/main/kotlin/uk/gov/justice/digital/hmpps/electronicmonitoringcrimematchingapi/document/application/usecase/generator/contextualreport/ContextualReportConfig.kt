@@ -8,6 +8,7 @@ class ContextualReportConfig(
   val pageWidth: Long = 11906L,
   val horizontalMargin: Long = 1440L,
   val startingExhibitNumber: Int = 4,
+  val mapPaddingPx: Int = 80,
 ) {
   val contentWidth = pageWidth - (horizontalMargin * 2)
 
