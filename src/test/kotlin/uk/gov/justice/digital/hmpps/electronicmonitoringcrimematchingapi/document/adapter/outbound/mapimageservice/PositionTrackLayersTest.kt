@@ -2,15 +2,19 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
+import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 // Positions are referred to by their index; adjacent layers share the position where the line style changes.
 class PositionTrackLayersTest {
+  private val config = ContextualReportConfig()
+
   @Test
   fun `it should return zero layers if there are no positions`() {
-    assertThat(positionTrackLayers(emptyList())).isEmpty()
+    assertThat(positionTrackLayers(emptyList(), config)).isEmpty()
   }
 
   @Test
@@ -56,13 +60,22 @@ class PositionTrackLayersTest {
     )
   }
 
+  @Test
+  fun `it should use the configured dash pattern only for intervals exceeding the configured threshold`() {
+    val customConfig = ContextualReportConfig(gnssGapThreshold = Duration.ofMinutes(2), gnssGapTrackDashPattern = listOf(4, 6))
+
+    val layers = positionTrackLayers(positionsAtMinutes(0, 2, 5), customConfig)
+
+    assertThat(layers.map { it.style?.stroke?.lineDash }).containsExactly(null, listOf(4, 6))
+  }
+
   private data class Track(val dashed: Boolean, val points: List<MapImageServiceRequest.TrackPoint>)
 
   private fun solid(vararg positionIndices: Int) = Track(dashed = false, points = positionIndices.map(::trackPointAt))
 
   private fun dashed(vararg positionIndices: Int) = Track(dashed = true, points = positionIndices.map(::trackPointAt))
 
-  private fun tracksFor(positions: List<Position>) = positionTrackLayers(positions).map {
+  private fun tracksFor(positions: List<Position>) = positionTrackLayers(positions, config).map {
     Track(dashed = !it.style?.stroke?.lineDash.isNullOrEmpty(), points = it.points)
   }
 

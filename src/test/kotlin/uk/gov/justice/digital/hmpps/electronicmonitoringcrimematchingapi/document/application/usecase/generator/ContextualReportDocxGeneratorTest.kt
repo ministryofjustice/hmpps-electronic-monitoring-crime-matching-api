@@ -49,6 +49,7 @@ class ContextualReportDocxGeneratorTest {
       ),
     ),
     FakeMapImageRenderer(),
+    ContextualReportConfig(),
   )
 
   private lateinit var result: GeneratedDocument

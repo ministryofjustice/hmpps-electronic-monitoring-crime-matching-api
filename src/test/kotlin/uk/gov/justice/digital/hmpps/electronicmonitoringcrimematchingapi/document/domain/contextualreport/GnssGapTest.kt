@@ -2,14 +2,17 @@ package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.docume
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.time.Instant
 
 class GnssGapTest {
+  private val threshold = Duration.ofMinutes(1)
+
   @Test
   fun `it should return an empty map when there are no gaps`() {
     val positions = listOf(positionAt("10:01:00"), positionAt("10:02:00"), positionAt("10:02:30"))
 
-    val gaps = gnssGaps(positions, previousTime = time("10:00:00"), nextTime = time("10:03:30"))
+    val gaps = gnssGaps(positions, threshold, previousTime = time("10:00:00"), nextTime = time("10:03:30"))
 
     assertThat(gaps).isEmpty()
   }
@@ -19,7 +22,7 @@ class GnssGapTest {
     val previousTime = time("10:00:00")
     val first = positionAt("10:03:00")
 
-    val gaps = gnssGaps(listOf(first), previousTime = previousTime)
+    val gaps = gnssGaps(listOf(first), threshold, previousTime = previousTime)
 
     assertThat(gaps).isEqualTo(mapOf(0 to GnssGap(previousTime, first.gpsDate)))
   }
@@ -31,7 +34,7 @@ class GnssGapTest {
     val third = positionAt("10:02:01")
     val fourth = positionAt("10:05:00")
 
-    val gaps = gnssGaps(listOf(first, second, third, fourth))
+    val gaps = gnssGaps(listOf(first, second, third, fourth), threshold)
 
     assertThat(gaps).isEqualTo(
       mapOf(
@@ -47,7 +50,7 @@ class GnssGapTest {
     val last = positionAt("10:01:00")
     val nextTime = time("10:04:00")
 
-    val gaps = gnssGaps(listOf(first, last), nextTime = nextTime)
+    val gaps = gnssGaps(listOf(first, last), threshold, nextTime = nextTime)
 
     assertThat(gaps).isEqualTo(mapOf(2 to GnssGap(last.gpsDate, nextTime)))
   }
