@@ -35,7 +35,7 @@ class ContextualReportDocxGenerator(
     val parameters = documentRequest.parameters as ContextualReportRequestParameters
     val exhibitTitles = ContextualReportExhibitTitles(parameters, config).titles
 
-    DocumentTheme(font = "Calibri").apply(document)
+    DocumentTheme(font = "Arial").apply(document)
 
     documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 

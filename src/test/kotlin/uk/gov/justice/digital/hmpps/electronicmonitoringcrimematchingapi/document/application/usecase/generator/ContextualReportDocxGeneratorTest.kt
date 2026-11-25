@@ -139,6 +139,28 @@ class ContextualReportDocxGeneratorTest {
   }
 
   @Test
+  fun `it should use Arial 11 for report text`() {
+    val normalStyle = document.mainDocumentPart.styleDefinitionsPart.getStyleById("Normal")
+
+    assertThat(normalStyle.rPr.rFonts.ascii).isEqualTo("Arial")
+    assertThat(normalStyle.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
+    assertThat(normalStyle.rPr.szCs.`val`).isEqualTo(BigInteger.valueOf(22))
+
+    val positionTable = tables[10]
+      .content.unwrapped<Tr>()[1]
+      .content.unwrapped<Tc>().first()
+      .content.unwrapped<Tbl>().single()
+
+    positionTable.content.unwrapped<Tr>()
+      .flatMap { it.content.unwrapped<Tc>() }
+      .flatMap { it.content.unwrapped<P>() }
+      .flatMap { it.content.unwrapped<R>() }
+      .forEach { run ->
+        assertThat(run.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
+      }
+  }
+
+  @Test
   fun `it should generate top-level full width tables`() {
     assertThat(tables).hasSize(14)
 
@@ -709,12 +731,14 @@ class ContextualReportDocxGeneratorTest {
   inline fun <reified T> List<*>.unwrapped(): List<T> = map(XmlUtils::unwrap).filterIsInstance<T>()
 
   private fun assertClassification(paragraph: P) {
-    val text = paragraph.content
-      .unwrapped<R>()
+    val runs = paragraph.content.unwrapped<R>()
+    val text = runs
       .flatMap { it.content.unwrapped<Text>() }
       .joinToString("") { it.value }
 
     assertThat(text).isEqualTo("OFFICIAL - SENSITIVE")
+    assertThat(runs.single().rPr.rFonts.ascii).isEqualTo("Arial")
+    assertThat(runs.single().rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
 
     assertThat(paragraph.pPr.jc.`val`)
       .isEqualTo(JcEnumeration.CENTER)
