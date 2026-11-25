@@ -72,6 +72,7 @@ class ContextualReportExhibits(
         positions = positions,
         gaps = gnssGaps(
           positions = positions,
+          durationThatIndicatesADataGap = config.gnssGapThreshold,
           previousTime = getTimeOfLastPositionInPreviousSegment(index) ?: parameters.reportPeriod.start,
           nextTime = getTimeOfFirstPositionInNextSegment(index) ?: parameters.reportPeriod.end,
         ),

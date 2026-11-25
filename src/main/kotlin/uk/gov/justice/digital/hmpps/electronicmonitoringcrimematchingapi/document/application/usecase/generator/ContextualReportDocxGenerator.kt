@@ -26,10 +26,9 @@ import java.io.ByteArrayOutputStream
 class ContextualReportDocxGenerator(
   private val documentSensitivityLabeller: DocumentSensitivityLabeller,
   private val mapImageRenderer: MapImageRenderer,
+  private val config: ContextualReportConfig,
 ) : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
-
-  private val config = ContextualReportConfig()
 
   override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()

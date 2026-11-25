@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.web.reactive.function.client.WebClient
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
@@ -19,6 +20,7 @@ import java.time.Instant
 
 class MapImageServiceAdapterTest {
   private val server = WireMockServer(wireMockConfig().dynamicPort())
+  private val config = ContextualReportConfig()
   private val segmentPositions = givenContextualReportRequestParameters().positionSegments.single()
 
   @BeforeEach
@@ -64,7 +66,7 @@ class MapImageServiceAdapterTest {
       )
     }
 
-    assertThat(MapImageServiceAdapter(client).render(MapImageRequest(positions))).isEqualTo("image".toByteArray())
+    assertThat(MapImageServiceAdapter(client, config).render(MapImageRequest(positions))).isEqualTo("image".toByteArray())
 
     val request = JSONObject(server.allServeEvents.single().request.bodyAsString)
     val controls = request.getJSONObject("controls")
@@ -106,7 +108,7 @@ class MapImageServiceAdapterTest {
 
   private fun viewportSentFor(request: MapImageRequest): JSONObject {
     val client = MapImageServiceClient(WebClient.builder().baseUrl(server.baseUrl()).build())
-    MapImageServiceAdapter(client).render(request)
+    MapImageServiceAdapter(client, config).render(request)
     return JSONObject(server.allServeEvents.single().request.bodyAsString).getJSONObject("viewport")
   }
 }
