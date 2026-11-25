@@ -54,7 +54,7 @@ class PositionTableExhibit(
 
     tableBuilder.addHeader(
       table = table,
-      content = listOf(paragraphBuilder.create(header, bold = true)),
+      content = listOf(paragraphBuilder.create(header)),
       columns = 1,
     )
 
