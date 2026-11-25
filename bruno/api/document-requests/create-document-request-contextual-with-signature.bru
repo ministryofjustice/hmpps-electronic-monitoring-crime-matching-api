@@ -1,0 +1,79 @@
+meta {
+  name: Create document request (contextual with witness signature)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/document-requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "type": "CONTEXTUAL_REPORT",
+    "parameters": {
+      "additionalInformation": "Example report with a test witness signature",
+      "authorisingManager": {
+        "name": "Test Witness",
+        "occupation": "AC Hub Manager",
+        "signatureImage": "iVBORw0KGgoAAAANSUhEUgAAAIgAAAAsCAAAAACbXK92AAAAX0lEQVR42u3YvQoAIAhFYd//pWttkDgt/XkcuwjfECJGu6RCiBAh30AiKZJlOe0T8hZkbCZvJEP9QoQIKQOZDqVJJqQOBC86q59diBAhZSB0Qd46WYUcgXgNECJECKwOmsbdLj9gAkgAAAAASUVORK5CYII="
+      },
+      "crime": {
+        "batchId": "AVS20260101",
+        "proximityAlertCreatedAt": "2026-10-01T00:00:00Z",
+        "reference": "123456789",
+        "type": "Robbery"
+      },
+      "deviceWearer": {
+        "address": "456 The Avenue, London, UK, AB12 3CD",
+        "dateOfBirth": "1990-01-01",
+        "emsId": "DEVWR123456",
+        "pncNumber": "PNC123456",
+        "name": "Jane Doe"
+      },
+      "positionSegments": [
+        [
+          {
+            "direction": 90,
+            "gpsDate": "2026-10-01T00:30:00Z",
+            "latitude": 51.5074,
+            "longitude": -0.1278,
+            "precision": 5,
+            "speed": 10,
+            "sequenceNumber": 1
+          }
+        ]
+      ],
+      "reportPeriod": {
+        "start": "2026-10-01T00:00:00Z",
+        "end": "2026-10-01T01:00:00Z"
+      },
+      "reportRequest": {
+        "requestedAt": "2026-10-03T11:12:13Z",
+        "requestedBy": "Police Officer",
+        "policeForceArea": "Metropolitan"
+      }
+    }
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body: isObject
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("documentRequestId", body.id);
+}
+
+docs {
+  The signatureImage value is a PNG that reads TEST. To try a different signature,
+  replace it with the base64-encoded image bytes, without a data URL prefix.
+}
