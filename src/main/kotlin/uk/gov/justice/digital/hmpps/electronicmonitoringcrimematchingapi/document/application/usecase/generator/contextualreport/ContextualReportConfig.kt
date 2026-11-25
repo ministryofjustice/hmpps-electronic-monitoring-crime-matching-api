@@ -22,4 +22,8 @@ class ContextualReportConfig(
   val dateTimeFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
       .withZone(timezone)
+
+  val dateTimeWithSecondsFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+      .withZone(timezone)
 }
