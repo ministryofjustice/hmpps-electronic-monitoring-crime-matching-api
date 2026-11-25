@@ -14,6 +14,7 @@ class ContextualReportConfig(
   val mapPaddingPx: Int = 80,
   val gnssGapThreshold: Duration = Duration.ofMinutes(1),
   val gnssGapTrackDashPattern: List<Int> = listOf(8, 8),
+  val exhibitTableFontSize: Int = 16, // 8pt, in half-points
 ) {
   val contentWidth = pageWidth - (horizontalMargin * 2)
 
