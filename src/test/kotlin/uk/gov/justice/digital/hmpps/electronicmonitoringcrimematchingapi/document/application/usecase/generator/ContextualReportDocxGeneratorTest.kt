@@ -526,7 +526,7 @@ class ContextualReportDocxGeneratorTest {
     val firstPosition = positionRows[2].content.unwrapped<Tc>()
 
     assertThat(firstPosition.map { it.text() }).containsExactly(
-      "01/01/2021 00:00",
+      "01/01/2021 00:00:00",
       "50.123456",
       "-0.123456",
       "50",
@@ -538,7 +538,7 @@ class ContextualReportDocxGeneratorTest {
     val secondPosition = positionRows[3].content.unwrapped<Tc>()
 
     assertThat(secondPosition.map { it.text() }).containsExactly(
-      "01/01/2021 00:01",
+      "01/01/2021 00:01:00",
       "50.234567",
       "-0.234567",
       "75",
@@ -623,7 +623,7 @@ class ContextualReportDocxGeneratorTest {
     val firstPosition = positionRows[1].content.unwrapped<Tc>()
 
     assertThat(firstPosition.map { it.text() }).containsExactly(
-      "01/10/2026 01:00",
+      "01/10/2026 01:00:00",
       "51.5074",
       "-0.1278",
       "5",
@@ -632,13 +632,13 @@ class ContextualReportDocxGeneratorTest {
       "1",
     )
     assertThat(positionRows.last().content.unwrapped<Tc>().single().text())
-      .isEqualTo("No GNSS data between 01/10/2026 01:00 and 02/10/2026 05:05")
+      .isEqualTo("No GNSS data between 01/10/2026 01:00:00 and 02/10/2026 05:05:06")
   }
 
   @Test
   fun `it should have Missing GNSS gap notices that span every column and appear in order in the affected segment tables`() {
     // Given two position segments with gaps in every possible location; at the beginning of the report window, between positions, between segments and at the end of the report window
-    val period = ReportPeriod(Instant.parse("2026-09-30T22:58:00Z"), Instant.parse("2026-09-30T23:10:00Z"))
+    val period = ReportPeriod(Instant.parse("2026-09-30T22:58:37Z"), Instant.parse("2026-09-30T23:10:47Z"))
     val fixture = givenContextualReportRequestParameters(reportPeriod = period)
     val position = fixture.positionSegments.single().single()
     val first = position.copy(gpsDate = period.start.plusSeconds(120))
@@ -676,19 +676,23 @@ class ContextualReportDocxGeneratorTest {
 
     // And the table contains the expected "Missing GNSS" gap notices
     val exhibitTables = exhibits.mainDocumentPart.content.unwrapped<Tbl>()
-    val betweenSegments = "No GNSS data between 01/10/2026 00:02 and 01/10/2026 00:05"
+    val firstSegmentPositionTable = exhibitTables[4].content.unwrapped<Tr>().last()
+      .content.unwrapped<Tc>().single().content.unwrapped<Tbl>().single()
+    assertThat(firstSegmentPositionTable.content.unwrapped<Tr>()[2].content.unwrapped<Tc>().first().text())
+      .isEqualTo("01/10/2026 00:00:37")
+    val betweenSegments = "No GNSS data between 01/10/2026 00:02:37 and 01/10/2026 00:05:47"
     assertThat(unwrapTableRows(exhibitTables[4])).containsExactly(
-      "No GNSS data between 30/09/2026 23:58 and 01/10/2026 00:00",
+      "No GNSS data between 30/09/2026 23:58:37 and 01/10/2026 00:00:37",
       "1",
       "2",
-      "No GNSS data between 01/10/2026 00:01 and 01/10/2026 00:02",
+      "No GNSS data between 01/10/2026 00:01:37 and 01/10/2026 00:02:37",
       "3",
       betweenSegments,
     )
     assertThat(unwrapTableRows(exhibitTables[6])).containsExactly(
       betweenSegments,
       "4",
-      "No GNSS data between 01/10/2026 00:05 and 01/10/2026 00:10",
+      "No GNSS data between 01/10/2026 00:05:47 and 01/10/2026 00:10:47",
     )
   }
 

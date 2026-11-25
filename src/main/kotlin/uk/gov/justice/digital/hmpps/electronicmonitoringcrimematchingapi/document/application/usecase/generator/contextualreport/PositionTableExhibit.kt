@@ -118,7 +118,7 @@ class PositionTableExhibit(
     positions.forEachIndexed { index, position ->
       gaps[index]?.let { addGapRow(table, it) }
       val values = listOf(
-        config.dateTimeFormatter.format(position.gpsDate),
+        config.dateTimeWithSecondsFormatter.format(position.gpsDate),
         position.latitude.toString(),
         position.longitude.toString(),
         position.precision.toString(),
@@ -145,8 +145,8 @@ class PositionTableExhibit(
   }
 
   private fun addGapRow(table: Tbl, gap: GnssGap) {
-    val from = config.dateTimeFormatter.format(gap.start)
-    val to = config.dateTimeFormatter.format(gap.end)
+    val from = config.dateTimeWithSecondsFormatter.format(gap.start)
+    val to = config.dateTimeWithSecondsFormatter.format(gap.end)
     tableBuilder.addRow(
       table = table,
       cells = listOf(listOf(paragraphBuilder.create("No GNSS data between $from and $to", centred = true, fontSize = 16))),
