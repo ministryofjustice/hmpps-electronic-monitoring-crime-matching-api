@@ -54,7 +54,7 @@ class PositionTableExhibit(
 
     tableBuilder.addHeader(
       table = table,
-      content = listOf(paragraphBuilder.create(header)),
+      content = listOf(paragraphBuilder.create(header, fontSize = config.exhibitTableFontSize)),
       columns = 1,
     )
 
@@ -63,7 +63,7 @@ class PositionTableExhibit(
       cells = listOf(
         listOf(
           createPositionTable(),
-          paragraphBuilder.create(""),
+          paragraphBuilder.create("", fontSize = config.exhibitTableFontSize),
         ),
       ),
       cellPaddingVertical = nestedTablePadding,
@@ -74,10 +74,23 @@ class PositionTableExhibit(
   }
 
   private fun createPositionTable(): Tbl {
+    val tableWidth = config.contentWidth - nestedTablePadding * 2
+    val columnWidth = tableWidth / columns.size
+    // Transfer 12pt from Speed to Confidence Circle to keep "CONFIDENCE" on one line.
+    val columnWidths = listOf(
+      columnWidth,
+      columnWidth,
+      columnWidth,
+      columnWidth + 240,
+      columnWidth - 240,
+      columnWidth,
+      tableWidth - columnWidth * (columns.size - 1),
+    )
     val table = tableBuilder.create(
-      width = config.contentWidth - nestedTablePadding * 2,
+      width = tableWidth,
       columns = columns.size,
-    ) // Subtract padding from width
+      columnWidths = columnWidths,
+    )
 
     if (includeDescriptions) {
       tableBuilder.addRow(
@@ -88,7 +101,7 @@ class PositionTableExhibit(
               column["description"] ?: "",
               bold = true,
               centred = true,
-              fontSize = 22,
+              fontSize = config.exhibitTableFontSize,
               colour = "FFFFFF",
             ),
           )
@@ -106,7 +119,7 @@ class PositionTableExhibit(
             column["heading"] ?: "",
             bold = true,
             centred = true,
-            fontSize = 22,
+            fontSize = config.exhibitTableFontSize,
             colour = "FFFFFF",
           ),
         )
@@ -133,7 +146,7 @@ class PositionTableExhibit(
           listOf(
             paragraphBuilder.create(
               value,
-              fontSize = 22,
+              fontSize = config.exhibitTableFontSize,
             ),
           )
         },
@@ -149,7 +162,15 @@ class PositionTableExhibit(
     val to = config.dateTimeWithSecondsFormatter.format(gap.end)
     tableBuilder.addRow(
       table = table,
-      cells = listOf(listOf(paragraphBuilder.create("No GNSS data between $from and $to", centred = true, fontSize = 22))),
+      cells = listOf(
+        listOf(
+          paragraphBuilder.create(
+            "No GNSS data between $from and $to",
+            centred = true,
+            fontSize = config.exhibitTableFontSize,
+          ),
+        ),
+      ),
       columnSpan = columns.size,
     )
   }

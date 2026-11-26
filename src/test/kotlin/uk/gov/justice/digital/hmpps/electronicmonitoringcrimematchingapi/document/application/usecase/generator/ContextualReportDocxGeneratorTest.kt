@@ -139,25 +139,34 @@ class ContextualReportDocxGeneratorTest {
   }
 
   @Test
-  fun `it should use Arial 11 for report text`() {
+  fun `it should keep Arial 11 for report text outside exhibit tables`() {
     val normalStyle = document.mainDocumentPart.styleDefinitionsPart.getStyleById("Normal")
 
     assertThat(normalStyle.rPr.rFonts.ascii).isEqualTo("Arial")
     assertThat(normalStyle.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
     assertThat(normalStyle.rPr.szCs.`val`).isEqualTo(BigInteger.valueOf(22))
 
-    val positionTable = tables[10]
-      .content.unwrapped<Tr>()[1]
-      .content.unwrapped<Tc>().first()
-      .content.unwrapped<Tbl>().single()
+    val runs = tables.filterIndexed { index, _ -> index !in listOf(10, 13) }
+      .flatMap { it.textRuns() }
 
-    positionTable.content.unwrapped<Tr>()
-      .flatMap { it.content.unwrapped<Tc>() }
-      .flatMap { it.content.unwrapped<P>() }
-      .flatMap { it.content.unwrapped<R>() }
-      .forEach { run ->
-        assertThat(run.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
+    assertThat(runs).isNotEmpty.allSatisfy { run ->
+      assertThat(run.rPr?.rFonts?.ascii ?: normalStyle.rPr.rFonts.ascii).isEqualTo("Arial")
+      assertThat(run.rPr?.sz?.`val` ?: normalStyle.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
+      assertThat(run.rPr?.szCs?.`val` ?: normalStyle.rPr.szCs.`val`).isEqualTo(BigInteger.valueOf(22))
+    }
+  }
+
+  @Test
+  fun `it should use Arial 8 for all text inside explanatory and segment exhibit tables`() {
+    val normalStyle = document.mainDocumentPart.styleDefinitionsPart.getStyleById("Normal")
+
+    listOf(tables[10], tables[13]).forEach { table ->
+      assertThat(table.textRuns()).isNotEmpty.allSatisfy { run ->
+        assertThat(run.rPr?.rFonts?.ascii ?: normalStyle.rPr.rFonts.ascii).isEqualTo("Arial")
+        assertThat(run.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(16))
+        assertThat(run.rPr.szCs.`val`).isEqualTo(BigInteger.valueOf(16))
       }
+    }
   }
 
   @Test
@@ -168,6 +177,39 @@ class ContextualReportDocxGeneratorTest {
       assertThat(table.tblPr.tblW.type).isEqualTo("dxa")
       assertThat(table.tblPr.tblW.w)
         .isEqualTo(BigInteger.valueOf(9026))
+    }
+  }
+
+  @Test
+  fun `it should widen Confidence Circle at the expense of Speed in every exhibit table row`() {
+    listOf(tables[10], tables[13]).forEach { exhibit ->
+      val positionTable = exhibit.content.unwrapped<Tr>().last()
+        .content.unwrapped<Tc>().single().content.unwrapped<Tbl>().single()
+      val columnWidths = positionTable.tblGrid.gridCol.map { it.w.toLong() }
+
+      assertThat(columnWidths).containsExactly(1260L, 1260L, 1260L, 1500L, 1020L, 1260L, 1266L)
+      assertThat(columnWidths.sum()).isEqualTo(positionTable.tblPr.tblW.w.toLong())
+
+      positionTable.content.unwrapped<Tr>().forEach { row ->
+        val cells = row.content.unwrapped<Tc>()
+        if (cells.size == 1) {
+          assertThat(cells.single().tcPr.gridSpan.`val`).isEqualTo(7.toBigInteger())
+          assertThat(cells.single().tcPr.tcW.w).isEqualTo(positionTable.tblPr.tblW.w)
+        } else {
+          assertThat(cells.map { it.tcPr.tcW.w.toLong() }).containsExactlyElementsOf(columnWidths)
+        }
+      }
+
+      val headerCells = positionTable.content.unwrapped<Tr>()
+        .map { it.content.unwrapped<Tc>() }
+        .single { it.first().text() == "DATE/TIME" }
+      val confidenceCell = headerCells[3]
+      val speedCell = headerCells[4]
+      fun contentWidthInPoints(cell: Tc): Double = (cell.tcPr.tcW.w.toLong() - cell.tcPr.tcMar.left.w.toLong() - cell.tcPr.tcMar.right.w.toLong()) / 20.0
+
+      // Arial 8 bold widths, rounded up: CONFIDENCE 53pt, CONFIDENCE CIRCLE 85pt, SPEED 28pt.
+      assertThat(contentWidthInPoints(confidenceCell)).isGreaterThan(53.0).isLessThan(85.0)
+      assertThat(contentWidthInPoints(speedCell)).isGreaterThan(28.0)
     }
   }
 
@@ -681,7 +723,7 @@ class ContextualReportDocxGeneratorTest {
     val third = second.copy(gpsDate = second.gpsDate.plusSeconds(60).plusMillis(1), sequenceNumber = 3)
     val fourth = first.copy(gpsDate = period.end.minusSeconds(300), sequenceNumber = 4)
     val parameters = fixture.copy(positionSegments = listOf(listOf(first, second, third), listOf(fourth)))
-    val config = ContextualReportConfig()
+    val config = ContextualReportConfig(exhibitTableFontSize = 18)
     val exhibits = WordprocessingMLPackage.createPackage()
     val renderer = FakeMapImageRenderer()
 
@@ -712,6 +754,12 @@ class ContextualReportDocxGeneratorTest {
 
     // And the table contains the expected "Missing GNSS" gap notices
     val exhibitTables = exhibits.mainDocumentPart.content.unwrapped<Tbl>()
+    listOf(exhibitTables[1], exhibitTables[4], exhibitTables[6]).forEach { table ->
+      assertThat(table.textRuns()).isNotEmpty.allSatisfy { run ->
+        assertThat(run.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(18))
+        assertThat(run.rPr.szCs.`val`).isEqualTo(BigInteger.valueOf(18))
+      }
+    }
     val firstSegmentPositionTable = exhibitTables[4].content.unwrapped<Tr>().last()
       .content.unwrapped<Tc>().single().content.unwrapped<Tbl>().single()
     assertThat(firstSegmentPositionTable.content.unwrapped<Tr>()[2].content.unwrapped<Tc>().first().text())
@@ -731,6 +779,13 @@ class ContextualReportDocxGeneratorTest {
       "No GNSS data between 01/10/2026 00:05:47 and 01/10/2026 00:10:47",
     )
   }
+
+  private fun Tbl.textRuns(): List<R> = content.unwrapped<Tr>()
+    .flatMap { it.content.unwrapped<Tc>() }
+    .flatMap { cell ->
+      cell.content.unwrapped<P>().flatMap { it.content.unwrapped<R>() } +
+        cell.content.unwrapped<Tbl>().flatMap { it.textRuns() }
+    }
 
   private fun Tc.text(): String = content
     .unwrapped<P>()
