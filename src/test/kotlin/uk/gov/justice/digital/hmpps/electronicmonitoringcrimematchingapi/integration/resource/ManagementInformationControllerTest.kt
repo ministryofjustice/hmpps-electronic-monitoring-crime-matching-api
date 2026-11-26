@@ -699,6 +699,354 @@ class ManagementInformationControllerTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  @DisplayName("GET /management-information/crime-matching-result-summary")
+  inner class GetCrimeMatchingResultSummary {
+    private val path = "/management-information/crime-matching-result-summary"
+    private val pagedPath = "$path?page=0"
+
+    @Test
+    fun `it should return 401 if the request is not authenticated`() {
+      webTestClient.get()
+        .uri(path)
+        .exchange()
+        .expectStatus()
+        .isUnauthorized
+    }
+
+    @Test
+    fun `it should return a 403 if the client does not have a valid role`() {
+      webTestClient.get()
+        .uri(path)
+        .headers(setAuthorisation(roles = listOf()))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+      strings = [
+        "?policeForceArea=INVALID",
+        "?policeForceArea=UNKNOWN&from=invalid",
+        "?policeForceArea=UNKNOWN&to=invalid",
+      ],
+    )
+    fun `it should return 400 if the request filters are invalid`(query: String) {
+      webTestClient.get()
+        .uri("$path$query")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+    }
+
+    @Test
+    fun `it should return an empty list when no batches exist`() {
+      val body = webTestClient.get()
+        .uri(pagedPath)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        """
+        {
+          "data": [],
+          "pageCount": 0,
+          "pageNumber": 0,
+          "pageSize": 10
+        }
+        """.trimIndent(),
+        body.toString(StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
+
+    @Test
+    fun `it should return a batch with a zero match count when no matches exist`() {
+      // Given a batch with a crime and no matches
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1") {}
+      }
+
+      val body = webTestClient.get()
+        .uri(pagedPath)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      JSONAssert.assertEquals(
+        """
+          {
+            "data" : [ 
+              {
+                "policeForceArea" : "Metropolitan",
+                "batchId" : "Batch1",
+                "automatedMatches" : 0
+              } 
+            ],
+            "pageCount" : 1,
+            "pageNumber" : 0,
+            "pageSize" : 10
+          }
+        """.trimIndent(),
+        body.toString(StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
+
+    @Test
+    fun `it should return a batch with one match count when a match exists`() {
+      // Given a batch with a crime match
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1") {
+          withMatchingRun {
+            withMatchedDeviceWearer(deviceId = 1)
+          }
+        }
+      }
+
+      // When we request crime matching results
+      val body = webTestClient.get()
+        .uri(pagedPath)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain a count of crime matches per batch
+      JSONAssert.assertEquals(
+        """
+          {
+            "data" : [ 
+              {
+                "policeForceArea" : "Metropolitan",
+                "batchId" : "Batch1",
+                "automatedMatches" : 1
+              } 
+            ],
+            "pageCount" : 1,
+            "pageNumber" : 0,
+            "pageSize" : 10
+          }
+        """.trimIndent(),
+        body.toString(StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
+
+    @Test
+    fun `it should return every crime matching result per batch if page is omitted`() {
+      // Given 11 batches with crime matching results
+      (1..11).forEach { index ->
+        crimeMatchingFixtures.givenBatch(
+          batchId = "Batch$index",
+        ) {
+          withCrime("crime1") {
+            withMatchingRun {}
+          }
+        }
+      }
+
+      // When we request crime matching results
+      val body = webTestClient.get()
+        .uri(path)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then all results should be returned
+      val response = objectMapper.readTree(body)
+      assertThat(response["data"].size()).isEqualTo(11)
+    }
+
+    @Test
+    fun `it should return the first 10 crime matching results if page is included`() {
+      // Given 11 batches with crime matching results
+      (1..11).forEach { index ->
+        crimeMatchingFixtures.givenBatch(
+          batchId = "Batch$index",
+        ) {
+          withCrime("crime1") {
+            withMatchingRun {}
+          }
+        }
+      }
+
+      // When we request crime matching results
+      val body = webTestClient.get()
+        .uri(pagedPath)
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then all results should be returned
+      val response = objectMapper.readTree(body)
+      assertThat(response["data"].size()).isEqualTo(10)
+    }
+
+    @Test
+    fun `it should return the second page of crime matching results`() {
+      // Given 11 batches with crime matching results
+      (1..11).forEach { index ->
+        crimeMatchingFixtures.givenBatch(
+          batchId = "Batch$index",
+        ) {
+          withCrime("crime1") {
+            withMatchingRun {}
+          }
+        }
+      }
+
+      // When we request crime matching results
+      val body = webTestClient.get()
+        .uri("$path?page=1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then all results should be returned
+      val response = objectMapper.readTree(body)
+      assertThat(response["data"].size()).isEqualTo(1)
+    }
+
+    @Test
+    fun `it should return crime matching results only for the requested police force`() {
+      // Given a batch with a crime matching result
+      crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
+        withCrime("crime1") {
+          withMatchingRun {
+            withMatchedDeviceWearer(deviceId = 1)
+          }
+        }
+      }
+
+      // And another batch with a crime matching result for a different police force
+      crimeMatchingFixtures.givenBatch(batchId = "Batch2", policeForce = PoliceForce.BEDFORDSHIRE) {
+        withCrime("crime1") {
+          withMatchingRun {
+            withMatchedDeviceWearer(deviceId = 2)
+          }
+        }
+      }
+
+      // When we request crime matching results
+      val body = webTestClient.get()
+        .uri("$pagedPath&policeForceArea=BEDFORDSHIRE")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      // Then the response should contain only results for the request police force
+      JSONAssert.assertEquals(
+        """
+          {
+            "data" : [ 
+              {
+                "policeForceArea" : "Bedfordshire",
+                "batchId" : "Batch2",
+                "automatedMatches" : 1
+              } 
+            ],
+            "pageCount" : 1,
+            "pageNumber" : 0,
+            "pageSize" : 10
+          }
+        """.trimIndent(),
+        body.toString(StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+      "&from=2025-01-01T00:00:00Z, Batch4|Batch3|Batch2",
+      "&to=2025-01-03T00:00:00Z, Batch3|Batch2|Batch1",
+      "&from=2025-01-01T00:00:00Z&to=2025-01-03T00:00:00Z, Batch3|Batch2",
+    )
+    fun `it should filter by crime batch created date including from and excluding to`(
+      query: String,
+      expectedBatchIds: String,
+    ) {
+      val dates = listOf(
+        "2024-12-31T00:00:00",
+        "2025-01-01T00:00:00",
+        "2025-01-02T00:00:00",
+        "2025-01-03T00:00:00",
+      )
+
+      dates.forEachIndexed { index, createdAt ->
+        crimeMatchingFixtures.givenBatch(
+          batchId = "Batch${index + 1}",
+          ingestionCreatedAt = LocalDateTime.parse(createdAt),
+        ) {
+          withCrime("crime1") {
+            withMatchingRun {
+              withMatchedDeviceWearer(deviceId = 1)
+            }
+          }
+        }
+      }
+
+      val body = webTestClient.get()
+        .uri("$pagedPath$query")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CRIME_MATCHING__MI__RO")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .returnResult()
+        .responseBody!!
+
+      val expected = mapOf(
+        "data" to expectedBatchIds.split("|").map { batchId ->
+          mapOf(
+            "policeForceArea" to "Metropolitan",
+            "batchId" to batchId,
+            "automatedMatches" to 1,
+          )
+        },
+        "pageCount" to 1,
+        "pageNumber" to 0,
+        "pageSize" to 10,
+      )
+
+      JSONAssert.assertEquals(
+        objectMapper.writeValueAsString(expected),
+        body.toString(StandardCharsets.UTF_8),
+        JSONCompareMode.STRICT,
+      )
+    }
+  }
+
   private fun givenCrimeMatches(count: Int) {
     crimeMatchingFixtures.givenBatch(batchId = "Batch1") {
       withCrime("crime1") {
