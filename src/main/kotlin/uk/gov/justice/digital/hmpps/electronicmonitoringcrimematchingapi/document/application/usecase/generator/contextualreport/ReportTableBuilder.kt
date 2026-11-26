@@ -18,9 +18,12 @@ class ReportTableBuilder {
   private val defaultCellPaddingVertical = 40L
   private val defaultCellPaddingHorizontal = 120L
 
-  fun create(columns: Int = 1, width: Long): Tbl {
+  fun create(columns: Int = 1, width: Long, columnWidths: List<Long>? = null): Tbl {
     require(columns > 0) {
       "Table must have at least one column"
+    }
+    require(columnWidths == null || (columnWidths.size == columns && columnWidths.all { it > 0 } && columnWidths.sum() == width)) {
+      "Column widths must be positive, match the column count and sum to the table width"
     }
 
     return factory.createTbl().apply {
@@ -45,9 +48,7 @@ class ReportTableBuilder {
       }
 
       tblGrid = factory.createTblGrid().apply {
-        val columnWidth = width / columns
-
-        repeat(columns) {
+        (columnWidths ?: List(columns) { width / columns }).forEach { columnWidth ->
           gridCol.add(
             factory.createTblGridCol().apply {
               w = columnWidth.toBigInteger()
@@ -88,9 +89,12 @@ class ReportTableBuilder {
     cellPaddingHorizontal: Long = defaultCellPaddingHorizontal,
   ) {
     val row = factory.createTr()
-    val tableWidth = table.tblPr.tblW.w.toLong()
+    val columnWidths = table.tblGrid.gridCol.map { it.w.toLong() }
+    require(columnSpan > 0 && cells.size * columnSpan == columnWidths.size) {
+      "Row cells must span all table columns"
+    }
 
-    cells.forEach { content ->
+    cells.forEachIndexed { index, content ->
       row.content.add(
         createCell(
           content = content,
@@ -99,7 +103,7 @@ class ReportTableBuilder {
           verticalAlign = verticalAlign,
           cellPaddingVertical = cellPaddingVertical,
           cellPaddingHorizontal = cellPaddingHorizontal,
-          width = tableWidth / cells.size,
+          width = columnWidths.subList(index * columnSpan, (index + 1) * columnSpan).sum(),
         ),
       )
     }

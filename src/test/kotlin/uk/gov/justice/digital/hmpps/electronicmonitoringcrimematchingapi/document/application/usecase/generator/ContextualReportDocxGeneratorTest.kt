@@ -181,6 +181,39 @@ class ContextualReportDocxGeneratorTest {
   }
 
   @Test
+  fun `it should widen Confidence Circle at the expense of Speed in every exhibit table row`() {
+    listOf(tables[10], tables[13]).forEach { exhibit ->
+      val positionTable = exhibit.content.unwrapped<Tr>().last()
+        .content.unwrapped<Tc>().single().content.unwrapped<Tbl>().single()
+      val columnWidths = positionTable.tblGrid.gridCol.map { it.w.toLong() }
+
+      assertThat(columnWidths).containsExactly(1260L, 1260L, 1260L, 1500L, 1020L, 1260L, 1266L)
+      assertThat(columnWidths.sum()).isEqualTo(positionTable.tblPr.tblW.w.toLong())
+
+      positionTable.content.unwrapped<Tr>().forEach { row ->
+        val cells = row.content.unwrapped<Tc>()
+        if (cells.size == 1) {
+          assertThat(cells.single().tcPr.gridSpan.`val`).isEqualTo(7.toBigInteger())
+          assertThat(cells.single().tcPr.tcW.w).isEqualTo(positionTable.tblPr.tblW.w)
+        } else {
+          assertThat(cells.map { it.tcPr.tcW.w.toLong() }).containsExactlyElementsOf(columnWidths)
+        }
+      }
+
+      val headerCells = positionTable.content.unwrapped<Tr>()
+        .map { it.content.unwrapped<Tc>() }
+        .single { it.first().text() == "DATE/TIME" }
+      val confidenceCell = headerCells[3]
+      val speedCell = headerCells[4]
+      fun contentWidthInPoints(cell: Tc): Double = (cell.tcPr.tcW.w.toLong() - cell.tcPr.tcMar.left.w.toLong() - cell.tcPr.tcMar.right.w.toLong()) / 20.0
+
+      // Arial 8 bold widths, rounded up: CONFIDENCE 53pt, CONFIDENCE CIRCLE 85pt, SPEED 28pt.
+      assertThat(contentWidthInPoints(confidenceCell)).isGreaterThan(53.0).isLessThan(85.0)
+      assertThat(contentWidthInPoints(speedCell)).isGreaterThan(28.0)
+    }
+  }
+
+  @Test
   fun `it should generate the contextual report header`() {
     val headerTable = tables[0]
     val rows = headerTable.content.unwrapped<Tr>()

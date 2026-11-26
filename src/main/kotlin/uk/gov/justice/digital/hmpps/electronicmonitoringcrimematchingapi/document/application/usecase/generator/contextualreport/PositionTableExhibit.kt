@@ -74,10 +74,23 @@ class PositionTableExhibit(
   }
 
   private fun createPositionTable(): Tbl {
+    val tableWidth = config.contentWidth - nestedTablePadding * 2
+    val columnWidth = tableWidth / columns.size
+    // Transfer 12pt from Speed to Confidence Circle to keep "CONFIDENCE" on one line.
+    val columnWidths = listOf(
+      columnWidth,
+      columnWidth,
+      columnWidth,
+      columnWidth + 240,
+      columnWidth - 240,
+      columnWidth,
+      tableWidth - columnWidth * (columns.size - 1),
+    )
     val table = tableBuilder.create(
-      width = config.contentWidth - nestedTablePadding * 2,
+      width = tableWidth,
       columns = columns.size,
-    ) // Subtract padding from width
+      columnWidths = columnWidths,
+    )
 
     if (includeDescriptions) {
       tableBuilder.addRow(
