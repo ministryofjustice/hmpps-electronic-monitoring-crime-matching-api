@@ -17,6 +17,7 @@ data class MapImageServiceRequest(
   @JsonInclude(JsonInclude.Include.NON_NULL)
   data class Viewport(
     val mode: String = "fit",
+    val padding: Int? = null,
   )
 
   sealed interface Layer {

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.adapter.outbound.mapimageservice
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRenderer
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRequest
 
@@ -9,13 +10,14 @@ private const val POSITION_COLOR = "#f2a93b" // Dark yellow
 @Component
 class MapImageServiceAdapter(
   private val client: MapImageServiceClient,
+  private val config: ContextualReportConfig,
 ) : MapImageRenderer {
   override fun render(request: MapImageRequest): ByteArray {
     val positions = request.positions
 
     val layers = buildList {
       if (request.includeTrack) {
-        addAll(positionTrackLayers(positions))
+        addAll(positionTrackLayers(positions, config))
       }
 
       add(
@@ -76,7 +78,7 @@ class MapImageServiceAdapter(
 
     return client.render(
       MapImageServiceRequest(
-        viewport = MapImageServiceRequest.Viewport(),
+        viewport = MapImageServiceRequest.Viewport(padding = request.viewportPaddingPx),
         layers = layers,
         controls = MapImageServiceRequest.Controls(compass = true),
       ),

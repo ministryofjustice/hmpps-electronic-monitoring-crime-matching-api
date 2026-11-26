@@ -43,6 +43,7 @@ class ContextualReportExhibits(
           positions = parameters.positionSegments.flatten(),
           includeTrack = false,
           includeSequenceNumbers = false,
+          viewportPaddingPx = config.mapPaddingPx,
         ),
       ),
       config = config,
@@ -58,7 +59,9 @@ class ContextualReportExhibits(
 
       MapExhibit(
         header = exhibitTitles[mapExhibitTitleIndex],
-        image = mapImageRenderer.render(MapImageRequest(positions = positions)),
+        image = mapImageRenderer.render(
+          MapImageRequest(positions = positions, viewportPaddingPx = config.mapPaddingPx),
+        ),
         config = config,
       ).addTo(document)
 
@@ -69,6 +72,7 @@ class ContextualReportExhibits(
         positions = positions,
         gaps = gnssGaps(
           positions = positions,
+          durationThatIndicatesADataGap = config.gnssGapThreshold,
           previousTime = getTimeOfLastPositionInPreviousSegment(index) ?: parameters.reportPeriod.start,
           nextTime = getTimeOfFirstPositionInNextSegment(index) ?: parameters.reportPeriod.end,
         ),

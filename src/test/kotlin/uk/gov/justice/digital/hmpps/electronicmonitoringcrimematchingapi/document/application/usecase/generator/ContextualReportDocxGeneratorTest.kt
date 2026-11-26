@@ -49,6 +49,7 @@ class ContextualReportDocxGeneratorTest {
       ),
     ),
     FakeMapImageRenderer(),
+    ContextualReportConfig(),
   )
 
   private lateinit var result: GeneratedDocument
@@ -138,6 +139,28 @@ class ContextualReportDocxGeneratorTest {
   }
 
   @Test
+  fun `it should use Arial 11 for report text`() {
+    val normalStyle = document.mainDocumentPart.styleDefinitionsPart.getStyleById("Normal")
+
+    assertThat(normalStyle.rPr.rFonts.ascii).isEqualTo("Arial")
+    assertThat(normalStyle.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
+    assertThat(normalStyle.rPr.szCs.`val`).isEqualTo(BigInteger.valueOf(22))
+
+    val positionTable = tables[10]
+      .content.unwrapped<Tr>()[1]
+      .content.unwrapped<Tc>().first()
+      .content.unwrapped<Tbl>().single()
+
+    positionTable.content.unwrapped<Tr>()
+      .flatMap { it.content.unwrapped<Tc>() }
+      .flatMap { it.content.unwrapped<P>() }
+      .flatMap { it.content.unwrapped<R>() }
+      .forEach { run ->
+        assertThat(run.rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
+      }
+  }
+
+  @Test
   fun `it should generate top-level full width tables`() {
     assertThat(tables).hasSize(14)
 
@@ -161,6 +184,14 @@ class ContextualReportDocxGeneratorTest {
 
     // And the first row should contain the title
     assertThat(titleCell.text()).contains("Date: 01/10/2026")
+
+    val dateRuns = titleCell.content.unwrapped<P>().single().content.unwrapped<R>()
+    // The "Date:" label should be bold.
+    assertThat(dateRuns[0].rPr?.b?.isVal).isTrue()
+    // The displayed date should not be bold.
+    assertThat(dateRuns[1].rPr?.b?.isVal == true).isFalse()
+    // Preserve the leading space at the beginning of the date run in Word.
+    assertThat(dateRuns[1].content.unwrapped<Text>().single().space).isEqualTo("preserve")
 
     // And the second row should contain the content
     assertThat(contentCell.text()).contains(
@@ -423,8 +454,8 @@ class ContextualReportDocxGeneratorTest {
         "which document the subject’s movements as requested above." +
         "Exhibit EMAC/04: Key for interpreting symbols on crime map" +
         "Exhibit EMAC/05: Key for interpreting location data table" +
-        "Exhibit EMAC/06: Image(s) of all locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
-        "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/06: Image of all locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
+        "Exhibit EMAC/07: Image of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00" +
         "Exhibit EMAC/08: Table of Jane Doe's locations, between 01/10/2026 01:00 and 01/10/2026 01:00" +
         "Signature:" +
         "Manager's name: John Smith" +
@@ -447,6 +478,8 @@ class ContextualReportDocxGeneratorTest {
     assertThat(header.text()).isEqualTo(
       "Exhibit EMAC/04: Key for interpreting symbols on crime map",
     )
+    // No text run in the map exhibit title should have bold formatting enabled.
+    assertThat(header.content.unwrapped<P>().single().content.unwrapped<R>()).noneMatch { it.rPr?.b?.isVal == true }
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
     // And the content should contain the example image
@@ -479,6 +512,8 @@ class ContextualReportDocxGeneratorTest {
     assertThat(header.text()).isEqualTo(
       "Exhibit EMAC/05: Key for interpreting location data table",
     )
+    // No text run in the table exhibit title should have bold formatting enabled.
+    assertThat(header.content.unwrapped<P>().single().content.unwrapped<R>()).noneMatch { it.rPr?.b?.isVal == true }
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
     // And the content should contain the example table
@@ -559,7 +594,7 @@ class ContextualReportDocxGeneratorTest {
     // And the header should contain the artefact reference
     val header = rows[0].content.unwrapped<Tc>().single()
     assertThat(header.text()).isEqualTo(
-      "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
+      "Exhibit EMAC/07: Image of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
     assertThat(header.tcPr.shd.fill).isEqualTo("D9D9D9")
 
@@ -576,7 +611,7 @@ class ContextualReportDocxGeneratorTest {
     val inline = drawings.single().anchorOrInline.single() as Inline
 
     assertThat(inline.docPr.descr).isEqualTo(
-      "Exhibit EMAC/07: Image(s) of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
+      "Exhibit EMAC/07: Image of the locations for Jane Doe, between 01/10/2026 01:00 and 01/10/2026 01:00",
     )
   }
 
@@ -657,6 +692,7 @@ class ContextualReportDocxGeneratorTest {
     // Then a map image should be requested for every segment and each one should include tracks
     assertThat(renderer.requests.filter { it.includeTrack }.map { it.positions })
       .containsExactlyElementsOf(parameters.positionSegments)
+    assertThat(renderer.requests.map { it.viewportPaddingPx }).containsExactly(80, 80, 80)
 
     fun unwrapTableRows(table: Tbl): List<String> {
       val contentCell = table.content.unwrapped<Tr>().last().content.unwrapped<Tc>().single()
@@ -707,12 +743,14 @@ class ContextualReportDocxGeneratorTest {
   inline fun <reified T> List<*>.unwrapped(): List<T> = map(XmlUtils::unwrap).filterIsInstance<T>()
 
   private fun assertClassification(paragraph: P) {
-    val text = paragraph.content
-      .unwrapped<R>()
+    val runs = paragraph.content.unwrapped<R>()
+    val text = runs
       .flatMap { it.content.unwrapped<Text>() }
       .joinToString("") { it.value }
 
     assertThat(text).isEqualTo("OFFICIAL - SENSITIVE")
+    assertThat(runs.single().rPr.rFonts.ascii).isEqualTo("Arial")
+    assertThat(runs.single().rPr.sz.`val`).isEqualTo(BigInteger.valueOf(22))
 
     assertThat(paragraph.pPr.jc.`val`)
       .isEqualTo(JcEnumeration.CENTER)

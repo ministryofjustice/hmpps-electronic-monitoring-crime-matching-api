@@ -5,7 +5,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 
 class DocumentTheme(
   private val font: String,
-  private val fontSize: Int = 21, // 10.5pt
+  private val fontSize: Int = 22, // 11pt
 ) {
   fun apply(document: WordprocessingMLPackage) {
     val factory = Context.getWmlObjectFactory()

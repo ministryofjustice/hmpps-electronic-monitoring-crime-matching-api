@@ -58,6 +58,9 @@ class ReportParagraphBuilder {
           content.add(
             factory.createText().apply {
               value = text
+              if (text.startsWith(' ') || text.endsWith(' ')) {
+                space = "preserve"
+              }
             },
           )
         },

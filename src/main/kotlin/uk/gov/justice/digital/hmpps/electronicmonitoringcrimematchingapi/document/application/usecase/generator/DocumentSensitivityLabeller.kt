@@ -106,6 +106,20 @@ class DocumentSensitivityLabeller(
 
     content.add(
       factory.createR().apply {
+        rPr = factory.createRPr().apply {
+          rFonts = factory.createRFonts().apply {
+            ascii = "Arial"
+            hAnsi = "Arial"
+            eastAsia = "Arial"
+            cs = "Arial"
+          }
+          sz = factory.createHpsMeasure().apply {
+            `val` = 22.toBigInteger()
+          }
+          szCs = factory.createHpsMeasure().apply {
+            `val` = 22.toBigInteger()
+          }
+        }
         content.add(
           factory.createText().apply {
             value = label

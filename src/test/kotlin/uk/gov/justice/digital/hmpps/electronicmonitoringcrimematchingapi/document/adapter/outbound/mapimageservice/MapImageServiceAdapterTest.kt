@@ -8,15 +8,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.web.reactive.function.client.WebClient
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.application.usecase.generator.contextualreport.ContextualReportConfig
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.MapImageRequest
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.domain.contextualreport.Position
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.document.testutils.DocumentRequestParametersFixtures.givenContextualReportRequestParameters
 import java.time.Instant
 
 class MapImageServiceAdapterTest {
   private val server = WireMockServer(wireMockConfig().dynamicPort())
+  private val config = ContextualReportConfig()
+  private val segmentPositions = givenContextualReportRequestParameters().positionSegments.single()
 
   @BeforeEach
   fun setUp() {
@@ -27,6 +32,22 @@ class MapImageServiceAdapterTest {
   @AfterEach
   fun tearDown() {
     server.stop()
+  }
+
+  @Test
+  fun `sends fit viewport padding when requested`() {
+    val viewport = viewportSentFor(MapImageRequest(segmentPositions, viewportPaddingPx = 80))
+
+    assertThat(viewport.getString("mode")).isEqualTo("fit")
+    assertThat(viewport.getInt("padding")).isEqualTo(80)
+  }
+
+  @Test
+  fun `omits fit viewport padding when not requested`() {
+    val viewport = viewportSentFor(MapImageRequest(segmentPositions))
+
+    assertThat(viewport.getString("mode")).isEqualTo("fit")
+    assertThat(viewport.has("padding")).isFalse()
   }
 
   @ParameterizedTest
@@ -45,7 +66,7 @@ class MapImageServiceAdapterTest {
       )
     }
 
-    assertThat(MapImageServiceAdapter(client).render(MapImageRequest(positions))).isEqualTo("image".toByteArray())
+    assertThat(MapImageServiceAdapter(client, config).render(MapImageRequest(positions))).isEqualTo("image".toByteArray())
 
     val request = JSONObject(server.allServeEvents.single().request.bodyAsString)
     val controls = request.getJSONObject("controls")
@@ -83,5 +104,11 @@ class MapImageServiceAdapterTest {
     val locationStyle = locations.getJSONObject("style")
     assertThat(locationStyle.getString("fill")).isEqualTo("#f2a93b")
     assertThat(locationStyle.getJSONObject("stroke").getString("color")).isEqualTo("#00000000")
+  }
+
+  private fun viewportSentFor(request: MapImageRequest): JSONObject {
+    val client = MapImageServiceClient(WebClient.builder().baseUrl(server.baseUrl()).build())
+    MapImageServiceAdapter(client, config).render(request)
+    return JSONObject(server.allServeEvents.single().request.bodyAsString).getJSONObject("viewport")
   }
 }

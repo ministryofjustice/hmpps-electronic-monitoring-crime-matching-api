@@ -26,17 +26,16 @@ import java.io.ByteArrayOutputStream
 class ContextualReportDocxGenerator(
   private val documentSensitivityLabeller: DocumentSensitivityLabeller,
   private val mapImageRenderer: MapImageRenderer,
+  private val config: ContextualReportConfig,
 ) : DocumentGenerator {
   override val type = DocumentType.CONTEXTUAL_REPORT
-
-  private val config = ContextualReportConfig()
 
   override fun generate(documentRequest: DocumentRequest): GeneratedDocument {
     val document = WordprocessingMLPackage.createPackage()
     val parameters = documentRequest.parameters as ContextualReportRequestParameters
     val exhibitTitles = ContextualReportExhibitTitles(parameters, config).titles
 
-    DocumentTheme(font = "Calibri").apply(document)
+    DocumentTheme(font = "Arial").apply(document)
 
     documentSensitivityLabeller.apply(document, SensitivityLabel.OFFICIAL_SENSITIVE)
 
