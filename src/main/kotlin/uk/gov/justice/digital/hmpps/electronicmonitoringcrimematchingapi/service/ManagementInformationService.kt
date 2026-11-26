@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeMatchingResultSummaryResponse
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.dto.CrimeSubmissionSummaryResponse
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeMatchingResultSummaryMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.mappers.CrimeSubmissionSummaryMapper
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.CrimeType
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.enums.PoliceForce
@@ -62,5 +64,24 @@ class ManagementInformationService(
     return (CrimeType.entries + null).map { crimeType ->
       mapper.toDto(crimeType, results[crimeType])
     }
+  }
+
+  fun getCrimeMatchingResultSummary(
+    from: Instant?,
+    to: Instant?,
+    policeForceArea: PoliceForce?,
+    page: Int?,
+    pageSize: Int,
+  ): Page<CrimeMatchingResultSummaryResponse> {
+    val pageable = page?.let {
+      PageRequest.of(
+        page,
+        pageSize,
+      )
+    } ?: Pageable.unpaged()
+
+    val mapper = CrimeMatchingResultSummaryMapper()
+    val results = crimeMatchingResultRepository.findCrimeMatchingResultSummary(policeForceArea?.name, from, to, pageable)
+    return results.map { mapper.toDto(it) }
   }
 }

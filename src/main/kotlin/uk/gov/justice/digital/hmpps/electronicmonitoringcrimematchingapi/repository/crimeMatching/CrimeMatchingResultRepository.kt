@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.model.entity.CrimeMatchingResult
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.ContextualReportCrimeMatchingResultProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeMatchingResultProjection
+import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.CrimeMatchingResultSummaryProjection
 import uk.gov.justice.digital.hmpps.electronicmonitoringcrimematchingapi.repository.projection.ZeroPrecisionCrimeMatchProjection
 import java.time.Instant
 import java.util.UUID
@@ -147,4 +148,58 @@ interface CrimeMatchingResultRepository : JpaRepository<CrimeMatchingResult, UUI
   fun findContextualReportCrimeMatchingResult(
     @Param("deviceWearerId") deviceWearerId: UUID,
   ): ContextualReportCrimeMatchingResultProjection?
+
+  @Query(
+    value = """
+      SELECT
+        c.police_force_area,
+        cb.batch_id,
+        COUNT(cmrdw.id) AS automated_matches
+      FROM crime_batch cb
+       LEFT JOIN crime_version cv
+         ON cv.crime_batch_id = cb.id
+       LEFT JOIN crime c
+         ON c.id = cv.crime_id
+       LEFT JOIN crime_matching_result cmr
+         ON cmr.crime_version_id = cv.id
+           AND cmr.crime_matching_run_id = (
+             SELECT r.id
+             FROM crime_matching_run r
+             WHERE r.crime_batch_id = cb.id
+             ORDER BY r.matching_ended DESC, r.id DESC
+             LIMIT 1
+           )
+       LEFT JOIN crime_matching_result_device_wearer cmrdw
+         ON cmrdw.crime_matching_result_id = cmr.id
+      WHERE
+          (CAST(:policeForceArea AS VARCHAR) IS NULL OR c.police_force_area = :policeForceArea)
+        AND (CAST(:from AS timestamp) IS NULL OR cb.created_at >= :from)
+        AND (CAST(:to AS timestamp) IS NULL OR cb.created_at < :to)
+      GROUP BY cb.id, cb.created_at, c.police_force_area
+      ORDER BY cb.created_at DESC, cb.id DESC
+    """,
+    countQuery = """
+      SELECT COUNT(*)
+      FROM (
+        SELECT cb.id
+        FROM crime_batch cb
+        LEFT JOIN crime_version cv
+          ON cv.crime_batch_id = cb.id
+        LEFT JOIN crime c
+          ON c.id = cv.crime_id
+        WHERE
+            (CAST(:policeForceArea AS VARCHAR) IS NULL OR c.police_force_area = :policeForceArea)
+          AND (CAST(:from AS timestamp) IS NULL OR cb.created_at >= :from)
+          AND (CAST(:to AS timestamp) IS NULL OR cb.created_at < :to)
+        GROUP BY cb.id, cb.created_at, c.police_force_area
+      ) summary
+    """,
+    nativeQuery = true,
+  )
+  fun findCrimeMatchingResultSummary(
+    @Param("policeForceArea") policeForceArea: String?,
+    @Param("from") from: Instant?,
+    @Param("to") to: Instant?,
+    pageable: Pageable,
+  ): Page<CrimeMatchingResultSummaryProjection>
 }
