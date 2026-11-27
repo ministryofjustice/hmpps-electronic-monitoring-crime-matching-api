@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.15"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.1.2"
   kotlin("plugin.spring") version "2.4.21"
   kotlin("plugin.jpa") version "2.4.21"
   jacoco
@@ -18,14 +18,14 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-mail")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
-  implementation("software.amazon.awssdk:athena:2.59.2")
-  implementation("software.amazon.awssdk:s3:2.59.2")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.1")
+  implementation("software.amazon.awssdk:athena:2.59.10")
+  implementation("software.amazon.awssdk:s3:2.59.10")
   implementation("org.apache.commons:commons-csv:1.14.1")
   implementation("org.json:json:20260814")
   implementation("uk.gov.service.notify:notifications-java-client:6.2.1-RELEASE")
-  implementation("org.locationtech.proj4j:proj4j:1.4.3")
-  implementation("org.locationtech.proj4j:proj4j-epsg:1.4.3")
+  implementation("org.locationtech.proj4j:proj4j:1.5.0")
+  implementation("org.locationtech.proj4j:proj4j-epsg:1.5.0")
   implementation("io.flipt:flipt-client-java:1.4.0")
   implementation("org.docx4j:docx4j-core:17.3.6")
   implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:17.3.6")
@@ -36,12 +36,12 @@ dependencies {
 
   testImplementation("com.h2database:h2:2.5.252")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.1.0")
-  testImplementation("org.mockito:mockito-core:5.24.0")
+  testImplementation("org.mockito:mockito-core:5.25.0")
   testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.testcontainers:postgresql:1.21.4")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.48") {
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.49") {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("org.skyscreamer:jsonassert:1.5.3")
